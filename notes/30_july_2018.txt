@@ -1,0 +1,120 @@
+
+Γεια,
+
+Στέλνω αυτό το mail για να δώσω μια αρχική περιγραφή του ΕΔΚ (Ερευνώ Δημιουργώ Καινοτομώ) project OpenBioC.
+
+Από τον Ιούλιο το έργο βρίσκεται στον πρώτο μήνα (m1).
+Προβλεπόμενη διάρκει: 36 μήνες
+...Ρεαλιστική προβλεπόμενη διάρκεια: 24 μήνες (Ιούλιος 2020)
+
+Καταρχήν για όποιον θέλει, η πρόταση που καταθέσαμε υπάρχει εδώ:
+https://www.dropbox.com/s/gj75ngirf5lr43i/OpenBio-C__%28WholePackage%29.pdf?dl=0
+
+Περιγραφή:
+Το έργο θα είναι υλοποιημένο σε έναν ιστότοπο (θα είναι δλδ ένα σάιτ)
+Το σάιτ θα πρέπει να έχει τα εξής components:
+1. Ένα tool/data repository (κυρίως για bioinformatics / genetics). Το repository θα πρέπει να έχει τα εξής (Τα περισσότερα ΔΕΝ τα έχουν άλλα repositories)
+    1a. Documentation
+    1b. Ready to run (executable) bash code that installs the tool
+    1c. Ready to run (executable) bash code that validates a tool installation
+    1d. Μηχανισμό ο οποίος θα τρέχει τα 1b και 1c σε virtualized environments (i.e. Docker)
+    1e. Dependency tree (with other tools)
+    1f. Version tree
+    1g. Formal (Machine Readable) Περιγραφή των παραμέτρων (input / output)
+    1η. Formal (Machine Readable) Περιγραφή Quality Control (requirements, execution time, memory, disk space)
+2. Workflow Management System. Το οποίο θα υποστηρίζει:
+    2a. Documentation
+    2b. Version Tree (multiple versions of the same Workflow)
+    2c. Graphic online Workflow Editor
+        2c1. Tool Dependencies should be visible on the graph
+        2c2. Tool Parameters should be visible on the graph
+        2c3. Workflow Building with simple Drag'n'Drop. (i.e. Drop a tool in current Workflow)
+        2c4. Worklfows can call / link to other workflows (even recursively.. ). No limit on nesting.
+   2d. Export / Import in various formats (i.e. WDL)
+   2e. Workflows are directly executable and runnable
+   2f. The system will create a report of the parameters, tools, version, execution time, results.. --> Reproducibility
+3. Reputation system
+   3a. Each tool / workflow is associated with the user(s) that created it
+   3b. Tools workflow are rated (upvotes/downnvotes) and users can comment.
+   3c. Each user has a stackexchange-like (badges) rating system. Users have a personal profile page. 
+   3d. On top of this information, there will be a user/tool/workflow recommendation system that will respond to user queries (which WF is better for this task?)
+   3e. Connect with ORCID
+4. Citation Manager
+   4a. Documentation (of Tools, Workflows, Comments) support rich test formatting that includes citations (i,.e. like this: [Kanterakis10])
+   4b. The reports will include a full "References" section that will include these citations.
+   4c. Citations are indexed. Users can search on citations as well as other components (Workflows, Tools)
+5. REST APIs
+   5a.  Θέλουμε το "σύστημα" να μπορεί να "παίζει" και από άλλα περιβάλλοντα (π.χ. Galaxy) χωρίς να χρειάζεται web interaction.
+
+Ίσως να ξεχνάω κάποια features αλλά αυτά είναι αρχικά για να σας δώσω μια ιδέα για το.. όραμα του OpenBioC.
+
+Ποιοι είμαστε;
+Στη πρόταση συμμετέχουμε οι εξής:
+1. ICS/FORTH
+    Γιώργος Ποταμιάς
+    Αλέξανδρος Καντεράκης (post-doc, bioinformatics)
+    Λευτέρης Κουμάκης (post-doc,  bioinformatics)
+
+   Το ICS/FORTH θα αναλάβει το integration και τα μέρη (1,2,4 και 5)
+2. Πανεπιστήμιο Πάτρας
+   Νίκος Καρακαπιλίδης. Καθηγητής τμήματος Μηχανολόγων και Αεροναυπηγών Μηχανικών: http://www.mead.upatras.gr/lang_el/personnel/view/36
+   Επιπλέον άτομα (TBA)
+
+  To τμήμα της Πάτρας θα αναλάβει κυρίως το τμήμα 3 (Reputation system + Natural Language Processing)
+
+3.  Εταιρία: NetworkOverIT , CEO: Κώστaς Μουμούρης: https://gr.linkedin.com/in/kostas-moumouris-7751854a
+  Η εταιρία θα αναλάβει το hosting, testing και virtualization
+
+Τεχνολογίες:
+Το έργο θα βασιστεί στις παρακάτω τεχνολογίες:
+1. Django / Python (for server side building)
+2. Angular
+3. JS
+4. Bootstrap CSS
+5. D3 + cola (for Workflow visualization and editing)
+6. Docker (for virtualization)
+(Εννοείται ότι αν κάποιος είναι "expert" σε κάποια άλλη τεχνολογία μπορούμε να.. προσαρμόσουμε αυτή τη λίστα)
+
+Τι έχει ήδη γίνει;
+Έχω φτιάξει ένα prototype του οποίου ο κώδικας βρίσκεται εδώ:
+https://github.com/kantale/arkalos
+
+Το σύστημα αυτό το έχω ονομάσει arkalos (έχω "πάρει" και το arkalos.io, αλλα δεν το έχω βάλει να τρέχει)
+Μία παρουσίαση του "άρκαλου" στο HBIO2017 βρίσκεται εδώ:
+https://www.dropbox.com/s/dl5t89ef7l241as/arkalos.pptx?dl=0
+
+Περιέχει κάποιες αρχικές υλοποίσεις κάποιων μερών του 1 και 2.
+
+Πως ξεκινάμε;
+Αρχικά προτείνω να γίνει μία συνάντηση για να μιλήσουμε για:
+1. Τι θέλουμε να φτιάξουμε!
+2. arkalos demo
+3. Κατανομή ρόλων.
+4. Set up repos, wikis, domains, ...
+
+Στη συνέχεια μπορούμε να κανονίσουμε κάποιες συναντήσεις (οι οποίες μπορεί να είναι ανοικτές) με στόχο:
+Introduction to OpenBioC technology stack. Δηλαδή να δούμε τι ξέρει ο καθένας από τις παραπάνω τεχνολογίες.
+   Μπορούμε να κανονίσουμε και κάποια hackathons ώστε όποιος θέλει να κάνει demonstrate με cool things που γίνονται με αυτές τις τεχνολογίες.
+   Εγώ μπορώ να κάνω demonstrate του Django <-->  Angular (through Ajax) μηχανισμού και λίγο από D3 + cola
+
+Από αυτές τις συζητήσεις μπορούμε να κανονίσουμε και με τι μπορεί/θέλει να ασχοληθεί ο καθένας.
+Εγώ βλέπω τους εξής διακριτους ρόλους:
+1. Server Side + Security + Database Managment (ενδεικτικά: Άλεξ)
+2. Frontend + UI + Workflow Visualization (Ενδεικτικά: Γαλάτεια)
+3. Execution Environment + Virtualization (Ενδεικτικά: Λευτέρης)
+
+Επίσης μη ξεχνάμε ότι υπάρχουν αρκετοί φοιτητές (πρακτικές, διπλωματικές εργασίες) που έχουν δείξει ενδιαφέρον να συμμετέχουν.
+
+Οπότε μπορεί να γίνει αύριο (Τρίτη) μία πρώτη συνάντηση;
+Ο Λευτέρης και εγώ μπορούμε 11:00 .
+Γαλάτεια μπορείς αυτή την ώρα;
+
+Χαιρετώ,
+Αλέξανδρος
+
+
+
+
+
+
+

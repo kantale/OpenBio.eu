@@ -1,0 +1,20 @@
+
+Γεια σας,
+
+Πριν τις καλοκαιρινές διακοπές θα ήταν ωραίο να κάναμε μια πρώτη συζήτηση σχετικά με τις τεχνικές προδιαγραφές του έργου. Νομίζω αυτή τη Παρασκευή (3 Αυγούστου) είναι μια καλή ημερομηνία. Παρακαλώ σημειώστε στο παρακάτω doodle ποια ώρα σας βολεύει.
+
+https://doodle.com/poll/tszv9yd5druprhxu
+
+Agenda:
+
+    1. Implementation priorities. Ποιο/Ποια components θα κάνουμε prioritize?
+    2. Technology Stack. Σε τι τεχνολογίες θα βασιστούμε;
+    3. People. Ποιο είναι το υπάρχουν ανθρώπινο δυναμικό; Τι δεξιότητες έχουν; Τι availability έχουν;
+    4. Resources / Hosting . Πως μπορούμε άμεσα να έχουμε κάποια μηχανήματα για development + testing ?
+    5. Coordination. code repositories, mailing lists, Document sharing
+    6. Time scheduling. Ποιο θα είναι το επόμενο milestone;
+
+Ευχαριστώ,
+Αλέξανδρος Καντεράκης
+
+
