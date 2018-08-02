@@ -1,0 +1,62 @@
+<div class="container" ng-show="registration_show">
+  <div class="row" ng-show="registration_error_msg != ''">
+    <div class="col-md-12">
+       <div id="nav_bar_error_div" class="alert alert-danger"><span ng-bind="registration_error_msg"></span></div>
+    </div>
+  </div>
+  <div class="row">
+
+    <form id="registration_form" class="form-horizontal">
+      
+      <fieldset>
+        <div id="legend">
+          <legend class="">Register</legend>
+        </div>
+        <div class="control-group">
+          <!-- Username -->
+          <label class="control-label"  for="username">Username</label>
+          <div class="controls">
+            <input type="text" id="username" name="username" placeholder="" class="input-xlarge" ng-model="registration_username" required>
+            <p class="help-block">Username can contain any letters or numbers, without spaces</p>
+          </div>
+        </div>
+     
+        <div class="control-group">
+          <!-- E-mail -->
+          <label class="control-label" for="email">E-mail</label>
+          <div class="controls">
+            <input type="text" id="email" name="email" placeholder="" class="input-xlarge" ng-model="registration_email" required>
+            <p class="help-block">Please provide your E-mail</p>
+          </div>
+        </div>
+     
+        <div class="control-group">
+          <!-- Password-->
+          <label class="control-label" for="password">Password</label>
+          <div class="controls">
+            <input type="password" id="password" name="password" placeholder="" class="input-xlarge" ng-model="registration_password" required>
+            <p class="help-block">Password should be at least 4 characters</p>
+          </div>
+        </div>
+     
+        <div class="control-group">
+          <!-- Password -->
+          <label class="control-label"  for="password_confirm">Password (Confirm)</label>
+          <div class="controls">
+            <input type="password" id="password_confirm" name="password_confirm" placeholder="" class="input-xlarge" ng-model="registration_password_confirm" required>
+            <p class="help-block">Please confirm password</p>
+          </div>
+        </div>
+     
+        <div class="control-group">
+          <!-- Button -->
+          <div class="controls">
+            <button class="btn btn-success" ng-click="registration_clicked()">Register</button>
+            <button class="btn btn-default" ng-click="registration_cancel()">Cancel</button>
+          </div>
+        </div>
+      </fieldset>
+    </form>
+  </div>
+</div>
+
