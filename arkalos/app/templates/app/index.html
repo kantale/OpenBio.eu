@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <script type="text/javascript"> window.CSRF_TOKEN = "{{ csrf_token }}"; window.username = "{{ username }}"; </script>
+
+  {% if include_static %}<script src="/static/app/jquery-3.2.1.min.js"></script>{% else %}<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>{% endif %}
+  {% if include_static %}<link rel="stylesheet" href="/static/app/bootstrap-3.3.7-dist/css/bootstrap.min.css" type="text/css"/>{% else %}<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" type="text/css"/>{% endif %}
+  {% if include_static %}<script src="/static/app/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>{% else %}<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>{% endif %}
+  {% if include_static %}<link rel="stylesheet" href="/static/app/bootstrap-multiselect.css" type="text/css"/>{% else %}<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.13/css/bootstrap-multiselect.css" type="text/css"/>{% endif %}
+  {% if include_static %}<script type="text/javascript" src="/static/app/bootstrap-multiselect.min.js"></script>{% else %}<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.13/js/bootstrap-multiselect.min.js"></script>{% endif %}
+  {% if include_static %}<link rel="stylesheet" href="/static/app/bootstrap-table.min.css" type="text/css"/>{% else %}<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.0/bootstrap-table.min.css" type="text/css"/>{% endif %}
+  {% if include_static %}<script src="/static/app/bootstrap-table.min.js"></script>{% else %}<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.0/bootstrap-table.min.js"></script>{% endif %}
+  {% if include_static %}<script src="/static/app/bootstrap-table-filter-control.min.js"></script>{% else %}<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.0/extensions/filter-control/bootstrap-table-filter-control.min.js"></script>{% endif %}
+  {% if include_static %}<script src="/static/app/bootstrap-table-en-US.min.js"></script>{% else %}<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.0/locale/bootstrap-table-en-US.min.js"></script>{% endif %}
+
+  <script type="text/javascript" src="/static/app/typeahead.bundle.min.js"></script>
+  <link rel="stylesheet" href="/static/app/bootstrap-tagsinput-0.8.0/src/bootstrap-tagsinput.css" type="text/css"/>
+  <link rel="stylesheet" href="/static/app/bootstrap-tagsinput-0.8.0/src/bootstrap-tagsinput-typeahead.css" type="text/css"/>
+  <script type="text/javascript" src="/static/app/bootstrap-tagsinput-0.8.0/src/bootstrap-tagsinput.js"></script>
+  <link rel="stylesheet" href="/static/app/arkalos.css">
+  <script type="text/javascript" src="/static/app/ace-builds-1.2.7/src-noconflict/ace.js"></script>
+
+  {% if include_static %}<link rel="stylesheet" href="/static/app/jstree/vakata-jstree-a6a0d0d/dist/themes/default/style.min.css" />{% else %}<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />{% endif %}
+  {% if include_static %}<script src="/static/app/jstree/vakata-jstree-a6a0d0d/dist/jstree.min.js"></script>{% else %}<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.4/jstree.min.js"></script>{% endif %}
+
+  {% if include_static %}<script src="/static/app/showdown/showdown-1.7.5/dist/showdown.min.js"></script>{% else %}<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.7.5/showdown.min.js"></script>{% endif %}
+
+  {% if include_static %}<script src="/static/app/d3/d3.v4.min.js"></script>{% else %}<script src="https://d3js.org/d3.v4.min.js"></script>{% endif %}
+  {% if include_static %}<script src="/static/app/cola/WebCola-3.3.6/WebCola/cola.min.js"></script>{% else %}<script src="http://marvl.infotech.monash.edu/webcola/cola.v3.min.js"></script>{% endif %}
+
+  {% if include_static %}<script src="/static/app/angular.min.js"></script>{% else %}<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>{% endif %}
+
+  <title>Arkalos</title>
+</head>
+<body>
+<div id="main_div" ng-app="arkalos_App" ng-controller="arkalos_Ctrl" ng-init="init()">
+{% include "app/navbar.html" %}
+{% include "app/registration.html" %}
+{% include "app/tools.html" %}
+{% include "app/workflows.html" %}
+{% include "app/reports.html" %}
+{% include "app/references.html" %}
+</div>
+<script src="/static/app/arkalos_App.js"></script>
+<script src="/static/app/arkalos_Ctrl.js"></script>
+<script src="/static/app/arkalos.js"></script>
+</body>
+</html>
+

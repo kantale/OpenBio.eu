@@ -1,0 +1,54 @@
+<div  id="references" ng-show="references_show" class="container">
+
+  <div class="row" ng-show="references_error_msg != ''">
+    <div class="col-md-12"  >
+	  <div class="alert alert-danger"><span ng-bind="references_error_msg"></span></div>
+    </div>
+  </div>
+
+<div class="row">
+	<div class="col-md-12">
+	   <form id="add_reference_form" class="form-horizontal" role="form" ng-show="add_reference_show">
+	      <fieldset>
+	         <legend>References</legend>
+	          <div class="form-group">
+	            <label class="col-sm-2 control-label" for="textinput">BIBTEX</label>
+	            <div class="col-sm-10">
+	               <textarea id="reference_bibtex" class="form-control" name="reference_bibtex" placeholder="" rows="5" ng-model="reference_bibtex_model"></textarea>
+	            </div>
+	          </div>  
+	          
+              <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                  <div class="pull-right">
+                    <button class="btn btn-default" ng-click="add_reference_cancel_clicked()" >Cancel</button>
+                    <button class="btn btn-primary" ng-click="add_reference_save_clicked()" >Save</button>
+                  </div>
+                </div>
+              </div>
+
+	      </fieldset>
+	   </form>
+	</div>
+</div>
+<div class="row" >
+		<div class="col-md-12" id="references_table_div" >
+		  <div id="references_table_toolbar">
+		    <div class="form-inline" role="form">
+		      <button class="btn btn-default" ng-click="references_table_add_button_clicked()">add Reference</button>
+		    </div>
+		  </div>
+
+		  <table id="references_table" data-toggle="table" data-url="/get_references/" data-filter-control="true" data-pagination="true" data-side-pagination="server" data-filter-show-clear="true" data-toolbar="#references_table_toolbar">
+    	    <thead>
+    	      <tr>
+    	        <th data-field="id" data-filter-control="input" data-width="10%">ID</th>
+    	        <th data-field="content" data-filter-control="input" data-width="90%">Content</th>
+    	      </tr>
+    	    </thead>
+    	  </table>
+
+		</div>
+</div>
+</div>
+

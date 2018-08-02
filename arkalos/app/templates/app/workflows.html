@@ -1,0 +1,184 @@
+<div  id="workflows" ng-show="wf_show" class="container">
+
+  <div class="row" ng-show="wf_error_msg != ''">
+    <div class="col-md-12"  >
+	  <div class="alert alert-danger"><span ng-bind="wf_error_msg"></span></div>
+    </div>
+  </div>
+
+	<div class="row">
+		<div class="col-sm-12">
+			<a href ng-click="toggle_show_wf_tools()"><span ng-bind="show_wf_tools ? 'Hide' : 'Show'"></span> Tools/Data table</a>
+		</div>
+	</div>
+	<div class="row" ng-show="show_wf_tools">
+		<div class="col-sm-12">
+			<table id="wf_tools_table" data-toggle="table" data-url="/get_tools/" data-detail-view="true" data-filter-control="true" data-pagination="true" data-side-pagination="server">
+            	<thead>
+                	<tr>
+                    	<th data-field="name" data-filter-control="input" data-width="10%">Name</th>
+                    	<th data-field="url" data-filter-control="input" data-width="10%">Link</th>
+                    	<th data-field="total_edits" data-filter-control="input" data-width="5%">Total Edits</th>
+                    	<th data-field="description" data-filter-control="input" data-width="70%">Description</th>
+                    </tr>
+                </thead>
+            </table>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-12">
+			<a href ng-click="toggle_show_wf_workflows()"><span ng-bind="show_wf_workflows ? 'Hide' : 'Show'"></span> Workflows table</a>
+		</div>
+	</div>
+	<div class="row" ng-show="show_wf_workflows">
+		<div class="col-sm-12">
+			<table id="wf_workflows_table" data-toggle="table" data-url="/get_workflows/" data-detail-view="true" data-filter-control="true" data-pagination="true" data-side-pagination="server">
+				<thead>
+					<tr>
+						<th data-field="name" data-filter-control="input" data-width="10%">Name</th>
+						<th data-field="description" data-filter-control="input" data-width="90%">Description</th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-12">
+			<div id="d3wf"></div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-12">
+			<button type="button" class="btn btn-default" ng-click="wf_add_task(1)">Add Task</button>
+			<button type="button" class="btn btn-default" ng-click="wf_add_task(2)">Add Workflow</button>
+			<span class="button-checkbox"><button id="add_edge_button" type="button" class="btn" data-color="primary">Add Edge</button><input id="add_edge_checkbox" type="checkbox" class="hidden" /></span>
+			<button type="button" class="btn btn-default" ng-click="wf_clear()">Clear</button>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-12">
+			<form id="wf_task_form" class="form-horizontal" role="form" ng-show="wf_form_task_show">
+				<fieldset>
+					<legend><span ng-bind="wf_this_is_workflow ? 'Workflow' : 'Task'"></span>: <span ng-bind="wf_task_name"></span></legend>
+
+					<div class="form-group">
+						<label class="col-sm-2 control-label" for="textinput">Name</label>
+						<div class="col-sm-2">
+							<input id="wf_task_name" type="text" placeholder="" class="form-control" name="wf_task_name" ng-model="wf_task_name">
+						</div>
+						<div class="col-sm-2" ng-show="wf_this_is_workflow"><h5>Edit: <span ng-bind="wf_current_version"></span></h5></div>
+						<div class="col-sm-2" ng-show="wf_this_is_workflow"><h5>User: <span ng-bind="wf_username"></span></h5></div>
+						<div class="col-sm-3" ng-show="wf_this_is_workflow"><h5>Created at: <span ng-bind="wf_created_at"></span></h5></div>
+					</div>
+
+
+					<div class="form-group">
+						<label class="col-sm-2 control-label">Tools/Data</label>
+
+						<div class="col-sm-10">
+							<div class="row">
+								<div class="col-sm-12">
+									<a href ng-click="wf_show_tools_data_clicked()"><span ng-bind="wf_show_tools_data ? 'Hide' : 'Show'"></span></a>
+								</div>
+							</div>
+							<div class="row" ng-show="wf_show_tools_data">
+								<div class="col-sm-12">
+									<div id="wf_task_jstree"></div>
+								</div>
+							</div>
+							<div class="row" ng-show="wf_show_tools_data">
+								<div class="col-sm-12">
+									<div id="wf_task_dropheretodelete">
+										<span class="glyphicon glyphicon-trash"></span> Drop here to delete a tool from this task
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!--
+			            <div class="col-sm-2"><h5>Name</h5></div>
+			            <div class="col-sm-2"><h5>Value</h5></div>
+			            <div class="col-sm-6"><h5>Description</h5></div>
+			        	-->
+					</div>
+
+					<!--
+					<div class="form-group">
+						<div class="col-sm-2 col-sm-offset-2">
+							 <input type="text" placeholder="" class="form-control" ng-model="wf_variable_name" ng-disabled="true">
+						</div>
+						<div class="col-sm-2">
+							<input type="text" placeholder="" class="form-control" ng-model="wf_variable_value" ng-disabled="true">
+						</div>
+						<div class="col-sm-4">
+							<input type="text" placeholder="" class="form-control" ng-model="wf_variable_description" ng-disabled="true">
+						</div>
+						<div class="col-sm-2">
+							<button class="btn btn-default" ng-click="wf_import_variable()" ng-disabled="wf_variable_name == ''"><span class="glyphicon glyphicon-download"></span></button>
+						</div>
+
+					</div>
+					-->
+
+					<div class="form-group">
+						<label class="col-sm-2 control-label" for="textinput">Documentation</label>
+						<div class="col-sm-10">
+							<div class="row">
+								<div class="col-sm-12">
+									<a href ng-click="wf_show_task_doc_clicked()"><span ng-bind="wf_show_task_doc ? 'Hide' : 'Show' "></span></a>
+								</div>
+							</div>
+							<div class="row" ng-show="wf_show_task_doc">
+								<!-- PLACEHOLDER FOR ALTERNATIVE POSITION FOR DOCUMENTATION-->
+							</div>
+						</div>
+					</div>
+					<div ng-show="wf_show_task_doc">
+						{% include "app/render_doc.html" with this_id="task" %}
+					</div>
+					<div class="form-group">
+						<label class="col-sm-2 control-label" for="textinput">Bash commands</label>
+						<div class="col-sm-10">
+							<div id="task_ace"></div>
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="col-sm-offset-2 col-sm-10">
+							<div class="pull-right">
+								<button class="btn btn-default" ng-click="wf_save_workflow_clicked()" ng-show="wf_this_is_workflow">Save</button>
+								<button class="btn btn-default" ng-click="wf_add_task_clicked()">Add</button>
+								<button class="btn btn-default" ng-click="wf_cancel_task_clicked()">Cancel</button>
+							</div>
+						</div>
+					</div>
+				</fieldset>
+			</form>
+		</div>
+	</div>
+	<!--
+	<div class="row">
+		<div class="col-md-12">
+			 <form id="wf_form" class="form-horizontal" role="form" ng-show="wf_form_show">
+			 	<fieldset>
+			 		<legend>Workflow: <span ng-bind="wf_name_model"></span></legend>
+			 		<div class="form-group">
+			 			<label class="col-sm-2 control-label" for="textinput">Name</label>
+			 			<div class="col-sm-2">
+			 				<input id="wf_name" type="text" placeholder="" class="form-control" name="wf_name" ng-model="wf_name_model">
+			 			</div>
+			 		</div>
+			 		<div class="form-group">
+			 			<div class="col-sm-offset-2 col-sm-10">
+			 				<div class="pull-right">
+			 					<button class="btn btn-default" ng-click="wf_save_workflow_clicked()">Save</button>
+			 					<button class="btn btn-default" ng-click="wf_cancel_workflow_clicked()">Cancel</button>
+			 				</div>
+			 			</div>
+			 		</div>
+			 	</fieldset>
+			 </form>
+		</div>
+	</div>
+	-->
+</div>
+

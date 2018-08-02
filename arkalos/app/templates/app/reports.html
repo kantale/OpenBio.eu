@@ -1,0 +1,73 @@
+<div  id="reports" ng-show="reports_show" class="container">
+	<div class="row" ng-show="reports_error_msg != ''">
+		<div class="col-md-12">
+			<div class="alert alert-danger"><span ng-bind="reports_error_msg"></span></div>
+    	</div>
+  	</div>
+
+  	<div class="row">
+  		<div class="col-md-12">
+  			 <form id="add_report_form" class="form-horizontal" role="form" ng-show="add_report_show">
+  			 	<fieldset>
+  			 		<legend>Reports</legend>
+
+  			 		<div class="form-group">
+  						<label class="col-sm-2 control-label" for="textinput">Select Report</label>
+  			 			<div class="col-sm-10">
+  			 				<a href ng-click="toggle_show_report_table()"><span ng-bind="show_report_table ? 'Hide' : 'Show'"></span></a>
+							<table id="reports_table" data-toggle="table" data-url="/get_reports/" data-detail-view="true" data-filter-control="true" data-pagination="true" data-side-pagination="server" ng-show="show_report_table">
+								<thead>
+									<tr>
+										<th data-field="name" data-filter-control="input" data-width="10%">Name</th>
+										<!-- <th data-field="total_edits" data-width="5%">Edits</th> -->
+										<th data-field="content" data-filter-control="input" data-width="90%">Content</th>
+									</tr>
+								</thead>
+							</table>
+  						</div>
+  			 		</div>
+
+  			 		<div ng-show="reports_show_fields">
+  			 		 <div class="form-group">
+  			 		 	 <label class="col-sm-2 control-label" for="textinput">Name</label>
+  			 		 	 <div class="col-sm-2">
+  			 		 	 	<input id="report_name" type="text" placeholder="" class="form-control" name="report_name" ng-model="report_name_model" ng-disabled="add_report_dis_table_clicked || add_report_dis_new_version ">
+  			 		 	 </div>
+  			 		 	 <div class="col-sm-2"><h5>Edit: <span ng-bind="report_current_version"></span></h5></div>
+  			 		 </div>
+
+					<div class="form-group">
+						<label class="col-sm-2 control-label" for="textinput">User</label>
+						<div class="col-sm-2"><h5><span ng-bind="reports_username"></span></h5></div>
+						<label class="col-sm-2 col-sm-offset-1 control-label" for="textinput">Created At:</label>
+						<div class="col-sm-3"><h5><span ng-bind="reports_created_at"></span></h5></div>
+					</div>
+
+					<!-- Add rendered report  -->
+					{% include "app/render_doc.html" with this_id="report" %}
+					<div class="form-group" ng-hide="add_report_dis_new_report">
+						<label class="col-sm-2 control-label" for="textinput">Edit Summary</label>
+						<div class="col-sm-10">
+							<input id="report_summary" type="text" placeholder="Briefly describe your change" class="form-control" name="report_summary" ng-model="report_summary" ng-disabled="add_report_dis_table_clicked">
+						</div>
+          			</div>
+          			</div>
+
+					<div class="form-group">
+						<div class="col-sm-offset-2 col-sm-10">
+							<div class="pull-right">
+								<button class="btn btn-default" ng-click="reports_table_add_button_clicked()">Create New</button>
+								<button class="btn btn-default" ng-click="add_reports_new_version_clicked()" ng-disabled="add_report_dis_new_report || add_report_dis_new_version || add_report_dis_init">New Version</button>
+								<button class="btn btn-primary" ng-click="add_reports_save_clicked()" ng-disabled="add_report_dis_table_clicked || add_report_dis_init">Save</button>
+							</div>
+						</div>
+					</div>
+
+
+
+  			 	</fieldset>
+  			 </form>
+  		</div>
+  	</div>
+
+</div>
