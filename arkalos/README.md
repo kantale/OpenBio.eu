@@ -36,3 +36,16 @@ tar zxvf arkalos_static.tgz
 python manage.py migrate --run-syncdb 
 ```
 
+* Run:
+
+```
+python manage.py runserver 0.0.0.0:8100
+```
+
+
+* Testing
+
+```
+http://139.91.75.205:8100/?token=A71B27C1919C
+```
+
