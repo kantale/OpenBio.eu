@@ -25,7 +25,7 @@ SECRET_KEY = 'CHANGEME!!!'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['0.0.0.0', '139.91.75.205']
+ALLOWED_HOSTS = ['0.0.0.0', '139.91.75.205', 'staging.openbio.eu']
 
 
 # Application definition

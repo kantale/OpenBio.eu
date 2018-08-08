@@ -54,15 +54,22 @@ python manage.py migrate --run-syncdb
 
 * Run
 
+Change the port if you want..
+
 ```
 python manage.py runserver 0.0.0.0:8200
 ```
 
 ## How to Run:
 Run these commands whenever you want to run/test your changes. I assume you have followed the instruction of how to install. 
+Also you change the port (8200) to anything you like.
 
 
 ```
 python manage.py runserver 0.0.0.0:8200
 ```
+
+Go to  ```http://0.0.0.0:8200``` and check your awesome changes!
+
+
 
