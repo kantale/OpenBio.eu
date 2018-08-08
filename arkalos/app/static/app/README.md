@@ -1,6 +1,3 @@
-# Download everything with:
-wget -O arkalos_static.tgz  "https://www.dropbox.com/s/4irt4f5bpn48p22/arkalos_static.tgz?dl=1"
-
 
 wget http://twitter.github.io/typeahead.js/releases/latest/typeahead.bundle.min.js 
 wget https://github.com/bootstrap-tagsinput/bootstrap-tagsinput/archive/0.8.0.tar.gz 
