@@ -1,10 +1,4 @@
 
-### Create app:
-
-```
-python manage.py startapp app 
-```
-
 ## How to install
 Run these commands only once!
 
@@ -72,4 +66,9 @@ python manage.py runserver 0.0.0.0:8200
 Go to  ```http://0.0.0.0:8200``` and check your awesome changes!
 
 
+## How to setup from Scratch
+Ignore these..
 
+```
+python manage.py startapp app
+```
