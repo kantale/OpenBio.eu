@@ -1,15 +1,21 @@
 # OpenBioC
 
-### Directories
+## Directories
 * notes: Notes from meetings 
 * arkalos: The "arkalos" prototype
+* OpenBioC: The awesome OpenBioC platform!
+
+## For Developers
+To contribute to this project, do these steps once:
+* Clone this repository
+* On your repository go to the ```OpenBioC``` folder.
+* Follow instruction on the ```README.md``` files (How to Install), in order to install python + Django 
 
 
-### Notes
-* Install Anaconda 3
-* Create a local python 3 environment
+Anytime you want to develop:
+* Do your marvelous changes on your repository.
+* Push on your repository
+* Once you are happy with your changes, perform a Merge Request to this repository
 
-```
-/home/kantale/anaconda3/bin/virtualenv OpenBioC_python
-```
+
 
