@@ -1,1 +1,23 @@
-TEST
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<script defer src="/static/app/jquery-3.3.1.min.js"></script>
+	<link rel="stylesheet" href="/static/app/css/bootstrap.min.css" type="text/css"/>
+	<script defer src="/static/app/js/bootstrap.min.js"></script>
+	<script src="/static/app/angular.min.js"></script>
+</head>
+<body>
+<div ng-app="OBC_app" ng-controller="OBC_ctrl">
+{% include "app/navbar.html" %}
+{# include "app/navbar_default.html" #}
+
+<div class="container py-5" ng-show="show_login">
+{% include "app/login.html" %}
+</div>
+</div> <!-- angular controler -->
+<script src="/static/app/OBC_app.js"></script>
+<script src="/static/app/OBC_ctrl.js"></script>
+</body>
+</html>
+
