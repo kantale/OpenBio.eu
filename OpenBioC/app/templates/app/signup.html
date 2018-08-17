@@ -1,0 +1,42 @@
+{% comment %}
+Style taken from here: https://www.codeply.com/go/nhbdi2FkJm/bootstrap-4-login-form 
+
+{% endcomment %}
+
+<div class="row">
+	<div class="col-md-6 offset-md-3">
+		<div class="card card-outline-secondary">
+			<div class="card-header">
+			    <h3 class="mb-0">Sign-up</h3>
+			</div>
+			<div class="card-body">
+			    <form class="form" role="form" autocomplete="off" id="loginForm" novalidate="">
+			        <div class="form-group">
+			            <label for="uname1">Username</label>
+			            <input type="text" class="form-control" name="uname1" id="signup_username" required="" ng-model="signup_username">
+			            <div class="invalid-feedback">Please enter a username</div>
+			        </div>
+			        <div class="form-group">
+			            <label>Password</label>
+			            <input type="password" class="form-control" id="signup_password" required="" ng-model="signup_password">
+			            <div class="invalid-feedback">Please enter a password</div>
+			        </div>
+			        <div class="form-group">
+			            <label>Confirm Password</label>
+			            <input type="password" class="form-control" id="pwd1" required="" ng-model="signup_confirm_password">
+			            <div class="invalid-feedback">Confirm password</div>
+			        </div>
+			        <div class="form-group">
+			            <label>Email</label>
+			            <input type="text" class="form-control" id="pwd1" required="" ng-model="signup_email">
+			            <div class="invalid-feedback">Enter your email</div>
+			        </div>
+
+			        <button class="btn btn-success btn-lg float-right" id="btnLogin" ng-click="signup_signup_pressed()">Sign-up</button>
+			    </form>
+			</div>
+			<!--/card-body-->
+		</div>
+		<!-- /form card login -->
+	</div>
+</div>
