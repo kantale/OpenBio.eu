@@ -4,9 +4,10 @@ inner_: functions / variables not connected with the UI
 show_ : shows / hide divs
 */
 
-app.controller("OBC_ctrl", function($scope) {
+app.controller("OBC_ctrl", function($scope, $http) {
     $scope.init = function() {
         $scope.inner_hide_all_navbar();
+        $scope.inner_hide_all_error_messages();
     };
 
     /*
@@ -47,7 +48,14 @@ app.controller("OBC_ctrl", function($scope) {
             }
             
         }, function myError(response) {
-            fail_ajax(response.statusText);
+            console.log('AJAX SYSTEM ERROR:');
+            console.log(response.statusText);
+            if (response.statusText) {
+                fail_ajax(response.statusText);
+            }
+            else {
+                fail_ajax('Internal Error. Server not responding');
+            }
         });
     };
 
@@ -57,6 +65,13 @@ app.controller("OBC_ctrl", function($scope) {
     $scope.inner_hide_all_navbar = function() {
     	$scope.show_login = false;
         $scope.show_signup = false;
+    };
+
+    /*
+    * Hide all error messages
+    */
+    $scope.inner_hide_all_error_messages = function() {
+        $scope.signup_error_message = '';
     };
 
     /*
@@ -86,7 +101,25 @@ app.controller("OBC_ctrl", function($scope) {
         // signup_confirm_password
         // signup_email 
 
-        
+        $scope.ajax(
+            'register/',
+            {
+                'signup_username' : $scope.signup_username,
+                'signup_password' : $scope.signup_password,
+                'signup_confirm_password': $scope.signup_confirm_password,
+                'signup_email' : $scope.signup_email
+            },
+            function (data) {
+                $scope.signup_error_message = '';
+                $scope.show_signup = false;
+            },
+            function (data) {
+                $scope.signup_error_message = data['error_message'];
+            },
+            function(statusText) {
+                $scope.signup_error_message = statusText;
+            }
+        );
 
     };
 }); 
