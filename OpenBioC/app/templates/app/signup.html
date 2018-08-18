@@ -3,11 +3,22 @@ Style taken from here: https://www.codeply.com/go/nhbdi2FkJm/bootstrap-4-login-f
 
 {% endcomment %}
 
+<div class="row" ng-show="signup_error_message">
+
+	<div class="col-md-6 offset-md-3">
+
+		<div class="alert alert-danger">
+  			<span ng-bind="signup_error_message"></span>
+		</div>
+
+	</div>
+
+</div>
 <div class="row">
 	<div class="col-md-6 offset-md-3">
 		<div class="card card-outline-secondary">
 			<div class="card-header">
-			    <h3 class="mb-0">Sign-up</h3>
+			    <h3 class="mb-0">Sign-up</h3>			    
 			</div>
 			<div class="card-body">
 			    <form class="form" role="form" autocomplete="off" id="loginForm" novalidate="">

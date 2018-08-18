@@ -40,6 +40,12 @@ source OpenBioC_python/bin/activate
 pip install Django==2.1.0
 ```
 
+### Install other useful packages:
+
+```
+pip install simplejson
+```
+
 * Build database
 
 ```
