@@ -1,0 +1,298 @@
+Following directions from: https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-postfix-on-ubuntu-16-04
+
+
+
+ubuntu@ip-172-31-15-237:~$ export LC_ALL="en_US.UTF-8"
+ubuntu@ip-172-31-15-237:~$ 
+ubuntu@ip-172-31-15-237:~$ sudo apt-get update
+Hit:1 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial InRelease
+Get:2 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial-updates InRelease [109 kB]
+Get:3 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial-backports InRelease [107 kB]          
+Get:4 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial/main Sources [868 kB]                            
+Get:5 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial/restricted Sources [4,808 B]                  
+Get:6 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial/universe Sources [7,728 kB]    
+Get:7 http://security.ubuntu.com/ubuntu xenial-security InRelease [107 kB]                             
+Get:8 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial/multiverse Sources [179 kB]                           
+Get:9 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial/universe amd64 Packages [7,532 kB]        
+Get:10 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial/universe Translation-en [4,354 kB]              
+Get:11 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial/multiverse amd64 Packages [144 kB]
+Get:12 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial/multiverse Translation-en [106 kB]
+Get:13 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial-updates/main Sources [318 kB]
+Get:14 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial-updates/restricted Sources [2,528 B]
+Get:15 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial-updates/universe Sources [218 kB]
+Get:16 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial-updates/multiverse Sources [8,408 B]
+Get:17 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial-updates/main amd64 Packages [831 kB]
+Get:18 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial-updates/main Translation-en [341 kB]
+Get:19 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial-updates/restricted amd64 Packages [7,556 B]
+Get:20 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial-updates/restricted Translation-en [2,272 B]
+Get:21 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial-updates/universe amd64 Packages [680 kB]
+Get:22 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial-updates/universe Translation-en [274 kB]
+Get:23 http://security.ubuntu.com/ubuntu xenial-security/main Sources [131 kB]       
+Get:24 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial-updates/multiverse amd64 Packages [16.4 kB]
+Get:25 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial-updates/multiverse Translation-en [8,344 B]
+Get:26 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial-backports/main Sources [4,488 B]
+Get:27 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial-backports/universe Sources [6,736 B]
+Get:28 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial-backports/main amd64 Packages [6,756 B]
+Get:29 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial-backports/main Translation-en [4,180 B]
+Get:30 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial-backports/universe amd64 Packages [7,420 B]
+Get:31 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial-backports/universe Translation-en [3,996 B]
+Get:32 http://security.ubuntu.com/ubuntu xenial-security/restricted Sources [2,116 B]
+Get:33 http://security.ubuntu.com/ubuntu xenial-security/universe Sources [71.3 kB]
+Get:34 http://security.ubuntu.com/ubuntu xenial-security/multiverse Sources [2,088 B]
+Get:35 http://security.ubuntu.com/ubuntu xenial-security/main amd64 Packages [539 kB]
+Get:36 http://security.ubuntu.com/ubuntu xenial-security/main Translation-en [229 kB]
+Get:37 http://security.ubuntu.com/ubuntu xenial-security/restricted amd64 Packages [7,204 B]
+Get:38 http://security.ubuntu.com/ubuntu xenial-security/restricted Translation-en [2,152 B]
+Get:39 http://security.ubuntu.com/ubuntu xenial-security/universe amd64 Packages [367 kB]
+Get:40 http://security.ubuntu.com/ubuntu xenial-security/universe Translation-en [138 kB]
+Get:41 http://security.ubuntu.com/ubuntu xenial-security/multiverse amd64 Packages [3,456 B]
+Get:42 http://security.ubuntu.com/ubuntu xenial-security/multiverse Translation-en [1,744 B]
+Fetched 25.5 MB in 4s (5,442 kB/s)              
+Reading package lists... Done
+ubuntu@ip-172-31-15-237:~$ 
+ubuntu@ip-172-31-15-237:~$ apt-get install libsasl2-2 libsasl2-modules sasl2-bin postfix dovecot-postfix postgray openssl
+E: Could not open lock file /var/lib/dpkg/lock - open (13: Permission denied)
+E: Unable to lock the administration directory (/var/lib/dpkg/), are you root?
+ubuntu@ip-172-31-15-237:~$ sudo apt-get install libsasl2-2 libsasl2-modules sasl2-bin postfix dovecot-postfix postgray openssl
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+Package dovecot-postfix is not available, but is referred to by another package.
+This may mean that the package is missing, has been obsoleted, or
+is only available from another source
+However the following packages replace it:
+  mail-stack-delivery
+
+E: Package 'dovecot-postfix' has no installation candidate
+E: Unable to locate package postgray
+ubuntu@ip-172-31-15-237:~$ sudo DEBIAN_PRIORITY=low apt-get install postfix
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+The following additional packages will be installed:
+  ssl-cert
+Suggested packages:
+  procmail postfix-mysql postfix-pgsql postfix-ldap postfix-pcre sasl2-bin dovecot-common postfix-cdb mail-reader postfix-doc openssl-blacklist
+The following NEW packages will be installed:
+  postfix ssl-cert
+0 upgraded, 2 newly installed, 0 to remove and 145 not upgraded.
+Need to get 1,169 kB of archives.
+After this operation, 3,759 kB of additional disk space will be used.
+Do you want to continue? [Y/n] Y
+Get:1 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial/main amd64 ssl-cert all 1.0.37 [16.9 kB]
+Get:2 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial-updates/main amd64 postfix amd64 3.1.0-3ubuntu0.3 [1,152 kB]
+Fetched 1,169 kB in 0s (27.1 MB/s)
+Preconfiguring packages ...
+Selecting previously unselected package ssl-cert.
+(Reading database ... 51121 files and directories currently installed.)
+Preparing to unpack .../ssl-cert_1.0.37_all.deb ...
+Unpacking ssl-cert (1.0.37) ...
+Selecting previously unselected package postfix.
+Preparing to unpack .../postfix_3.1.0-3ubuntu0.3_amd64.deb ...
+Unpacking postfix (3.1.0-3ubuntu0.3) ...
+Processing triggers for man-db (2.7.5-1) ...
+Processing triggers for libc-bin (2.23-0ubuntu9) ...
+Processing triggers for ufw (0.35-0ubuntu2) ...
+Processing triggers for systemd (229-4ubuntu21) ...
+Processing triggers for ureadahead (0.100.0-19) ...
+Setting up ssl-cert (1.0.37) ...
+Setting up postfix (3.1.0-3ubuntu0.3) ...
+Adding group `postfix' (GID 117) ...
+Done.
+Adding system user `postfix' (UID 112) ...
+Adding new user `postfix' (UID 112) with group `postfix' ...
+Not creating home directory `/var/spool/postfix'.
+setting synchronous mail queue updates: false
+Creating /etc/postfix/dynamicmaps.cf
+Adding group `postdrop' (GID 118) ...
+Done.
+setting myhostname: ip-172-31-15-237.eu-central-1.compute.internal
+setting alias maps
+setting alias database
+changing /etc/mailname to ec2-54-93-235-175.eu-central-1.compute.amazonaws.com
+setting myorigin
+setting destinations: $myhostname, ec2-54-93-235-175.eu-central-1.compute.amazonaws.com, ip-172-31-15-237.eu-central-1.compute.internal, localhost.eu-central-1.compute.internal, localhost
+setting relayhost: 
+setting mynetworks: 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
+setting mailbox_size_limit: 0
+setting recipient_delimiter: +
+setting inet_interfaces: all
+setting inet_protocols: all
+/etc/aliases does not exist, creating it.
+adding root: ubuntu alias
+
+Postfix is now set up with a default configuration.  If you need to make 
+changes, edit
+/etc/postfix/main.cf (and others) as needed.  To view Postfix configuration
+values, see postconf(1).
+
+After modifying main.cf, be sure to run '/etc/init.d/postfix reload'.
+
+Running newaliases
+Processing triggers for libc-bin (2.23-0ubuntu9) ...
+Processing triggers for systemd (229-4ubuntu21) ...
+Processing triggers for ureadahead (0.100.0-19) ...
+Processing triggers for ufw (0.35-0ubuntu2) ...
+ubuntu@ip-172-31-15-237:~$ sudo postconf -e 'home_mailbox= Maildir/'
+ubuntu@ip-172-31-15-237:~$ sudo postconf -e 'virtual_alias_maps= hash:/etc/postfix/virtual'
+ubuntu@ip-172-31-15-237:~$ sudo nano /etc/postfix/virtual
+ubuntu@ip-172-31-15-237:~$ sudo nano /etc/postfix/
+dynamicmaps.cf   main.cf          main.cf.proto    master.cf        master.cf.proto  postfix-files    postfix-script   post-install     sasl/            
+ubuntu@ip-172-31-15-237:~$ sudo nano /etc/postfix/
+ubuntu@ip-172-31-15-237:~$ sudo nano /etc/postfix/v^C
+ubuntu@ip-172-31-15-237:~$ sudo cp virtual /etc/postfix/
+ubuntu@ip-172-31-15-237:~$ cat /etc/postfix/virtual 
+contact@ec2-54-93-235-175.eu-central-1.compute.amazonaws.com ubuntu
+
+ubuntu@ip-172-31-15-237:~$ vim /etc/postfix/virtual 
+ubuntu@ip-172-31-15-237:~$ sudo vim /etc/postfix/virtual 
+ubuntu@ip-172-31-15-237:~$ cat /etc/postfix/virtual 
+contact@ec2-54-93-235-175.eu-central-1.compute.amazonaws.com ubuntu
+ubuntu@ip-172-31-15-237:~$ sudo postmap /etc/postfix/virtual
+ubuntu@ip-172-31-15-237:~$ sudo systemctl restart postfix
+ubuntu@ip-172-31-15-237:~$ echo 'export MAIL=~/Maildir' | sudo tee -a /etc/bash.bashrc | sudo tee -a /etc/profile.d/mail.sh
+export MAIL=~/Maildir
+ubuntu@ip-172-31-15-237:~$ source /etc/profile.d/mail.sh
+ubuntu@ip-172-31-15-237:~$ sudo apt-get install s-nail
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+The following NEW packages will be installed:
+  s-nail
+0 upgraded, 1 newly installed, 0 to remove and 145 not upgraded.
+Need to get 353 kB of archives.
+After this operation, 710 kB of additional disk space will be used.
+Get:1 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu xenial/universe amd64 s-nail amd64 14.8.6-1 [353 kB]
+Fetched 353 kB in 0s (23.0 MB/s)
+Selecting previously unselected package s-nail.
+(Reading database ... 51321 files and directories currently installed.)
+Preparing to unpack .../s-nail_14.8.6-1_amd64.deb ...
+Unpacking s-nail (14.8.6-1) ...
+Processing triggers for man-db (2.7.5-1) ...
+Setting up s-nail (14.8.6-1) ...
+update-alternatives: using /usr/bin/s-nail to provide /usr/bin/mailx (mailx) in auto mode
+ubuntu@ip-172-31-15-237:~$ sudo vim /etc/s-nail.rc
+ubuntu@ip-172-31-15-237:~$ echo 'init' | mail -s 'init' -Snorecord ubuntu
+Can't canonicalize "/home/ubuntu/Maildir"
+ubuntu@ip-172-31-15-237:~$ ls -R ~/Maildir
+/home/ubuntu/Maildir:
+cur  new  tmp
+
+/home/ubuntu/Maildir/cur:
+
+/home/ubuntu/Maildir/new:
+1534688088.Vca01I3e92fM889359.ip-172-31-15-237
+
+/home/ubuntu/Maildir/tmp:
+ubuntu@ip-172-31-15-237:~$ mail
+s-nail version v14.8.6.  Type ? for help.
+"/home/ubuntu/Maildir": 1 message 1 new
+>N  1 Ubuntu             Thu Jan  1 00:00   14/625   init                                                                                                                                                  
+? 
+[-- Message  1 -- 14 lines, 625 bytes --]:
+From ubuntu@ec2-54-93-235-175.eu-central-1.compute.amazonaws.com Thu Jan  1 00:00:00 1970
+Date: Sun, 19 Aug 2018 14:14:48 +0000
+To: ubuntu@ec2-54-93-235-175.eu-central-1.compute.amazonaws.com
+Subject: init
+Message-Id: <20180819141448.D5D803E92C@ip-172-31-15-237.eu-central-1.compute.internal>
+From: ubuntu@ec2-54-93-235-175.eu-central-1.compute.amazonaws.com (Ubuntu)
+
+init
+
+? d
+? q
+ubuntu@ip-172-31-15-237:~$ ls -l
+total 8
+drwx------ 5 ubuntu ubuntu 4096 Aug 19 14:14 Maildir
+-rw-r--r-- 1 root   root     69 Aug 19 14:10 virtual
+ubuntu@ip-172-31-15-237:~$ vim test_message.txt 
+ubuntu@ip-172-31-15-237:~$ cat test_message.txt | mail -s 'Test email subject line' -r from_field_account alexandros.kanterakis@gmail.com 
+ubuntu@ip-172-31-15-237:~$ 
+ubuntu@ip-172-31-15-237:~$ 
+ubuntu@ip-172-31-15-237:~$ 
+ubuntu@ip-172-31-15-237:~$ cat /etc/postfix/virtual
+contact@ec2-54-93-235-175.eu-central-1.compute.amazonaws.com ubuntu
+ubuntu@ip-172-31-15-237:~$ mail
+s-nail version v14.8.6.  Type ? for help.
+"/home/ubuntu/Maildir": 1 message 1 new
+>N  1 Alexandros Kantera Thu Jan  1 00:00   55/2924  tsampa                                                                                                                                                
+? 1
+[-- Message  1 -- 55 lines, 2924 bytes --]:
+From alexandros.kanterakis@gmail.com Thu Jan  1 00:00:00 1970
+From: Alexandros Kanterakis <alexandros.kanterakis@gmail.com>
+Date: Sun, 19 Aug 2018 17:23:46 +0300
+Message-ID: <CABJtC1c29LOqywRT7CmKQeTqJGKp4QfNq=BzYSkzv7OPVRaQyA@mail.gmail.com>
+Subject: tsampa
+To: contact@ec2-54-93-235-175.eu-central-1.compute.amazonaws.com
+
+
+[-- #1 4/51 text/plain, 7bit, UTF-8 --]
+
+tsoumpa
+
+
+[-- #2 4/75 text/html, 7bit, UTF-8 --]
+? q
+Held 1 message in /home/ubuntu/Maildir
+You have mail in /home/ubuntu/Maildir
+ubuntu@ip-172-31-15-237:~$ python3
+Python 3.5.2 (default, Nov 23 2017, 16:37:01) 
+[GCC 5.4.0 20160609] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import smtplib
+>>> from email.message import EmailMessage
+>>> with open('test_message.txt') as fp:
+...    msg = EmailMessage()
+...    msg.set_content(fp.read())
+... 
+>>> msg['Subject'] = 'ppyhtonnb'
+>>> msg['From'] = 'paparas'
+>>> msg['From'] = 'paparas@ec2-54-93-235-175.eu-central-1.compute.amazonaws.com'
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/usr/lib/python3.5/email/message.py", line 409, in __setitem__
+    "in a message".format(max_count, name))
+ValueError: There may be at most 1 From headers in a message
+>>> 
+KeyboardInterrupt
+>>> 
+ubuntu@ip-172-31-15-237:~$ 
+ubuntu@ip-172-31-15-237:~$ 
+ubuntu@ip-172-31-15-237:~$ 
+ubuntu@ip-172-31-15-237:~$ vim s.py
+ubuntu@ip-172-31-15-237:~$ vim s.py
+ubuntu@ip-172-31-15-237:~$ python3 s.py 
+ubuntu@ip-172-31-15-237:~$ sudo vim /etc/postfix/virtual
+ubuntu@ip-172-31-15-237:~$ sudo postmap /etc/postfix/virtual
+ubuntu@ip-172-31-15-237:~$ cat /etc/postfix/virtual
+contact@ec2-54-93-235-175.eu-central-1.compute.amazonaws.com ubuntu
+alex@ec2-54-93-235-175.eu-central-1.compute.amazonaws.com alexandros.kanterakis@gmail.com
+ubuntu@ip-172-31-15-237:~$ cat s.py 
+
+
+# Import smtplib for the actual sending function
+import smtplib
+
+# Import the email modules we'll need
+from email.message import EmailMessage
+
+# Open the plain text file whose name is in textfile for reading.
+with open('test_message.txt') as fp:
+    # Create a text/plain message
+    msg = EmailMessage()
+    msg.set_content(fp.read())
+
+# me == the sender's email address
+# you == the recipient's email address
+msg['Subject'] = 'ppythonn'
+msg['From'] = 'paparas@ec2-54-93-235-175.eu-central-1.compute.amazonaws.com'
+msg['To'] = 'alexandros.kanterakis@gmail.com'
+
+# Send the message via our own SMTP server.
+s = smtplib.SMTP('localhost')
+s.send_message(msg)
+s.quit()
+
+
+
+
