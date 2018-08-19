@@ -1,7 +1,15 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 
 from django.contrib.auth.models import User
+
+from django.contrib.auth import authenticate
+from django.contrib.auth import login as django_login # To distinguish from AJAX called login
+from django.contrib.auth import logout as django_logout # To distinguish from AJAX called logout
+
+# Get csrf_token
+# https://stackoverflow.com/questions/3289860/how-can-i-embed-django-csrf-token-straight-into-html
+from django.middleware.csrf import get_token 
 
 import re
 import simplejson
@@ -65,7 +73,17 @@ def index(request):
     '''
     View url: ''
     '''
+
+    # https://stackoverflow.com/questions/4642596/how-do-i-check-whether-this-user-is-anonymous-or-actually-a-user-on-my-system 
+    if request.user.is_anonymous:
+        #print ('User is anonumous')
+        username = ''
+    else:
+        username = request.user.username
+        #print ('Username: {}'.format(username))
+
     context = {
+        'username' : username,
     }
 	
     return render(request, 'app/index.html', context)
@@ -103,9 +121,48 @@ def register(request, **kwargs):
     signup_email = kwargs['signup_email'] # https://www.tecmint.com/setup-postfix-mail-server-in-ubuntu-debian/ 
 
     #Create user
-    #user = User.objects.create_user(signup_username, signup_email, signup_password)
+    user = User.objects.create_user(signup_username, signup_email, signup_password)
 
     return success()
+
+@has_data
+def login(request, **kwargs):
+    '''
+    View url: 'login/'
+    '''
+
+
+    if not 'login_username' in kwargs:
+        return fail('username is required')
+    login_username = kwargs['login_username']
+
+    if not 'login_password' in kwargs:
+        return fail('password is required')
+    login_password = kwargs['login_password']
+
+    user = authenticate(username=login_username, password=login_password)
+
+    if user is None:
+        return fail('Invalid username or password')
+
+    django_login(request, user)
+
+    # Since we logged in the csrf token has changed.
+    ret = {
+        'username': login_username,
+        'csrf_token': get_token(request),
+    }
+
+    return success(ret)
+
+def logout(request):
+    '''
+    View url: 'logout/'
+    This is NOT called by AJAX
+    '''
+
+    django_logout(request)
+    return redirect('/')
 
 ### VIEWS END ######
 
