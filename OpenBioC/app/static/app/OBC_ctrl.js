@@ -2,10 +2,13 @@
 /*
 inner_: functions / variables not connected with the UI
 show_ : shows / hide divs
+_error_message : Error messages
+_pressed : Something was clicked 
 */
 
 app.controller("OBC_ctrl", function($scope, $http) {
     $scope.init = function() {
+        $scope.username = window.username; // Empty username means non-authenticated user.
         $scope.inner_hide_all_navbar();
         $scope.inner_hide_all_error_messages();
     };
@@ -14,7 +17,7 @@ app.controller("OBC_ctrl", function($scope, $http) {
     * Helper function that perform ajax calls
     * success_view: what to do if data were correct and call was successful
     * fail_view: What to do if call was succesful but data where incorrect
-    * fail_ajax: what to do if ajax call was incorrect
+    * fail_ajax: what to do if ajax call was incorrect / System error
     */
     $scope.ajax = function(url, data, success_view, fail_view, fail_ajax) {
         // URL should always end with '/'
@@ -72,6 +75,7 @@ app.controller("OBC_ctrl", function($scope, $http) {
     */
     $scope.inner_hide_all_error_messages = function() {
         $scope.signup_error_message = '';
+        $scope.login_error_message = '';
     };
 
     /*
@@ -96,10 +100,6 @@ app.controller("OBC_ctrl", function($scope, $http) {
     * Navbar --> Signup --> Signup (button) --> Pressed
     */
     $scope.signup_signup_pressed = function() {
-        // signup_username
-        // signup_password
-        // signup_confirm_password
-        // signup_email 
 
         $scope.ajax(
             'register/',
@@ -122,6 +122,40 @@ app.controller("OBC_ctrl", function($scope, $http) {
         );
 
     };
+
+    /*
+    * Navbar --> login --> login (button) --> Pressed 
+    */
+    $scope.login_login_pressed = function() {
+        $scope.ajax(
+            'login/',
+            {
+                "login_username": $scope.login_username,
+                "login_password": $scope.login_password,
+            },
+            function(data) {
+                $scope.login_error_message = '';
+                window.CSRF_TOKEN = data['csrf_token'];
+                $scope.username = data['username'];
+                $scope.show_login = false;
+            },
+            function(data) {
+                $scope.login_error_message = data['error_message'];
+            },
+            function(statusText) {
+                $scope.login_error_message = statusText;
+            }
+        );
+    };
+
+    /*
+    * Navbar (after login) --> username --> pressed
+    */
+    $scope.navbar_username_pressed = function() {
+        alert('user profile');
+    };
+
+
 }); 
 
 

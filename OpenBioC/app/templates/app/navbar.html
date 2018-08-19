@@ -24,10 +24,16 @@ https://stackoverflow.com/a/20362024/5626738
   <div class="navbar-collapse collapse w-100 order-3 dual-collapse2">
     <ul class="navbar-nav ml-auto">
       <li class="nav-item">
-        <a href class="nav-link" ng-click="navbar_signup_pressed()">Sign-up</a>
+        <a href class="nav-link" ng-click="navbar_signup_pressed()" ng-show="!username">Sign-up</a>
       </li>
       <li class="nav-item">
-        <a href class="nav-link" ng-click="navbar_login_pressed()">Login</a>
+        <a href class="nav-link" ng-click="navbar_username_pressed()" ng-show="username"><span ng-bind="username"></span></a>
+      </li>
+      <li class="nav-item">
+        <a href class="nav-link" ng-click="navbar_login_pressed()" ng-show="!username">Login</a>
+      </li>
+      <li class="nav-item">
+        <a href="logout/" class="nav-link" ng-show="username">Logout</a>
       </li>
     </ul>
   </div>
