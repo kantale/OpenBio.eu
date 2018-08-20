@@ -9,6 +9,8 @@ _pressed : Something was clicked
 app.controller("OBC_ctrl", function($scope, $http) {
     $scope.init = function() {
         $scope.username = window.username; // Empty username means non-authenticated user.
+        $scope.general_success_message = window.general_success_message;
+        $scope.general_alert_message = window.general_alert_message;
         $scope.inner_hide_all_navbar();
         $scope.inner_hide_all_error_messages();
     };
@@ -68,6 +70,7 @@ app.controller("OBC_ctrl", function($scope, $http) {
     $scope.inner_hide_all_navbar = function() {
     	$scope.show_login = false;
         $scope.show_signup = false;
+        $scope.show_reset_password_email = false;
     };
 
     /*
@@ -76,6 +79,16 @@ app.controller("OBC_ctrl", function($scope, $http) {
     $scope.inner_hide_all_error_messages = function() {
         $scope.signup_error_message = '';
         $scope.login_error_message = '';
+        $scope.reset_password_email_error_message = '';
+    };
+
+    /*
+    * Hide all error messages including general success and alert messages
+    */
+    $scope.inner_hide_all_error_and_general_messages = function() {
+        $scope.inner_hide_all_error_messages();
+        $scope.general_success_message = '';
+        $scope.general_alert_message = '';
     };
 
     /*
@@ -83,6 +96,7 @@ app.controller("OBC_ctrl", function($scope, $http) {
     */
     $scope.navbar_login_pressed = function() {
     	$scope.inner_hide_all_navbar();
+        $scope.inner_hide_all_error_and_general_messages();
     	
     	$scope.show_login = true;
     };
@@ -92,6 +106,7 @@ app.controller("OBC_ctrl", function($scope, $http) {
     */
     $scope.navbar_signup_pressed = function() {
     	$scope.inner_hide_all_navbar();
+        $scope.inner_hide_all_error_and_general_messages();
 
         $scope.show_signup = true;
     };
@@ -112,12 +127,16 @@ app.controller("OBC_ctrl", function($scope, $http) {
             function (data) {
                 $scope.signup_error_message = '';
                 $scope.show_signup = false;
+                $scope.general_success_message = 'Thank you for registering to openbio.eu . A validation link has been sent to ' + $scope.signup_email;
+                $scope.general_alert_message = '';
             },
             function (data) {
                 $scope.signup_error_message = data['error_message'];
+                $scope.general_success_message = '';
             },
             function(statusText) {
                 $scope.signup_error_message = statusText;
+                $scope.general_success_message = '';
             }
         );
 
@@ -154,6 +173,36 @@ app.controller("OBC_ctrl", function($scope, $http) {
     $scope.navbar_username_pressed = function() {
         alert('user profile');
     };
+
+    /*
+    * Navbar -> Login -> password reset -> clicked
+    */
+    $scope.login_password_reset_pressed = function() {
+        $scope.inner_hide_all_navbar();
+        $scope.show_reset_password_email = true;
+    };
+
+    /*
+    * Navbar --> Login -> password reset -> clicked -> Send -> clicked
+    */
+    $scope.login_password_reset_email_send_pressed = function() {
+        // reset_password_email 
+        $scope.ajax(
+            'reset_password_email/',
+            {
+                'reset_password_email': $scope.reset_password_email
+            },
+            function(data) {
+
+            },
+            function(data) {
+                $scope.reset_password_email_error_message = data['error_message'];
+            },
+            function(statusText) {
+                $scope.reset_password_email_error_message = statusText;
+            }
+        );
+    }
 
 
 }); 

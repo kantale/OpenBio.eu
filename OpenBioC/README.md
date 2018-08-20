@@ -78,3 +78,16 @@ Ignore these..
 ```
 python manage.py startapp app
 ```
+
+## Open remotely files with Sublime 3
+Follow directions from: https://stackoverflow.com/questions/37458814/how-to-open-remote-files-in-sublime-text-3
+
+If the port is different than the default (52698):
+
+```
+export RMATE_HOST=localhost
+export RMATE_PORT=52699
+```
+
+
+
