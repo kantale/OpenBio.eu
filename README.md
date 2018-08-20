@@ -4,6 +4,7 @@
 * notes: Notes from meetings 
 * arkalos: The "arkalos" prototype
 * OpenBioC: The awesome OpenBioC platform!
+* staging.openbio.eu.readme.txt: How to setup the staging.openbio.eu server
 
 ## For Developers
 To contribute to this project, do these steps once:

@@ -1,0 +1,35 @@
+
+## ADD this file to the repository
+cp /home/kanterakis/readme.txt /home/kanterakis/OpenBioC/staging.openbio.eu.readme.md
+
+
+sudo apt-get update
+
+wget https://repo.anaconda.com/archive/Anaconda3-5.2.0-Linux-x86_64.sh 
+
+bash Anaconda3-5.2.0-Linux-x86_64.sh 
+/home/kanterakis/anaconda3/bin/pip install --upgrade pip
+/home/kanterakis/anaconda3/bin/pip install virtualenv 
+
+
+### SETTING EMAIL SERVER ###
+Follow firections from: https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-postfix-on-ubuntu-16-04
+sudo DEBIAN_PRIORITY=low apt-get install postfix
+
+sudo postconf -e 'home_mailbox= Maildir/'
+sudo postconf -e 'virtual_alias_maps= hash:/etc/postfix/virtual'
+sudo vim /etc/postfix/virtual
+
+### CREATE VIRTUAL EMAILS
+cat /etc/postfix/virtual
+contact@staging.openbio.eu alexandros.kanterakis@gmail.com
+
+sudo postmap /etc/postfix/virtual
+sudo systemctl restart postfix
+
+echo 'export MAIL=~/Maildir' | sudo tee -a /etc/bash.bashrc | sudo tee -a /etc/profile.d/mail.sh
+
+### Set up rsub for editing remotely with sublime
+sudo wget -O /usr/local/bin/rsub \https://raw.github.com/aurora/rmate/master/rmate
+sudo chmod a+x /usr/local/bin/rsub 
+
