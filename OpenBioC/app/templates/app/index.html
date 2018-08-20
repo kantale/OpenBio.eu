@@ -2,7 +2,12 @@
 <html lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<script type="text/javascript"> window.CSRF_TOKEN = "{{ csrf_token }}"; window.username = "{{ username }}"; </script>
+	<script type="text/javascript"> 
+		window.CSRF_TOKEN = "{{ csrf_token }}"; 
+		window.username = "{{ username }}";
+		window.general_alert_message = {% autoescape off %}"{{ general_alert_message }}"{% endautoescape %};
+		window.general_success_message = {% autoescape off %}"{{ general_success_message }}"{% endautoescape %}; 
+	</script>
 	<script defer src="/static/app/jquery-3.3.1.min.js"></script>
 	<link rel="stylesheet" href="/static/app/css/bootstrap.min.css" type="text/css"/>
 	<script defer src="/static/app/js/bootstrap.min.js"></script>
@@ -19,6 +24,18 @@
 
 <div class="container py-5" ng-show="show_signup">
 {% include "app/signup.html" %}
+</div>
+
+<div class="container py-5" ng-show="general_success_message">
+{% include "app/general_success_message.html" %}
+</div>
+
+<div class="container py-5" ng-show="general_alert_message">
+{% include "app/general_alert_message.html" %}
+</div>
+
+<div class="container py-5" ng-show="show_reset_password_email">
+{% include "app/reset_password_email.html" %}
 </div>
 
 
