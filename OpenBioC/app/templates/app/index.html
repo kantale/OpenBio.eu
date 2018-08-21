@@ -7,6 +7,7 @@
 		window.username = "{{ username }}";
 		window.general_alert_message = {% autoescape off %}"{{ general_alert_message }}"{% endautoescape %};
 		window.general_success_message = {% autoescape off %}"{{ general_success_message }}"{% endautoescape %}; 
+		window.password_reset_token = "{{ password_reset_token }}";
 	</script>
 	<script defer src="/static/app/jquery-3.3.1.min.js"></script>
 	<link rel="stylesheet" href="/static/app/css/bootstrap.min.css" type="text/css"/>
@@ -36,6 +37,10 @@
 
 <div class="container py-5" ng-show="show_reset_password_email">
 {% include "app/reset_password_email.html" %}
+</div>
+
+<div class="container py-5" ng-show="show_password_reset">
+{% include "app/password_reset.html" %}
 </div>
 
 

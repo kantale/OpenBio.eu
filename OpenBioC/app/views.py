@@ -11,6 +11,8 @@ from django.contrib.auth import logout as django_logout # To distinguish from AJ
 
 from django.core.exceptions import ObjectDoesNotExist
 
+from django.utils import timezone
+
 # Get csrf_token
 # https://stackoverflow.com/questions/3289860/how-can-i-embed-django-csrf-token-straight-into-html
 from django.middleware.csrf import get_token 
@@ -25,7 +27,7 @@ from email.message import EmailMessage
 # System imports 
 import re
 import uuid
-import datetime
+#import datetime # Use timezone.now()
 
 # Installed packages imports 
 import simplejson
@@ -142,8 +144,8 @@ def reset_password_email_body(token):
     ret = '''
 Dear user,
 
-Someone (hopefully you) has requested to reset the password on the openbio.eu site.
-If this is you, please go the following link to complete the process:
+Someone (hopefully you) has requested to reset the password at openbio.eu .
+If this is you, please go to the following link to complete the process:
 {password_reset_url}
 
 Otherwise please ignore this email!
@@ -177,11 +179,43 @@ def validate_user(token):
     else:
         return False, 'Unknown token'
 
+def password_reset_check_token(token):
+    '''
+    Check the token for password reset
+    '''
+
+    try:
+        obc_user = OBC_user.objects.get(password_reset_token=token)
+    except ObjectDoesNotExist:
+        obc_user = None
+
+    if obc_user:
+        timestamp = obc_user.password_reset_timestamp
+        seconds = (now() - timestamp).total_seconds()
+        if seconds > 3600 * 2: # 2 Hours
+            return False, 'Password Reset Token expires after 2 Hours'
+        else:
+            return True, ''
+    else:
+        return False, "Unknown token"
+
+
 def now():
     '''
     https://stackoverflow.com/a/415519/5626738
+    https://stackoverflow.com/questions/18622007/runtimewarning-datetimefield-received-a-naive-datetime
     '''
-    return datetime.datetime.now()
+    #return datetime.datetime.now()
+    return timezone.now()
+
+def check_password(password):
+    '''
+    Check for password correctness
+    '''
+    if len(password) < 6:
+        return False, 'Minimum password length is 6'
+
+    return True, ''
 
 ### HELPING FUNCTIONS AND DECORATORS END #######
 
@@ -219,6 +253,16 @@ def index(request):
             context['general_success_message'] = validation_message
         else:
             context['general_alert_message'] = validation_message
+
+    # PASSWORD RESET
+    password_reset_token = GET.get('password_reset_token', '')
+    context['password_reset_token'] = '' # It will be set after checks
+    if password_reset_token:
+        password_reset_check_success, password_reset_check_message = password_reset_check_token(password_reset_token)
+        if password_reset_check_success:
+            context['password_reset_token'] = password_reset_token
+        else:
+            context['general_alert_message'] = password_reset_check_message
 	
     return render(request, 'app/index.html', context)
 
@@ -241,8 +285,10 @@ def register(request, **kwargs):
     if not 'signup_password' in kwargs:
         return fail('password is required')
     signup_password = kwargs['signup_password']
-    if len(signup_password) < 6:
-        return fail('Minimum password length is 6')
+
+    check_password_success, check_password_message = check_password(signup_password)
+    if not check_password_success:
+        return fail(check_password_message)
 
     if not 'signup_confirm_password' in kwargs:
         return fail('confirm password is required')
@@ -299,7 +345,7 @@ def reset_password_email(request, **kwargs):
         obc_user = None
 
     if not obc_user:
-        return fail('This email does not belong to any user')
+        return fail('This email does not belong to any user') # Isn't this a breach of privacy? 
 
     # reset_password_email_body 
 
@@ -309,7 +355,50 @@ def reset_password_email(request, **kwargs):
     obc_user.password_reset_timestamp = now()
     obc_user.save()
 
-    ### HERE HERE LOGIC TO RESET PASSWORD EMAIL
+    #Send email
+    try:
+        send_mail(
+            from_ = 'noreply@staging.openbio.eu',
+            to = email,
+            subject = '[openbio.eu] Reset your password',
+            body = reset_password_email_body(token)
+        )
+    except smtplib.SMTPRecipientsRefused:
+        return fail('Could not send an email to: {}'.format(email))
+
+    return success()
+
+@has_data
+def password_reset(request, **kwargs):
+    if not 'password_reset_password' in kwargs:
+        return fail('password is required')
+    password_reset_password = kwargs['password_reset_password']
+
+    if not 'password_reset_confirm_password' in kwargs:
+        return fail('confirm password is required')
+    password_reset_confirm_password = kwargs['password_reset_confirm_password']
+
+    if password_reset_password != password_reset_confirm_password:
+        return fail('Confirm password does not match password')
+
+    check_password_success, check_password_message = check_password(password_reset_password)
+    if not check_password_success:
+        return fail(check_password_message)
+
+    password_reset_token = kwargs['password_reset_token'] # This should be always present in kwargs
+
+    #Change the password
+    obc_user = OBC_user.objects.get(password_reset_token=password_reset_token)
+    user = obc_user.user
+    user.set_password(password_reset_password) # https://docs.djangoproject.com/en/2.1/topics/auth/default/ 
+    user.save()
+
+    #Invalidate token
+    obc_user.password_reset_token = None
+    obc_user.save()
+
+    return success()
+
 
 @has_data
 def login(request, **kwargs):

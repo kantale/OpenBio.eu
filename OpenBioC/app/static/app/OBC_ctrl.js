@@ -11,8 +11,10 @@ app.controller("OBC_ctrl", function($scope, $http) {
         $scope.username = window.username; // Empty username means non-authenticated user.
         $scope.general_success_message = window.general_success_message;
         $scope.general_alert_message = window.general_alert_message;
+        $scope.password_reset_token = window.password_reset_token;
         $scope.inner_hide_all_navbar();
         $scope.inner_hide_all_error_messages();
+        
     };
 
     /*
@@ -71,6 +73,7 @@ app.controller("OBC_ctrl", function($scope, $http) {
     	$scope.show_login = false;
         $scope.show_signup = false;
         $scope.show_reset_password_email = false;
+        $scope.show_password_reset = $scope.password_reset_token ? true : false;
     };
 
     /*
@@ -87,6 +90,7 @@ app.controller("OBC_ctrl", function($scope, $http) {
     */
     $scope.inner_hide_all_error_and_general_messages = function() {
         $scope.inner_hide_all_error_messages();
+        $scope.show_password_reset = false;
         $scope.general_success_message = '';
         $scope.general_alert_message = '';
     };
@@ -193,7 +197,8 @@ app.controller("OBC_ctrl", function($scope, $http) {
                 'reset_password_email': $scope.reset_password_email
             },
             function(data) {
-
+                $scope.show_reset_password_email = false;
+                $scope.general_success_message = 'An email with instructions to reset your password was sent to ' + $scope.reset_password_email;
             },
             function(data) {
                 $scope.reset_password_email_error_message = data['error_message'];
@@ -204,6 +209,30 @@ app.controller("OBC_ctrl", function($scope, $http) {
         );
     }
 
+    /*
+    * password reset --> Change (button) --> pressed
+    */
+    $scope.password_reset_change_pressed = function() {
+        $scope.ajax(
+            'password_reset/',
+            {
+                'password_reset_password': $scope.password_reset_password,
+                'password_reset_confirm_password': $scope.password_reset_confirm_password,
+                'password_reset_token': $scope.password_reset_token
+            },
+            function(data) {
+                $scope.password_reset_token = '';
+                $scope.show_password_reset = false;
+                $scope.general_success_message = 'Your password has been reset';
+            },
+            function(data) {
+                $scope.password_reset_error_message = data['error_message'];
+            },
+            function(statusText) {
+                $scope.password_reset_error_message = statusText;
+            }
+        );
+    };
 
 }); 
 
