@@ -74,6 +74,7 @@ app.controller("OBC_ctrl", function($scope, $http) {
         $scope.show_signup = false;
         $scope.show_reset_password_email = false;
         $scope.show_password_reset = $scope.password_reset_token ? true : false;
+        $scope.show_user_profile = false;
     };
 
     /*
@@ -175,7 +176,8 @@ app.controller("OBC_ctrl", function($scope, $http) {
     * Navbar (after login) --> username --> pressed
     */
     $scope.navbar_username_pressed = function() {
-        alert('user profile');
+        $scope.inner_hide_all_navbar();
+        $scope.show_user_profile = true;
     };
 
     /*
