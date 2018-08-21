@@ -2,23 +2,31 @@
 Main style taken from: https://bootsnipp.com/snippets/bx5Be
 
 {% endcomment %}
+<div class="row" ng-show="user_profile_error_message">
+  <div class="col-md-12">
+    <div class="alert alert-danger">
+        <span ng-bind="user_profile_error_message"></span>
+    </div>
+  </div>
+</div>
+
 	<div class="row">
-		<div class="col-md-3 ">
+		<div class="col-md-3">
 		     <div class="list-group ">
-              <a href="#" class="list-group-item list-group-item-action active">Info</a>
+              <a href class="list-group-item list-group-item-action active">Info</a>
               {% comment %}
-              <a href="#" class="list-group-item list-group-item-action">User Management</a>
-              <a href="#" class="list-group-item list-group-item-action">Used</a>
-              <a href="#" class="list-group-item list-group-item-action">Enquiry</a>
-              <a href="#" class="list-group-item list-group-item-action">Dealer</a>
-              <a href="#" class="list-group-item list-group-item-action">Media</a>
-              <a href="#" class="list-group-item list-group-item-action">Post</a>
-              <a href="#" class="list-group-item list-group-item-action">Category</a>
-              <a href="#" class="list-group-item list-group-item-action">New</a>
-              <a href="#" class="list-group-item list-group-item-action">Comments</a>
-              <a href="#" class="list-group-item list-group-item-action">Appearance</a>
-              <a href="#" class="list-group-item list-group-item-action">Reports</a>
-              <a href="#" class="list-group-item list-group-item-action">Settings</a>
+              <a href class="list-group-item list-group-item-action">User Management</a>
+              <a href class="list-group-item list-group-item-action">Used</a>
+              <a href class="list-group-item list-group-item-action">Enquiry</a>
+              <a href class="list-group-item list-group-item-action">Dealer</a>
+              <a href class="list-group-item list-group-item-action">Media</a>
+              <a href class="list-group-item list-group-item-action">Post</a>
+              <a href class="list-group-item list-group-item-action">Category</a>
+              <a href class="list-group-item list-group-item-action">New</a>
+              <a href class="list-group-item list-group-item-action">Comments</a>
+              <a href class="list-group-item list-group-item-action">Appearance</a>
+              <a href class="list-group-item list-group-item-action">Reports</a>
+              <a href class="list-group-item list-group-item-action">Settings</a>
               {% endcomment %}
               
             </div> 
@@ -44,42 +52,41 @@ Main style taken from: https://bootsnipp.com/snippets/bx5Be
                               <div class="form-group row">
                                 <label for="name" class="col-4 col-form-label">First Name</label> 
                                 <div class="col-8">
-                                  <input id="name" name="name" placeholder="First Name" class="form-control here" type="text">
+                                  <input id="name" name="name" placeholder="First name not set" class="form-control here" type="text" ng-model="user_first_name">
                                 </div>
                               </div>
                               <div class="form-group row">
                                 <label for="lastname" class="col-4 col-form-label">Last Name</label> 
                                 <div class="col-8">
-                                  <input id="lastname" name="lastname" placeholder="Last Name" class="form-control here" type="text">
+                                  <input id="lastname" name="lastname" placeholder="Last name not set" class="form-control here" type="text" ng-model="user_last_name">
                                 </div>
                               </div>
                               <div class="form-group row">
                                 <label for="email" class="col-4 col-form-label">Email</label> 
                                 <div class="col-8">
-                                  <input id="email" name="email" placeholder="Email" class="form-control here" required="required" type="text" disabled="">
+                                  <input id="email" name="email" placeholder="Email" class="form-control here" required="required" type="text" ng-model="user_email" disabled>
                                 </div>
                               </div>
                               <div class="form-group row">
                                 <label for="website" class="col-4 col-form-label">Website</label> 
                                 <div class="col-8">
-                                  <input id="website" name="website" placeholder="website" class="form-control here" type="text">
+                                  <input id="website" name="website" placeholder="" class="form-control here" type="text" ng-model="user_website">
                                 </div>
                               </div>
                               <div class="form-group row">
                                 <label for="publicinfo" class="col-4 col-form-label">Public Info</label> 
                                 <div class="col-8">
-                                  <textarea id="publicinfo" name="publicinfo" cols="40" rows="4" class="form-control"></textarea>
+                                  <textarea id="publicinfo" name="publicinfo" cols="40" rows="4" class="form-control" ng-model="user_public_info"></textarea>
                                 </div>
                               </div>
                               <div class="form-group row">
                                 <div class="offset-4 col-8">
-                                  <button name="submit" type="submit" class="btn btn-success btn-lg float-right">Update My Profile</button>
+                                  <button class="btn btn-success btn-lg float-right" ng-click="user_profile_update_pressed()">Update My Profile</button>
                                 </div>
                               </div>
-                            </form>
+                        </form>
 		                </div>
 		            </div>
-		            
 		        </div>
 		    </div>
 		</div>

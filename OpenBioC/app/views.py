@@ -217,6 +217,20 @@ def check_password(password):
 
     return True, ''
 
+def None_if_empty_or_nonexisting(d, key):
+    '''
+    Useful if want to set None values to empty values that we got from Ajax
+    '''
+
+    if not key in d:
+        return None
+
+    value = d[key].strip()
+    if not value:
+        return None
+
+    return value
+
 ### HELPING FUNCTIONS AND DECORATORS END #######
 
 
@@ -438,6 +452,39 @@ def logout(request):
 
     django_logout(request)
     return redirect('/')
+
+def user_data_get(request):
+    '''
+    View url: user_data_get
+    GET THE DATA OF THE LOGGED-IN USER
+    It does not have the @has_data decorator because it has.. no data
+    '''
+
+    user = request.user
+    obc_user = OBC_user.objects.get(user=user)
+    ret = {
+        'user_first_name': obc_user.first_name,
+        'user_last_name': obc_user.last_name,
+        'user_email': user.email,
+        'user_website': obc_user.website,
+        'user_public_info': obc_user.public_info,
+    }
+
+    return success(ret)
+
+@has_data
+def user_data_set(request, **kwargs):
+    user = request.user
+    obc_user = OBC_user.objects.get(user=user)
+
+    obc_user.first_name = None_if_empty_or_nonexisting(kwargs, 'user_first_name')
+    obc_user.last_name = None_if_empty_or_nonexisting(kwargs, 'user_last_name')
+    obc_user.website = None_if_empty_or_nonexisting(kwargs, 'user_website')
+    obc_user.public_info = None_if_empty_or_nonexisting(kwargs, 'user_public_info')
+
+    obc_user.save()
+
+    return success()
 
 ### VIEWS END ######
 

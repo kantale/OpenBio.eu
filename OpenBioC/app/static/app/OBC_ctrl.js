@@ -6,7 +6,33 @@ _error_message : Error messages
 _pressed : Something was clicked 
 */
 
-app.controller("OBC_ctrl", function($scope, $http) {
+/*
+angular.module('OBC_app').filter('ifEmpty', function() {
+    return function(input, defaultValue) {
+        if (angular.isUndefined(input) || input === null || input === '') {
+            return defaultValue;
+        }
+
+        return input;
+    }
+});
+*/
+
+/*
+* https://stackoverflow.com/a/30471421/5626738
+*/
+angular.module('OBC_app').filter('ifNull', function() {
+    return function(input, defaultValue) {
+        if (input === null) {
+            return defaultValue;
+        }
+
+        return input;
+    }
+});
+
+
+app.controller("OBC_ctrl", function($scope, $http, $filter) {
     $scope.init = function() {
         $scope.username = window.username; // Empty username means non-authenticated user.
         $scope.general_success_message = window.general_success_message;
@@ -84,6 +110,7 @@ app.controller("OBC_ctrl", function($scope, $http) {
         $scope.signup_error_message = '';
         $scope.login_error_message = '';
         $scope.reset_password_email_error_message = '';
+        $scope.user_profile_error_message = '';
     };
 
     /*
@@ -173,12 +200,63 @@ app.controller("OBC_ctrl", function($scope, $http) {
     };
 
     /*
+    * Navbar -> username (pressed) -> "Update my profile" button pressed
+    */
+    $scope.user_profile_update_pressed = function() {
+        $scope.ajax(
+            'user_data_set/',
+            {
+                'user_first_name': $scope.user_first_name,
+                'user_last_name': $scope.user_last_name,
+                'user_email': $scope.user_email,
+                'user_website': $scope.user_website,
+                'user_public_info': $scope.user_public_info
+            },
+            function(data) {
+
+            },
+            function(data) {
+                $scope.user_profile_error_message = data['error_message'];
+            },
+            function(statusText) {
+                $scope.user_profile_error_message = statusText;
+            }
+        );
+    };
+
+    /*
+    * Fetch user data
+    */
+    $scope.inner_fetch_user_data = function() {
+        $scope.ajax(
+            'user_data_get/',
+            { // This is empty deliberately. Get the user data of the logged in user.
+            },
+            function(data) {
+                $scope.user_first_name = $filter('ifNull')(data['user_first_name'], '');
+                $scope.user_last_name = $filter('ifNull')(data['user_last_name'], '');
+                $scope.user_email = data['user_email'];
+                $scope.user_website = $filter('ifNull')(data['user_website'], '');
+                $scope.user_public_info = $filter('ifNull')(data['user_public_info'], '');
+            },
+            function(data) {
+                $scope.user_profile_error_message = data['error_message']; // Never executed
+            },
+            function(statusText) {
+                $scope.user_profile_error_message = statusText;
+            }
+        );
+    };
+
+    /*
     * Navbar (after login) --> username --> pressed
     */
     $scope.navbar_username_pressed = function() {
         $scope.inner_hide_all_navbar();
         $scope.show_user_profile = true;
+        $scope.inner_fetch_user_data();
     };
+
 
     /*
     * Navbar -> Login -> password reset -> clicked
