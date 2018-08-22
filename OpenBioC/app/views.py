@@ -32,6 +32,8 @@ import uuid
 # Installed packages imports 
 import simplejson
 
+__version__ = '0.0.1'
+
 ### HELPING FUNCTIONS AND DECORATORS #####
 
 def fail(error_message=None):
