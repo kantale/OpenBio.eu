@@ -111,6 +111,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
         $scope.login_error_message = '';
         $scope.reset_password_email_error_message = '';
         $scope.user_profile_error_message = '';
+        $scope.user_profile_success_message = '';
     };
 
     /*
@@ -213,7 +214,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
                 'user_public_info': $scope.user_public_info
             },
             function(data) {
-
+                $scope.user_profile_success_message = 'User\'s profile updated';
             },
             function(data) {
                 $scope.user_profile_error_message = data['error_message'];
@@ -254,6 +255,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
     $scope.navbar_username_pressed = function() {
         $scope.inner_hide_all_navbar();
         $scope.show_user_profile = true;
+        $scope.user_profile_success_message = '';
         $scope.inner_fetch_user_data();
     };
 
