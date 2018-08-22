@@ -32,7 +32,7 @@ import uuid
 # Installed packages imports 
 import simplejson
 
-__version__ = '0.0.1'
+__version__ = '0.0.2rc'
 
 ### HELPING FUNCTIONS AND DECORATORS #####
 
@@ -109,21 +109,33 @@ def send_mail(from_, to, subject, body):
     s.send_message(msg)
     s.quit()
 
-def create_validation_url(token):
+def request_port_to_url(request):
+    '''
+    Do we have to append a url with the port?
+    '''
+
+    port = request.META['SERVER_PORT'] # This is a string
+    if port == '80':
+        return ''
+
+    return ':' + port # For example ':8080'
+
+
+def create_validation_url(token, port=''):
     '''
     https://stackoverflow.com/a/5767509/5626738
     http://www.example.com/?param1=7&param2=seven.
     '''
-    ret = 'http://staging.openbio.eu:8200/?validation_token={token}'.format(token=token)
+    ret = 'http://staging.openbio.eu{port}/?validation_token={token}'.format(token=token, port=port)
     return ret
 
 
-def create_password_email_url(token):
-    ret = 'http://staging.openbio.eu:8200/?password_reset_token={token}'.format(token=token)
+def create_password_email_url(token, port=''):
+    ret = 'http://staging.openbio.eu{port}/?password_reset_token={token}'.format(token=token, port=port)
     return ret
 
 
-def confirm_email_body(token):
+def confirm_email_body(token, port=''):
     '''
     The mail verification mail body
     '''
@@ -137,9 +149,9 @@ Regards,
 The openbio.eu admin team.
 '''
 
-    return ret.format(validation_url=create_validation_url(token))
+    return ret.format(validation_url=create_validation_url(token, port))
 
-def reset_password_email_body(token):
+def reset_password_email_body(token, port=''):
     '''
     The email for resetting a password
     '''
@@ -156,7 +168,7 @@ Regards,
 The openbio.eu admin team.
 '''
 
-    return ret.format(password_reset_url=create_password_email_url(token))
+    return ret.format(password_reset_url=create_password_email_url(token, port))
 
 def validate_user(token):
     '''
@@ -176,10 +188,13 @@ def validate_user(token):
         else:
             #Validate user    
             obc_user.email_validated = True
+            #Delete validation token
+            obc_user.email_validation_token = None
+
             obc_user.save()
             return True, 'Email successfully validated'
     else:
-        return False, 'Unknown token'
+        return False, 'Unknown or deleted email validation token'
 
 def password_reset_check_token(token):
     '''
@@ -244,6 +259,8 @@ def index(request):
     '''
 
     context = {}
+
+    print ('PORT:', request.META['SERVER_PORT'], type(request.META['SERVER_PORT']))
 
     # Is this user already logged in?
     # https://stackoverflow.com/questions/4642596/how-do-i-check-whether-this-user-is-anonymous-or-actually-a-user-on-my-system 
@@ -333,7 +350,7 @@ def register(request, **kwargs):
             from_='noreply@staging.openbio.eu', 
             to=signup_email,
             subject='[openbio.eu] Please confirm your email',
-            body=confirm_email_body(uuid_token),
+            body=confirm_email_body(uuid_token, port=request_port_to_url(request)),
         )
     except smtplib.SMTPRecipientsRefused:
         return fail('Could not sent an email to {}'.format(signup_email))
@@ -377,7 +394,7 @@ def reset_password_email(request, **kwargs):
             from_ = 'noreply@staging.openbio.eu',
             to = email,
             subject = '[openbio.eu] Reset your password',
-            body = reset_password_email_body(token)
+            body = reset_password_email_body(token, port=request_port_to_url(request))
         )
     except smtplib.SMTPRecipientsRefused:
         return fail('Could not send an email to: {}'.format(email))
