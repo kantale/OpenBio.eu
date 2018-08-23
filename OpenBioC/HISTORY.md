@@ -12,4 +12,6 @@
 * Validate email with token
 * Reset email with token 
 
+### 0.0.2
+* FIX #1: The port on verification URLs is hardcoded
 

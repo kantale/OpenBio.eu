@@ -13,6 +13,7 @@
 	<link rel="stylesheet" href="/static/app/css/bootstrap.min.css" type="text/css"/>
 	<script defer src="/static/app/js/bootstrap.min.js"></script>
 	<script src="/static/app/angular.min.js"></script>
+	<link rel="stylesheet" href="/static/app/OBC.css" type="text/css"/>
 </head>
 <body>
 <div ng-app="OBC_app" ng-controller="OBC_ctrl" ng-init="init()">
@@ -45,6 +46,10 @@
 
 <div class="container" ng-show="show_user_profile">
 {% include "app/user_profile.html" %}
+</div>
+
+<div class="container" ng-show="show_tools">
+{% include "app/tools.html" %}
 </div>
 
 </div> <!-- angular controler -->

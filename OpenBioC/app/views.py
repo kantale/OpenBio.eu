@@ -260,8 +260,6 @@ def index(request):
 
     context = {}
 
-    print ('PORT:', request.META['SERVER_PORT'], type(request.META['SERVER_PORT']))
-
     # Is this user already logged in?
     # https://stackoverflow.com/questions/4642596/how-do-i-check-whether-this-user-is-anonymous-or-actually-a-user-on-my-system 
     if request.user.is_anonymous:

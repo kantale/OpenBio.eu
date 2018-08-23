@@ -1,0 +1,21 @@
+/*
+Part taken from: https://bootstrapious.com/p/bootstrap-sidebar
+*/
+
+.wrapper {
+    display: flex;
+    width: 100%;
+}
+
+#sidebar {
+    width: 350px;
+    position: fixed;
+    top: 60px;  /* https://stackoverflow.com/questions/37721260/bootstrap-sidebar-and-content-under-navbar */
+    left: 0;
+    height: 100vh;
+    z-index: 999;
+    background: #f8f9fa; /* #7386D5; */
+    color: #000;
+    transition: all 0.3s;
+
+}
