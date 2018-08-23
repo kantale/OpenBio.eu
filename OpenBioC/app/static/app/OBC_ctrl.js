@@ -101,6 +101,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
         $scope.show_reset_password_email = false;
         $scope.show_password_reset = $scope.password_reset_token ? true : false;
         $scope.show_user_profile = false;
+        $scope.show_tools = false;
     };
 
     /*
@@ -314,6 +315,14 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
                 $scope.password_reset_error_message = statusText;
             }
         );
+    };
+
+    /*
+    * Navbar --> Tools/Data --> pressed
+    */
+    $scope.navbar_tools_pressed = function() {
+        $scope.inner_hide_all_navbar();
+        $scope.show_tools = true;
     };
 
 }); 
