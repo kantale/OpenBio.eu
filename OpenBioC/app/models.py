@@ -22,3 +22,32 @@ class OBC_user(models.Model):
     website = models.URLField(max_length=256, null=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#urlfield
     public_info = models.TextField(null=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#textfield
 
+class Tool(models.Model):
+    '''
+    This table describes Tools and Data
+
+    Basically it has a composite key (name, version, edit)
+    Django does not support composite keys (for now):
+    https://code.djangoproject.com/wiki/MultipleColumnPrimaryKeys
+
+    https://docs.djangoproject.com/en/2.1/ref/models/options/#unique-together
+    '''
+    class Meta:
+        '''
+        https://docs.djangoproject.com/en/2.1/ref/models/options/#unique-together
+        '''
+        unique_together = (('name', 'version', 'edit'),)
+
+    name = models.CharField(max_length=256)
+    version = models.CharField(max_length=256)
+    edit = models.IntegerField()
+
+    obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE) # Never delete users..
+
+    website = models.URLField(max_length=256, null=True)
+    description = models.TextField(null=True) 
+    forked_from = models.ForeignKey(to="Tool", null=True, on_delete=models.CASCADE) #Is this forked from another tool? Also Never delete tools
+    changes = models.TextField(null=True) # What changes have been made from forked tool?
+
+
+

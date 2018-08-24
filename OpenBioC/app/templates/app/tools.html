@@ -11,13 +11,13 @@ Taken from:  https://bootstrapious.com/p/bootstrap-sidebar
         </div>
         <hr>
         <div class="form-group multiple-form-group input-group">
-        	<input type="text" class="form-control" placeholder="Name"><h2>/</h2>
-        	<input type="text" class="form-control" placeholder="Version"><h2>/</h2>
-        	<input type="text" class="form-control" placeholder="Edit">
+        	<input type="text" class="form-control" placeholder="Name" ng-model="tools_search_name"><h2>/</h2>
+        	<input type="text" class="form-control" placeholder="Version" ng-model="tools_search_version"><h2>/</h2>
+        	<input type="text" class="form-control" placeholder="Edit" ng-model="tools_search_edit">
         </div>
         <div class="row">
         	<div class="col">
-        		<strong>Found: 158 Tools/Data</strong>
+        		<strong>Found: <span ng-bind="tools_search_tools_number"></span> Tools/Data</strong>
         	</div>
         </div>
     </nav>

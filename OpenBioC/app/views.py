@@ -11,6 +11,8 @@ from django.contrib.auth import logout as django_logout # To distinguish from AJ
 
 from django.core.exceptions import ObjectDoesNotExist
 
+from django.db.models import Q # https://docs.djangoproject.com/en/2.1/topics/db/queries/#complex-lookups-with-q-objects
+
 from django.utils import timezone
 
 # Get csrf_token
@@ -502,6 +504,12 @@ def user_data_set(request, **kwargs):
     obc_user.save()
 
     return success()
+
+@has_data
+def tools_search_1(request, **kwargs):
+    queries = []
+
+    
 
 ### VIEWS END ######
 
