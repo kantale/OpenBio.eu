@@ -41,6 +41,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
         $scope.inner_hide_all_navbar();
         $scope.inner_hide_all_error_messages();
         
+        $scope.tools_search_tools_number = null; // Number of tools found on search
     };
 
     /*
@@ -324,6 +325,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
         $scope.inner_hide_all_navbar();
         $scope.show_tools = true;
     };
+
+    /*
+    *
+    */
+    $scope.
 
 }); 
 
