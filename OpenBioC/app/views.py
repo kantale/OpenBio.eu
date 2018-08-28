@@ -20,7 +20,7 @@ from django.utils import timezone
 from django.middleware.csrf import get_token 
 
 #Import database objects
-from app.models import OBC_user
+from app.models import OBC_user, Tool
 
 # Email imports
 import smtplib
@@ -509,6 +509,11 @@ def user_data_set(request, **kwargs):
 def tools_search_1(request, **kwargs):
     queries = []
 
+    ret = {
+        'tools_search_tools_number': Tool.objects.count()
+    }
+
+    return success(ret)
     
 
 ### VIEWS END ######

@@ -11,5 +11,5 @@ urlpatterns = [
 	path('password_reset/', views.password_reset), # Reset user password 
 	path('user_data_get/', views.user_data_get), # Get data from a LOGGED IN user
 	path('user_data_set/', views.user_data_set), # Set data for a LOGGED IN user
-	path('tools_search_1', views.tools_search_1), # Search tools from sidebar
+	path('tools_search_1/', views.tools_search_1), # Search tools from sidebar
 ]
