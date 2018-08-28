@@ -42,6 +42,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
         $scope.inner_hide_all_error_messages();
         
         $scope.tools_search_tools_number = null; // Number of tools found on search
+        //$scope.tools_search_create_disabled = true; // Navbar --> Tools/Data --> Search navbar --> Create New disabled
+
+        $scope.tools_name_regexp = /^\w+$/ ;
+        $scope.tools_version_regexp = /^[\w\.]+$/ ;
+        $scope.tools_edit_regexp = /^\d+$/; 
+        $scope.tools_search_warning= "";
     };
 
     /*
@@ -324,12 +330,74 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
     $scope.navbar_tools_pressed = function() {
         $scope.inner_hide_all_navbar();
         $scope.show_tools = true;
+        $scope.tools_search_1();
     };
 
     /*
-    *
+    *   Get the number of all tools
     */
-    $scope.
+    $scope.tools_search_1 = function() {
+        $scope.ajax(
+            'tools_search_1/',
+            {},
+            function(data) {
+                $scope.tools_search_tools_number = data['tools_search_tools_number'];
+            },
+            function(data) {
+
+            },
+            function(statusText) {
+
+            }
+        );
+    };
+
+    /*
+    *   navbar --> Tools --> Search sidebar --> Name or Version or Name Change
+    */
+    $scope.tools_search_input_changed = function() {
+
+        if ((!$scope.tools_search_name) && (!$scope.tools_search_version) && (!$scope.tools_search_edit)) {
+            $scope.tools_search_warning = '';
+            return;
+        }
+
+        //Check tool name
+        if (!$scope.tools_name_regexp.test($scope.tools_search_name)) {
+            $scope.tools_search_warning = 'Invalid Tool name';
+            return;
+        }
+
+        //Check tool verion
+        if (!$scope.tools_version_regexp.test($scope.tools_search_version)) {
+            $scope.tools_search_warning = 'Invalid Version value';
+            return;
+        }
+
+        //Check edit version
+        //if (!$scope.tools_edit_regexp.test($scope.tools_search_edit)) {
+        //    $scope.tools_search_warning = 'Invalid Edit value';
+        //    return;
+        //};
+
+        if ($scope.tools_search_edit) {
+            if (!$scope.tools_edit_regexp.test($scope.tools_search_edit)) {
+                $scope.tools_search_warning = 'Invalid Edit value';
+                return;
+            }
+            $scope.tools_search_warning = 'Edit value should be empty to create new tools';
+            return; 
+        }
+
+        $scope.tools_search_warning = '';
+    };
+
+    /*
+    * Navbar -> Tools/Data --> Approapriate input --> "Create New" button --> Pressed
+    */
+    $scope.toools_search_create_new_pressed = function() {
+        alert('df');
+    };
 
 }); 
 
