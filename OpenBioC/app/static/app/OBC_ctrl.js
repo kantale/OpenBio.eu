@@ -48,6 +48,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
         $scope.tools_version_regexp = /^[\w\.]+$/ ;
         $scope.tools_edit_regexp = /^\d+$/; 
         $scope.tools_search_warning= "";
+        $scope.tools_info_editable = false; // Can we edit tools_info ?
+        $scope.tools_search_list = []; //A list with tools search results
     };
 
     /*
@@ -109,6 +111,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
         $scope.show_password_reset = $scope.password_reset_token ? true : false;
         $scope.show_user_profile = false;
         $scope.show_tools = false;
+        $scope.show_tools_info = false;
     };
 
     /*
@@ -120,6 +123,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
         $scope.reset_password_email_error_message = '';
         $scope.user_profile_error_message = '';
         $scope.user_profile_success_message = '';
+        $scope.tools_info_error_message = '';
+        $scope.tools_info_success_message = '';
     };
 
     /*
@@ -352,6 +357,59 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
         );
     };
 
+
+    /*
+    *  Search tools after search items changed
+    */
+    $scope.tools_search_2 = function() {
+        $scope.ajax(
+            'tools_search_2/',
+            {
+                'tools_search_name': $scope.tools_search_name,
+                'tools_search_version': $scope.tools_search_version,
+                'tools_search_edit': $scope.tools_search_edit
+            },
+            function(data) {
+                $scope.tools_search_tools_number = data['tools_search_tools_number'];
+                $scope.tools_search_list = data['tools_search_list'];
+            },
+            function(data) {
+
+            },
+            function(statusText) {
+
+            }
+        );
+    };
+
+    /*
+    * Search SPECIFIC tool. Update IP
+    */ 
+    $scope.tools_search_3 = function(item) {
+        $scope.ajax(
+            'tools_search_3/',
+            {
+                "tool_name": item.name,
+                "tool_version": item.version,
+                "tool_edit": item.edit
+            },
+            function (data) {
+                $scope.tool_info_username = data['username'];
+                $scope.tool_website = data['website'];
+                $scope.tool_description = data['description'];
+                $scope.tools_info_name = item.name;
+                $scope.tools_info_version = item.version;
+                $scope.tools_info_error_message = '';
+            },
+            function (data) {
+
+            },
+            function(statusText) {
+                $scope.tools_info_error_message = statusText;
+            }
+        );
+    };
+
     /*
     *   navbar --> Tools --> Search sidebar --> Name or Version or Name Change
     */
@@ -359,6 +417,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
 
         if ((!$scope.tools_search_name) && (!$scope.tools_search_version) && (!$scope.tools_search_edit)) {
             $scope.tools_search_warning = '';
+            return;
+        }
+
+        if (!$scope.username) {
+            $scope.tools_search_warning = 'Login to create new tools';
             return;
         }
 
@@ -389,14 +452,56 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
             return; 
         }
 
+        //Everything seems to be ok
         $scope.tools_search_warning = '';
+        $scope.tools_search_2();
     };
 
     /*
-    * Navbar -> Tools/Data --> Approapriate input --> "Create New" button --> Pressed
+    * Navbar -> Tools/Data --> Appropriate input --> "Create New" button --> Pressed
     */
     $scope.toools_search_create_new_pressed = function() {
-        alert('df');
+        $scope.show_tools_info = true;
+        $scope.tools_info_name = $scope.tools_search_name;
+        $scope.tools_info_version = $scope.tools_search_version;
+        $scope.tools_info_success_message = '';
+        $scope.tools_info_error_message = '';
+        $scope.tool_info_username = $scope.username;
+        $scope.tool_website = '';
+        $scope.tool_description = '';
+
+    };
+
+    /*
+    * Navbar --> Tools/data --> Appropriate input --> "Create New" button --> Pressed --> Filled input --> Save (button) --> Pressed
+    */
+    $scope.tool_create_save_pressed = function() {
+        $scope.ajax(
+            'tools_add/',
+            {
+                'tools_search_name': $scope.tools_search_name,
+                'tools_search_version': $scope.tools_search_version,
+                'tool_website': $scope.tool_website,
+                'tool_description': $scope.tool_description
+            },
+            function(data) {
+                $scope.tools_info_success_message = 'Tool/Data successfully saved';
+            },
+            function(data) {
+                $scope.tools_info_error_message = data['error_message'];
+            },
+            function(statusText) {
+                $scope.tools_info_error_message = statusText;
+            }
+        );
+    };
+
+    /*
+    * Navbar --> tools/data --> Appropriate Input --> List Item --> clicked
+    */
+    $scope.tools_search_show_item = function(item) {
+        $scope.show_tools_info = true;
+        $scope.tools_search_3(item);
     };
 
 }); 

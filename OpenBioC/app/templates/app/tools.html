@@ -20,6 +20,15 @@ Taken from:  https://bootstrapious.com/p/bootstrap-sidebar
         		<strong>Found: <span ng-bind="tools_search_tools_number"></span> Tools/Data</strong>
         	</div>
         </div>
+        <div class="row">
+            <div class="col">
+                <ul class="list-group" ng-repeat="x in tools_search_list">
+                    <li class="list-group-item" ng-click="tools_search_show_item(x)">
+                        <span ng-bind="x.name"></span>/<span ng-bind="x.version"></span>/<span ng-bind="x.edit"></span>
+                    </li>
+                </ul>
+            </div>
+        </div>
         <div class="row" ng-show="tools_search_tools_number===0 && (!tools_search_warning) && tools_search_name && tools_search_version">
             <div class="col-md-4 offset-md-4">
                 <button class="btn btn-success" ng-click="toools_search_create_new_pressed()">Create New</button> <!-- btn-lg -->
@@ -33,4 +42,64 @@ Taken from:  https://bootstrapious.com/p/bootstrap-sidebar
             </div>
         </div>
     </nav>
+</div>
+
+<div class="row" ng-show="tools_info_success_message">
+    <div class="col-md-9">
+        <div class="alert alert-success">
+            <span ng-bind="tools_info_success_message"></span>
+        </div>
+    </div>
+</div>
+
+
+<div class="row" ng-show="tools_info_error_message">
+    <div class="col-md-9">
+        <div class="alert alert-danger">
+            <span ng-bind="tools_info_error_message"></span>
+        </div>
+    </div>
+</div>
+
+<div class="row" ng-show="show_tools_info">
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h4><span ng-bind="tools_info_name"></span>/<span ng-bind="tools_info_version"></span></h4>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-10 col-md-offset-2">
+                            <small><span ng-bind="tool_info_username"></span></small>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <form>
+                              <div class="form-group row">
+                                <label for="tool_website" class="col-4 col-form-label">Website</label> 
+                                <div class="col-8">
+                                  <input id="tool_website" name="website" placeholder="Website with information for this tool" class="form-control here" type="text" ng-model="tool_website" ng-class="{'disabled': true}">
+                                </div>
+                              </div>
+                              <div class="form-group row">
+                                <label for="tool_description" class="col-4 col-form-label">Description</label> 
+                                <div class="col-8">
+                                  <textarea id="tool_description" name="publicinfo" cols="40" rows="4" class="form-control" ng-model="tool_description"></textarea>
+                                </div>
+                              </div>
+                              <div class="form-group row">
+                                <div class="offset-4 col-8">
+                                  <button class="btn btn-success btn-lg float-right" ng-click="tool_create_save_pressed()">Save</button>
+                                </div>
+                              </div>
+                        </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 </div>
