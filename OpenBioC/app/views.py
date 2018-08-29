@@ -514,7 +514,97 @@ def tools_search_1(request, **kwargs):
     }
 
     return success(ret)
+
+@has_data
+def tools_search_2(request, **kwargs):
+
+    Qs = []
+    tools_search_name = kwargs.get('tools_search_name', '')
+    if tools_search_name:
+        Qs.append(Q(name__icontains=tools_search_name))
+
+    tools_search_version = kwargs.get('tools_search_version', '')
+    if tools_search_version:
+        Qs.append(Q(version__icontains=tools_search_version))
+
+    tools_search_edit = kwargs.get('tools_search_edit', '')
+    if tools_search_edit:
+        Qs.append(Q(edit = int(tools_search_edit)))
+
+    results = Tool.objects.filter(*Qs)
+
+    ret = {
+        'tools_search_tools_number' : results.count(),
+        'tools_search_list': [{'name': x.name, 'version': x.version, 'edit': x.edit} for x in results]
+    }
+
+    return success(ret)
+
+@has_data
+def tools_search_3(request, **kwargs):
+
+    tool_name = kwargs.get('tool_name', '')
+    tool_version = kwargs.get('tool_version', '')
+    tool_edit = int(kwargs.get('tool_edit', -1))
+
+    tool = Tool.objects.get(name=tool_name, version=tool_version, edit=tool_edit)
+
+    ret = {
+        'website': tool.website,
+        'description': tool.description,
+        'username': tool.obc_user.user.username,
+    }
+
+    return success(ret)
+
+@has_data
+def tools_add(request, **kwargs):
+
+    if request.user.is_anonymous: # Server should always check..
+        return fail('Please login to create new tools')
     
+    tool_website = kwargs.get('tool_website', '')
+    if not tool_website:
+        return fail('Website cannot be empty')
+
+    tool_description = kwargs.get('tool_description', '')
+    if not tool_description:
+        return fail('Description cannot be empty')
+
+    tools_search_name = kwargs.get('tools_search_name', '') 
+    if not tools_search_name:
+        return fail('Invalid name')
+
+    tools_search_version = kwargs.get('tools_search_version', '')
+    if not tools_search_version:
+        return fail('Invalid version')
+
+    #Get the maximum version
+    tool_all = Tool.objects.filter(name=tools_search_name, version=tools_search_version)
+    if not tool_all.exists():
+        next_edit = 1
+    else:
+        raise Exception('NOT IMPLEMENTED!!!!')
+
+    #Create new tool
+    new_tool = Tool(
+        obc_user=OBC_user.objects.get(user=request.user), 
+        name = tools_search_name,
+        version=tools_search_version,
+        edit=next_edit,
+        website = tool_website,
+        description = tool_description,
+    )
+
+    #Save it
+    new_tool.save()
+
+    ret = {
+        'edit': next_edit
+    }
+
+    return success(ret)
+
 
 ### VIEWS END ######
 

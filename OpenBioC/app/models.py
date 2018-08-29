@@ -48,6 +48,7 @@ class Tool(models.Model):
     description = models.TextField(null=True) 
     forked_from = models.ForeignKey(to="Tool", null=True, on_delete=models.CASCADE) #Is this forked from another tool? Also Never delete tools
     changes = models.TextField(null=True) # What changes have been made from forked tool?
+    created_at = models.DateTimeField(auto_now_add=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#datefield 
 
 
 
