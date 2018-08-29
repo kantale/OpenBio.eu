@@ -86,6 +86,14 @@ def username_exists(username):
 
     return User.objects.filter(username=username).exists()
 
+def datetime_to_str(d):
+    '''
+     # RFC 2822 Internet email standard. https://docs.python.org/2/library/time.html#time.strftime   # '%Y-%m-%d, %H:%M:%S'
+    '''
+    format_time_string = '%a, %d %b %Y %H:%M:%S'
+
+    return d.strftime(format_time_string)
+
 def create_uuid_token():
     '''
     Create a uuid token for email validation 
@@ -553,6 +561,7 @@ def tools_search_3(request, **kwargs):
         'website': tool.website,
         'description': tool.description,
         'username': tool.obc_user.user.username,
+        'created_at': datetime_to_str(tool.created_at),
     }
 
     return success(ret)

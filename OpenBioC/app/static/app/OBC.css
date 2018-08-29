@@ -5,6 +5,7 @@ Part taken from: https://bootstrapious.com/p/bootstrap-sidebar
 .wrapper {
     display: flex;
     width: 100%;
+    align-items: stretch;
 }
 
 #sidebar {
@@ -13,9 +14,18 @@ Part taken from: https://bootstrapious.com/p/bootstrap-sidebar
     top: 60px;  /* https://stackoverflow.com/questions/37721260/bootstrap-sidebar-and-content-under-navbar */
     left: 0;
     height: 100vh;
-    z-index: 999;
+    z-index: 0;
     background: #f8f9fa; /* #7386D5; */
     color: #000;
     transition: all 0.3s;
 
+}
+
+#content {
+
+    width: 100%;
+    padding-top:20px;
+    padding-left: 300px;
+    min-height: 100vh;
+    transition: all 0.3s;
 }

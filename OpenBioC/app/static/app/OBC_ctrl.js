@@ -397,8 +397,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
                 $scope.tool_info_username = data['username'];
                 $scope.tool_website = data['website'];
                 $scope.tool_description = data['description'];
+                $scope.tool_info_created_at = data['created_at'];
                 $scope.tools_info_name = item.name;
                 $scope.tools_info_version = item.version;
+                $scope.tools_info_edit = item.edit;
                 $scope.tools_info_error_message = '';
             },
             function (data) {
@@ -462,6 +464,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
     */
     $scope.toools_search_create_new_pressed = function() {
         $scope.show_tools_info = true;
+        $scope.tools_info_editable = true;
         $scope.tools_info_name = $scope.tools_search_name;
         $scope.tools_info_version = $scope.tools_search_version;
         $scope.tools_info_success_message = '';
@@ -486,6 +489,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
             },
             function(data) {
                 $scope.tools_info_success_message = 'Tool/Data successfully saved';
+                $scope.tools_info_editable = false;
             },
             function(data) {
                 $scope.tools_info_error_message = data['error_message'];
@@ -501,6 +505,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
     */
     $scope.tools_search_show_item = function(item) {
         $scope.show_tools_info = true;
+        $scope.tools_info_editable = false;
         $scope.tools_search_3(item);
     };
 
