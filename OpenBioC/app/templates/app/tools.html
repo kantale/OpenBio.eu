@@ -6,8 +6,7 @@ Taken from:  https://bootstrapious.com/p/bootstrap-sidebar
     <!-- Sidebar -->
     <nav id="sidebar">
         <div class="sidebar-header">
-
-            		<span class="text-center"><h5>Search Tools and Data</h5></span>
+            <span class="text-center"><h5>Search Tools and Data</h5></span>
         </div>
         <hr>
         <div class="form-group multiple-form-group input-group">
@@ -42,10 +41,12 @@ Taken from:  https://bootstrapious.com/p/bootstrap-sidebar
             </div>
         </div>
     </nav>
-</div>
+
+        <!-- Page Content  -->
+        <div id="content">
 
 <div class="row" ng-show="tools_info_success_message">
-    <div class="col-md-9">
+    <div class="col-md-12">
         <div class="alert alert-success">
             <span ng-bind="tools_info_success_message"></span>
         </div>
@@ -54,7 +55,7 @@ Taken from:  https://bootstrapious.com/p/bootstrap-sidebar
 
 
 <div class="row" ng-show="tools_info_error_message">
-    <div class="col-md-9">
+    <div class="col-md-12">
         <div class="alert alert-danger">
             <span ng-bind="tools_info_error_message"></span>
         </div>
@@ -62,17 +63,21 @@ Taken from:  https://bootstrapious.com/p/bootstrap-sidebar
 </div>
 
 <div class="row" ng-show="show_tools_info">
-        <div class="col-md-9">
+        <div class="col-md-12">
             <div class="card">
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-12">
-                            <h4><span ng-bind="tools_info_name"></span>/<span ng-bind="tools_info_version"></span></h4>
+                            <h4><span ng-bind="tools_info_name"></span>/<span ng-bind="tools_info_version"></span><span ng-show="!tools_info_editable">/<span ng-bind="tools_info_edit"></span></span>
+                            </h4>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-10 col-md-offset-2">
-                            <small><span ng-bind="tool_info_username"></span></small>
+                            <small>
+                                <span ng-bind="tool_info_username"></span>
+                                <span ng-show="!tools_info_editable">created at <span ng-bind="tool_info_created_at"></span></span>
+                            </small>
                         </div>
                     </div>
                     <hr>
@@ -82,18 +87,20 @@ Taken from:  https://bootstrapious.com/p/bootstrap-sidebar
                               <div class="form-group row">
                                 <label for="tool_website" class="col-4 col-form-label">Website</label> 
                                 <div class="col-8">
-                                  <input id="tool_website" name="website" placeholder="Website with information for this tool" class="form-control here" type="text" ng-model="tool_website" ng-class="{'disabled': true}">
+                                  <input id="tool_website" name="website" placeholder="Website with information for this tool" class="form-control here" type="text" ng-model="tool_website" ng-disabled="!tools_info_editable"/>
                                 </div>
                               </div>
                               <div class="form-group row">
                                 <label for="tool_description" class="col-4 col-form-label">Description</label> 
                                 <div class="col-8">
-                                  <textarea id="tool_description" name="publicinfo" cols="40" rows="4" class="form-control" ng-model="tool_description"></textarea>
+                                  <textarea id="tool_description" name="publicinfo" cols="40" rows="4" class="form-control" ng-model="tool_description" ng-disabled="!tools_info_editable"></textarea>
                                 </div>
                               </div>
                               <div class="form-group row">
                                 <div class="offset-4 col-8">
-                                  <button class="btn btn-success btn-lg float-right" ng-click="tool_create_save_pressed()">Save</button>
+                                  <button class="btn btn-success btn-lg float-right" ng-click="tool_create_save_pressed()" ng-show="tools_info_editable">Save</button>
+                                  <button class="btn btn-success btn-lg float-right" ng-click="tool_info_fork_pressed()" ng-show="!tools_info_editable">Fork</button>
+
                                 </div>
                               </div>
                         </form>
@@ -103,3 +110,12 @@ Taken from:  https://bootstrapious.com/p/bootstrap-sidebar
             </div>
         </div>
 </div>
+
+        </div>
+
+
+
+</div>
+
+
+
