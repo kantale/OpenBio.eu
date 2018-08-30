@@ -20,17 +20,17 @@ Taken from:  https://bootstrapious.com/p/bootstrap-sidebar
         	</div>
         </div>
         <div class="row">
-            <div class="col">
-                <ul class="list-group" ng-repeat="x in tools_search_list">
-                    <li class="list-group-item" ng-click="tools_search_show_item(x)">
-                        <span ng-bind="x.name"></span>/<span ng-bind="x.version"></span>/<span ng-bind="x.edit"></span>
+            <div class="col" id="tools_list_group">
+                <ul class="list-group" ng-repeat="x in tools_search_list"> <!-- TODO: https://angular-ui-tree.github.io/angular-ui-tree/#/basic-example -->
+                    <li  class="list-group-item" ng-click="tools_search_show_item(x)"> <!-- class="list-group-item" -->
+                       <span ng-bind="x | tool_label"></span>
                     </li>
                 </ul>
             </div>
         </div>
-        <div class="row" ng-show="tools_search_tools_number===0 && (!tools_search_warning) && tools_search_name && tools_search_version">
+        <div class="row" ng-show="(!tools_search_warning) && tools_search_name && tools_search_version">
             <div class="col-md-4 offset-md-4">
-                <button class="btn btn-success" ng-click="toools_search_create_new_pressed()">Create New</button> <!-- btn-lg -->
+                <button class="btn btn-success" ng-click="toools_search_create_new_pressed()" ng-class="{'disabled': !username}">Create New</button> <!-- btn-lg -->
             </div>
         </div>
         <div class="row" ng-show="tools_search_warning">
@@ -76,7 +76,8 @@ Taken from:  https://bootstrapious.com/p/bootstrap-sidebar
                         <div class="col-md-10 col-md-offset-2">
                             <small>
                                 <span ng-bind="tool_info_username"></span>
-                                <span ng-show="!tools_info_editable">created at <span ng-bind="tool_info_created_at"></span></span>
+                                <span ng-show="!tools_info_editable">, created at <span ng-bind="tool_info_created_at"></span></span>
+                                <span ng-show="tools_info_forked_from">, forked from <a href ng-click="tools_search_show_item(tools_info_forked_from)"><span ng-bind="tools_info_forked_from | tool_label"></span></a></span>
                             </small>
                         </div>
                     </div>
@@ -96,11 +97,16 @@ Taken from:  https://bootstrapious.com/p/bootstrap-sidebar
                                   <textarea id="tool_description" name="publicinfo" cols="40" rows="4" class="form-control" ng-model="tool_description" ng-disabled="!tools_info_editable"></textarea>
                                 </div>
                               </div>
+                              <div class="form-group row" ng-show="tools_info_forked_from">
+                                <label for="tool_changes" class="col-4 col-form-label">Edit Summary</label> 
+                                <div class="col-8">
+                                  <input id="tool_changes" name="changes" placeholder="Briefly describe your changes" class="form-control here" type="text" ng-model="tool_changes" ng-disabled="!tools_info_editable"/>
+                                </div>
+                              </div>
                               <div class="form-group row">
                                 <div class="offset-4 col-8">
                                   <button class="btn btn-success btn-lg float-right" ng-click="tool_create_save_pressed()" ng-show="tools_info_editable">Save</button>
-                                  <button class="btn btn-success btn-lg float-right" ng-click="tool_info_fork_pressed()" ng-show="!tools_info_editable">Fork</button>
-
+                                  <button class="btn btn-success btn-lg float-right" ng-click="tool_info_fork_pressed()" ng-show="!tools_info_editable" ng-class="{'disabled': !username}">Fork</button>
                                 </div>
                               </div>
                         </form>

@@ -29,3 +29,14 @@ Part taken from: https://bootstrapious.com/p/bootstrap-sidebar
     min-height: 100vh;
     transition: all 0.3s;
 }
+
+#tools_list_group{
+    max-height: 200px;
+    overflow:scroll;
+ /*
+    max-height: 300px;
+    overflow:scroll;
+    -webkit-overflow-scrolling: touch;
+    */
+}
+
