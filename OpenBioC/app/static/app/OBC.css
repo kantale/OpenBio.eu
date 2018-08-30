@@ -31,12 +31,8 @@ Part taken from: https://bootstrapious.com/p/bootstrap-sidebar
 }
 
 #tools_list_group{
-    max-height: 200px;
-    overflow:scroll;
- /*
     max-height: 300px;
     overflow:scroll;
     -webkit-overflow-scrolling: touch;
-    */
 }
 
