@@ -14,4 +14,10 @@
 
 ### 0.0.2
 * FIX #1: The port on verification URLs is hardcoded
+* Created Tool/Data Form
+* Responsive UI
+* Tools can be created, searched and forked.
+
+
+
 
