@@ -31,6 +31,17 @@ angular.module('OBC_app').filter('ifNull', function() {
     }
 });
 
+angular.module('OBC_app').filter('tool_label', function() {
+    return function(tool) {
+        if (tool === null) {
+            return '';
+        }
+
+        return tool.name + '/' + tool.version +'/' + tool.edit;
+    }
+});
+
+
 
 app.controller("OBC_ctrl", function($scope, $http, $filter) {
     $scope.init = function() {
@@ -49,7 +60,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
         $scope.tools_edit_regexp = /^\d+$/; 
         $scope.tools_search_warning= "";
         $scope.tools_info_editable = false; // Can we edit tools_info ?
+        $scope.tools_info_forked_from = null; //From which tool is this tool forked from?
         $scope.tools_search_list = []; //A list with tools search results
+        $scope.tool_changes = ''; // Changes from forked
     };
 
     /*
@@ -397,10 +410,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
                 $scope.tool_info_username = data['username'];
                 $scope.tool_website = data['website'];
                 $scope.tool_description = data['description'];
+                $scope.tool_changes = data['changes'];
                 $scope.tool_info_created_at = data['created_at'];
+                $scope.tools_info_forked_from = data['forked_from'];
                 $scope.tools_info_name = item.name;
                 $scope.tools_info_version = item.version;
                 $scope.tools_info_edit = item.edit;
+                $scope.tools_info_success_message = '';
                 $scope.tools_info_error_message = '';
             },
             function (data) {
@@ -417,27 +433,32 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
     */
     $scope.tools_search_input_changed = function() {
 
-        if ((!$scope.tools_search_name) && (!$scope.tools_search_version) && (!$scope.tools_search_edit)) {
-            $scope.tools_search_warning = '';
-            return;
-        }
+//        if ((!$scope.tools_search_name) && (!$scope.tools_search_version) && (!$scope.tools_search_edit)) {
+//            $scope.tools_search_warning = '';
+//            return;
+//        }
 
-        if (!$scope.username) {
-            $scope.tools_search_warning = 'Login to create new tools';
-            return;
-        }
+        //if (!$scope.username) {
+        //    $scope.tools_search_warning = 'Login to create new tools';
+        //    return;
+        //}
 
         //Check tool name
-        if (!$scope.tools_name_regexp.test($scope.tools_search_name)) {
-            $scope.tools_search_warning = 'Invalid Tool name';
-            return;
+        if ($scope.tools_search_name) {
+            if (!$scope.tools_name_regexp.test($scope.tools_search_name)) {
+                $scope.tools_search_warning = 'Invalid Tool name';
+                return;
+            }
         }
 
-        //Check tool verion
-        if (!$scope.tools_version_regexp.test($scope.tools_search_version)) {
-            $scope.tools_search_warning = 'Invalid Version value';
-            return;
+        //Check tool version
+        if ($scope.tools_search_version) {
+            if (!$scope.tools_version_regexp.test($scope.tools_search_version)) {
+                $scope.tools_search_warning = 'Invalid Version value';
+                return;
+            }
         }
+
 
         //Check edit version
         //if (!$scope.tools_edit_regexp.test($scope.tools_search_edit)) {
@@ -451,6 +472,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
                 return;
             }
             $scope.tools_search_warning = 'Edit value should be empty to create new tools';
+            $scope.tools_search_2();
             return; 
         }
 
@@ -463,8 +485,15 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
     * Navbar -> Tools/Data --> Appropriate input --> "Create New" button --> Pressed
     */
     $scope.toools_search_create_new_pressed = function() {
+
+        if (!$scope.username) {
+            $scope.tools_info_error_message = 'Login to create new tools';
+            return;
+        }
+
         $scope.show_tools_info = true;
         $scope.tools_info_editable = true;
+        $scope.tools_info_forked_from = null;
         $scope.tools_info_name = $scope.tools_search_name;
         $scope.tools_info_version = $scope.tools_search_version;
         $scope.tools_info_success_message = '';
@@ -472,6 +501,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
         $scope.tool_info_username = $scope.username;
         $scope.tool_website = '';
         $scope.tool_description = '';
+        $scope.tool_changes = '';
 
     };
 
@@ -482,14 +512,19 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
         $scope.ajax(
             'tools_add/',
             {
-                'tools_search_name': $scope.tools_search_name,
-                'tools_search_version': $scope.tools_search_version,
+                'tools_search_name': $scope.tools_info_name,
+                'tools_search_version': $scope.tools_info_version,
                 'tool_website': $scope.tool_website,
-                'tool_description': $scope.tool_description
+                'tool_description': $scope.tool_description,
+                'tool_forked_from': $scope.tools_info_forked_from,
+                'tool_changes': $scope.tool_changes
             },
             function(data) {
                 $scope.tools_info_success_message = 'Tool/Data successfully saved';
                 $scope.tools_info_editable = false;
+                $scope.tool_info_created_at = data['created_at'];
+                $scope.tools_info_edit = data['edit'];
+                $scope.tools_search_input_changed(); //Update search results
             },
             function(data) {
                 $scope.tools_info_error_message = data['error_message'];
@@ -507,6 +542,27 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
         $scope.show_tools_info = true;
         $scope.tools_info_editable = false;
         $scope.tools_search_3(item);
+    };
+
+    /*
+    * Navbar --> tools/data --> Appropriated Input (search) --> List Item --> clicked --> Fork --> pressed
+    */
+    $scope.tool_info_fork_pressed = function() {
+
+        if (!$scope.username) {
+            $scope.tools_info_error_message = 'Login to create new tools';
+            return;
+        }
+
+        $scope.tools_info_editable = true;
+        $scope.tools_info_error_message = '';
+        $scope.tools_info_success_message = "Create a new Edit of this Tool/Data";
+        $scope.tools_info_forked_from = {
+            'name': $scope.tools_info_name, 
+            'version': $scope.tools_info_version, 
+            'edit' :$scope.tools_info_edit
+        }
+        $scope.tool_changes = '';
     };
 
 }); 

@@ -12,6 +12,7 @@ from django.contrib.auth import logout as django_logout # To distinguish from AJ
 from django.core.exceptions import ObjectDoesNotExist
 
 from django.db.models import Q # https://docs.djangoproject.com/en/2.1/topics/db/queries/#complex-lookups-with-q-objects
+from django.db.models import Max # https://docs.djangoproject.com/en/2.1/topics/db/aggregation/
 
 from django.utils import timezone
 
@@ -257,6 +258,16 @@ def None_if_empty_or_nonexisting(d, key):
         return None
 
     return value
+
+def tool_to_json(tool):
+    if not tool:
+        return None
+
+    return {
+        'name': tool.name,
+        'version': tool.version,
+        'edit': tool.edit,
+    }
 
 ### HELPING FUNCTIONS AND DECORATORS END #######
 
@@ -562,6 +573,8 @@ def tools_search_3(request, **kwargs):
         'description': tool.description,
         'username': tool.obc_user.user.username,
         'created_at': datetime_to_str(tool.created_at),
+        'forked_from': tool_to_json(tool.forked_from),
+        'changes': tool.changes,
     }
 
     return success(ret)
@@ -593,7 +606,19 @@ def tools_add(request, **kwargs):
     if not tool_all.exists():
         next_edit = 1
     else:
-        raise Exception('NOT IMPLEMENTED!!!!')
+        max_edit = tool_all.aggregate(Max('edit'))
+        next_edit = max_edit['edit__max'] + 1
+
+    # Get forked from and edit summary
+    tool_forked_from_info = kwargs.get('tool_forked_from', None)
+    if tool_forked_from_info:
+        tool_forked_from = Tool.objects.get(name=tool_forked_from_info['name'], version=tool_forked_from_info['version'], edit=int(tool_forked_from_info['edit']))
+        tool_changes = kwargs.get('tool_changes', '')
+        if not tool_changes:
+            return fail('Edit summary cannot be empty')
+    else:
+        tool_forked_from = None
+        tool_changes = None
 
     #Create new tool
     new_tool = Tool(
@@ -603,13 +628,16 @@ def tools_add(request, **kwargs):
         edit=next_edit,
         website = tool_website,
         description = tool_description,
+        forked_from = tool_forked_from,
+        changes = tool_changes,
     )
 
     #Save it
     new_tool.save()
 
     ret = {
-        'edit': next_edit
+        'edit': next_edit,
+        'created_at': datetime_to_str(new_tool.created_at)
     }
 
     return success(ret)
