@@ -17,7 +17,7 @@ Part taken from: https://bootstrapious.com/p/bootstrap-sidebar
     z-index: 0;
     background: #f8f9fa; /* #7386D5; */
     color: #000;
-    transition: all 0.3s;
+    /*transition: all 0.3s;*/
 
 }
 
@@ -27,7 +27,7 @@ Part taken from: https://bootstrapious.com/p/bootstrap-sidebar
     padding-top:20px;
     padding-left: 300px;
     min-height: 100vh;
-    transition: all 0.3s;
+    /*transition: all 0.3s;*/
 }
 
 #tools_list_group{
@@ -36,3 +36,26 @@ Part taken from: https://bootstrapious.com/p/bootstrap-sidebar
     -webkit-overflow-scrolling: touch;
 }
 
+#tool_installation_editor { 
+
+    height: 275px;
+    border: 1px solid #DDD;
+    border-radius: 4px;
+    border-bottom-right-radius: 0px;
+    margin-top: 5px;
+}
+
+
+#tool_validation_editor { 
+
+    height: 200px;
+    border: 1px solid #DDD;
+    border-radius: 4px;
+    border-bottom-right-radius: 0px;
+    margin-top: 5px;
+}
+
+/* https://stackoverflow.com/a/8306643/5626738 */ 
+pre {
+    white-space: pre-wrap;
+}

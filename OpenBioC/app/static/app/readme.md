@@ -21,3 +21,9 @@ wget https://code.angularjs.org/1.7.2/angular.min.js.map
 
 ```
 
+### ACE 1.4.1
+wget https://github.com/ajaxorg/ace-builds/archive/v1.4.1.tar.gz
+*IMPORTANT!* Remove will-change from .js
+
+vim ace-builds-1.4.1/src-min-noconflict/ace.js 
+

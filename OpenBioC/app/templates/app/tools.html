@@ -82,38 +82,95 @@ Taken from:  https://bootstrapious.com/p/bootstrap-sidebar
                         </div>
                     </div>
                     <hr>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <form>
-                              <div class="form-group row">
-                                <label for="tool_website" class="col-4 col-form-label">Website</label> 
-                                <div class="col-8">
-                                  <input id="tool_website" name="website" placeholder="Website with information for this tool" class="form-control here" type="text" ng-model="tool_website" ng-disabled="!tools_info_editable"/>
+                    
+                        <ul class="nav nav-pills mb-3" id="pills-tool" role="tablist">
+                          <li class="nav-item">
+                            <a class="nav-link active" id="pills-tool-1-tab" data-toggle="pill" href="#pills-tool-1" role="tab" aria-controls="pills-tool-1" aria-selected="true">General</a>
+                          </li>
+                          <li class="nav-item">
+                            <a class="nav-link" id="pills-tool-2-tab" data-toggle="pill" href="#pills-tool-2" role="tab" aria-controls="pills-tool-2" aria-selected="false">Dependencies</a>
+                          </li>
+                          <li class="nav-item">
+                            <a class="nav-link" id="pills-tool-3-tab" data-toggle="pill" href="#pills-tool-3" role="tab" aria-controls="pills-tool-3" aria-selected="false">Installation</a>
+                          </li>
+                        </ul>
+
+                    <div class="tab-content" id="pills-tabContent">
+                        <div class="tab-pane fade show active" id="pills-tool-1" role="tabpanel" aria-labelledby="pills-tool-1-tab">
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <form>
+                                      <div class="form-group row">
+                                        <label for="tool_website" class="col-4 col-form-label">Website</label> 
+                                        <div class="col-8">
+                                          <input id="tool_website" name="website" placeholder="Website with information for this tool" class="form-control here" type="text" ng-model="tool_website" ng-disabled="!tools_info_editable"/>
+                                        </div>
+                                      </div>
+                                      <div class="form-group row">
+                                        <label for="tool_description" class="col-4 col-form-label">Description</label> 
+                                        <div class="col-8">
+                                          <textarea id="tool_description" name="publicinfo" cols="40" rows="4" class="form-control" ng-model="tool_description" ng-disabled="!tools_info_editable"></textarea>
+                                        </div>
+                                      </div>
+                                      <div class="form-group row" ng-show="tools_info_forked_from">
+                                        <label for="tool_changes" class="col-4 col-form-label">Edit Summary</label> 
+                                        <div class="col-8">
+                                          <input id="tool_changes" name="changes" placeholder="Briefly describe your changes" class="form-control here" type="text" ng-model="tool_changes" ng-disabled="!tools_info_editable"/>
+                                        </div>
+                                      </div>
+                                      <div class="form-group row">
+                                        <div class="offset-4 col-8">
+                                          <button class="btn btn-success btn-lg float-right" ng-click="tool_create_save_pressed()" ng-show="tools_info_editable">Save</button>
+                                          <button class="btn btn-success btn-lg float-right" ng-click="tool_info_fork_pressed()" ng-show="!tools_info_editable" ng-class="{'disabled': !username}">Fork</button>
+                                        </div>
+                                      </div>
+                                </form>
                                 </div>
-                              </div>
-                              <div class="form-group row">
-                                <label for="tool_description" class="col-4 col-form-label">Description</label> 
-                                <div class="col-8">
-                                  <textarea id="tool_description" name="publicinfo" cols="40" rows="4" class="form-control" ng-model="tool_description" ng-disabled="!tools_info_editable"></textarea>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="pills-tool-2" role="tabpanel" aria-labelledby="pills-tool-2-tab">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    MOUGKA
                                 </div>
-                              </div>
-                              <div class="form-group row" ng-show="tools_info_forked_from">
-                                <label for="tool_changes" class="col-4 col-form-label">Edit Summary</label> 
-                                <div class="col-8">
-                                  <input id="tool_changes" name="changes" placeholder="Briefly describe your changes" class="form-control here" type="text" ng-model="tool_changes" ng-disabled="!tools_info_editable"/>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="pills-tool-3" role="tabpanel" aria-labelledby="pills-tool-3-tab">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <form>
+                                      <div class="form-group row">
+                                        <label for="tool_installation_editor" class="col-2 col-form-label">Installation Commands</label>
+                                        <div class="col-10">
+                                            <div id="tool_installation_editor"></div>
+                                        </div>
+                                      </div>
+                                      <div class="form-group row">
+                                        <label for="tool_validation_editor" class="col-2 col-form-label">Validation Commands</label>
+                                        <div class="col-10">
+                                            <div id="tool_validation_editor"></div>
+                                        </div>
+                                      </div>
+                                      <div class="form-group row">
+                                        <div class="col-12"> <!-- offset-2  -->
+                                            <button class="btn btn-success btn-block" ng-click="tool_info_validate_pressed()">Validate</button>
+                                        </div>
+                                      </div>
+                                      <div class="form-group row">
+                                        <div class="col-12">
+                                            <code>
+                                                <pre ng-bind="tool_info_validation_message"></pre>
+                                            </code>
+                                        </div>
+                                      </div>
+                                    </form>
                                 </div>
-                              </div>
-                              <div class="form-group row">
-                                <div class="offset-4 col-8">
-                                  <button class="btn btn-success btn-lg float-right" ng-click="tool_create_save_pressed()" ng-show="tools_info_editable">Save</button>
-                                  <button class="btn btn-success btn-lg float-right" ng-click="tool_info_fork_pressed()" ng-show="!tools_info_editable" ng-class="{'disabled': !username}">Fork</button>
-                                </div>
-                              </div>
-                        </form>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> 
         </div>
 </div>
 
