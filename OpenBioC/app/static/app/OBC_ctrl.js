@@ -63,6 +63,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
         $scope.tools_info_forked_from = null; //From which tool is this tool forked from?
         $scope.tools_search_list = []; //A list with tools search results
         $scope.tool_changes = ''; // Changes from forked
+        $scope.tool_installation_init = '# Insert the BASH commands that install this tool\n# The following tools are available:\n#  apt-get, wget\n\n';
+        $scope.tool_validation_init = '# Insert the BASH commands that confirm that this tool is correctly installed\n# In success, this script should return 0 exit code.\n# A non-zero exit code, means failure to validate installation.\n\nexit 1\n';
+        $scope.tool_info_validation_message = '';
     };
 
     /*
@@ -503,6 +506,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
         $scope.tool_description = '';
         $scope.tool_changes = '';
 
+        tool_installation_editor.setValue($scope.tool_installation_init, -1);
+        tool_validation_editor.setValue($scope.tool_validation_init, -1);
+
     };
 
     /*
@@ -563,6 +569,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
             'edit' :$scope.tools_info_edit
         }
         $scope.tool_changes = '';
+    };
+
+    /*
+    * Navbar --> tools/data --> Aprioprate input (search) --> Create New (tool, pressed) --> Installation (tab, pressed) --> Validate (pressed)
+    */
+    $scope.tool_info_validate_pressed = function() {
+        $scope.tool_info_validation_message = 'Not yet implemented';
     };
 
 }); 

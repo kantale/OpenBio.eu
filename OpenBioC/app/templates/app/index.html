@@ -14,8 +14,10 @@
 	<script defer src="/static/app/js/bootstrap.min.js"></script>
 	<script src="/static/app/angular.min.js"></script>
 	<link rel="stylesheet" href="/static/app/OBC.css" type="text/css"/>
+	<script src="/static/app/ace-builds-1.4.1/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
 </head>
 <body>
+
 <div ng-app="OBC_app" ng-controller="OBC_ctrl" ng-init="init()">
 {% include "app/navbar.html" %}
 {# include "app/navbar_default.html" #}
@@ -53,8 +55,10 @@
 </div>
 
 </div> <!-- angular controler -->
+
 <script src="/static/app/OBC_app.js"></script>
 <script src="/static/app/OBC_ctrl.js"></script>
+<script src="/static/app/OBC.js" type="text/javascript" charset="utf-8"></script>
 </body>
 </html>
 
