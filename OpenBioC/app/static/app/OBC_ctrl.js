@@ -43,7 +43,7 @@ angular.module('OBC_app').filter('tool_label', function() {
 
 
 
-app.controller("OBC_ctrl", function($scope, $http, $filter) {
+app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     $scope.init = function() {
         $scope.username = window.username; // Empty username means non-authenticated user.
         $scope.general_success_message = window.general_success_message;
@@ -66,7 +66,147 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
         $scope.tool_installation_init = '# Insert the BASH commands that install this tool\n# The following tools are available:\n#  apt-get, wget\n\n';
         $scope.tool_validation_init = '# Insert the BASH commands that confirm that this tool is correctly installed\n# In success, this script should return 0 exit code.\n# A non-zero exit code, means failure to validate installation.\n\nexit 1\n';
         $scope.tool_info_validation_message = '';
+
+        $scope.list = [
+              {
+                "id": 1,
+                "title": "node1",
+                "nodes": [
+                  {
+                    "id": 11,
+                    "title": "node1.1",
+                    "nodes": [
+                      {
+                        "id": 111,
+                        "title": "node1.1.1",
+                        "nodes": []
+                      }
+                    ]
+                  },
+                  {
+                    "id": 12,
+                    "title": "node1.2",
+                    "nodes": []
+                  }
+                ]
+              },
+              {
+                "id": 2,
+                "title": "node2",
+                "nodrop": true,
+                "nodes": [
+                  {
+                    "id": 21,
+                    "title": "node2.1",
+                    "nodes": []
+                  },
+                  {
+                    "id": 22,
+                    "title": "node2.2",
+                    "nodes": []
+                  }
+                ]
+              },
+              {
+                "id": 3,
+                "title": "node3",
+                "nodes": [
+                  {
+                    "id": 31,
+                    "title": "node3.1",
+                    "nodes": []
+                  }
+                ]
+              }
+        ];
+
+
+        $scope.treeOptions = {
+            nodeChildren: "children",
+            dirSelectable: true,
+            injectClasses: {
+                ul: "a1",
+                li: "a2",
+                liSelected: "a7",
+                iExpanded: "a3",
+                iCollapsed: "a4",
+                iLeaf: "a5",
+                label: "a6",
+                labelSelected: "a8"
+            }
+        };
+
+        $scope.dataForTheTree =
+            [
+                { "name" : "Joe", "age" : "21", "type": "file", "children" : [
+                    { "name" : "Smith", "age" : "42", "type": "file", "children" : [] },
+                    { "name" : "Gary", "age" : "21", "type": "file", "children" : [
+                        { "name" : "Jenifer", "age" : "23", "type": "file", "children" : [
+                            { "name" : "Dani", "age" : "32", "type": "file", "children" : [] },
+                            { "name" : "Max", "age" : "34", "type": "file", "children" : [] }
+                        ]}
+                    ]}
+                ]},
+                { "name" : "Albert", "age" : "33", "type": "file", "children" : [] },
+                { "name" : "Ron", "age" : "29", "type": "file", "children" : [] }
+            ];
+
+        $scope.treedata=[
+         {label: "Documents", type: "folder", children: [
+             {label: "a picture", type: "pic"},
+             {label: "another picture", type: "pic"},
+             {label: "a doc", type: "doc"},
+             {label: "a file", type: "file"},
+             {label: "a movie", type: "movie"}
+         ]},
+         {label: "My Computer", type: "folder", children: [
+             {label: "email", type: "email"},
+             {label: "home", type: "home"}
+         ]},
+         {label: "trash", type: "trash"}
+
+        ];
+
+         $scope.showSelected = function(sel) {
+             $scope.selectedNode = sel;
+         };
+
     };
+
+    if (false) {
+
+        $scope.jsdata = []
+
+        $scope.jsdata2 = [
+                { id : 'ajson1', parent : '#', text : 'Simple root node', state: { opened: true} },
+                { id : 'ajson2', parent : '#', text : 'Root node 2', state: { opened: true} },
+                { id : 'ajson3', parent : 'ajson2', text : 'Child 1', state: { opened: true} },
+                { id : 'ajson4', parent : 'ajson2', text : 'Child 2' , state: { opened: true}}
+            ];
+
+        angular.copy($scope.jsdata2, $scope.jsdata);
+
+        $scope.treeConfig = {
+                "core" : {
+                    "check_callback" : true,
+                    "worker" : true
+                }
+            };
+
+
+
+        $scope.ignoreModelChanges = function() {
+            //console.log($scope.jsdata);
+            return false;
+        };
+
+        $scope.asdf = function() {
+            //$scope.jsdata[0].children.push({'text': 'MPIRIMPA'});
+            //$scope.jsdata[0].children.push({'text': 'MPIRIMPA'});
+
+            $scope.jsdata2.push({'id': 'sdf', 'parent': 'ajson4', 'text': 'MPIRIMPA'});
+        };
+    }
 
     /*
     * Helper function that perform ajax calls
@@ -577,6 +717,126 @@ app.controller("OBC_ctrl", function($scope, $http, $filter) {
     $scope.tool_info_validate_pressed = function() {
         $scope.tool_info_validation_message = 'Not yet implemented';
     };
+
+
+
+    //JSTREE
+
+        var vm = $scope;
+
+        var newId = 1;
+        vm.ignoreChanges = false; //  false;
+        vm.newNode = {};
+        vm.originalData = [
+            { id : 'ajson1', parent : '#', text : 'Simple root node', state: { opened: true} },
+            { id : 'ajson2', parent : '#', text : 'Root node 2', state: { opened: true} },
+            { id : 'ajson3', parent : 'ajson2', text : 'Child 1', state: { opened: true} },
+            { id : 'ajson4', parent : 'ajson2', text : 'Child 2' , state: { opened: true}}
+        ];
+        vm.treeData = [];
+
+
+        $scope.treeData_2 = [];
+
+        angular.copy(vm.originalData, vm.treeData);
+
+        angular.copy(vm.originalData, $scope.treeData_2);
+
+        vm.treeConfig = {
+            core : {
+                multiple : false,
+                animation: true,
+                error : function(error) {
+                    $log.error('treeCtrl: error from js tree - ' + angular.toJson(error));
+                },
+                check_callback : true,
+                worker : true
+            },
+//            types : {
+//                default : {
+//                    icon : 'fa fa-flash'
+//                },
+//                star : {
+//                    icon : 'fa fa-star'
+//                },
+//                cloud : {
+//                    icon : 'fa fa-cloud'
+//                }
+//            },
+            version : 1,
+            plugins : ['dnd'],
+            dnd: {
+                is_draggable : function(node) {
+                    return true;
+                }
+            }
+            //plugins : ['types','checkbox']
+            //plugins : []
+        };
+
+
+        vm.reCreateTree = function() {
+//            vm.ignoreChanges = true;
+//            angular.copy(this.originalData,this.treeData);
+//            vm.treeConfig.version++;
+        };
+
+        vm.simulateAsyncData = function() {
+            vm.promise = $timeout(function(){
+                vm.treeData.push({ id : (newId++).toString(), parent : vm.treeData[0].id, text : 'Async Loaded' })
+            },3000);
+        };
+
+        vm.addNewNode = function() {
+            //vm.treeData.push({ id : (newId++).toString(), parent : vm.newNode.parent, text : vm.newNode.text });
+            console.log('11');
+            //vm.treeData.push({ id : (newId++).toString(), parent : vm.treeData[3], text : 'SKASE!' });
+            //vm.treeData.push({ id : 'fffff', parent : '#', text : 'SKASE!' });
+
+            vm.treeData.push({ id : 'fffff', parent : 'ajson4', text : 'SKASE!' });
+
+            console.log('22');
+        };
+
+        $scope.addNewNode_2 = function() {
+            $scope.treeData_2.push({ id : 'fffff', parent : 'ajson4', text : 'SKASE!' });
+        }
+
+
+//        vm.treeInstanceDemo = function() {
+//            var selectedNode = vm.treeInstance.jstree(true).get_selected();
+            //toaster.pop('info', 'Tree Instance Method Called',  selectedNode.length > 0 ? 'Selected node id is ' + selectedNode : 'None of the nodes are selected');
+//        };
+
+ //       vm.setNodeType = function() {
+ //           var item = _.findWhere(this.treeData, { id : this.selectedNode } );
+ //           item.type = this.newType;
+            //toaster.pop('success', 'Node Type Changed', 'Changed the type of node ' + this.selectedNode);
+ //       };
+
+        vm.readyCB = function() {
+         //   $timeout(function() {
+         //       vm.ignoreChanges = false;
+         //       //toaster.pop('success', 'JS Tree Ready', 'Js Tree issued the ready event')
+         //   });
+        };
+
+        vm.createCB  = function(e,item) {
+            //$timeout(function() {toaster.pop('success', 'Node Added', 'Added new node with the text ' + item.node.text)});
+        };
+
+        $scope.applyModelChanges = function() {
+            //alert('sdfg');
+            console.log(vm.ignoreChanges);
+            return !vm.ignoreChanges;
+        };
+    
+
+    //JSTREE END
+
+
+
+
 
 }); 
 
