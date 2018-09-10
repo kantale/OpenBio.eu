@@ -1,5 +1,7 @@
 {% comment %}
 Taken from:  https://bootstrapious.com/p/bootstrap-sidebar
+
+An idea for angular trees: https://angular-ui-tree.github.io/angular-ui-tree/#/basic-example 
 {% endcomment %}
 
 <div class="wrapper">
@@ -19,15 +21,17 @@ Taken from:  https://bootstrapious.com/p/bootstrap-sidebar
         		<strong>Found: <span ng-bind="tools_search_tools_number"></span> Tools/Data</strong>
         	</div>
         </div>
+        <!--
         <div class="row">
             <div class="col" id="tools_list_group">
-                <ul class="list-group" ng-repeat="x in tools_search_list"> <!-- TODO: https://angular-ui-tree.github.io/angular-ui-tree/#/basic-example -->
-                    <li  class="list-group-item" ng-click="tools_search_show_item(x)"> <!-- class="list-group-item" -->
+                <ul class="list-group" ng-repeat="x in tools_search_list"> 
+                    <li  class="list-group-item" ng-click="tools_search_show_item(x)">
                        <span ng-bind="x | tool_label"></span>
                     </li>
                 </ul>
             </div>
         </div>
+        -->
         <div class="row">
             <div class="col">
                 <div js-tree="tools_search_jstree_config" should-apply="tools_search_jstree_config_apply()" ng-model="tools_search_jstree_model" tree="tools_search_jstree" tree-events="select_node:tools_search_jstree_select_node"></div>

@@ -737,7 +737,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 },
                 check_callback : function(operation, node, node_parent, node_position, more) { //https://stackoverflow.com/a/23486435/5626738
 
-                    console.log('Operation:', operation);
+                    console.log('First Tree Operation:', operation);
 
                     if (operation === "move_node") {
                         return false;
@@ -797,7 +797,17 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 error : function(error) {
                     $log.error('treeCtrl: error from js tree - ' + angular.toJson(error));
                 },
-                check_callback : true,
+                //check_callback: true,
+                check_callback : function(operation, node, node_parent, node_position, more) {
+                    console.log('Second Tree Operation:', operation);
+
+                    if (operation == 'copy_node') {
+                        $scope.tools_dep_jstree_model.push({'id': 'eee', 'parent': '#', 'text': 'ddddd'});
+                        return false;
+                    }
+
+                    return true;
+                },
                 worker : true
             },
 //            types : {
@@ -815,7 +825,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             plugins : ['dnd'],
             dnd: {
                 is_draggable : function(node) {
-                    return true;
+                    return false;
                 }
             }
             //plugins : ['types','checkbox']

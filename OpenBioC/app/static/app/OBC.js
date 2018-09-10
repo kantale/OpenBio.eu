@@ -15,6 +15,7 @@ $(document).on('dnd_stop.vakata', function (e, data) {
 	var this_id = data.data.nodes[0]; // plink/1.9/3/1"
 
 	var this_id_array = this_id.split('/'); //[ "plink", "1.9", "3", "1" ]
+	console.log('Stopped:', this_id);
 
 	//Do nothing 
 
@@ -32,6 +33,9 @@ $(document).on('dnd_move.vakata', function (e, data) {
 
 
 	if (this_id_array[3] == '1') { // This is an item from tools_search tree
+
+		//console.log('Distance:', target.closest('#tools_dep_jstree_id').length);
+
 		if (target.closest('#tools_dep_jstree_id').length) {
 			data.helper.find('.jstree-icon').removeClass('jstree-er').addClass('jstree-ok');
 		}
