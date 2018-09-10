@@ -528,6 +528,15 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             function(data) {
                 $scope.tools_search_tools_number = data['tools_search_tools_number'];
                 $scope.tools_search_list = data['tools_search_list'];
+
+                //$scope.tools_search_jstree_model = [
+                //    { id : 'ajson1', parent : '#', text : 'KARAPIPERIM', state: { opened: true} }
+                //];
+
+                //$scope.tools_search_jstree_model.push({ id : 'ajson1', parent : '#', text : 'KARAPIPERIM', state: { opened: true} });
+                //angular.copy([{ id : 'ajson1', parent : '#', text : 'KARAPIPERIM', state: { opened: true} }], $scope.tools_search_jstree_model);
+                angular.copy(data['tools_search_jstree'], $scope.tools_search_jstree_model);
+
             },
             function(data) {
 
@@ -718,9 +727,107 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tool_info_validation_message = 'Not yet implemented';
     };
 
+    //JSTREE tools_search
+    $scope.tools_search_jstree_config = {
+            core : {
+                multiple : false,
+                animation: true,
+                error : function(error) {
+                    $log.error('treeCtrl: error from js tree - ' + angular.toJson(error));
+                },
+                check_callback : function(operation, node, node_parent, node_position, more) { //https://stackoverflow.com/a/23486435/5626738
 
+                    console.log('Operation:', operation);
 
-    //JSTREE
+                    if (operation === "move_node") {
+                        return false;
+                    }
+                    else if (operation === 'copy_node') {
+                        return false;
+                    }
+
+                    return true;
+                },
+                worker : true
+            },
+//            types : {
+//                default : {
+//                    icon : 'fa fa-flash'
+//                },
+//                star : {
+//                    icon : 'fa fa-star'
+//                },
+//                cloud : {
+//                    icon : 'fa fa-cloud'
+//                }
+//            },
+            version : 1,
+            plugins : ['dnd'],
+            dnd: {
+                is_draggable : function(node) {
+                    return true;
+                }
+            }
+            //plugins : ['types','checkbox']
+            //plugins : []
+        };
+
+    $scope.tools_search_jstree_config_apply = function() {
+        return true;
+    };
+
+    $scope.tools_search_jstree_model_init = [];
+
+    $scope.tools_search_jstree_model = [];
+    angular.copy($scope.tools_search_jstree_model_init, $scope.tools_search_jstree_model);
+
+    $scope.tools_search_jstree_select_node = function(e, data) {
+        //console.log(data.node.data.name);
+        $scope.tools_search_show_item(data.node.data);
+
+    };
+
+    //JSTREE END tools_search
+
+    //JSTREE TOOLS DEPENDENCIES
+    $scope.tools_dep_jstree_config = {
+            core : {
+                multiple : false,
+                animation: true,
+                error : function(error) {
+                    $log.error('treeCtrl: error from js tree - ' + angular.toJson(error));
+                },
+                check_callback : true,
+                worker : true
+            },
+//            types : {
+//                default : {
+//                    icon : 'fa fa-flash'
+//                },
+//                star : {
+//                    icon : 'fa fa-star'
+//                },
+//                cloud : {
+//                    icon : 'fa fa-cloud'
+//                }
+//            },
+            version : 1,
+            plugins : ['dnd'],
+            dnd: {
+                is_draggable : function(node) {
+                    return true;
+                }
+            }
+            //plugins : ['types','checkbox']
+            //plugins : []
+
+    };
+
+    $scope.tools_dep_jstree_model_init = []    
+    $scope.tools_dep_jstree_model = []
+    angular.copy($scope.tools_dep_jstree_model_init, $scope.tools_dep_jstree_model);
+
+    //JSTREE TOOLS DEPENDENCIES END
 
         var vm = $scope;
 

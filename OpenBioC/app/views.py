@@ -552,9 +552,32 @@ def tools_search_2(request, **kwargs):
 
     results = Tool.objects.filter(*Qs)
 
+    # { id : 'ajson1', parent : '#', text : 'KARAPIPERIM', state: { opened: true} }
+
+    # Build JS TREE structure
+
+    def tool_text(tool):
+        return '/'.join(map(str, [tool.name, tool.version, tool.edit]))
+
+
+    def tool_id(tool, id_):
+        return tool_text(tool) + '/' + str(id_) 
+
+    tools_search_jstree = []
+    for x in results:
+        to_add = {
+            'data': {'name': x.name, 'version': x.version, 'edit': x.edit},
+            'text': tool_text(x),
+            'id': tool_id(x, '1'),
+            'parent': tool_id(x.forked_from, '1') if x.forked_from else '#',
+            'state': { 'opened': True},
+        }
+        tools_search_jstree.append(to_add)
+
     ret = {
         'tools_search_tools_number' : results.count(),
-        'tools_search_list': [{'name': x.name, 'version': x.version, 'edit': x.edit} for x in results]
+        'tools_search_list': [{'name': x.name, 'version': x.version, 'edit': x.edit} for x in results],
+        'tools_search_jstree' : tools_search_jstree,
     }
 
     return success(ret)
