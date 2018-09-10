@@ -28,6 +28,11 @@ Taken from:  https://bootstrapious.com/p/bootstrap-sidebar
                 </ul>
             </div>
         </div>
+        <div class="row">
+            <div class="col">
+                <div js-tree="tools_search_jstree_config" should-apply="tools_search_jstree_config_apply()" ng-model="tools_search_jstree_model" tree="tools_search_jstree" tree-events="select_node:tools_search_jstree_select_node"></div>
+            </div>
+        </div>
         <div class="row" ng-show="(!tools_search_warning) && tools_search_name && tools_search_version">
             <div class="col-md-4 offset-md-4">
                 <button class="btn btn-success" ng-click="toools_search_create_new_pressed()" ng-class="{'disabled': !username}">Create New</button> <!-- btn-lg -->
@@ -132,7 +137,12 @@ Taken from:  https://bootstrapious.com/p/bootstrap-sidebar
                         <div class="tab-pane fade" id="pills-tool-2" role="tabpanel" aria-labelledby="pills-tool-2-tab">
                             <div class="row">
                                 <div class="col-md-12">
-                                    MOUGKA
+                                    <strong>Drop here a tool from the search tree, to add it as a dependency</strong>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div id="tools_dep_jstree_id" js-tree="tools_dep_jstree_config" should-apply="tools_search_jstree_config_apply()" ng-model="tools_dep_jstree_model" tree="tools_dep_jstree"></div>
                                 </div>
                             </div>
                         </div>

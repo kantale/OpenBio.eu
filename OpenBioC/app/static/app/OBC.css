@@ -60,4 +60,9 @@ pre {
     white-space: pre-wrap;
 }
 
-
+#tools_dep_jstree_id {
+/*    border-style: double;
+    border-width: medium;*/
+    border: 1px solid red;
+    height: 200px;  
+}
