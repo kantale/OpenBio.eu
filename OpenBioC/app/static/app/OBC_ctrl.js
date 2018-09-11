@@ -727,6 +727,34 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tool_info_validation_message = 'Not yet implemented';
     };
 
+    ////// JSTREES ////////
+
+    /*
+    * Get the dependencies of this tool
+    */
+    $scope.tool_get_dependencies = function(tool) {
+        $scope.ajax(
+            'tool_get_dependencies/',
+            {
+                'tool_name': tool.name,
+                'tool_version': tool.version,
+                'tool_edit': tool.edit
+            },
+            function(data) {
+                //Add all dependencies to the jstree
+                for (var i=0; i<data['dependencies_jstree'].length; i++) {
+                    $scope.tools_dep_jstree_model.push(data['dependencies_jstree'][i]);
+                }
+            },
+            function(data) {
+
+            },
+            function(statusText) {
+
+            }
+        );
+    };
+
     //JSTREE tools_search
     $scope.tools_search_jstree_config = {
             core : {
@@ -802,7 +830,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                     console.log('Second Tree Operation:', operation);
 
                     if (operation == 'copy_node') {
-                        $scope.tools_dep_jstree_model.push({'id': 'eee', 'parent': '#', 'text': 'ddddd'});
+                        //$scope.tools_dep_jstree_model.push({'id': 'eee', 'parent': '#', 'text': 'ddddd'});
                         return false;
                     }
 

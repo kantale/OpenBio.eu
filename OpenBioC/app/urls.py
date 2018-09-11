@@ -15,4 +15,5 @@ urlpatterns = [
 	path('tools_search_2/', views.tools_search_2), # icontains search for tools
 	path('tools_search_3/', views.tools_search_3), # Search for a specific tool
 	path('tools_add/', views.tools_add), # Add a new tool
+	path('tool_get_dependencies/', views.tool_get_dependencies), # Get a JSTREE with a dependencies of this tool
 ]

@@ -46,9 +46,11 @@ class Tool(models.Model):
 
     website = models.URLField(max_length=256, null=True)
     description = models.TextField(null=True) 
-    forked_from = models.ForeignKey(to="Tool", null=True, on_delete=models.CASCADE) #Is this forked from another tool? Also Never delete tools
+    forked_from = models.ForeignKey(to="Tool", null=True, on_delete=models.CASCADE, related_name='forked_from_related') #Is this forked from another tool? Also Never delete tools
     changes = models.TextField(null=True) # What changes have been made from forked tool?
     created_at = models.DateTimeField(auto_now_add=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#datefield 
+
+    dependencies = models.ManyToManyField(to='Tool', related_name='dependencies_related') # the dependencies of this tool
 
 
 
