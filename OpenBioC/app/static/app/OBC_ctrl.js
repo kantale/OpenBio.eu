@@ -571,6 +571,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.tools_info_success_message = '';
                 $scope.tools_info_error_message = '';
 
+                angular.copy(data['dependencies_jstree'], $scope.tools_dep_jstree_model);
+
                 tool_installation_editor.setValue(data['installation_commands'], -1);
                 tool_validation_editor.setValue(data['validation_commands'], -1);
                 tool_installation_editor.setReadOnly(true);
@@ -660,6 +662,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tool_description = '';
         $scope.tool_changes = '';
 
+        //Empty dependencies 
+        angular.copy([], $scope.tools_dep_jstree_model);
+
         tool_installation_editor.setValue($scope.tool_installation_init, -1);
         tool_installation_editor.setReadOnly(false);
         tool_validation_editor.setValue($scope.tool_validation_init, -1);
@@ -671,6 +676,16 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * Navbar --> Tools/data --> Appropriate input --> "Create New" button --> Pressed --> Filled input --> Save (button) --> Pressed
     */
     $scope.tool_create_save_pressed = function() {
+
+        //Get the dependencies
+        var tool_dependencies = [];
+        for (var i=0; i<$scope.tools_dep_jstree_model.length; i++) {
+            //Add only the roots of the tree
+            if ($scope.tools_dep_jstree_model[i].parent === '#') {
+                tool_dependencies.push($scope.tools_dep_jstree_model[i].data);
+            }
+        }
+
         $scope.ajax(
             'tools_add/',
             {
@@ -680,6 +695,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 'tool_description': $scope.tool_description,
                 'tool_forked_from': $scope.tools_info_forked_from,
                 'tool_changes': $scope.tool_changes,
+
+                'tool_dependencies': tool_dependencies,
+
                 'tool_installation_commands': tool_installation_editor.getValue(),
                 'tool_validation_commands': tool_validation_editor.getValue()
 

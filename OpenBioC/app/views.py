@@ -296,6 +296,28 @@ def tool_get_dependencies_internal(tool, include_as_root=False):
 
     return ret
 
+def tool_build_dependencies_jstree(tool_dependencies):
+    '''
+    Build JS TREE from tool_dependencies
+    ATTENTION: THIS IS NOT GENERIC!!! 
+    IT uses g['DEPENDENCY_TOOL_TREE_ID']. 
+    '''
+
+    tool_dependencies_jstree = []
+    for tool_dependency in tool_dependencies:
+        tool_dependencies_jstree.append({
+            'data': {
+                    'name': tool_dependency['dependency'].name,
+                    'version': tool_dependency['dependency'].version,
+                    'edit': tool_dependency['dependency'].edit,
+                },
+            'text': tool_text_jstree(tool_dependency['dependency']),
+            'id': tool_id_jstree(tool_dependency['dependency'], g['DEPENDENCY_TOOL_TREE_ID']),
+            'parent': tool_id_jstree(tool_dependency['dependant'], g['DEPENDENCY_TOOL_TREE_ID']) if tool_dependency['dependant'] else '#',
+        })
+
+    return tool_dependencies_jstree
+
 
 ### HELPING FUNCTIONS AND DECORATORS END #######
 
@@ -626,6 +648,13 @@ def tools_search_3(request, **kwargs):
 
     tool = Tool.objects.get(name=tool_name, version=tool_version, edit=tool_edit)
 
+    #Get the dependencies of this tool and build a JSTREE
+    tool_dependencies_jstree = []
+    for dependency in tool.dependencies.all():
+        dependency_js_tree = tool_build_dependencies_jstree(tool_get_dependencies_internal(dependency, include_as_root=True))
+        tool_dependencies_jstree.extend(dependency_js_tree)
+
+
     ret = {
         'website': tool.website,
         'description': tool.description,
@@ -633,6 +662,8 @@ def tools_search_3(request, **kwargs):
         'created_at': datetime_to_str(tool.created_at),
         'forked_from': tool_to_json(tool.forked_from),
         'changes': tool.changes,
+
+        'dependencies_jstree': tool_dependencies_jstree,
 
         'installation_commands': tool.installation_commands,
         'validation_commands': tool.validation_commands,
@@ -654,20 +685,7 @@ def tool_get_dependencies(request, **kwargs):
 
     #Get the dependencies of this tool
     tool_dependencies = tool_get_dependencies_internal(tool, include_as_root=True)
-
-    #Build JS TREE
-    tool_dependencies_jstree = []
-    for tool_dependency in tool_dependencies:
-        tool_dependencies_jstree.append({
-            'data': {
-                    'name': tool_dependency['dependency'].name,
-                    'version': tool_dependency['dependency'].version,
-                    'edit': tool_dependency['dependency'].edit,
-                },
-            'text': tool_text_jstree(tool_dependency['dependency']),
-            'id': tool_id_jstree(tool_dependency['dependency'], g['DEPENDENCY_TOOL_TREE_ID']),
-            'parent': tool_id_jstree(tool_dependency['dependant']) if tool_dependency['dependant'] else '#',
-        })
+    tool_dependencies_jstree = tool_build_dependencies_jstree(tool_dependencies)
 
     print ('LOGGG DEPENDENCIES')
     print (tool_dependencies_jstree)
@@ -721,8 +739,13 @@ def tools_add(request, **kwargs):
         tool_forked_from = None
         tool_changes = None
 
+    #Installation/Validation commands 
     tool_installation_commands = kwargs['tool_installation_commands']
     tool_validation_commands = kwargs['tool_validation_commands']
+
+    #Dependencies
+    tool_dependencies = kwargs['tool_dependencies']
+    tool_dependencies_objects = [Tool.objects.get(name=t['name'], version=t['version'], edit=int(t['edit'])) for t in tool_dependencies]
 
     #Create new tool
     new_tool = Tool(
@@ -741,6 +764,11 @@ def tools_add(request, **kwargs):
 
     #Save it
     new_tool.save()
+
+    #Add dependencies 
+    if tool_dependencies_objects:
+        new_tool.dependencies.add(*tool_dependencies_objects)
+        new_tool.save()
 
     ret = {
         'edit': next_edit,
