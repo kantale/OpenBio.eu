@@ -37,6 +37,13 @@ import simplejson
 
 __version__ = '0.0.3rc'
 
+#GLOBAL CONSTANTS
+g = {
+    'SEARCH_TOOL_TREE_ID': '1',
+    'DEPENDENCY_TOOL_TREE_ID': '2',
+    'format_time_string' : '%a, %d %b %Y %H:%M:%S', # RFC 2822 Internet email standard. https://docs.python.org/2/library/time.html#time.strftime   # '%Y-%m-%d, %H:%M:%S'
+}
+
 ### HELPING FUNCTIONS AND DECORATORS #####
 
 def fail(error_message=None):
@@ -89,11 +96,10 @@ def username_exists(username):
 
 def datetime_to_str(d):
     '''
-     # RFC 2822 Internet email standard. https://docs.python.org/2/library/time.html#time.strftime   # '%Y-%m-%d, %H:%M:%S'
+    String format
     '''
-    format_time_string = '%a, %d %b %Y %H:%M:%S'
-
-    return d.strftime(format_time_string)
+    
+    return d.strftime(g['format_time_string'])
 
 def create_uuid_token():
     '''
@@ -268,6 +274,28 @@ def tool_to_json(tool):
         'version': tool.version,
         'edit': tool.edit,
     }
+
+def tool_get_dependencies_internal(tool, include_as_root=False):
+    '''
+    Get the dependencies of this tool in a flat list
+    Recursive
+    include_this. Should we add this tool as root?
+    '''
+
+    if include_as_root:
+        ret = [{'dependant': None, 'dependency': tool}]
+    else:
+        ret = []
+
+    for dependent_tool in tool.dependencies.all():
+        ret.append({
+            'dependant': tool,
+            'dependency': dependent_tool
+        })
+        ret.extend(tool_get_dependencies_internal(dependent_tool, include_as_root=False))
+
+    return ret
+
 
 ### HELPING FUNCTIONS AND DECORATORS END #######
 
@@ -534,6 +562,20 @@ def tools_search_1(request, **kwargs):
 
     return success(ret)
 
+def tool_text_jstree(tool):
+    '''
+    The JS tree text
+    '''
+    return '/'.join(map(str, [tool.name, tool.version, tool.edit]))
+
+
+def tool_id_jstree(tool, id_):
+    '''
+    The JS tree id
+    '''
+    return tool_text_jstree(tool) + '/' + str(id_) 
+
+
 @has_data
 def tools_search_2(request, **kwargs):
 
@@ -556,20 +598,13 @@ def tools_search_2(request, **kwargs):
 
     # Build JS TREE structure
 
-    def tool_text(tool):
-        return '/'.join(map(str, [tool.name, tool.version, tool.edit]))
-
-
-    def tool_id(tool, id_):
-        return tool_text(tool) + '/' + str(id_) 
-
     tools_search_jstree = []
     for x in results:
         to_add = {
             'data': {'name': x.name, 'version': x.version, 'edit': x.edit},
-            'text': tool_text(x),
-            'id': tool_id(x, '1'),
-            'parent': tool_id(x.forked_from, '1') if x.forked_from else '#',
+            'text': tool_text_jstree(x),
+            'id': tool_id_jstree(x, g['SEARCH_TOOL_TREE_ID']),
+            'parent': tool_id_jstree(x.forked_from, g['SEARCH_TOOL_TREE_ID']) if x.forked_from else '#',
             'state': { 'opened': True},
         }
         tools_search_jstree.append(to_add)
@@ -601,6 +636,46 @@ def tools_search_3(request, **kwargs):
     }
 
     return success(ret)
+
+@has_data
+def tool_get_dependencies(request, **kwargs):
+    '''
+    Get the dependencies of this tool
+    '''
+
+    tool_name = kwargs.get('tool_name', '')
+    tool_version = kwargs.get('tool_version', '')
+    tool_edit = int(kwargs.get('tool_edit', -1))
+
+    tool = Tool.objects.get(name=tool_name, version=tool_version, edit=tool_edit)
+
+    #Get the dependencies of this tool
+    tool_dependencies = tool_get_dependencies_internal(tool, include_as_root=True)
+
+    #Build JS TREE
+    tool_dependencies_jstree = []
+    for tool_dependency in tool_dependencies:
+        tool_dependencies_jstree.append({
+            'data': {
+                    'name': tool_dependency['dependency'].name,
+                    'version': tool_dependency['dependency'].version,
+                    'edit': tool_dependency['dependency'].edit,
+                },
+            'text': tool_text_jstree(tool_dependency['dependency']),
+            'id': tool_id_jstree(tool_dependency['dependency'], g['DEPENDENCY_TOOL_TREE_ID']),
+            'parent': tool_id_jstree(tool_dependency['dependant']) if tool_dependency['dependant'] else '#',
+        })
+
+    print ('LOGGG DEPENDENCIES')
+    print (tool_dependencies_jstree)
+
+    ret = {
+        'dependencies_jstree': tool_dependencies_jstree,
+    }
+
+    return success(ret)
+
+
 
 @has_data
 def tools_add(request, **kwargs):
