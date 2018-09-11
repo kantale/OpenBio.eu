@@ -633,6 +633,9 @@ def tools_search_3(request, **kwargs):
         'created_at': datetime_to_str(tool.created_at),
         'forked_from': tool_to_json(tool.forked_from),
         'changes': tool.changes,
+
+        'installation_commands': tool.installation_commands,
+        'validation_commands': tool.validation_commands,
     }
 
     return success(ret)
@@ -718,6 +721,9 @@ def tools_add(request, **kwargs):
         tool_forked_from = None
         tool_changes = None
 
+    tool_installation_commands = kwargs['tool_installation_commands']
+    tool_validation_commands = kwargs['tool_validation_commands']
+
     #Create new tool
     new_tool = Tool(
         obc_user=OBC_user.objects.get(user=request.user), 
@@ -728,6 +734,9 @@ def tools_add(request, **kwargs):
         description = tool_description,
         forked_from = tool_forked_from,
         changes = tool_changes,
+
+        installation_commands=tool_installation_commands,
+        validation_commands=tool_validation_commands,
     )
 
     #Save it

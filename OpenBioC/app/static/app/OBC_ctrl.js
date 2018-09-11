@@ -570,6 +570,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.tools_info_edit = item.edit;
                 $scope.tools_info_success_message = '';
                 $scope.tools_info_error_message = '';
+
+                tool_installation_editor.setValue(data['installation_commands'], -1);
+                tool_validation_editor.setValue(data['validation_commands'], -1);
+                tool_installation_editor.setReadOnly(true);
+                tool_validation_editor.setReadOnly(true);
             },
             function (data) {
 
@@ -656,7 +661,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tool_changes = '';
 
         tool_installation_editor.setValue($scope.tool_installation_init, -1);
+        tool_installation_editor.setReadOnly(false);
         tool_validation_editor.setValue($scope.tool_validation_init, -1);
+        tool_validation_editor.setReadOnly(false);
 
     };
 
@@ -672,7 +679,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 'tool_website': $scope.tool_website,
                 'tool_description': $scope.tool_description,
                 'tool_forked_from': $scope.tools_info_forked_from,
-                'tool_changes': $scope.tool_changes
+                'tool_changes': $scope.tool_changes,
+                'tool_installation_commands': tool_installation_editor.getValue(),
+                'tool_validation_commands': tool_validation_editor.getValue()
+
             },
             function(data) {
                 $scope.tools_info_success_message = 'Tool/Data successfully saved';
@@ -718,6 +728,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             'edit' :$scope.tools_info_edit
         }
         $scope.tool_changes = '';
+
+        tool_installation_editor.setReadOnly(false);
+        tool_validation_editor.setReadOnly(false);
     };
 
     /*
@@ -733,6 +746,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * Get the dependencies of this tool
     */
     $scope.tool_get_dependencies = function(tool) {
+
+        if (!$scope.tools_info_editable) {
+            return;
+        }
+
         $scope.ajax(
             'tool_get_dependencies/',
             {

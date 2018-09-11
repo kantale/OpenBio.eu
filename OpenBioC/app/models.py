@@ -52,5 +52,7 @@ class Tool(models.Model):
 
     dependencies = models.ManyToManyField(to='Tool', related_name='dependencies_related') # the dependencies of this tool
 
+    installation_commands = models.TextField() # The BASH commands to install this tool
+    validation_commands = models.TextField() # The BASH commands to validate this tool
 
 
