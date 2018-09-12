@@ -633,7 +633,7 @@ def tools_search_2(request, **kwargs):
 
     ret = {
         'tools_search_tools_number' : results.count(),
-        'tools_search_list': [{'name': x.name, 'version': x.version, 'edit': x.edit} for x in results],
+        #'tools_search_list': [{'name': x.name, 'version': x.version, 'edit': x.edit} for x in results], # We do not need a list
         'tools_search_jstree' : tools_search_jstree,
     }
 
