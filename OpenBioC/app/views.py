@@ -21,7 +21,7 @@ from django.utils import timezone
 from django.middleware.csrf import get_token 
 
 #Import database objects
-from app.models import OBC_user, Tool
+from app.models import OBC_user, Tool, Variables
 
 # Email imports
 import smtplib
@@ -633,7 +633,7 @@ def tools_search_2(request, **kwargs):
 
     ret = {
         'tools_search_tools_number' : results.count(),
-        #'tools_search_list': [{'name': x.name, 'version': x.version, 'edit': x.edit} for x in results], # We do not need a list
+        #'tools_search_list': [{'name': x.name, 'version': x.version, 'edit': x.edit} for x in results], # We do not need a list, we need a tree!
         'tools_search_jstree' : tools_search_jstree,
     }
 
@@ -654,6 +654,10 @@ def tools_search_3(request, **kwargs):
         dependency_js_tree = tool_build_dependencies_jstree(tool_get_dependencies_internal(dependency, include_as_root=True))
         tool_dependencies_jstree.extend(dependency_js_tree)
 
+    #Get the variables of this tool
+    tool_variables = []
+    for variable in tool.variables.all():
+        tool_variables.append({'name': variable.name, 'value': variable.value, 'description': variable.description})
 
     ret = {
         'website': tool.website,
@@ -664,6 +668,8 @@ def tools_search_3(request, **kwargs):
         'changes': tool.changes,
 
         'dependencies_jstree': tool_dependencies_jstree,
+
+        'variables': tool_variables,
 
         'installation_commands': tool.installation_commands,
         'validation_commands': tool.validation_commands,
@@ -747,6 +753,10 @@ def tools_add(request, **kwargs):
     tool_dependencies = kwargs['tool_dependencies']
     tool_dependencies_objects = [Tool.objects.get(name=t['name'], version=t['version'], edit=int(t['edit'])) for t in tool_dependencies]
 
+    #Variables
+    tool_variables = kwargs['tool_variables']
+    tool_variables = [x for x in tool_variables if x['name'] and x['value'] and x['description']] # Filter out empty fields
+
     #Create new tool
     new_tool = Tool(
         obc_user=OBC_user.objects.get(user=request.user), 
@@ -769,6 +779,18 @@ def tools_add(request, **kwargs):
     if tool_dependencies_objects:
         new_tool.dependencies.add(*tool_dependencies_objects)
         new_tool.save()
+
+    #Add Variables
+    if tool_variables:
+        variable_objects = []
+        for variable in tool_variables:
+            variable_object = Variables(name=variable['name'], value=variable['value'], description=variable['description'], tool=new_tool)
+            variable_object.save()
+            variable_objects.append(variable_object)
+
+        new_tool.variables.add(*variable_objects)
+        new_tool.save()
+
 
     ret = {
         'edit': next_edit,
