@@ -22,6 +22,17 @@ class OBC_user(models.Model):
     website = models.URLField(max_length=256, null=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#urlfield
     public_info = models.TextField(null=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#textfield
 
+
+class Variables(models.Model):
+    '''
+    Model to hold Tool variables
+    '''
+
+    name = models.CharField(max_length=256, null=False)
+    value = models.CharField(max_length=256, null=False)
+    description = models.CharField(max_length=256, null=False)
+    tool = models.ForeignKey(to='Tool', on_delete=models.CASCADE, null=False, related_name='variables_related')
+
 class Tool(models.Model):
     '''
     This table describes Tools and Data
@@ -54,5 +65,7 @@ class Tool(models.Model):
 
     installation_commands = models.TextField() # The BASH commands to install this tool
     validation_commands = models.TextField() # The BASH commands to validate this tool
+
+    variables = models.ManyToManyField(to='Variables', related_name='tools_related') # The exposed variables of this tool
 
 

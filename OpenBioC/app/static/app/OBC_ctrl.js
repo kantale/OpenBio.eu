@@ -70,6 +70,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tool_validation_init = '# Insert the BASH commands that confirm that this tool is correctly installed\n# In success, this script should return 0 exit code.\n# A non-zero exit code, means failure to validate installation.\n\nexit 1\n';
         $scope.tool_info_validation_message = '';
 
+        $scope.tool_variables = [{name: '', value: '', description: ''}];
+
     };
 
     /*
@@ -429,6 +431,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                 angular.copy(data['dependencies_jstree'], $scope.tools_dep_jstree_model);
 
+                $scope.tool_variables = data['variables'];
+
                 tool_installation_editor.setValue(data['installation_commands'], -1);
                 tool_validation_editor.setValue(data['validation_commands'], -1);
                 tool_installation_editor.setReadOnly(true);
@@ -521,6 +525,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //Empty dependencies 
         angular.copy([], $scope.tools_dep_jstree_model);
 
+        //Empty variables
+        $scope.tool_variables = [{name: '', value: '', description: ''}];
+
         tool_installation_editor.setValue($scope.tool_installation_init, -1);
         tool_installation_editor.setReadOnly(false);
         tool_validation_editor.setValue($scope.tool_validation_init, -1);
@@ -553,6 +560,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 'tool_changes': $scope.tool_changes,
 
                 'tool_dependencies': tool_dependencies,
+
+                'tool_variables': $scope.tool_variables,
 
                 'tool_installation_commands': tool_installation_editor.getValue(),
                 'tool_validation_commands': tool_validation_editor.getValue()
@@ -603,6 +612,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         }
         $scope.tool_changes = '';
 
+        //If the parent tool does not have variables, add empty:
+        if ($scope.tool_variables.length == 0) {
+            $scope.tool_variables = [{name: '', value: '', description: ''}];
+        }
+
         tool_installation_editor.setReadOnly(false);
         tool_validation_editor.setReadOnly(false);
     };
@@ -612,6 +626,20 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */
     $scope.tool_info_validate_pressed = function() {
         $scope.tool_info_validation_message = 'Not yet implemented';
+    };
+
+    /*
+    * Navbar --> tools/data --> Aprioprate input (search) --> Create New (tool, pressed) --> Installation (tab, pressed) --> "-" (variables) (pressed)
+    */
+    $scope.tools_info_remove_variable = function(index) {
+        $scope.tool_variables.splice(index, 1);
+    };
+
+    /*
+    * Navbar --> tools/data --> Aprioprate input (search) --> Create New (tool, pressed) --> Installation (tab, pressed) --> "+" (variables) (pressed)
+    */
+    $scope.tools_info_add_variable = function() {
+      $scope.tool_variables.push({name:'', value: '', description: ''});  
     };
 
     ////// JSTREES ////////

@@ -166,6 +166,23 @@ An idea for angular trees: https://angular-ui-tree.github.io/angular-ui-tree/#/b
                                             <div id="tool_validation_editor"></div>
                                         </div>
                                       </div>
+                                      <div ng-repeat="x in tool_variables">
+                                          <div class="form-group row">
+                                            <label for="exposed_variables_list" class="col-2 col-form-label"><span ng-if="$first">Variables</span><span ng-if="!$first">&nbsp;&nbsp;</span></label>
+
+                                            <div class="input-group col-8">
+                                                <input type="text" class="form-control" placeholder="Name" ng-model="x.name" ng-disabled="!tools_info_editable">
+                                                <input type="text" class="form-control" placeholder="Value" ng-model="x.value" ng-disabled="!tools_info_editable">
+                                                <input type="text" class="form-control" placeholder="Description" ng-model="x.description" ng-disabled="!tools_info_editable">
+                                            </div>
+                                            <div class="col-2">
+                                                <button type="button" class="btn btn-outline-dark btn-sm" ng-if="(!$first) && tools_info_editable" ng-click="tools_info_remove_variable($index)">-</button>
+                                                <span ng-if="$first">&nbsp;&nbsp;</span>
+                                                <button type="button" class="btn btn-outline-dark btn-sm" ng-if="$last && x.name && x.value && x.description && tools_info_editable" ng-click="tools_info_add_variable()">+</button>
+
+                                            </div>
+                                          </div>
+                                      </div>
                                       <div class="form-group row">
                                         <div class="col-12"> <!-- offset-2  -->
                                             <button class="btn btn-success btn-block" ng-click="tool_info_validate_pressed()">Validate</button>
