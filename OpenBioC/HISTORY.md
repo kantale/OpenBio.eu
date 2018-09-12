@@ -18,6 +18,12 @@
 * Responsive UI
 * Tools can be created, searched and forked.
 
+### 0.0.3
+* Checked 3 different libraries for tree integration in angular:
+   * https://github.com/wix/angular-tree-control
+   * https://github.com/angular-ui-tree/angular-ui-tree
+   * https://github.com/ezraroi/ngJsTree 
 
+We chose the last (ngJsTree) because it seemed to be the most actively developed and uses JSTree which has extensive doscumentation, and (community)[https://stackoverflow.com/questions/tagged/jstree]. 
 
 
