@@ -406,7 +406,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
-    * Search SPECIFIC tool. Update IP
+    * Search SPECIFIC tool. Update UI
     */ 
     $scope.tools_search_3 = function(item) {
         $scope.ajax(
@@ -430,6 +430,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.tools_info_error_message = '';
 
                 angular.copy(data['dependencies_jstree'], $scope.tools_dep_jstree_model);
+                angular.copy(data['variables_js_tree'], $scope.tools_var_jstree_model);
 
                 $scope.tool_variables = data['variables'];
 
@@ -522,8 +523,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tool_description = '';
         $scope.tool_changes = '';
 
-        //Empty dependencies 
+        //Empty dependencies JSTREE 
         angular.copy([], $scope.tools_dep_jstree_model);
+
+        //Empty variables JSTREE
+        angular.copy([], $scope.tools_var_jstree_model);
 
         //Empty variables
         $scope.tool_variables = [{name: '', value: '', description: ''}];
@@ -661,16 +665,19 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 'tool_edit': tool.edit
             },
             function(data) {
+                $scope.tools_info_error_message = '';
+
                 //Add all dependencies to the jstree
                 for (var i=0; i<data['dependencies_jstree'].length; i++) {
                     $scope.tools_dep_jstree_model.push(data['dependencies_jstree'][i]);
+                    $scope.tools_var_jstree_model.push(data['variables_jstree'][i]);
                 }
             },
             function(data) {
 
             },
             function(statusText) {
-
+                $scope.tools_info_error_message = statusText;
             }
         );
     };
@@ -784,12 +791,72 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     };
 
-    $scope.tools_dep_jstree_model_init = []    
-    $scope.tools_dep_jstree_model = []
+    $scope.tools_dep_jstree_model_init = [];
+    $scope.tools_dep_jstree_model = [];
     angular.copy($scope.tools_dep_jstree_model_init, $scope.tools_dep_jstree_model);
 
     //JSTREE TOOLS DEPENDENCIES END
     
+    //JSTREE TOOL VARIABLES
+    $scope.tools_var_jstree_config = {
+            core : {
+                multiple : false,
+                animation: true,
+                error : function(error) {
+                    $log.error('treeCtrl: error from js tree - ' + angular.toJson(error));
+                },
+                //check_callback: true,
+                check_callback : function(operation, node, node_parent, node_position, more) {
+                    console.log('Third Tree Operation:', operation);
+
+                    if (operation == 'copy_node') {
+                        //$scope.tools_dep_jstree_model.push({'id': 'eee', 'parent': '#', 'text': 'ddddd'});
+                        return false;
+                    }
+                    else if (operation == 'move_node') {
+                        return false;
+                    }
+
+                    return true;
+                },
+                worker : true
+            },
+//            types : {
+//                default : {
+//                    icon : 'fa fa-flash'
+//                },
+//                star : {
+//                    icon : 'fa fa-star'
+//                },
+//                cloud : {
+//                    icon : 'fa fa-cloud'
+//                }
+//            },
+            version : 1,
+            plugins : ['dnd'],
+            dnd: {
+                is_draggable : function(node) {
+                    if (node.length!=1) {
+                        return false;
+                    }
+                    if (node[0].data.type === 'variable') {
+                        return true;
+                    }
+                    return false;
+                }
+            }
+            //plugins : ['types','checkbox']
+            //plugins : []
+
+    };
+
+    $scope.tools_dep_jstree_model_init = [
+        //{'id': 'a', 'parent': '#', 'text': 'AAAAAAA'}
+    ];
+    $scope.tools_var_jstree_model = [];
+    angular.copy($scope.tools_dep_jstree_model_init, $scope.tools_var_jstree_model);
+
+    //JSTREE TOOL VARIABLES END
 
     //JSTREE END
 
