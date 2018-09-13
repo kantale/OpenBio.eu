@@ -279,6 +279,7 @@ def tool_to_json(tool):
 def tool_text_jstree(tool):
     '''
     The JS tree text
+    The id should have 4 fields.
     '''
     return '/'.join(map(str, [tool.name, tool.version, tool.edit]))
 
@@ -299,8 +300,10 @@ def tool_variable_text_jstree(variable):
 def tool_variable_id_jstree(variable, id_):
     '''
     The JSTree variable id
+    The id should have 4 fields
     '''
-    return tool_variable_text_jstree(variable) + '/' + str(id_)
+
+    return variable.name + '/' + variable.value + '/' + variable.description + '/' + str(id_)
 
 def tool_get_dependencies_internal(tool, include_as_root=False):
     '''
@@ -696,9 +699,9 @@ def tools_search_3(request, **kwargs):
         variables_js_tree = tool_build_dependencies_jstree(tool_get_dependencies_internal(dependency, include_as_root=True), add_variables=True)
         tool_variables_jstree.extend(variables_js_tree)
 
-    print ('LOGGG DEPENDENIES + VARIABLES')
-    print(tool_variables_jstree)
-    print (simplejson.dumps(tool_variables_jstree, indent=4))
+    #print ('LOGGG DEPENDENIES + VARIABLES')
+    #print (tool_variables_jstree)
+    #print (simplejson.dumps(tool_variables_jstree, indent=4))
 
     #Get the variables of this tool
     tool_variables = []
