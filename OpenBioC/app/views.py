@@ -41,6 +41,7 @@ __version__ = '0.0.3rc'
 g = {
     'SEARCH_TOOL_TREE_ID': '1',
     'DEPENDENCY_TOOL_TREE_ID': '2',
+    'VARIABLES_TOOL_TREE_ID': '3',
     'format_time_string' : '%a, %d %b %Y %H:%M:%S', # RFC 2822 Internet email standard. https://docs.python.org/2/library/time.html#time.strftime   # '%Y-%m-%d, %H:%M:%S'
 }
 
@@ -275,11 +276,37 @@ def tool_to_json(tool):
         'edit': tool.edit,
     }
 
+def tool_text_jstree(tool):
+    '''
+    The JS tree text
+    '''
+    return '/'.join(map(str, [tool.name, tool.version, tool.edit]))
+
+
+def tool_id_jstree(tool, id_):
+    '''
+    The JS tree tool id
+    '''
+    return tool_text_jstree(tool) + '/' + str(id_) 
+
+
+def tool_variable_text_jstree(variable):
+    '''
+    The JSTree variable text
+    '''
+    return '{}:{}'.format(variable.name, variable.description)
+
+def tool_variable_id_jstree(variable, id_):
+    '''
+    The JSTree variable id
+    '''
+    return tool_variable_text_jstree(variable) + '/' + str(id_)
+
 def tool_get_dependencies_internal(tool, include_as_root=False):
     '''
     Get the dependencies of this tool in a flat list
     Recursive
-    include_this. Should we add this tool as root?
+    include_as_root: Should we add this tool as root?
     '''
 
     if include_as_root:
@@ -296,7 +323,7 @@ def tool_get_dependencies_internal(tool, include_as_root=False):
 
     return ret
 
-def tool_build_dependencies_jstree(tool_dependencies):
+def tool_build_dependencies_jstree(tool_dependencies, add_variables=False):
     '''
     Build JS TREE from tool_dependencies
     ATTENTION: THIS IS NOT GENERIC!!! 
@@ -310,11 +337,27 @@ def tool_build_dependencies_jstree(tool_dependencies):
                     'name': tool_dependency['dependency'].name,
                     'version': tool_dependency['dependency'].version,
                     'edit': tool_dependency['dependency'].edit,
+                    'type': 'tool',
                 },
             'text': tool_text_jstree(tool_dependency['dependency']),
             'id': tool_id_jstree(tool_dependency['dependency'], g['DEPENDENCY_TOOL_TREE_ID']),
             'parent': tool_id_jstree(tool_dependency['dependant'], g['DEPENDENCY_TOOL_TREE_ID']) if tool_dependency['dependant'] else '#',
         })
+
+        # Add the variables of this tool
+        if add_variables:
+            for variable in tool_dependency['dependency'].variables.all():
+                tool_dependencies_jstree.append({
+                    'data': {
+                        'type': 'variable',
+                        'name': variable.name,
+                        'value': variable.value,
+                        'description': variable.description,
+                    },
+                    'text': tool_variable_text_jstree(variable),
+                    'id': tool_variable_id_jstree(variable, g['VARIABLES_TOOL_TREE_ID']),
+                    'parent': tool_id_jstree(tool_dependency['dependency'], g['DEPENDENCY_TOOL_TREE_ID']),
+                })
 
     return tool_dependencies_jstree
 
@@ -584,22 +627,11 @@ def tools_search_1(request, **kwargs):
 
     return success(ret)
 
-def tool_text_jstree(tool):
-    '''
-    The JS tree text
-    '''
-    return '/'.join(map(str, [tool.name, tool.version, tool.edit]))
-
-
-def tool_id_jstree(tool, id_):
-    '''
-    The JS tree id
-    '''
-    return tool_text_jstree(tool) + '/' + str(id_) 
-
-
 @has_data
 def tools_search_2(request, **kwargs):
+    '''
+    This is triggered when there is a key-change on the tool-search pane 
+    '''
 
     Qs = []
     tools_search_name = kwargs.get('tools_search_name', '')
@@ -641,6 +673,9 @@ def tools_search_2(request, **kwargs):
 
 @has_data
 def tools_search_3(request, **kwargs):
+    '''
+    Triggered when a tool is clicked on the tool-search-jstree
+    '''
 
     tool_name = kwargs.get('tool_name', '')
     tool_version = kwargs.get('tool_version', '')
@@ -653,6 +688,17 @@ def tools_search_3(request, **kwargs):
     for dependency in tool.dependencies.all():
         dependency_js_tree = tool_build_dependencies_jstree(tool_get_dependencies_internal(dependency, include_as_root=True))
         tool_dependencies_jstree.extend(dependency_js_tree)
+
+    #Get the dependencies of this tool AND the variables and build a JSTREE
+    #FIXME: Duplicate code
+    tool_variables_jstree = []
+    for dependency in tool.dependencies.all():
+        variables_js_tree = tool_build_dependencies_jstree(tool_get_dependencies_internal(dependency, include_as_root=True), add_variables=True)
+        tool_variables_jstree.extend(variables_js_tree)
+
+    print ('LOGGG DEPENDENIES + VARIABLES')
+    print(tool_variables_jstree)
+    print (simplejson.dumps(tool_variables_jstree, indent=4))
 
     #Get the variables of this tool
     tool_variables = []
@@ -668,6 +714,7 @@ def tools_search_3(request, **kwargs):
         'changes': tool.changes,
 
         'dependencies_jstree': tool_dependencies_jstree,
+        'variables_js_tree': tool_variables_jstree,
 
         'variables': tool_variables,
 
@@ -693,11 +740,15 @@ def tool_get_dependencies(request, **kwargs):
     tool_dependencies = tool_get_dependencies_internal(tool, include_as_root=True)
     tool_dependencies_jstree = tool_build_dependencies_jstree(tool_dependencies)
 
+    #Get the dependencies + variables of this tool
+    tool_variables_jstree = tool_build_dependencies_jstree(tool_dependencies, add_variables=True)
+
     print ('LOGGG DEPENDENCIES')
     print (tool_dependencies_jstree)
 
     ret = {
         'dependencies_jstree': tool_dependencies_jstree,
+        'variables_jstree': tool_variables_jstree,
     }
 
     return success(ret)
