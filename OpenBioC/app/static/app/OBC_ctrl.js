@@ -667,9 +667,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             function(data) {
                 $scope.tools_info_error_message = '';
 
-                //Add all dependencies to the jstree
+                //Add all dependencies to the Dependencies jSTREE
                 for (var i=0; i<data['dependencies_jstree'].length; i++) {
                     $scope.tools_dep_jstree_model.push(data['dependencies_jstree'][i]);
+                }
+
+                //Add all dependencies to the Dependencies + Variables JSTREE
+                for (var i=0; i<data['variables_jstree'].length; i++) {
                     $scope.tools_var_jstree_model.push(data['variables_jstree'][i]);
                 }
             },
@@ -850,11 +854,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     };
 
-    $scope.tools_dep_jstree_model_init = [
+    $scope.tools_var_jstree_model_init = [
         //{'id': 'a', 'parent': '#', 'text': 'AAAAAAA'}
     ];
     $scope.tools_var_jstree_model = [];
-    angular.copy($scope.tools_dep_jstree_model_init, $scope.tools_var_jstree_model);
+    angular.copy($scope.tools_var_jstree_model_init, $scope.tools_var_jstree_model);
 
     //JSTREE TOOL VARIABLES END
 
