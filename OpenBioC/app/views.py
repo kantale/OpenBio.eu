@@ -287,8 +287,10 @@ def tool_text_jstree(tool):
 def tool_id_jstree(tool, id_):
     '''
     The JS tree tool id
+    Return a JSON string so that it can have many fields
     '''
-    return tool_text_jstree(tool) + '/' + str(id_) 
+    #return tool_text_jstree(tool) + '/' + str(id_) 
+    return simplejson.dumps([tool.name, tool.version, str(tool.edit), str(id_)])
 
 
 def tool_variable_text_jstree(variable):
@@ -301,9 +303,11 @@ def tool_variable_id_jstree(variable, id_):
     '''
     The JSTree variable id
     The id should have 4 fields
+    Returns a JSON string, so that it can have many fields.
     '''
 
-    return variable.name + '/' + variable.value + '/' + variable.description + '/' + str(id_)
+    #return variable.name + '/' + variable.value + '/' + variable.description + '/' + str(id_)
+    return simplejson.dumps([variable.name, variable.value, variable.description, str(id_)])
 
 def tool_get_dependencies_internal(tool, include_as_root=False):
     '''
@@ -725,12 +729,16 @@ def tools_search_3(request, **kwargs):
         'validation_commands': tool.validation_commands,
     }
 
+    print ('LOGGG DEPENDENCIES + VARIABLES')
+    print (simplejson.dumps(tool_variables_jstree, indent=4))
+
     return success(ret)
 
 @has_data
 def tool_get_dependencies(request, **kwargs):
     '''
     Get the dependencies of this tool
+    Called when a stop event (from dnd) happens from search JSTREE to the dependencies JSTREE
     '''
 
     tool_name = kwargs.get('tool_name', '')
@@ -747,7 +755,10 @@ def tool_get_dependencies(request, **kwargs):
     tool_variables_jstree = tool_build_dependencies_jstree(tool_dependencies, add_variables=True)
 
     print ('LOGGG DEPENDENCIES')
-    print (tool_dependencies_jstree)
+    print (simplejson.dumps(tool_dependencies_jstree, indent=4))
+
+    print ('LOGGG DEPENDENCIES + VARIABLES')
+    print (simplejson.dumps(tool_variables_jstree, indent=4))
 
     ret = {
         'dependencies_jstree': tool_dependencies_jstree,

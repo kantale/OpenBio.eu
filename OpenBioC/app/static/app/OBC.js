@@ -19,9 +19,11 @@ $(document).on('dnd_stop.vakata', function (e, data) {
 	}
 
 	var this_id = data.data.nodes[0]; // plink/1.9/3/1"
-	var this_id_array = this_id.split('/'); //[ "plink", "1.9", "3", "1" ]
+	//var this_id_array = this_id.split('/'); //[ "plink", "1.9", "3", "1" ]
+	var this_id_array = JSON.parse(this_id);
 
 	console.log('Stopped:', this_id);
+	console.log('Stopped ID:', this_id_array[3]);
 
 	if (this_id_array[3] === "1") { // We are moving an item from the tool search tree
 		if (target.closest('#tools_dep_jstree_id').length) { // We are dropping it to the dependency tool js tree div
@@ -56,12 +58,15 @@ $(document).on('dnd_stop.vakata', function (e, data) {
 //	});
 });
 
-//JSTree item moves
+/*
+* JSTree item moves. Change the class (for visualization only)
+*/
 $(document).on('dnd_move.vakata', function (e, data) {
 	var target = $(data.event.target);
 	var this_id = data.data.nodes[0]; // plink/1.9/3/1"
 
-	var this_id_array = this_id.split('/'); //[ "plink", "1.9", "3", "1" ]
+	//var this_id_array = this_id.split('/'); //[ "plink", "1.9", "3", "1" ]
+	var this_id_array = JSON.parse(this_id);
 
 
 	if (this_id_array[3] == '1') { // This is an item from tools_search tree
