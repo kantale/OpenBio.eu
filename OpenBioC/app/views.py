@@ -729,8 +729,8 @@ def tools_search_3(request, **kwargs):
         'validation_commands': tool.validation_commands,
     }
 
-    print ('LOGGG DEPENDENCIES + VARIABLES')
-    print (simplejson.dumps(tool_variables_jstree, indent=4))
+    #print ('LOGGG DEPENDENCIES + VARIABLES')
+    #print (simplejson.dumps(tool_variables_jstree, indent=4))
 
     return success(ret)
 
@@ -754,11 +754,11 @@ def tool_get_dependencies(request, **kwargs):
     #Get the dependencies + variables of this tool
     tool_variables_jstree = tool_build_dependencies_jstree(tool_dependencies, add_variables=True)
 
-    print ('LOGGG DEPENDENCIES')
-    print (simplejson.dumps(tool_dependencies_jstree, indent=4))
+    #print ('LOGGG DEPENDENCIES')
+    #print (simplejson.dumps(tool_dependencies_jstree, indent=4))
 
-    print ('LOGGG DEPENDENCIES + VARIABLES')
-    print (simplejson.dumps(tool_variables_jstree, indent=4))
+    #print ('LOGGG DEPENDENCIES + VARIABLES')
+    #print (simplejson.dumps(tool_variables_jstree, indent=4))
 
     ret = {
         'dependencies_jstree': tool_dependencies_jstree,

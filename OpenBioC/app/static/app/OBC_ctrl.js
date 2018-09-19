@@ -640,13 +640,60 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
-    * Navbar --> tools/data --> Aprioprate input (search) --> Create New (tool, pressed) --> Installation (tab, pressed) --> "+" (variables) (pressed)
+    * Navbar --> tools/data --> Appropriate input (search) --> Create New (tool, pressed) --> Installation (tab, pressed) --> "+" (variables) (pressed)
     */
     $scope.tools_info_add_variable = function() {
       $scope.tool_variables.push({name:'', value: '', description: ''});  
     };
 
     ////// JSTREES ////////
+
+    /*
+    * Remove a parent node from a jstree. Recursive
+    * This acts on the model. Not on the jstree itself 
+    * tests: 
+    * t = [{id: 1, parent:'#'}, {id: 2, parent:'#'}, {id: 3, parent:'#'}]
+    * n = {id:1, parent:'#'}
+    *
+    * t = [{id: 1, parent:'#'}, {id: 2, parent:'#'}, {id: 3, parent:2}]
+    * n = {id:3, parent:2}     n = {id:2, parent:'#'}
+    *
+    * t = [{id: 1, parent:'#'}, {id: 2, parent:1}, {id: 3, parent:1}]
+    * n =  {id:3, parent:1}    n = {id: 1, parent:'#'}
+    */ 
+    $scope.delete_parent_node_from_jstree = function(tree, node) {
+
+        //Remove all children
+        while (true) {
+            var has_children = false;
+            var this_index = -1;
+            var child_index = -1;
+            for (var i=0; i<tree.length; i++) {
+                if (tree[i].parent == node.id) {
+                    has_children = true;
+                    child_index = i;
+                }
+                if (tree[i].id == node.id) {
+                    this_index = i;
+                }
+            }
+
+            if (has_children) {
+                $scope.delete_parent_node_from_jstree(tree, tree[child_index]);
+                //a(tree, tree[child_index]); # For testing. Create a function a: a = ...
+            }
+            else {
+                //This node does not have children
+                //Delete this node
+                if (this_index == -1) {
+                    console.log('This should never happen')
+                }
+                //Delete the node
+                tree.splice(this_index, 1);
+                break;
+            }
+        }
+    };
 
     /*
     * Get the dependencies of this tool
@@ -784,7 +831,28 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 //                }
 //            },
             version : 1,
-            plugins : ['dnd'],
+            plugins : ['dnd', 'contextmenu'],
+            contextmenu: {
+                items: function(node) {
+
+                    if (node.parent != '#') {
+                        // This is not a parent node. We cannot delete them. Return an empty context menu
+                        return {};
+                    }
+
+                    var items = {
+                        deleteItem: {
+                            label: "Remove",
+                            action: function() {
+                                $scope.delete_parent_node_from_jstree($scope.tools_dep_jstree_model, node);
+                                $scope.delete_parent_node_from_jstree($scope.tools_var_jstree_model, node);
+                            }
+                        }
+                    };
+
+                    return items;
+                }
+            },
             dnd: {
                 is_draggable : function(node) {
                     return false;
@@ -866,5 +934,4 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
 
 }); 
-
 
