@@ -768,7 +768,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 //                }
 //            },
             version : 1,
-            plugins : ['dnd'],
+            plugins : ['dnd', 'types'],
+                        types : {
+                default : {
+                    icon : 'fa fa-cog'
+                }
+            },
             dnd: {
                 is_draggable : function(node) {
                     return true;
@@ -831,7 +836,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 //                }
 //            },
             version : 1,
-            plugins : ['dnd', 'contextmenu'],
+            plugins : ['dnd', 'contextmenu', 'types'],
+            types : {
+                default : {
+                    icon : 'fa fa-cog'
+                }
+            },
             contextmenu: {
                 items: function(node) {
 
@@ -893,19 +903,19 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 },
                 worker : true
             },
-//            types : {
-//                default : {
-//                    icon : 'fa fa-flash'
-//                },
-//                star : {
-//                    icon : 'fa fa-star'
-//                },
-//                cloud : {
-//                    icon : 'fa fa-cloud'
-//                }
-//            },
-            version : 1,
-            plugins : ['dnd'],
+            types : {
+                default : {
+                    icon : 'fa fa-flash'
+                },
+                tool : {
+                    icon : 'fa fa-cog'
+                },
+                variable : {
+                    icon : 'fa fa-star' // other ideas: bullseye , dot-circle , star , circle  
+                }
+            },
+            version : 1, // Remnant. DELETE IT
+            plugins : ['dnd', 'types'],
             dnd: {
                 is_draggable : function(node) {
                     if (node.length!=1) {
