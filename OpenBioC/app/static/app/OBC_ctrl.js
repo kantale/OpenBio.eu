@@ -725,6 +725,28 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             function(data) {
                 $scope.tools_info_error_message = '';
 
+                //Is this action valid?
+                //Find the parent
+                var inserted_parent_id = '';
+                for (var i=0; i<data['dependencies_jstree'].length; i++) {
+                    if (data['dependencies_jstree'][i].parent == '#') {
+                        //This is the parent
+                        inserted_parent_id = data['dependencies_jstree'][i].id;
+                        break;
+                    }
+                }
+
+                //Check if this parent is already in the tree
+                for (var i=0; i<$scope.tools_dep_jstree_model.length; i++) {
+                    if ($scope.tools_dep_jstree_model[i].id == inserted_parent_id) {
+                        $scope.tools_info_error_message = 'This tool is already in the dependency tree';
+                        return;
+                    }
+                }
+
+                //We suppose there is no error
+                $scope.tools_info_error_message = '';
+
                 //Add all dependencies to the Dependencies jSTREE
                 for (var i=0; i<data['dependencies_jstree'].length; i++) {
                     $scope.tools_dep_jstree_model.push(data['dependencies_jstree'][i]);
