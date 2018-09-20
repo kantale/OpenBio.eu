@@ -937,9 +937,6 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 worker : true
             },
             types : {
-                default : {
-                    icon : 'fa fa-flash'
-                },
                 tool : {
                     icon : 'fa fa-cog'
                 },

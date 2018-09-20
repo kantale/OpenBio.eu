@@ -66,3 +66,9 @@ pre {
     border: 1px solid red;
     height: 200px;  
 }
+
+/* https://stackoverflow.com/questions/34644442/jstree-drag-drop-icon-not-showing-while-moving 
+#vakata-dnd {
+    background: #000;
+}
+*/
