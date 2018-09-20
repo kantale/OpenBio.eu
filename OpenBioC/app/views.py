@@ -349,6 +349,7 @@ def tool_build_dependencies_jstree(tool_dependencies, add_variables=False):
             'text': tool_text_jstree(tool_dependency['dependency']),
             'id': tool_id_jstree(tool_dependency['dependency'], g['DEPENDENCY_TOOL_TREE_ID']),
             'parent': tool_id_jstree(tool_dependency['dependant'], g['DEPENDENCY_TOOL_TREE_ID']) if tool_dependency['dependant'] else '#',
+            'type': 'tool', ### TODO: FIX REDUNDANCY WITH ['data']['type']
         })
 
         # Add the variables of this tool
@@ -364,6 +365,7 @@ def tool_build_dependencies_jstree(tool_dependencies, add_variables=False):
                     'text': tool_variable_text_jstree(variable),
                     'id': tool_variable_id_jstree(variable, g['VARIABLES_TOOL_TREE_ID']),
                     'parent': tool_id_jstree(tool_dependency['dependency'], g['DEPENDENCY_TOOL_TREE_ID']),
+                    'type': 'variable', # TODO: FIX REDUNDANCY WITH ['data']['type']
                 })
 
     return tool_dependencies_jstree
