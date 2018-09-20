@@ -61,11 +61,6 @@ window.onload = function () {
 			}
 		}
 
-		//Do nothing 
-
-	//    angular.element($('#angular_div')).scope().$apply(function(){
-	//				angular.element($('#angular_div')).scope().addNewNode_2();
-	//	});
 	});
 
 	/*
@@ -83,9 +78,8 @@ window.onload = function () {
 
 		if (this_id_array[3] == '1') { // This is an item from tools_search tree
 
-			//console.log('Distance:', target.closest('#tools_dep_jstree_id').length);
-
-			if (target.closest('#tools_dep_jstree_id').length) {
+			//We allow it if it is over the div with the tree AND the the tool_installation_editor is not readonly (this is a workaround to avoid checking angular: tools_info_editable)
+			if (target.closest('#tools_dep_jstree_id').length && (!tool_installation_editor.getReadOnly())) { 
 				data.helper.find('.jstree-icon').removeClass('jstree-er').addClass('jstree-ok');
 			}
 			else {
@@ -95,7 +89,9 @@ window.onload = function () {
 
 		else if (this_id_array[3] == "3") { // This is an item from validation js tree
 
-			if (target.closest('#tool_installation_editor').length || target.closest('#tool_validation_editor').length) {
+			if (
+				(target.closest('#tool_installation_editor').length && (!tool_installation_editor.getReadOnly())) || 
+				(target.closest('#tool_validation_editor').length   && (!tool_validation_editor.getReadOnly()))       ) {
 				data.helper.find('.jstree-icon').removeClass('jstree-er').addClass('jstree-ok');
 			}
 			else {
@@ -106,5 +102,19 @@ window.onload = function () {
 
 
 	});
+
+	tool_installation_editor.container.addEventListener("drop", function (e) {
+		//This doesn't work
+    	//e.preventDefault();
+    	//return false;
+
+      	//Curiously.. this works!
+    	tool_installation_editor.undo();
+	});
+
+	tool_validation_editor.container.addEventListener("drop", function (e) { // drop
+    	tool_validation_editor.undo();
+	});
+
 
 }

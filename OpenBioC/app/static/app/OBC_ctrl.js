@@ -42,7 +42,6 @@ angular.module('OBC_app').filter('tool_label', function() {
 });
 
 
-
 app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     /*
     * ok some things that are here perhaps could be placed elsewhere.. 
