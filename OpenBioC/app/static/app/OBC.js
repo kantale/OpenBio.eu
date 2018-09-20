@@ -44,10 +44,14 @@ $(document).on('dnd_stop.vakata', function (e, data) {
 	else if (this_id_array[3] == "3") { // We are moving a variable from the dependency + variable tree
 		if (target.closest('#tool_installation_editor').length) { // Adding to installation bash editor
 			// https://stackoverflow.com/a/42797383/5626738 
-			tool_installation_editor.session.insert(tool_installation_editor.getCursorPosition(), '$' + this_id_array[0]);
+			if (!tool_installation_editor.getReadOnly()) {
+				tool_installation_editor.session.insert(tool_installation_editor.getCursorPosition(), '$' + this_id_array[0]);
+			}
 		}
 		else if (target.closest('#tool_validation_editor').length) { // Adding to validation bash editor
-			tool_validation_editor.session.insert(tool_validation_editor.getCursorPosition(), '$' + this_id_array[0]);
+			if (!tool_validation_editor.getReadOnly()) {
+				tool_validation_editor.session.insert(tool_validation_editor.getCursorPosition(), '$' + this_id_array[0]);
+			}
 		}
 	}
 
