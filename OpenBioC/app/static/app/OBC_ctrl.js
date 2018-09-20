@@ -71,6 +71,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tool_info_validation_message = '';
 
         $scope.tool_variables = [{name: '', value: '', description: ''}];
+        $scope.tools_var_jstree_id_show = true;
 
     };
 
@@ -438,6 +439,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 tool_validation_editor.setValue(data['validation_commands'], -1);
                 tool_installation_editor.setReadOnly(true);
                 tool_validation_editor.setReadOnly(true);
+                $scope.tools_var_jstree_id_show = true; // Show variable/dependency tree
             },
             function (data) {
 
@@ -537,6 +539,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         tool_validation_editor.setValue($scope.tool_validation_init, -1);
         tool_validation_editor.setReadOnly(false);
 
+        $scope.tools_var_jstree_id_show = true; // Show variable/dependency tree
+
     };
 
     /*
@@ -623,6 +627,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         tool_installation_editor.setReadOnly(false);
         tool_validation_editor.setReadOnly(false);
+        $scope.tools_var_jstree_id_show = true; // Show variable/dependency tree
     };
 
     /*
@@ -646,6 +651,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
       $scope.tool_variables.push({name:'', value: '', description: ''});  
     };
 
+    /*
+    * Navbar --> tools/data --> Appropriate input (search) --> Create New (tool, pressed) --> Installation (tab, pressed) --> Show variables href link (clicked)
+    */
+    $scope.tools_var_jstree_id_show_clicked = function() {
+        $scope.tools_var_jstree_id_show = !$scope.tools_var_jstree_id_show;
+    };
     ////// JSTREES ////////
 
     /*

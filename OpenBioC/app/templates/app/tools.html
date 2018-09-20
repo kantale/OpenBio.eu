@@ -157,8 +157,8 @@ An idea for angular trees: https://angular-ui-tree.github.io/angular-ui-tree/#/b
                                       <div class="form-group row">
                                         <label for="no12" class="col-2 col-form-label">&nbsp;&nbsp;</label>
                                         <div class="col-10">
-                                            <strong><a href >Show variables from dependent tools</a></strong>
-                                            <div id="tools_var_jstree_id" js-tree="tools_var_jstree_config" should-apply="tools_search_jstree_config_apply()" ng-model="tools_var_jstree_model" tree="tools_var_jstree"></div>
+                                            <strong><a href ng-click="tools_var_jstree_id_show_clicked()"><span ng-show="tools_var_jstree_id_show">Hide</span><span ng-show="!tools_var_jstree_id_show">Show</span> variables from dependent tools</a></strong>
+                                            <div id="tools_var_jstree_id" js-tree="tools_var_jstree_config" should-apply="tools_search_jstree_config_apply()" ng-model="tools_var_jstree_model" tree="tools_var_jstree" ng-show="tools_var_jstree_id_show"></div>
                                         </div>
                                       </div>
                                       <div class="form-group row">
