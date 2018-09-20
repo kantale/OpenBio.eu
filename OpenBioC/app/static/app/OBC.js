@@ -103,6 +103,7 @@ window.onload = function () {
 
 	});
 
+	//Disable drop event. So that users cannot drop tool nodes in the installation/validation editors
 	tool_installation_editor.container.addEventListener("drop", function (e) {
 		//This doesn't work
     	//e.preventDefault();
