@@ -43,6 +43,14 @@
 	<!-- This is version 1.7.2 -->
 	<script src="/static/app/angular.min.js"></script>
 	
+	<!-- For Select-->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/3.4.5/select2.css">    
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.8.5/css/selectize.default.css">
+	<script src='/static/app/bower-angular-sanitize-1.7.2/angular-sanitize.min.js'></script>
+
+	<link rel="stylesheet" href="/static/app/ui-select-0.19.8/dist/select.min.css" type="text/css"/>
+  	<script src='/static/app/ui-select-0.19.8/dist/select.min.js'></script>
+
 
 	<!--
 	<script src="/static/app/angular.1.3.2/angular.min.js"></script>
@@ -132,6 +140,34 @@
 <div class="container" ng-show="show_tools">
 {% include "app/tools.html" %}
 </div>
+
+{% comment %}
+<!-- https://github.com/angular-ui/ui-select/wiki/ui-select-match -->
+<div class="container">
+	<div class="row">
+		<div class="col-md-12">
+			aaa
+			<ui-select ng-model="saa" theme="select2" close-on-select="true" style="width: 200px;">
+			    <ui-select-match>{{saa}}</ui-select-match>
+			    <ui-select-choices repeat="item in saa_items"> <!--  track by item.id -->
+			        <span ng-bind="item"></span>
+			    </ui-select-choices>	
+			</ui-select>
+			bbb
+{% endcomment %}
+</div>
+</div>
+</div>
+
+{% comment %}
+LOGO FOOTER
+<footer class="footer">
+      <div class="container">
+        <!-- <span class="text-muted">Place sticky footer content here.</span> -->
+        <img src="/static/app/images/logo23.png" class="rounded float-left" alt="...">
+      </div>
+</footer>
+{% endcomment %}
 
 </div> <!-- angular controler -->
 

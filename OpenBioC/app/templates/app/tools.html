@@ -8,46 +8,78 @@ An idea for angular trees: https://angular-ui-tree.github.io/angular-ui-tree/#/b
     <!-- Sidebar -->
     <nav id="sidebar">
         <div class="sidebar-header">
-            <span class="text-center"><h5>Search Tools and Data</h5></span>
+            
+            <!--
+            <span class="text-center"><h5>Search </h5>
+            -->
+
+                {% verbatim %}
+
+              <div class="form-group row">
+                <label for="tsatsara" class="col-2 col-form-label"><strong>Search</strong></label> 
+                <div class="col-10">
+                    <ui-select id="tsatsara" title="kkk" ng-model="selected.value" theme="selectize" close-on-select="true" style="width: 200px;" search-enabled="false">
+                        <ui-select-match>
+                            <span ng-bind="$select.selected.name"></span>
+                        </ui-select-match>
+                        <ui-select-choices repeat="item in itemArray">
+                            <span ng-bind="item.name"></span>
+                        </ui-select-choices>
+                    </ui-select>
+
+                </div>
+              </div>
+
+
+            {% endverbatim %}
+            <!--
+            </span>
+            -->
+
         </div>
-        <hr>
-        <div class="form-group multiple-form-group input-group">
-        	<input type="text" class="form-control" placeholder="Name" ng-model="tools_search_name" ng-change="tools_search_input_changed()"><h2>/</h2>
-        	<input type="text" class="form-control" placeholder="Version" ng-model="tools_search_version" ng-change="tools_search_input_changed()"><h2>/</h2>
-        	<input type="text" class="form-control" placeholder="Edit" ng-model="tools_search_edit" ng-change="tools_search_input_changed()">
-        </div>
-        <div class="row">
-        	<div class="col">
-        		<strong>Found: <span ng-bind="tools_search_tools_number"></span> Tools/Data</strong>
-        	</div>
-        </div>
-        <!--
-        <div class="row">
-            <div class="col" id="tools_list_group">
-                <ul class="list-group" ng-repeat="x in tools_search_list"> 
-                    <li  class="list-group-item" ng-click="tools_search_show_item(x)">
-                       <span ng-bind="x | tool_label"></span>
-                    </li>
-                </ul>
+        <hr> 
+        <div ng-show="selected.value.name == 'Tools and Data'"> <!-- SEARCH INPUT STARTS HERE -->
+            <div class="form-group multiple-form-group input-group">
+            	<input type="text" class="form-control" placeholder="Name" ng-model="tools_search_name" ng-change="tools_search_input_changed()"><h2>/</h2>
+            	<input type="text" class="form-control" placeholder="Version" ng-model="tools_search_version" ng-change="tools_search_input_changed()"><h2>/</h2>
+            	<input type="text" class="form-control" placeholder="Edit" ng-model="tools_search_edit" ng-change="tools_search_input_changed()">
             </div>
-        </div>
-        -->
-        <div class="row">
-            <div class="col">
-                <div js-tree="tools_search_jstree_config" should-apply="tools_search_jstree_config_apply()" ng-model="tools_search_jstree_model" tree="tools_search_jstree" tree-events="select_node:tools_search_jstree_select_node"></div>
+            <div class="row">
+            	<div class="col">
+            		<strong>Found: <span ng-bind="tools_search_tools_number"></span> Tools/Data</strong>
+            	</div>
             </div>
-        </div>
-        <div class="row" ng-show="(!tools_search_warning) && tools_search_name && tools_search_version && tools_search_tools_number===0">
-            <div class="col-md-4 offset-md-4">
-                <button class="btn btn-success" ng-click="toools_search_create_new_pressed()" ng-class="{'disabled': !username}">Create New</button> <!-- btn-lg -->
-            </div>
-        </div>
-        <div class="row" ng-show="tools_search_warning">
-            <div class="col">
-                <div class="alert alert-warning">
-                    <span ng-bind="tools_search_warning"></span>
+            <!--
+            <div class="row">
+                <div class="col" id="tools_list_group">
+                    <ul class="list-group" ng-repeat="x in tools_search_list"> 
+                        <li  class="list-group-item" ng-click="tools_search_show_item(x)">
+                           <span ng-bind="x | tool_label"></span>
+                        </li>
+                    </ul>
                 </div>
             </div>
+            -->
+            <div class="row">
+                <div class="col">
+                    <div js-tree="tools_search_jstree_config" should-apply="tools_search_jstree_config_apply()" ng-model="tools_search_jstree_model" tree="tools_search_jstree" tree-events="select_node:tools_search_jstree_select_node"></div>
+                </div>
+            </div>
+            <div class="row" ng-show="(!tools_search_warning) && tools_search_name && tools_search_version"> <!-- "Do not add this: && tools_search_tools_number===0" -->
+                <div class="col-md-4 offset-md-4">
+                    <button class="btn btn-success" ng-click="toools_search_create_new_pressed()" ng-class="{'disabled': !username}">Create New</button> <!-- btn-lg -->
+                </div>
+            </div>
+            <div class="row" ng-show="tools_search_warning">
+                <div class="col">
+                    <div class="alert alert-warning">
+                        <span ng-bind="tools_search_warning"></span>
+                    </div>
+                </div>
+            </div>
+        </div> <!-- SEARCH INPUT ENDS HERE -->
+        <div ng-show="selected.value.name == 'Workflows'"> <!-- SEARCH INPUT STARTS HERE -->
+            mpirimpa
         </div>
     </nav>
 

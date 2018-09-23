@@ -72,7 +72,16 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tool_variables = [{name: '', value: '', description: ''}];
         $scope.tools_var_jstree_id_show = true;
 
+
+
     };
+
+      $scope.itemArray = [
+        {id: 1, name: 'Tools and Data'},
+        {id: 2, name: 'Workflows'}
+    ];
+
+    $scope.selected = { value: $scope.itemArray[0] };
 
     /*
     * Helper function that perform ajax calls
@@ -134,6 +143,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.show_user_profile = false;
         $scope.show_tools = false;
         $scope.show_tools_info = false;
+
+        $scope.show_workflows = false;
     };
 
     /*
@@ -350,6 +361,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             }
         );
     };
+
+    /// TOOLS 
 
     /*
     * Navbar --> Tools/Data --> pressed
@@ -971,6 +984,16 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     //JSTREE END
 
+    // WORKFLOWS 
+    /*
+    * Navbar --> Tools/Data --> pressed
+    */
+    $scope.navbar_workflows_pressed = function() {
+        $scope.inner_hide_all_navbar();
+        $scope.show_workflows = true;
+    };
+
+    // WORKFLOWS END 
 
 }); 
 

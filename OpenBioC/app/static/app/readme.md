@@ -28,6 +28,12 @@ wget https://code.angularjs.org/1.7.2/angular.min.js.map
 Not minified version:
 wget https://ajax.googleapis.com/ajax/libs/angularjs/1.7.2/angular.js
 
+### Angular Sanitize 1.7.2
+wget https://github.com/angular/bower-angular-sanitize/archive/v1.7.2.tar.gz
+
+### Angular UI select
+wget https://github.com/angular-ui/ui-select/archive/v0.19.8.tar.gz
+
 ### ACE 1.4.1
 wget https://github.com/ajaxorg/ace-builds/archive/v1.4.1.tar.gz
 *IMPORTANT!* Remove will-change from .js

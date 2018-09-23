@@ -67,6 +67,18 @@ pre {
     height: 200px;  
 }
 
+/* https://getbootstrap.com/docs/4.1/examples/sticky-footer/ */
+/*
+.footer {
+  position: relative;
+  bottom: 0;
+  width: 100%;
+  height: 216px; /* Set the fixed height of the footer here END COMMENT HERE
+  line-height: 60px; /* Vertically center the text there  END COMMENT HERE
+  background-color: #f5f5f5;
+}
+*/
+
 /* https://stackoverflow.com/questions/34644442/jstree-drag-drop-icon-not-showing-while-moving 
 #vakata-dnd {
     background: #000;
