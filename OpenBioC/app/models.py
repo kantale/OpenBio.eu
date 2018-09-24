@@ -68,4 +68,27 @@ class Tool(models.Model):
 
     variables = models.ManyToManyField(to='Variables', related_name='tools_related') # The exposed variables of this tool
 
+class Workflow(models.Model):
+    '''
+    Describe a single Workflow
+    '''
+
+    class Meta:
+        '''
+        https://docs.djangoproject.com/en/2.1/ref/models/options/#unique-together
+        '''
+        unique_together = (('name', 'edit'),)
+
+
+    name = models.CharField(max_length=256)
+    edit = models.IntegerField()
+
+    obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
+    forked_from = models.ForeignKey(to="Workflow", null=True, on_delete=models.CASCADE, related_name='forked_from_related') #Is this forked from another tool?
+    changes = models.TextField(null=True) # What changes have been made from forked tool?
+
+    created_at = models.DateTimeField(auto_now_add=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#datefield 
+
+
+
 

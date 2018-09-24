@@ -62,5 +62,9 @@ wget -O "fontawesome/font-awesome-4.7.0.zip" https://fontawesome.com/v4.7.0/asse
 cd fontawesome
 unzip font-awesome-4.7.0.zip
 
+### D3 V4
+wget https://d3js.org/d3.v4.min.js
 
+### WebCola v. 3.3.8
+wget https://github.com/tgdwyer/WebCola/archive/v3.3.8.tar.gz
 

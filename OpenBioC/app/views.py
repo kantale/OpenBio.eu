@@ -21,7 +21,7 @@ from django.utils import timezone
 from django.middleware.csrf import get_token 
 
 #Import database objects
-from app.models import OBC_user, Tool, Variables
+from app.models import OBC_user, Tool, Workflow, Variables
 
 # Email imports
 import smtplib
@@ -631,7 +631,8 @@ def tools_search_1(request, **kwargs):
     queries = []
 
     ret = {
-        'tools_search_tools_number': Tool.objects.count()
+        'tools_search_tools_number': Tool.objects.count(),
+        'workflows_search_tools_number': Workflow.objects.count(),
     }
 
     return success(ret)
@@ -676,6 +677,45 @@ def tools_search_2(request, **kwargs):
         'tools_search_tools_number' : results.count(),
         #'tools_search_list': [{'name': x.name, 'version': x.version, 'edit': x.edit} for x in results], # We do not need a list, we need a tree!
         'tools_search_jstree' : tools_search_jstree,
+    }
+
+    return success(ret)
+
+@has_data
+def workflows_search_2(request, **kwargs):
+    '''
+    This is triggered when there is a key-change on the workflows-search pane 
+    '''
+
+    Qs = []
+    workflows_search_name = kwargs.get('workflows_search_name', '')
+    if workflows_search_name:
+        Qs.append(Q(name__icontains=workflows_search_name))
+
+    workflows_search_edit = kwargs.get('workflows_search_edit', '')
+    if workflows_search_edit:
+        Qs.append(Q(edit = int(workflows_search_edit)))
+
+    results = Workflow.objects.filter(*Qs)
+
+    # Build JS TREE structure
+
+    '''
+    tools_search_jstree = []
+    for x in results:
+        to_add = {
+            'data': {'name': x.name, 'version': x.version, 'edit': x.edit},
+            'text': tool_text_jstree(x),
+            'id': tool_id_jstree(x, g['SEARCH_TOOL_TREE_ID']),
+            'parent': tool_id_jstree(x.forked_from, g['SEARCH_TOOL_TREE_ID']) if x.forked_from else '#',
+            'state': { 'opened': True},
+        }
+        tools_search_jstree.append(to_add)
+    '''
+
+    ret = {
+        'workflows_search_tools_number' : results.count(),
+        #'tools_search_jstree' : tools_search_jstree,
     }
 
     return success(ret)
