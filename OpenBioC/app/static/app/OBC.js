@@ -117,5 +117,21 @@ window.onload = function () {
     	tool_validation_editor.undo();
 	});
 
+	//COLA SETUP
+	var height = 500;
+	var width = 960;
+	var svg = d3.select("#d3wf").append("svg")
+	        //.attr("width", width)
+	        .attr("width", '100%')
+	        .attr("height", height)
+	        .style("border-style", "solid")
+	        .style("border-width", "1px");
 
-}
+
+	var ark_cola = cola.d3adaptor(d3)
+	        .linkDistance(100)
+	        .avoidOverlaps(true)
+	        .handleDisconnected(false)
+			.size([width, height]);
+
+};

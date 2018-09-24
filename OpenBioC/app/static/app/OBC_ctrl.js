@@ -62,6 +62,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tools_version_regexp = /^[\w\.]+$/ ;
         $scope.tools_edit_regexp = /^\d+$/; 
         $scope.tools_search_warning= "";
+        $scope.workflows_search_warning = "";
         $scope.tools_info_editable = false; // Can we edit tools_info ?
         $scope.tools_info_forked_from = null; //From which tool is this tool forked from?
         $scope.tool_changes = ''; // Changes from forked
@@ -76,7 +77,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     };
 
-      $scope.itemArray = [
+    //TODO. BETTER NAME?
+    $scope.itemArray = [
         {id: 1, name: 'Tools and Data'},
         {id: 2, name: 'Workflows'}
     ];
@@ -143,6 +145,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.show_user_profile = false;
         $scope.show_tools = false;
         $scope.show_tools_info = false;
+        $scope.show_workflows_info = false;
 
         $scope.show_workflows = false;
     };
@@ -157,6 +160,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.user_profile_error_message = '';
         $scope.user_profile_success_message = '';
         $scope.tools_info_error_message = '';
+        $scope.workflows_info_error_message = '';
         $scope.tools_info_success_message = '';
     };
 
@@ -382,6 +386,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             {},
             function(data) {
                 $scope.tools_search_tools_number = data['tools_search_tools_number'];
+                $scope.workflows_search_tools_number = data['workflows_search_tools_number']; // TODO CHANGE NAMES
             },
             function(data) {
 
@@ -417,6 +422,31 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             }
         );
     };
+
+    /*
+    *  Search workflows after search items changed
+    */
+    $scope.workflows_search_2 = function() {
+        $scope.ajax(
+            'workflows_search_2/',
+            {
+                'workflows_search_name': $scope.workflows_search_name,
+                'workflows_search_edit': $scope.workflows_search_edit
+            },
+            function(data) {
+                $scope.workflows_search_tools_number = data['workflows_search_tools_number'];
+                //angular.copy(data['tools_search_jstree'], $scope.tools_search_jstree_model);  // UNCOMMENT ME !!!!!
+
+            },
+            function(data) {
+
+            },
+            function(statusText) {
+
+            }
+        );
+    };
+
 
     /*
     * Search SPECIFIC tool. Update UI
@@ -500,6 +530,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //    return;
         //};
 
+        //Check edit version
         if ($scope.tools_search_edit) {
             if (!$scope.tools_edit_regexp.test($scope.tools_search_edit)) {
                 $scope.tools_search_warning = 'Invalid Edit value';
@@ -516,6 +547,37 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
+    *   navbar --> Tools --> Search sidebar --> Combobox Workflows --> Name or Version or Name Change
+    */
+    $scope.workflows_search_input_changed = function() {
+        //Check workflow name
+        if ($scope.workflows_search_name) {
+            if (!$scope.tools_name_regexp.test($scope.workflows_search_name)) {
+                $scope.workflows_search_warning = 'Invalid Workflow name';
+                return;
+            }
+        }
+
+        //Check edit value
+        if ($scope.workflows_search_edit) {
+            if (!$scope.tools_edit_regexp.test($scope.workflows_search_edit)) {
+                $scope.workflows_search_warning = 'Invalid Edit value';
+                return;
+            }
+            $scope.workflows_search_warning = 'Edit value should be empty to create new tools';
+            $scope.workflows_search_2(); // UNCOMMENT ME!!!!!!!!
+            return; 
+        }
+
+
+        //Everything seems to be ok
+        $scope.workflows_search_warning = '';
+        $scope.workflows_search_2();
+
+
+    };
+
+    /*
     * Navbar -> Tools/Data --> Appropriate input --> "Create New" button --> Pressed
     */
     $scope.toools_search_create_new_pressed = function() {
@@ -526,6 +588,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         }
 
         $scope.show_tools_info = true;
+        $scope.show_workflows_info = false; // TODO. THIS SHOULDN'T BE HERE
+
         $scope.tools_info_editable = true;
         $scope.tools_info_forked_from = null;
         $scope.tools_info_name = $scope.tools_search_name;
@@ -552,6 +616,25 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         tool_validation_editor.setReadOnly(false);
 
         $scope.tools_var_jstree_id_show = true; // Show variable/dependency tree
+
+    };
+
+    /*
+    * Navbar -> Tools/Data --> Search ComboBox Workflows --> Appropriate input --> "Create New" button --> Pressed
+    */
+    $scope.workflows_search_create_new_pressed = function() {
+        if (!$scope.username) {
+            $scope.workflows_info_error_message = 'Login to create new Workflows';
+            return;
+        }
+
+        $scope.show_tools_info = false;
+        $scope.show_workflows_info = true;
+        $scope.workflows_info_name = $scope.workflows_search_name;
+        $scope.workflow_info_username = $scope.username;
+
+        $scope.workflows_info_error_message = '';
+
 
     };
 
@@ -608,6 +691,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */
     $scope.tools_search_show_item = function(item) {
         $scope.show_tools_info = true;
+        $scope.show_workflows_info = false;
         $scope.tools_info_editable = false;
         $scope.tools_search_3(item);
     };
