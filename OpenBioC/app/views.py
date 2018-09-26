@@ -745,9 +745,9 @@ def tools_search_3(request, **kwargs):
         variables_js_tree = tool_build_dependencies_jstree(tool_get_dependencies_internal(dependency, include_as_root=True), add_variables=True)
         tool_variables_jstree.extend(variables_js_tree)
 
-    #print ('LOGGG DEPENDENIES + VARIABLES')
+    print ('LOGGG DEPENDENIES + VARIABLES')
     #print (tool_variables_jstree)
-    #print (simplejson.dumps(tool_variables_jstree, indent=4))
+    print (simplejson.dumps(tool_variables_jstree, indent=4))
 
     #Get the variables of this tool
     tool_variables = []

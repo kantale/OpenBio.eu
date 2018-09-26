@@ -46,6 +46,11 @@ window.onload = function () {
 					angular.element($('#angular_div')).scope().tool_get_dependencies(tool);
 				});
 			}
+			else if (target.closest('#d3wf').length) { // We are dropping it to the workflow graph editor
+
+				window.update_workflow();
+			}
+
 		}
 		else if (this_id_array[3] == "3") { // We are moving a variable from the dependency + variable tree
 			if (target.closest('#tool_installation_editor').length) { // Adding to installation bash editor
@@ -78,8 +83,12 @@ window.onload = function () {
 
 		if (this_id_array[3] == '1') { // This is an item from tools_search tree
 
-			//We allow it if it is over the div with the tree AND the the tool_installation_editor is not readonly (this is a workaround to avoid checking angular: tools_info_editable)
-			if (target.closest('#tools_dep_jstree_id').length && (!tool_installation_editor.getReadOnly())) { 
+			
+			if (
+				(target.closest('#tools_dep_jstree_id').length && (!tool_installation_editor.getReadOnly())) || //We allow it if it is over the div with the tree AND the the tool_installation_editor is not readonly (this is a workaround to avoid checking angular: tools_info_editable)
+				(target.closest('#d3wf').length) // The Workflow graph editor
+
+			   ) { 
 				data.helper.find('.jstree-icon').removeClass('jstree-er').addClass('jstree-ok');
 			}
 			else {
@@ -133,5 +142,80 @@ window.onload = function () {
 	        .avoidOverlaps(true)
 	        .handleDisconnected(false)
 			.size([width, height]);
+
+	// define arrow markers for graph links
+	//http://bl.ocks.org/rkirsling/5001347
+	svg.append('svg:defs').append('svg:marker')
+	    .attr('id', 'end-arrow')
+	    .attr('viewBox', '0 -5 10 10')
+	    .attr('refX', 6)
+	    .attr('markerWidth', 10)
+	    .attr('markerHeight', 10)
+	    .attr('orient', 'auto')
+	  .append('svg:path')
+	    .attr('d', 'M0,-5L10,0L0,5')
+	    .attr('fill', '#000');
+
+
+	var main_g = svg.append("g");
+	var wf_g = svg.append("g");
+
+
+	/*
+	* 
+	*/
+	window.update_workflow = function() {
+
+							var color = d3.scaleOrdinal(d3.schemeCategory20);
+						    graph = {
+						    	nodes: [
+							    	{name:'a'},
+							    	{name:'b'}
+							    ],
+						    	links: [
+							    	{source:0, target:1},
+						    	]
+						    };
+
+						    // packing respects node width and height
+						    graph.nodes.forEach(function (v) { v.width = 10, v.height = 10 })
+
+						    ark_cola
+						        .nodes(graph.nodes)
+						        .links(graph.links)
+						        .start(); 
+
+						    var link = svg.selectAll(".link")
+						        .data(graph.links)
+						      .enter().append("line")
+						        .attr("class", "link")
+						        .style("stroke-width", 3);
+
+						    var node = svg.selectAll(".node")
+						        .data(graph.nodes)
+						      .enter().append("circle")
+						        .attr("class", "node")
+						        .attr("r", 5)
+						        .style("fill", function (d) { return color(d.group); })
+						        .call(ark_cola.drag);
+
+						    node.append("title")
+						        .text(function (d) { return d.name; });
+
+						    ark_cola.on("tick", function () {
+						        link.attr("x1", function (d) { return d.source.x; })
+						            .attr("y1", function (d) { return d.source.y; })
+						            .attr("x2", function (d) { return d.target.x; })
+						            .attr("y2", function (d) { return d.target.y; });
+
+						        node.attr("cx", function (d) { return d.x; })
+						            .attr("cy", function (d) { return d.y; });
+						        //ark_cola.stop();
+						    });
+
+
+
+	};
+
 
 };
