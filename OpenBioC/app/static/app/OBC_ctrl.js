@@ -804,10 +804,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     /*
     * Get the dependencies of this tool
+    * This is called from OBC.js
+    * what_to_do == 1: DRAG FROM SEARCH TREE TO DEPENDENCY TREE
+    * what_to_do == 2: DRAG FROM SWARCH TREE TO WORKFLOW DIV
     */
-    $scope.tool_get_dependencies = function(tool) {
+    $scope.tool_get_dependencies = function(tool, what_to_do) {
 
-        if (!$scope.tools_info_editable) {
+        if (what_to_do == 1 && (!$scope.tools_info_editable)) {
             return;
         }
 
@@ -819,38 +822,64 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 'tool_edit': tool.edit
             },
             function(data) {
-                $scope.tools_info_error_message = '';
 
-                //Is this action valid?
-                //Find the parent
-                var inserted_parent_id = '';
-                for (var i=0; i<data['dependencies_jstree'].length; i++) {
-                    if (data['dependencies_jstree'][i].parent == '#') {
-                        //This is the parent
-                        inserted_parent_id = data['dependencies_jstree'][i].id;
-                        break;
+                if (what_to_do == 1) {
+                    $scope.tools_info_error_message = '';
+
+                    //Is this action valid?
+                    //Find the parent
+                    var inserted_parent_id = '';
+                    for (var i=0; i<data['dependencies_jstree'].length; i++) {
+                        if (data['dependencies_jstree'][i].parent == '#') {
+                            //This is the parent
+                            inserted_parent_id = data['dependencies_jstree'][i].id;
+                            break;
+                        }
+                    }
+
+                    //Check if this parent is already in the tree
+                    for (var i=0; i<$scope.tools_dep_jstree_model.length; i++) {
+                        if ($scope.tools_dep_jstree_model[i].id == inserted_parent_id) {
+                            $scope.tools_info_error_message = 'This tool is already in the dependency tree';
+                            return;
+                        }
+                    }
+
+                    //We suppose there is no error
+                    $scope.tools_info_error_message = '';
+
+                    //Add all dependencies to the Dependencies jSTREE
+                    for (var i=0; i<data['dependencies_jstree'].length; i++) {
+                        $scope.tools_dep_jstree_model.push(data['dependencies_jstree'][i]);
+                    }
+
+                    //Add all dependencies to the Dependencies + Variables JSTREE
+                    for (var i=0; i<data['variables_jstree'].length; i++) {
+                        $scope.tools_var_jstree_model.push(data['variables_jstree'][i]);
                     }
                 }
+                else if (what_to_do == 2) {
+                    var workflow = [
+                            {
+                                "id": "a",
+                                "parent": "#"
+                            },
+                            {
+                                "id": "b",
+                                "parent": "a"
+                            },
+                                {
+                                "id": "d",
+                                "parent": "a"
+                            },
+                                {
+                                "id": "c",
+                                "parent": "b"
+                            }           
+                    ];
+                    window.buildTree(workflow);
 
-                //Check if this parent is already in the tree
-                for (var i=0; i<$scope.tools_dep_jstree_model.length; i++) {
-                    if ($scope.tools_dep_jstree_model[i].id == inserted_parent_id) {
-                        $scope.tools_info_error_message = 'This tool is already in the dependency tree';
-                        return;
-                    }
-                }
 
-                //We suppose there is no error
-                $scope.tools_info_error_message = '';
-
-                //Add all dependencies to the Dependencies jSTREE
-                for (var i=0; i<data['dependencies_jstree'].length; i++) {
-                    $scope.tools_dep_jstree_model.push(data['dependencies_jstree'][i]);
-                }
-
-                //Add all dependencies to the Dependencies + Variables JSTREE
-                for (var i=0; i<data['variables_jstree'].length; i++) {
-                    $scope.tools_var_jstree_model.push(data['variables_jstree'][i]);
                 }
             },
             function(data) {
