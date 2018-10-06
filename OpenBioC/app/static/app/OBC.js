@@ -34,7 +34,26 @@ window.onload = function () {
 
 		/* initialize global variables */
 		//var cola,svg,root,treeData; // Alex commented it out. There were undefined 
+
+		//We should run these commands only once!
 		var mynodes=[],mylinks=[],children=[],tmp_children=[];
+
+		var width = 960, height = 500;
+
+	    var color = d3.scaleOrdinal(d3.schemeCategory20);
+
+
+		obc_cola = cola.d3adaptor(d3)
+		        .linkDistance(100)
+		        .avoidOverlaps(true)
+		        .handleDisconnected(false)
+		        .size([width, height]);
+
+
+		//svg = d3.select("body").append("svg")
+		svg = d3.select("#d3wf").append("svg")
+		        .attr("width", width)
+		        .attr("height", height);
 
 
 		//buildTree(); // Run this for initialization
@@ -64,23 +83,7 @@ window.onload = function () {
 			];
 
 			*/
-	 		var width = 960, height = 500;
-
-	    	var color = d3.scaleOrdinal(d3.schemeCategory20);
-
-		    cola = cola.d3adaptor(d3)
-		        .linkDistance(100)
-		        .avoidOverlaps(true)
-		        .handleDisconnected(false)
-		        .size([width, height]);
-
-
-		    //svg = d3.select("body").append("svg")
-		    svg = d3.select("#d3wf").append("svg")
-		        .attr("width", width)
-		        .attr("height", height);
-
-		
+	 		
 			workflow.forEach(function(d) {
 				if(d.parent=='#') {
 					root = d;
@@ -115,7 +118,7 @@ window.onload = function () {
 			d3.selectAll("svg > *").remove();
 		
 			/* initialize cola */  
-			  cola
+			  obc_cola
 	            .nodes(mynodes)
 				.links(mylinks)
 	            .start();
@@ -133,24 +136,24 @@ window.onload = function () {
 	            .attr("width", function (d) { return nodeWidth - 2 * pad; })
 	            .attr("height", function (d) { return nodeHeight - 2 * pad; })
 	            .attr("rx", 5).attr("ry", 5)
-	            .call(cola.drag)
+	            .call(obc_cola.drag)
 				.on("dblclick", collapse);
 				
 				var link = svg.selectAll(".link")
 	            .data(mylinks)
 	            .enter().append("line")
 				.attr("class", function(d){ return ["link", d.source, d.target].join(" "); })
-				.call(cola.drag);
+				.call(obc_cola.drag);
 				
 				var label = svg.selectAll(".label")
 	            .data(mynodes)
 	            .enter().append("text")
 	            .attr("class", "label")
 	            .text(function (d) { return d.id; })
-	            .call(cola.drag);
+	            .call(obc_cola.drag);
 
 		
-			cola.on("tick", function () {
+			obc_cola.on("tick", function () {
 	            
 	            node.attr("x", function (d) { return d.x - nodeWidth / 2 + 3; })
 	                .attr("y", function (d) { return d.y - nodeHeight / 2 + 3; });
@@ -398,8 +401,6 @@ window.onload = function () {
 				angular.element($('#angular_div')).scope().$apply(function(){
 					angular.element($('#angular_div')).scope().tool_get_dependencies(tool, 2); // 2 = drag from search jstree to workflow editing
 				});
-
-				console.log('333333');
 
 				//window.update_workflow();
 			}
