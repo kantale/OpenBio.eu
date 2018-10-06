@@ -126,96 +126,289 @@ window.onload = function () {
     	tool_validation_editor.undo();
 	});
 
-	//COLA SETUP
-	var height = 500;
-	var width = 960;
-	var svg = d3.select("#d3wf").append("svg")
-	        //.attr("width", width)
-	        .attr("width", '100%')
-	        .attr("height", height)
-	        .style("border-style", "solid")
-	        .style("border-width", "1px");
+	//Galateia's code
+	if (true) { //Activate/deactivate code
+
+		/* initialize global variables */
+		//var cola,svg,root,treeData; // Alex commented it out. There were undefined 
+		var mynodes=[],mylinks=[],children=[],tmp_children=[];
+
+		buildTree();
+
+		/* Function that initializes cola and tree root */	
+		function buildTree() {
+	 		var width = 960, height = 500;
+
+	    	var color = d3.scaleOrdinal(d3.schemeCategory20);
+
+		    cola = cola.d3adaptor(d3)
+		        .linkDistance(100)
+		        .avoidOverlaps(true)
+		        .handleDisconnected(false)
+		        .size([width, height]);
 
 
-	var ark_cola = cola.d3adaptor(d3)
-	        .linkDistance(100)
-	        .avoidOverlaps(true)
-	        .handleDisconnected(false)
-			.size([width, height]);
+		    //svg = d3.select("body").append("svg")
+		    svg = d3.select("#d3wf").append("svg")
+		        .attr("width", width)
+		        .attr("height", height);
 
-	// define arrow markers for graph links
-	//http://bl.ocks.org/rkirsling/5001347
-	svg.append('svg:defs').append('svg:marker')
-	    .attr('id', 'end-arrow')
-	    .attr('viewBox', '0 -5 10 10')
-	    .attr('refX', 6)
-	    .attr('markerWidth', 10)
-	    .attr('markerHeight', 10)
-	    .attr('orient', 'auto')
-	  .append('svg:path')
-	    .attr('d', 'M0,-5L10,0L0,5')
-	    .attr('fill', '#000');
+		
+			
+			d3.json("/static/app/data.json", function (error, data) {
+
+				/* read the given data */			
+				data.forEach(function(d) {
+					if(d.parent=='#'){
+						root = d;
+				 		mynodes.push(root);
+				 	}			
+		  		});
+		
+			 	treeData = data;	
+			 	update();	  
+				  
+			});	
+		
+		} // buildTree
+
+		/** update graph: add and remove nodes/links **/
+		function update() {
+		
+			d3.selectAll("svg > *").remove();
+		
+			/* initialize cola */  
+			  cola
+	            .nodes(mynodes)
+				.links(mylinks)
+	            .start();
+				
+				
+			var pad = 3;
+	        var nodeHeight = 50;
+			var nodeWidth = 50;
+			
+
+			var node = svg.selectAll(".node")
+	          .data(mynodes)
+	          .enter().append("rect")
+	            .attr("class", "node")
+	            .attr("width", function (d) { return nodeWidth - 2 * pad; })
+	            .attr("height", function (d) { return nodeHeight - 2 * pad; })
+	            .attr("rx", 5).attr("ry", 5)
+	            .call(cola.drag)
+				.on("dblclick", collapse);
+				
+				var link = svg.selectAll(".link")
+	            .data(mylinks)
+	            .enter().append("line")
+				.attr("class", function(d){ return ["link", d.source, d.target].join(" "); })
+				.call(cola.drag);
+				
+				var label = svg.selectAll(".label")
+	            .data(mynodes)
+	            .enter().append("text")
+	            .attr("class", "label")
+	            .text(function (d) { return d.id; })
+	            .call(cola.drag);
+
+		
+			cola.on("tick", function () {
+	            
+	            node.attr("x", function (d) { return d.x - nodeWidth / 2 + 3; })
+	                .attr("y", function (d) { return d.y - nodeHeight / 2 + 3; });
+					
+				link.attr("x1", function (d) { return d.source.x; })
+	                .attr("y1", function (d) { return d.source.y; })
+	                .attr("x2", function (d) { return d.target.x; })
+				    .attr("y2", function (d) { return d.target.y; })
+					
+				label.attr("x", function (d) { return d.x; })
+	                 .attr("y", function (d) {
+	                     var h = this.getBBox().height;
+	                     return d.y + h/4;
+	                 });
+	            
+	          
+	        });
+			
+		} // update
+
+	  	/** Toggle node children on click **/	
+	  	function collapse(d) {
+
+			if(d.children){  //if clicked node has already open children remove them
+				mynodes  = mynodes.filter(function(x) { 
+					return d.children.indexOf(x) < 0;
+				});
+							
+				d.children.forEach(function(f) {
+					if(f.children){
+						mynodes  = mynodes.filter(function(x) { 
+							return f.children.indexOf(x) < 0;
+						});
+					}
+						
+				});
+				
+			//update Links
+			//add links directed to children nodes
+			var tmp_links=[];
+				mynodes.forEach(function(n) {
+					mylinks.forEach(function(x) { 
+						
+						if(n.id==x.target.id) {
+							tmp_links.push(x);
+						}			
+
+					})	
+				});
+				
+				mylinks = mylinks.filter(function(x) {
+					return tmp_links.indexOf(x) >= 0;
+				});
+
+				
+				d.children=null;
+	 
+			}
+			else { //if clicked node has closed children, open them
+			
+				treeData.forEach(function(n) {
+						
+					// add children nodes
+					if(n.parent==d.id) {
+						tmp_children.push(n);
+						mynodes.push(n);
+								
+						//add links directed to children nodes
+						var mysource, mytarget;
+						treeData.find(function(item, i) {
+							if(item.id === d.id){
+								mysource=i;
+							}
+						});
+						
+						treeData.find(function(item, i){
+							if(item.id === n.id){
+								mytarget =i;
+							}
+						});
+												
+						mylinks.push({source: mysource,target:mytarget});
+					}
+
+				});
+					 
+				d.children = tmp_children;
+				tmp_children=[];
+			
+			}
+
+			update();
+	  
+		
+	 	} // collapse 
+
+	} // if (true)
 
 
-	var main_g = svg.append("g");
-	var wf_g = svg.append("g");
+	// END OF GALATEIA's code
+
+	//kantale's effort
+	if (false) {
+								//COLA SETUP
+								var height = 500;
+								var width = 960;
+								var svg = d3.select("#d3wf").append("svg")
+								        //.attr("width", width)
+								        .attr("width", '100%')
+								        .attr("height", height)
+								        .style("border-style", "solid")
+								        .style("border-width", "1px");
 
 
-	/*
-	* 
-	*/
-	window.update_workflow = function() {
+								var ark_cola = cola.d3adaptor(d3)
+								        .linkDistance(100)
+								        .avoidOverlaps(true)
+								        .handleDisconnected(false)
+										.size([width, height]);
 
-							var color = d3.scaleOrdinal(d3.schemeCategory20);
-						    graph = {
-						    	nodes: [
-							    	{name:'a'},
-							    	{name:'b'}
-							    ],
-						    	links: [
-							    	{source:0, target:1},
-						    	]
-						    };
-
-						    // packing respects node width and height
-						    graph.nodes.forEach(function (v) { v.width = 10, v.height = 10 })
-
-						    ark_cola
-						        .nodes(graph.nodes)
-						        .links(graph.links)
-						        .start(); 
-
-						    var link = svg.selectAll(".link")
-						        .data(graph.links)
-						      .enter().append("line")
-						        .attr("class", "link")
-						        .style("stroke-width", 3);
-
-						    var node = svg.selectAll(".node")
-						        .data(graph.nodes)
-						      .enter().append("circle")
-						        .attr("class", "node")
-						        .attr("r", 5)
-						        .style("fill", function (d) { return color(d.group); })
-						        .call(ark_cola.drag);
-
-						    node.append("title")
-						        .text(function (d) { return d.name; });
-
-						    ark_cola.on("tick", function () {
-						        link.attr("x1", function (d) { return d.source.x; })
-						            .attr("y1", function (d) { return d.source.y; })
-						            .attr("x2", function (d) { return d.target.x; })
-						            .attr("y2", function (d) { return d.target.y; });
-
-						        node.attr("cx", function (d) { return d.x; })
-						            .attr("cy", function (d) { return d.y; });
-						        //ark_cola.stop();
-						    });
+								// define arrow markers for graph links
+								//http://bl.ocks.org/rkirsling/5001347
+								svg.append('svg:defs').append('svg:marker')
+								    .attr('id', 'end-arrow')
+								    .attr('viewBox', '0 -5 10 10')
+								    .attr('refX', 6)
+								    .attr('markerWidth', 10)
+								    .attr('markerHeight', 10)
+								    .attr('orient', 'auto')
+								  .append('svg:path')
+								    .attr('d', 'M0,-5L10,0L0,5')
+								    .attr('fill', '#000');
 
 
+								var main_g = svg.append("g");
+								var wf_g = svg.append("g");
 
-	};
+
+								/*
+								* 
+								*/
+								window.update_workflow = function() {
+
+														var color = d3.scaleOrdinal(d3.schemeCategory20);
+													    graph = {
+													    	nodes: [
+														    	{name:'a'},
+														    	{name:'b'}
+														    ],
+													    	links: [
+														    	{source:0, target:1},
+													    	]
+													    };
+
+													    // packing respects node width and height
+													    graph.nodes.forEach(function (v) { v.width = 10, v.height = 10 })
+
+													    ark_cola
+													        .nodes(graph.nodes)
+													        .links(graph.links)
+													        .start(); 
+
+													    var link = svg.selectAll(".link")
+													        .data(graph.links)
+													      .enter().append("line")
+													        .attr("class", "link")
+													        .style("stroke-width", 3);
+
+													    var node = svg.selectAll(".node")
+													        .data(graph.nodes)
+													      .enter().append("circle")
+													        .attr("class", "node")
+													        .attr("r", 5)
+													        .style("fill", function (d) { return color(d.group); })
+													        .call(ark_cola.drag);
+
+													    node.append("title")
+													        .text(function (d) { return d.name; });
+
+													    ark_cola.on("tick", function () {
+													        link.attr("x1", function (d) { return d.source.x; })
+													            .attr("y1", function (d) { return d.source.y; })
+													            .attr("x2", function (d) { return d.target.x; })
+													            .attr("y2", function (d) { return d.target.y; });
+
+													        node.attr("cx", function (d) { return d.x; })
+													            .attr("cy", function (d) { return d.y; });
+													        //ark_cola.stop();
+													    });
+
+
+
+								};
+
+	}
 
 
 };
