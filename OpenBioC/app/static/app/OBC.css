@@ -107,7 +107,8 @@ pre {
 }
 
 .label {
-    fill: white;
+    /*fill: white;*/
+    fill: pink;
     font-family: Verdana;
     font-size: 25px;
     text-anchor: middle;

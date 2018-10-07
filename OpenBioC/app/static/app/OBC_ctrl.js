@@ -823,7 +823,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             },
             function(data) {
 
-                if (what_to_do == 1) {
+                if (what_to_do == 1) { // DRAG FROM SEARCH TREE TO DEPENDENCY TREE
                     $scope.tools_info_error_message = '';
 
                     //Is this action valid?
@@ -858,28 +858,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                         $scope.tools_var_jstree_model.push(data['variables_jstree'][i]);
                     }
                 }
-                else if (what_to_do == 2) {
-                    var workflow = [
-                            {
-                                "id": "a",
-                                "parent": "#"
-                            },
-                            {
-                                "id": "b",
-                                "parent": "a"
-                            },
-                                {
-                                "id": "d",
-                                "parent": "a"
-                            },
-                                {
-                                "id": "c",
-                                "parent": "b"
-                            }           
-                    ];
-                    window.buildTree(workflow);
-
-
+                else if (what_to_do == 2) { //DRAG FROM SWARCH TREE TO WORKFLOW DIV
+                    window.buildTree(data['dependencies_jstree'])
                 }
             },
             function(data) {
