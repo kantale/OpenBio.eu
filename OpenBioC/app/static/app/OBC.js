@@ -149,7 +149,7 @@ window.onload = function () {
 	            .data(mynodes)
 	            .enter().append("text")
 	            .attr("class", "label")
-	            .text(function (d) { return d.id; })
+	            .text(function (d) { return d.text; })
 	            .call(obc_cola.drag);
 
 		
