@@ -28,10 +28,22 @@ Create a dedicated python virtualenv:
 ```
 
 
+Create a dedicate python environment with conda:
+
+```
+conda create --name obc_python 
+```
+
 ### Start the virtualev
 
 ```
 source OpenBioC_python/bin/activate
+```
+
+If you crated a virtual environment with conda, to activate it run:
+
+```
+conda activate obc_python 
 ```
 
 ### Install Django 2.1.0
