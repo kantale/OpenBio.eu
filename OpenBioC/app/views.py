@@ -476,10 +476,7 @@ def register(request, **kwargs):
     except smtplib.SMTPRecipientsRefused:
         return fail('Could not sent an email to {}'.format(signup_email))
     except Exception as e:
-        print (str(e))
-        print (e.args)
-        raise e
-
+        pass ## FIXME 
 
     #Create user
     user = User.objects.create_user(signup_username, signup_email, signup_password)
@@ -524,9 +521,7 @@ def reset_password_email(request, **kwargs):
     except smtplib.SMTPRecipientsRefused:
         return fail('Could not send an email to: {}'.format(email))
     except Exception as e:
-        print (e.args)
-        print (str(e))
-        raise e
+        pass # FIX ME
 
     return success()
 
