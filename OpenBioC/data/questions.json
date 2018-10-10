@@ -1,0 +1,849 @@
+[
+    {
+        "id": 1,
+        "url": "http://seqanswers.com/forums/archive/index.php/t-84823.html",
+        "title": "metrics on BAM file",
+        "question": {
+            "user": "Moip",
+            "date": "09-26-2018, 10:13 AM",
+            "content": "\nHi everyone,\nI am doing exome sequencing, paired end, but not used to analyze reads.\nAfter alignement, how do i proceed the BAM file?\nThank you",
+            "tools": []
+        },
+        "answers": [
+            {
+                "user": "Richard Finney",
+                "date": "09-26-2018, 04:19 PM",
+                "content": "\nHow many samples do you have?\nHow did you align the reads?\nAre they tumor and normal samples?\nAre looking for germline characteristics or somatic changes?",
+                "tools": []
+            },
+            {
+                "user": "Moip",
+                "date": "09-26-2018, 11:54 PM",
+                "content": "\nI have three normal samples and looking for germline characteristics.\nMapping with %%BWA-MEM%%.\nThank you for you help Richard",
+                "tools": [
+                    "BWA-MEM"
+                ]
+            },
+            {
+                "user": "Richard Finney",
+                "date": "09-27-2018, 06:20 AM",
+                "content": "\nYou will probably want to do some variant calling on the bam files. This may include SNPS, fusions, amplification or deletions.\n\nThere are many tools to do this. Searching for these tools is straightforward:\n\nhttps://www.google.com/search?q=germline+variant+calling+on+bam+files\n\nYou may want to use favorite, known tools already used at your organization, so ask around. A new tool may require some non-trivial installation.",
+                "tools": []
+            },
+            {
+                "user": "Moip",
+                "date": "09-27-2018, 06:48 AM",
+                "content": "\nThank you for you reply.\ni need to understand some details, once i have a BAM file, before variant calling i have to remove duplicate, recalibrate BAM? run other metrics ?\nsorry i am completely new to this.",
+                "tools": []
+            },
+            {
+                "user": "Richard Finney",
+                "date": "09-27-2018, 04:01 PM",
+                "content": "\nYou could do some quality checks and remove duplicates and recalibrate; but if you are just starting off, just go ahead and assume the data is good and try and see if you can get a report on variations using a commonly used tool. After you get that working, you can check out the other stuff and re-run a new workflow. Order of importance would be : QC, duplicate removal or marking , then re calibration. Many here at work say recalibration is not worth the effort. Theoretically marking or removing duplicates may be important upstream to a variant caller, and again, theoretically a variant caller could do that work for you so read the docs for your tools and follow their advice.\n\nDo try and run a QC tool on your fastqs early.\nAbsolute easiest QC on bam files is \"%%samtools%% flagstat\" (google it).\nStudy the results and see if you can make sense of them.",
+                "tools": [
+                    "samtools"
+                ]
+            },
+            {
+                "user": "Moip",
+                "date": "09-27-2018, 11:12 PM",
+                "content": "\nThank you, i ll give a try. Do i ignore UMi for this analysis?",
+                "tools": []
+            }
+        ]
+    },
+    {
+        "id": 2,
+        "url": "http://seqanswers.com/forums/archive/index.php/t-84822.html",
+        "title": "Adaper sequence to Read fastq",
+        "question": {
+            "user": "CarnifexRex",
+            "date": "09-26-2018, 09:08 AM",
+            "content": "\nHello,\n\nFairly new to bioinformatics and first time posting, hopefully I sound halfway intelligent\n\nMy FASTQs contain adapter sequences in the read name. This adapter sequence includes a UMI. However my postprocessing software requires the UMI to be part of the read. Is there some way of inserting the adapter sequence from the read name to the beginning of the read? I'm guessing I'll also need to insert some bogus quality scores as well.\n\nTo visualize, I need to turn this:\n@M01179:478:000000000-C33YY:1:1101:17276:1520 2:N:0:CTTGTATGTATG\nTTGTCGTTCCTTTCTTTTTGTCTCTTTCCTGTACCTCTAG\n+\n11111333@B1B11AA3A3B1A3B3BFEE333130110A0\n\ninto this:\n\n@M01179:478:000000000-C33YY:1:1101:17276:1520 2:N:0:CTTGTATGTATG\nCTTGTATGTATGTTGTCGTTCCTTTCTTTTTGTCTCTTTCCTGTACCTCTAG\n+\nAAAAAAAAAAAA11111333@B1B11AA3A3B1A3B3BFEE333130110A0\n\nThis would need to be a scriptable solution, and work on all reads from a High Out-put NextSeq run\n\nThanks in advance",
+            "tools": []
+        },
+        "answers": [
+            {
+                "user": "GenoMax",
+                "date": "09-26-2018, 11:01 AM",
+                "content": "\nAre you sure about that? Generally in case of Illumina sequencing index sequences (which are not part of actual reads) are transferred to the fastq header as a part of demultiplexing process. That is what you are probably seeing e.g. \"CTTGTATGTATG\".",
+                "tools": []
+            },
+            {
+                "user": "CarnifexRex",
+                "date": "09-26-2018, 11:11 AM",
+                "content": "\nThat is correct, sequence CTTGTATGTATG is my index sequence. The first 6 bp (CTTGTA) is my sample barcode, the second 6 bp (TGTATG) is a molecular barcode. This second sequence is random, so changes across every read.\n\nI need to add the entire 12 bp sequence to the beginning of my read in order to utilize the UMI portion of the adapter in my alignment and variant calling software.",
+                "tools": []
+            },
+            {
+                "user": "GenoMax",
+                "date": "09-27-2018, 04:23 AM",
+                "content": "\nThis may be easier to do by obtaining the index read as a separate fastq file. You will also get real Q-scores for bases in index read when you do that. Stand-alone bcl2fastq allows one to get data in this format. I assume you may be able to do this using BaseSpace as well, if that is what you are using.\n\nYou can then use a program called \"%%Seqkit%%\" (https://bioinf.shenwei.me/seqkit/usage/#seqkit) (and specifically option \"seqkit concat\" to concatenate your index read in front of the actual read).",
+                "tools": [
+                    "Seqkit"
+                ]
+            },
+            {
+                "user": "CarnifexRex",
+                "date": "10-03-2018, 09:19 AM",
+                "content": "\nThats fantastic. This confirms by believe that there's a tool for everything.\n\nThis does exactly what I need, with one exception. It calls the entire FastQ into memory, which is a problem when the FastQ files are 20GB each.\n\nI thought faidx indexing might help, but 1) bcl2fastq outputs gzip not bgzip files, and 2) my input files are FastQ and not FastA. I also thought of trying to stream the job by just providing a list of read names to concatenate using the seqkit common or grep command, but I couldn't get that to work.\n\nNow I'm thinking of some combination of sort, split and bash loop but I'm still a novice at linux scripting.\n\nDoes anyone have some suggestions on how to process large files using seqkit?\n\nThanks",
+                "tools": []
+            }
+        ]
+    },
+    {
+        "id": 3,
+        "url": "http://seqanswers.com/forums/archive/index.php/t-84440.html",
+        "title": "What is the best program for MSA of 33 very similar sequences 113 00 bp long?",
+        "question": {
+            "user": "kajsa",
+            "date": "09-06-2018, 01:07 AM",
+            "content": "\nHello,\n\nI want to do a multiple sequence alignment with 33 sequences that are 99,99% similar and are around 113000 bp long.\n\nI have looked around and found %%MAFFT%% and %%MAUVE%%. Are there any other programs to use that I've missed?\n\nThankful for any advise.\nKajsa",
+            "tools": [
+                "MAFFT",
+                "MAUVE"
+            ]
+        },
+        "answers": [
+            {
+                "user": "colindaven",
+                "date": "09-13-2018, 03:17 AM",
+                "content": "\nMuscle might be good. MUGSY is probably excellent for this use case given the length of the sequence.\n\ncheers\nColin",
+                "tools": []
+            },
+            {
+                "user": "kajsa",
+                "date": "09-13-2018, 04:13 AM",
+                "content": "\n%%Muscle%% might be good. %%MUGSY%% is probably excellent for this use case given the length of the sequence.\n\ncheers\nColin\nThanks a lot!\nKajsa",
+                "tools": [
+                    "Muscle",
+                    "MUGSY"
+                ]
+            }
+        ]
+    },
+    {
+        "id": 4,
+        "url": "http://seqanswers.com/forums/archive/index.php/t-84275.html",
+        "title": "Differential Expression Analysis",
+        "question": {
+            "user": "DeDeoxys",
+            "date": "08-27-2018, 08:54 PM",
+            "content": "\nI am working with novel RNAseq data from a type of grass whose genome has not yet been completely sequenced or annotated. I have a number of FASTQ files with RNAseq data from different parts of the plant and am trying to conduct a differential expression analysis of these files. I was planning to use the DEGseq package in R to conduct the analysis, but from what I understand, this requires me to map the reads to an index to ultimately convert them to the .bed format and I would also need a reference genome file in the ucsc refFlat format. Since this plant genome has not even been sequenced, these files are unavailable, so I thought to map the reads to the genome of brachypodium distachyon, which is a model organism for grasses. I was able to create an index through bowtie using the genome from phytozome, but I have not been able to find a reference file for brachypodium in the reFlat or GTF format. Is there any way to convert to or create a reference file in the GTF or refFlat format, and am I even on the right track to conduct differential expression analysis on these files?\nI also have access to the original RNA assembly data which came from an illumina HiSeq. I'm not sure if this would be helpful.",
+            "tools": []
+        },
+        "answers": [
+            {
+                "user": "ASintsova",
+                "date": "08-31-2018, 06:23 AM",
+                "content": "\nI don't know much about plants, but it sounds like you might want to try to build de novo transcriptome assembly - https://www.sciencedirect.com/science/article/pii/S2214662817301032",
+                "tools": []
+            },
+            {
+                "user": "gringer",
+                "date": "09-04-2018, 02:43 AM",
+                "content": "\nUse supertranscripts as your reference genome:\n\nhttps://github.com/Oshlack/Lace/wiki\n\nhttps://github.com/trinityrnaseq/trinityrnaseq/wiki/SuperTranscripts\n%%Lace%%\n%%trinityrnaseq%%",
+                "tools": [
+                    "Lace",
+                    "trinityrnaseq"
+                ]
+            }
+        ]
+    },
+    {
+        "id": 5,
+        "url": "http://seqanswers.com/forums/showthread.php?t=84135",
+        "title": "quantifying transcripts in a redundant genome",
+        "question": {
+            "user": "garlic",
+            "date": "08-21-2018, 09:34 PM",
+            "content": "\nHi,\n\nI am trying to quantify the number of reads mapping to genes in a highly redundant bacterial genome (i.e., often several exact gene copies in the genome).\n\nI've mapped reads to genes with %%bbmap%%, and quantified using featurecounts. My problem is that reads are only counted for one of the copies of redundant genes, and not all of them.\n\nI just want to count the number of expressed genes (I want to count all of the copies since I can't distinguish them). I've tried playing around with multi-mapping parameters in featurecounts, but nothing has changed.\n\nDoes anyone here know how to do this?\n\nThanks!",
+            "tools": [
+                "bbmap"
+            ]
+        },
+        "answers": [
+            {
+                "user": "ASintsova",
+                "date": "08-31-2018, 06:50 AM",
+                "content": "\nYou would have to play with your aligner (%%bbmap%%). I've never used that one before, but other aligners like %%bowtie2%% and %%BWA%% have an option to search for multiple alignments and report all. However, if you do this, you will be overestimating expression of your redundant genes.",
+                "tools": [
+                    "bbmap",
+                    "bowtie2",
+                    "BWA"
+                ]
+            }
+        ]
+    },
+    {
+        "id": 6,
+        "url": "http://seqanswers.com/forums/archive/index.php/t-83988.html",
+        "title": "CpG sites in Bismark",
+        "question": {
+            "user": "Hedi86",
+            "date": "08-13-2018, 11:21 PM",
+            "content": "\nHello\n\nim trying to calculate the percentage of covered CpG sites in my RRBS library and compare it with total CpG sites in reference genome. i got splitting report from Bismark (see bellow)\n\nq1- could i say CpG sites in my RRBS library are equal to number of Total methylated C's in CpG context + number of Total C to T conversions in CpG context (around 19 million) ? if No how i can find total CpG sites in RRBS library?\n\nq2- i downloaded pig CGI annotation and counted all CpG sites but the total was around 2 million. sound very low for me. how i can find the actual number of CpG sites in reference genome?\n\nq3- is there a way to determine CpG sites per chromosome and compare it with CpG sites in each chromosome of reference genome?\n\n\nFinal Cytosine Methylation Report\n=================================\nTotal number of C's analysed: 141645338\n\nTotal methylated C's in CpG context: 7904886\nTotal methylated C's in CHG context: 50683\nTotal methylated C's in CHH context: 107717\n\nTotal C to T conversions in CpG context: 12298571\nTotal C to T conversions in CHG context: 35912924\nTotal C to T conversions in CHH context: 85370557",
+            "tools": []
+        },
+        "answers": [
+            {
+                "user": "fkrueger",
+                "date": "08-14-2018, 03:03 AM",
+                "content": "\nHi Hedi,\n\nq1- could i say CpG sites in my RRBS library are equal to number of Total methylated C's in CpG context + number of Total C to T conversions in CpG context (around 19 million) ? if No how i can find total CpG sites in RRBS library?\n\nNo, I'm afraid you can\u2019t say that. The numbers reported are the overall numbers of methylation calls performed for the entire run, and have nothing to do with the number of genomic positions covered. If you want to find out how many Cs were covered in your experiment you generate a coverage file where each line corresponds to a covered C position. So the number of lines in the file (zcat file.cov.gz | wc -l) is the number of positions covered in your experiment.\n\nq2- i downloaded pig CGI annotation and counted all CpG sites but the total was around 2 million. sound very low for me. how i can find the actual number of CpG sites in reference genome?\n\nYou could use %%bam2nuc%% (part of %%Bismark%%) to find out the number of Cs, or CpGs, in the genome. Here is the output for the Sscrofa11.1 build (genome-wide).\n\nA 717891230\nAA 237125812\nAC 124343360\nAG 171421615\nAT 185000140\nC 517402066\nCA 178358877\nCC 136906913\nCG 30619972\nCT 171516061\nG 517706165\nGA 147162051\nGC 108922386\nGG 136983938\nGT 124637555\nT 719048243\nTA 155244114\nTC 147229152\nTG 178680414\nTT 237894187\n\nCGIs are only a small, albeit CG-rich, fraction of the genome, so 2M doesn\u2019t sound too bad.\n\n\nq3- is there a way to determine CpG sites per chromosome and compare it with CpG sites in each chromosome of reference genome?\n\nI would suggest you use %%SeqMonk%% for this kind of work. You need to keep in mind though that RRBS only expects to cover ~1-2% of the genome at very specific positions, so getting an idea about how many CpG were covered per chromosome is almost certainly not anything you should be interested in.",
+                "tools": [
+                    "bam2nuc",
+                    "Bismark",
+                    "SeqMonk"
+                ]
+            },
+            {
+                "user": "Hedi86",
+                "date": "08-15-2018, 02:27 AM",
+                "content": "\nthank you for your advice and help. in %%methylkit%% using following command you can get coverage as well. but im wondering is it CpG coverage or read coverage? they used both definitions in their tutorial (https://www.bioconductor.org/packages/3.7/bioc/vignettes/methylKit/inst/doc/methylKit.html#24_descriptive_statistics_on_samples) . is it different with your suggested way of CpG coverage calculation?\n\ngetCoverageStats(my.methRaw[[1]],plot = F,both.strands = FALSE)\nread coverage statistics per base\nsummary:\nMin. 1st Qu. Median Mean 3rd Qu. Max.\n10.00 12.00 15.00 28.25 20.00 131376.00\n\nthanks again",
+                "tools": [
+                    "methylkit"
+                ]
+            }
+        ]
+    },
+    {
+        "id": 7,
+        "url": "http://seqanswers.com/forums/archive/index.php/t-83933.html",
+        "title": "Split Fastq into 2 files",
+        "question": {
+            "user": "landrjos",
+            "date": "08-09-2018, 12:52 PM",
+            "content": "\nHi All,\n\nI have a fastq file which I would like to split into 2 files with every other read going into the 2 separate files. What would the Split function command line be for this? I am a new to computing, so it you are most explicit that would be helpful.\n\nBest,",
+            "tools": []
+        },
+        "answers": [
+            {
+                "user": "anoopkmr",
+                "date": "08-09-2018, 06:57 PM",
+                "content": "\nFound it in a post here:https://stackoverflow.com/questions/21309020/remove-odd-or-even-lines-from-a-text-file\n\n\"sed\nYou can accomplish the same thing with sed. devnulls answer shows how to do it with GNU sed. Below are alternatives for versions of sed that do not have the ~ operator:\n\nkeep odd lines\n\nsed 'n; d' infile > outfile\nkeep even lines\n\nsed '1d; n; d' infile > outfile\"",
+                "tools": []
+            },
+            {
+                "user": "landrjos",
+                "date": "08-09-2018, 07:31 PM",
+                "content": "\nHi anoopkmr,\n\nThanks for the reply. I made a mistake, I was not clear enough. I would like to partition the odd or even \"reads\" from a fastq file. The reads are in groups of 4 lines in the fastq file. So I would like read 1 (lines 1-4) to go to file1, and read 2 (lines 5-8) to go to file2, and so on until the whole fastq file is divided into two files, the odd (lines 1-4, 9-12, etc...) output file and the even (lines 5-8, 13-16, etc...) output file.\n\nNot every even line and every odd line going to the output files.\n\nIs there a way to do that?\n\nBest,",
+                "tools": []
+            },
+            {
+                "user": "anoopkmr",
+                "date": "08-09-2018, 07:55 PM",
+                "content": "\nThat makes a lot more sense. Sorry, in my own confusion I thought you were trying something more creative and beyond my understanding.\n\n%%fastq-dump%% seems like an option but if you are generating these files from BAMs it might be easier to step back to the previous step and generate them all at once.\n\nNot very useful but I hope it helps. Good luck!",
+                "tools": [
+                    "fastq-dump"
+                ]
+            },
+            {
+                "user": "GenoMax",
+                "date": "08-10-2018, 04:00 AM",
+                "content": "\n@landrjos: What you are describing is called an interleaved fastq file where R1 and R2 reads are present in a single file.\n\nYou can use reformat.sh from %%BBMap%% suite (https://sourceforge.net/projects/bbmap/) to separate the R1 and R2 reads into their own files.\n\nreformat.sh in=interleaved.fq.gz out1=R1.fq.gz out2=R2.fq.gz",
+                "tools": [
+                    "BBMap"
+                ]
+            },
+            {
+                "user": "lethalfang",
+                "date": "09-27-2018, 10:31 PM",
+                "content": "\nTry this:\ncat original.fastq | awk 'NR%8==1 || NR%8==2 || NR%8==3 || NR%8==4' > first4s.fastq\ncat original.fastq | awk 'NR%8==5 || NR%8==6 || NR%8==7 || NR%8==0' > second4s.fastq\n",
+                "tools": []
+            }
+        ]
+    },
+    {
+        "id": 8,
+        "url": "http://seqanswers.com/forums/archive/index.php/t-83862.html",
+        "title": "How to get a report like stuff of a bam file how many percent of the exons are cover",
+        "question": {
+            "user": "Gopo",
+            "date": "08-07-2018, 02:58 AM",
+            "content": "\nTry CollectHSmetrics - part of %%Picard%% Tools\nFor details see:\nhttps://broadinstitute.github.io/picard/command-line-overview.html",
+            "tools": [
+                "Picard"
+            ]
+        },
+        "answers": [
+            {
+                "user": "mhmtgenc",
+                "date": "08-07-2018, 03:22 AM",
+                "content": "\nTry CollectHSmetrics - part of Picard Tools\nFor details see:\nhttps://broadinstitute.github.io/picard/command-line-overview.html\n\nSo how coul I be able to get a BED file or prepare it by myself? Could you give me a clue or a tutorial of this. Cause I have trouble on this. I know this is hard to expalin it here but can I get any file or manual for this?",
+                "tools": []
+            },
+            {
+                "user": "Gopo",
+                "date": "08-08-2018, 10:11 PM",
+                "content": "\nYou will have to make the BED file yourself. Here is a guide:\n\n\n# install picard\ncd ~/bin/\nwget https://github.com/broadinstitute/picard/releases/download/2.18.10/picard.jar\nmv picard.jar picard-2.18.10.jar\n\n# index reference (Reference is AmexG_v3.0.0.fa)\nsamtools faidx AmexG_v3.0.0.fa\n\n# create sequence dictionary\njava -Xmx64g -jar ~/bin/picard-2.18.10.jar CreateSequenceDictionary \\\nR=AmexG_v3.0.0.fa \\\nO=AmexG_v3.0.0.dict\n\n# Convert BED to interval list\njava -jar ~/bin/picard-2.18.10.jar BedToIntervalList \\\nI=rfs.immunome.bed \\\nO=rfs.immunome.interval.list \\\nSD=AmexG_v3.0.0.dict\n\n# run CollectHsMetrics\njava -Xmx64g -jar ~/bin/picard-2.18.10.jar CollectHsMetrics \\\nBAIT_INTERVALS=/ssdwork/jelber2/rfs/rfs.immunome.interval.list \\\nBAIT_SET_NAME=Immunome \\\nTARGET_INTERVALS=/ssdwork/jelber2/rfs/rfs.immunome.interval.list \\\nMETRIC_ACCUMULATION_LEVEL=SAMPLE \\\nR=/ssdwork/jelber2/rfs/AmexG_v3.0.0.fa \\\nI=ALL-samples.bam \\\nO=ALL-samples-coverage-metrics.txt\n\n# if needed, add readgroups\njava -Xmx64g -jar ~/bin/picard.jar AddOrReplaceReadGroups \\\nI=ALL-samples.bam \\\nO=ALL-samples-RG.bam \\\nSORT_ORDER=coordinate \\\nRGPL=illumina \\\nRGPU=barcode \\\nRGLB=Lib1 \\\nRGID=all \\\nRGSM=all \\\nVALIDATION_STRINGENCY=LENIENT\n\n# run CollectHsMetrics with ReadGroups added to BAM\njava -Xmx64g -jar ~/bin/picard-2.18.10.jar CollectHsMetrics \\\nBAIT_INTERVALS=/ssdwork/jelber2/rfs/rfs.immunome.interval.list \\\nBAIT_SET_NAME=Immunome \\\nTARGET_INTERVALS=/ssdwork/jelber2/rfs/rfs.immunome.interval.list \\\nMETRIC_ACCUMULATION_LEVEL=SAMPLE \\\nR=/ssdwork/jelber2/rfs/AmexG_v3.0.0.fa \\\nI=ALL-samples-RG.bam \\\nO=ALL-samples-coverage-metrics.txt\n\n\nBest,\nGopo",
+                "tools": []
+            },
+            {
+                "user": "anoopkmr",
+                "date": "08-11-2018, 05:48 PM",
+                "content": "\nThis tools helps me create bed files from a gene list:\nhttps://genome-euro.ucsc.edu/cgi-bin/hgTables\n\nChoose bed format while downloading.\n%%hgTables%%",
+                "tools": [
+                    "hgTables"
+                ]
+            }
+        ]
+    },
+    {
+        "id": 9,
+        "url": "http://seqanswers.com/forums/archive/index.php/t-83723.html",
+        "title": "Demultiplexing FASTQ with custom indices",
+        "question": {
+            "user": "bpbbentley",
+            "date": "07-31-2018, 01:50 AM",
+            "content": "\nHi all,\n\nI'm fairly new to the realm of bioinformatics with large data sets, so apologies if I've missed something crucial here...\n\nI've recently received some Illumina HiSeq2500 data in FASTQ format which haven't been demultiplexed. We've used custom i5 and i7 sequences in unique combinations for 96 samples. I was given the data in 8 FASTQ files, 2 per lane (4 lanes) with paired-ends. I've concatenated all of the forward and all of the reverse reads into 2 files for simplicity. I've been using the demuxbyname.sh method through %%BBMap%% - but I keep running into a couple of problems:\n\n1. When I run demuxbyname.sh with a single string I only receive ~2500 reads in the output files. I've noticed that a lot of the index sequences in the FASTQ files contain N's - especially as the first base call (for i5 and i7).\n\n2. This generally takes ~3hrs, but when I then attempt to run the script with an index.txt file containing multiple index combinations, the compute time increases exponentially.\n\nAny help on either of these points is greatly appreciated!",
+            "tools": [
+                "BBMap"
+            ]
+        },
+        "answers": [
+            {
+                "user": "GenoMax",
+                "date": "07-31-2018, 03:29 AM",
+                "content": "\nBefore we get into specifics can you ask your sequence provider to do this demultiplexing with Illumina's program called bcl2fastq (you can't do this since it requires access to the full data folder for the flowcell). That should be trivial for them to do (and they should have done it in first place unless you chose not to give them the sample_ID_index combinations).\n\nCan you tell us how you are running \"demuxbyname.sh\" (full command line)? You should run it like this: https://www.biostars.org/p/139395/#139409 You could start multiple runs (even 96 with just one index combo) to speed things up.\n\nThere is also another package called %%deML%% (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4341068/)that can be used for this.",
+                "tools": [
+                    "deML"
+                ]
+            },
+            {
+                "user": "liorgalanti",
+                "date": "07-31-2018, 07:18 PM",
+                "content": "\nhttps://biosails.github.io/pheniqs/ \n%%pheniqs%%",
+                "tools": [
+                    "pheniqs"
+                ]
+            },
+            {
+                "user": "bpbbentley",
+                "date": "08-02-2018, 09:15 PM",
+                "content": "\nThanks for your feedback on this, it's much appreciated!\n\nI've contacted BGI and they've said that they'll help me with the demultiplexing. I thought it was strange that they simply provided FASTQ files for each lane, especially as they contacted me early on and asked me to provide the index sequences...\n\nI've run the command a few ways, this is ideally what I'm going for:\n\n../sw/bbmap/demuxbyname.sh in=all_lanes_1.fq in2=all_lanes_2.fq out=demux_out/%_1.fq out2=demux_out/%_2.fq prefixmode=f substringmode=f names=index_names_s1.txt\n\nHowever, I have run it using single sequence strings, and also just running 1 lane of data at a time. Thanks again for your help.",
+                "tools": []
+            },
+            {
+                "user": "GenoMax",
+                "date": "08-03-2018, 05:16 AM",
+                "content": "\nYour indexes most likely look like Index1+Index2 (e.g. GGACTCCT+GCGATCTA) then that is how you need to include them in the file one per line. Is that how you are doing this?",
+                "tools": []
+            },
+            {
+                "user": "bpbbentley",
+                "date": "08-05-2018, 08:57 PM",
+                "content": "\nYep my indexes are index1_index2 in the read header, and my .txt file reflects these. I get output files with the index complex names, but these are typically not populated with reads...",
+                "tools": []
+            }
+        ]
+    },
+    {
+        "id": 10,
+        "url": "http://seqanswers.com/forums/archive/index.php/t-83663.html",
+        "title": "depth of coverage and read depth using Bismark",
+        "question": {
+            "user": "Hedi86",
+            "date": "07-26-2018, 10:36 PM",
+            "content": "\nhello everyone\n\nis it possible to calculate depth of coverage and read depth using %%Bismark%% ? if yes how and if No what is the best way to calculate depth of coverage and read of depth from RRBS reads taking from illumina sequencing ?\n\nBest",
+            "tools": [
+                "Bismark"
+            ]
+        },
+        "answers": [
+            {
+                "user": "fkrueger",
+                "date": "07-27-2018, 01:40 AM",
+                "content": "\nBismark itself is merely the alignment tool, and as such does not do any further analysis. I am sure there are several different options to choose from to assess sequence coverage, I can only recommend %%SeqMonk%% which offers visualisation and calculations in one package.",
+                "tools": [
+                    "SeqMonk"
+                ]
+            },
+            {
+                "user": "Hedi86",
+                "date": "07-30-2018, 01:58 AM",
+                "content": "\nthank you for your help.\n\ni tried to use seqmonk, but i wasnt sure which file should i import (.fq file after trimming or COV file from bismark) ? in addition what is the correct pipeline in seqmonk, is it ok to import>define probes>running window generator>quantitation>% coverage quantitation OR Coverage depth quantitation ? Seqmonk then report a summary but in summary report noting showing the coverage or Coverage depth.\n\nthanks again",
+                "tools": []
+            },
+            {
+                "user": "fkrueger",
+                "date": "07-30-2018, 02:13 AM",
+                "content": "\nIt depends a little on which kind of statistics you are interested in. If you really just want to get a value for a fold-coverage of your experiment you should probably import the (deduplicated) Bismark BAM files into SeqMonk because this statistic is a function of the total read length of all reads in your experiment and the size of the genome.\n\nIf you import those BAM files you can do e.g. a running Window probe generation followed by a read count quantitation. If you then Click on \"DataStore Summary Report\" you will see a report that has - among many fields - a Fold Coverage column: this is the value you are looking for. You can also get a mean/median quantification for your probe of interest.\n\nIf you wanted to get similar statistic for single-base resolution cytosines you could import the coverage files, design probes over the Read Positions and count their abundance. But yea, it depends on what you really want to get out in the end.",
+                "tools": []
+            },
+            {
+                "user": "Hedi86",
+                "date": "07-30-2018, 02:58 AM",
+                "content": "\nreally appreciate your comment\n\nso could we say that 0.04 as fold coverage is equal to 4X depth coverage, and could we say that read coverage is equal to mapping efficiency?\n\nthanks again",
+                "tools": []
+            },
+            {
+                "user": "fkrueger",
+                "date": "07-30-2018, 03:07 AM",
+                "content": "\nNot quite. A 0.04 fold-coverage means that - on average - each position in the genome was covered 0.04 times. A 4-fold would be, well, 4.\n\nThis value is obviously not so meaningful if you used only methylation calls to calculate the value, since they are only 1bp long ( (total number of reads * read length) / length of genome = fold-coverage).\n\nThe mapping efficiency is a mapping specific parameter that has to do with which fraction of a sequencing file comes from mappable parts of the genome, and as such has nothing to do with fold-coverage. If you take a library with a 70% mapping efficiency and sequence four times as much, the fold coverage will be 4-times higher but the mapping efficiency is unchanged...",
+                "tools": []
+            },
+            {
+                "user": "Hedi86",
+                "date": "07-30-2018, 03:10 AM",
+                "content": "\nthanks alot for your explanation, now became more clear :)",
+                "tools": []
+            }
+        ]
+    },
+    {
+        "id": 11,
+        "url": "http://seqanswers.com/forums/archive/index.php/t-83194.html",
+        "title": "How to add GFP sequence to mouse genome for mapping",
+        "question": {
+            "user": "Kaizen",
+            "date": "06-29-2018, 04:47 AM",
+            "content": "\nHi guys,\nI was wandering what is the right way to add the sequence of GFP reporter to a mouse genom. Basically instead of \"geneA\" in the genome the modified mouse has \"geneA-IRES-GFP\".\nI guess that adding just the sequence of GFP as an extra chromosome is not ideal, since a read that would map to both \"geneA\" and \"IRES-GFP\" would not be mapped by STAR.\nDoes anyone know what to do?\nThanks",
+            "tools": []
+        },
+        "answers": [
+            {
+                "user": "atpoint",
+                "date": "07-11-2018, 01:37 PM",
+                "content": "\nYou could make an alternative genome by masking the exons of geneA in the fasta (so adding N instead of the actual sequence), and then add the transgene sequence as an extra chromosome.",
+                "tools": []
+            },
+            {
+                "user": "Kaizen",
+                "date": "09-12-2018, 05:46 AM",
+                "content": "\nbut in that case, if you have a read mapping both to the transgene sequence and to the sequence upstream of downstream of it would lead to incorrect mapping and therefore will be lost, right?",
+                "tools": []
+            },
+            {
+                "user": "atpoint",
+                "date": "09-12-2018, 05:50 AM",
+                "content": "\nThe read should be soft-clipped. Use %%BWA mem%% for alignment. Soft-clipping of reads is the basis of structural variant detection by many SV tools.",
+                "tools": [
+                    "BWA mem"
+                ]
+            }
+        ]
+    },
+    {
+        "id": 12,
+        "url": "http://seqanswers.com/forums/archive/index.php/t-83037.html",
+        "title": "Tool for grouping sequences into clusters with homology within each above threshold",
+        "question": {
+            "user": "prishlyK",
+            "date": "06-22-2018, 01:00 AM",
+            "content": "\nIs there a tool/script/algorithm for grouping sequences into bins so that within each group homology for any two sequences is above (or equal to) a certain threshold value (unless there's only one sequence in a bin)? Some sequences may end up being chimeric, some bins may end up containing a single sequence but only if they don't fit into all other bins. Asked this on biostars, but got no replies.",
+            "tools": []
+        },
+        "answers": [
+            {
+                "user": "GenoMax",
+                "date": "06-22-2018, 03:02 AM",
+                "content": "\nTake a look at %%CD-HIT%% (http://weizhongli-lab.org/cd-hit/).",
+                "tools": [
+                    "CD-HIT"
+                ]
+            },
+            {
+                "user": "prishlyK",
+                "date": "10-09-2018, 02:12 AM",
+                "content": "\nThanks! Sorry for taking so long to reply. Great tool. It doesn't seem to allow filtering by target coverage or choosing a \"centroid\" sequence in a cluster, though",
+                "tools": []
+            }
+        ]
+    },
+    {
+        "id": 13,
+        "url": "http://seqanswers.com/forums/archive/index.php/t-82781.html",
+        "title": "Subsample regions of too high coverage",
+        "question": {
+            "user": "sbrohee",
+            "date": "06-07-2018, 06:33 AM",
+            "content": "\nHi all,\n\nDo you think there is an efficient way of downsampling only a few regions of a bam files (in my case the regions with a too high coverage).\n\nThe idea, would be too randomly remove reads in regions where the coverage is above a given coverage.\n\nIndeed, in my analyses, those regions cause some steps of the pipeline to become really slow.\n\nThanks for all your suggestions...",
+            "tools": []
+        },
+        "answers": [
+            {
+                "user": "sbrohee",
+                "date": "06-08-2018, 02:12 AM",
+                "content": "\nOK... I just ran into a great tool that seems to do exactly what I wanted. It is called %%VariantBam%% (https://github.com/walaj/VariantBam, https://www.ncbi.nlm.nih.gov/pubmed/27153727).\n\n./variant highcoveragebam.bam -m maxcoverage -o reducedmaxcoveragebam.bam -b\n\nI hope it will be useful for some of you.",
+                "tools": [
+                    "VariantBam"
+                ]
+            }
+        ]
+    },
+    {
+        "id": 14,
+        "url": "http://seqanswers.com/forums/archive/index.php/t-82714.html",
+        "title": "Extract the XS field from bam",
+        "question": {
+            "user": "Yexzm",
+            "date": "06-04-2018, 05:01 AM",
+            "content": "\nHello everyone,\n\nBWA mem generates for each read an \"XS\" field (the suboptimal alignment score). When I use samtools view, it's presented this way :\n- NS500801:90:HY7JVBGXY:2:21205:8003:11253 147 chrM 958 60 76M = 920 -114 CCCCCTCCCCAATAAAGCTAAAACTCACCTGAGTTGTAAAAAACTCCAGTTGACACAAAATAGACTACGAAAGTGG >>;@B@CC1C??=??AAC=???>C@C>CC@BAAA?@<>>>>>=B?BB@@@?A=B=B>>>><@A=B<=;A>=@=;>= BD:Z:IIIMPOLKNKJJJBIMOMIBBJLKKIKLMKJKJIIKHAAAAILKKKLJIHJKHHHH@@GGIHLLLKKLJCKOJLJJ PG:Z:MarkDuplicates RG:Z:id BI:Z:LLLPTSOOSROPQHOTSQOGGNPPQNQPROLPNMMNNFFFFLNNONPOMLNOMLMNEEKLNMOOPOONMHOROPNN NM:i:0 AS:i:76 XS:i:55\n\nDoes anyone know an easy way to extract it ? With R ? I mean I know I could use samtools view + awk but it'll take a long time.\n\nThanks in advance!",
+            "tools": []
+        },
+        "answers": [
+            {
+                "user": "lindenb",
+                "date": "06-04-2018, 05:51 AM",
+                "content": "\nusing %%bioalcidaejdk%%: http://lindenb.github.io/jvarkit/BioAlcidaeJdk.html\n\n\njava -jar dist/bioalcidaejdk.jar -e 'stream().forEach(R->println(R.getAttribute(\"XS\")));' in.bam",
+                "tools": [
+                    "bioalcidaejdk"
+                ]
+            },
+            {
+                "user": "Yexzm",
+                "date": "06-07-2018, 04:12 AM",
+                "content": "\nHi lindenb, thank you for your answer,\n\nHow can I get the read name too ? I would like to have a table the in the first column the read name, and in the second the XS.",
+                "tools": []
+            },
+            {
+                "user": "lindenb",
+                "date": "06-07-2018, 04:19 AM",
+                "content": "\n> How can I get the read name too ?\n\n... printl(R.getReadName()+\" \"+R.getAttribute(\"XS\")",
+                "tools": []
+            },
+            {
+                "user": "Yexzm",
+                "date": "06-25-2018, 04:39 AM",
+                "content": "\nThank you very much for your help!\n\nThe output file is too big, I'm trying to get the chromosome too so that I can separate it per chromosome. I tried \"getReferenceIndex\" but it returns \"null\". Do you know how I could do ?",
+                "tools": []
+            }
+        ]
+    },
+    {
+        "id": 15,
+        "url": "http://seqanswers.com/forums/archive/index.php/t-82315.html",
+        "title": "best way to index tab-delimited text file",
+        "question": {
+            "user": "Joseph White",
+            "date": "05-09-2018, 03:04 AM",
+            "content": "\nWhat is the best way to index a tab-delimited text file containing chromosome, position and variant data? My files are huge and too big to maintain in memory, so indexing seems the only viable option.\n\njwhite",
+            "tools": []
+        },
+        "answers": [
+            {
+                "user": "GenoMax",
+                "date": "05-09-2018, 03:18 AM",
+                "content": "\n%%tabix%% (http://www.htslib.org/doc/tabix.html)from Samtools.",
+                "tools": [
+                    "tabix"
+                ]
+            },
+            {
+                "user": "Joseph White",
+                "date": "05-09-2018, 05:50 AM",
+                "content": "\ntabix (http://www.htslib.org/doc/tabix.html)from Samtools.\n\nThe file is not in BED, GFF, or SAM format.",
+                "tools": []
+            },
+            {
+                "user": "GenoMax",
+                "date": "05-09-2018, 06:00 AM",
+                "content": "\nTabix can accept these formats: -p gff|bed|sam|vcf",
+                "tools": []
+            },
+            {
+                "user": "Joseph White",
+                "date": "05-09-2018, 06:11 AM",
+                "content": "\nTabix can accept these formats: -p gff|bed|sam|vcf\n\nOh, that's right. All I have to do is add a third column of '.' to make it VCF. Thanks.",
+                "tools": []
+            },
+            {
+                "user": "finswimmer",
+                "date": "05-12-2018, 09:57 PM",
+                "content": "\nHello,\n\nTabix can accept these formats: -p gff|bed|sam|vcf\n\nthese are just presets. One can define in which column the chromosome (aka sequence name), begin and end position are located.\n\nSo if you have the chromosome name in the first column, the position (begin == end) in the second column you can index like this:\n\ntabix -s1 -b2 -e2 my_file.gz\n\nThis way, tabix provide a way to index each tab delimited file, which have sorted positional data. Also one can define whether the position is 0-base or 1-based give the parameter \"-0\" if it's 0-base.\n\nfin swimmer",
+                "tools": []
+            },
+            {
+                "user": "sam657",
+                "date": "05-13-2018, 02:24 AM",
+                "content": "\nThese methods are still working for you?",
+                "tools": []
+            },
+            {
+                "user": "finswimmer",
+                "date": "05-13-2018, 07:59 PM",
+                "content": "\nThese methods are still working for you?\n\nYes, why they shouldn't? It's a documented (http://www.htslib.org/doc/tabix.html) feature. The -p parameter is just a shorthand for this. So in the case above, it would also work to use \"-p vcf\" as the chromosome name is column 1 and the position in column two like it is in a vcf. About the other columns tabix don't care. It doesn't check whether it is a valid vcf file.\n\nfin swimmer",
+                "tools": []
+            }
+        ]
+    },
+    {
+        "id": 16,
+        "url": "http://seqanswers.com/forums/archive/index.php/t-82263.html",
+        "title": "non-overlapping options please help!",
+        "question": {
+            "user": "matt_ms1",
+            "date": "05-07-2018, 02:15 PM",
+            "content": "\nHello all,\n\nStruggling with a 16s metagenomics research project using human fecal data. Have experience with QIIME and usearch, so not quite the first rodeo... couldn't get paired ends to align before realizing that the amplicon length was ~400, and sequencing provided 150bp read lengths. Oops!\n\nEvery paper I've read // project I've worked on has used paired-end reconstruction > open/close reference OTU selection. Faced with this new situation I'm at a loss for what tools to use.\n\nHaving a hard time what to do next. Does anyone have recommendations for what tools to look into? Eager to produce something for the PI, but hesitant to assume ~250bp of the amplicon length by just 'going for it' and filtering by PHRED > Closed reference OTU picking in QIIME... Any thoughts/advice/guidance would be greatly appreciated.",
+            "tools": []
+        },
+        "answers": [
+            {
+                "user": "GenoMax",
+                "date": "05-07-2018, 02:59 PM",
+                "content": "\nHave you tried %%BBMerge%% to see if there are some reads that can merge (have insert sizes smaller than expected).\n\nYou could try bbmerge.sh's tadpole \"extend \"modes to see if you are able to assemble some of this data.",
+                "tools": [
+                    "BBMerge"
+                ]
+            },
+            {
+                "user": "NGSMicro",
+                "date": "05-08-2018, 12:32 AM",
+                "content": "\nHave you tried %%QIIME2%%?\n\nIt provides a few higher resolution methods of clustering meaning you may be able to 'get away with' using only the forward reads.",
+                "tools": [
+                    "QIIME2"
+                ]
+            }
+        ]
+    },
+    {
+        "id": 17,
+        "url": "http://seqanswers.com/forums/archive/index.php/t-82099.html",
+        "title": "much different result from shotgun metagenomics and 16S amplicon",
+        "question": {
+            "user": "chloe1005",
+            "date": "04-27-2018, 06:20 AM",
+            "content": "\nHi, community,\n\nI am analyzing the taxonomic profiling of my shotgun data. Which are 100bp paired-end reads from Illumina Hiseq. Now I am using Metaphlan2 to do the metagenomics profiling. However, the profiling result is far away from Illumina 16S miseq results. Since I have also been using Illumina 16S Miseq to test the taxonomy of my samples for several years. I have two the control samples and treatment samples. In Metaphlan2 results, it gave me around 30% archaea and 70% bacteria for control samples, while Miseq 16S reads tell me that only around 15% archaea and 85% bacteria for control samples. For treatment, shotgun profiling told me 60% archaea and 40% bacteria, while Miseq gave me 20% archaea and 80% bacteria. For my experience, this kind of sample could not achieve that much archaea abundance than bacteria. Furthermore, some(not all) bacteria and archaea composition are different between %%Miseq%% result and %%Metaphlan2%% result.\n\nWhy is the result so different? Are there any suggestions why the two method result differs so much?\n\nI am confused. Looking forward to a help.",
+            "tools": [
+                "Miseq",
+                "Metaphlan2"
+            ]
+        },
+        "answers": [
+            {
+                "user": "kbseah",
+                "date": "05-11-2018, 06:39 AM",
+                "content": "\nHello,\n\nI've seen similar issues with my own data, and in general I think that taxonomic profiles should always be taken with a pinch of salt. Off the top of my head, a few possibilities:\n\n1. Metagenome read profiling methods can be quite sensitive to the database used and the cutoffs for assigning a given read to a taxon. It might be worth trying a different pipeline like %%Kraken%% (https://www.ncbi.nlm.nih.gov/pubmed/24580807) to see if you get similar results.\n\n2. rRNA operon copy number can vary between different microbial species. E.g. if species A has two copies of the 16S gene per genome, and species B has only one, one, then A might appear to be twice as abundant as B. You could try profiling only the 16S sequences from the metagenomic shotgun libraries to see if this gives a better fit to your amplicon libraries, e.g. with %%Emirge%% (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3219967/) or %%Matam%% (https://www.ncbi.nlm.nih.gov/pubmed/29040406). My colleagues and I are working on a pipeline for quick screening and comparison of metagenome libraries for SSU using Emirge and other tools (https://github.com/HRGV/phyloFlash). %%phyloFlash%%\n\n3. Amplicon libraries can be quite heavily influenced by amplification and primer biases during PCR (e.g. see https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3592464/)\n\nHope this helps!\n\n-- Brandon",
+                "tools": [
+                    "Kraken",
+                    "Emirge",
+                    "Matam",
+                    "phyloFlash"
+                ]
+            },
+            {
+                "user": "chloe1005",
+                "date": "05-11-2018, 07:49 AM",
+                "content": "\nHi,\nThanks so much for the reply. These make sense to me. And now I am totally agreed. During these days after I posted the thread, I have been trying many different method and software. I found just taxonomic profiling cannot be accurate, and the different result got from the comparison between 16S amplicon is expectable.\nKraken gives me 2% reads hit NCBI. It is lucky to meet PhyloFALSH, which can be used for extract 16S reads and give me the taxonomy result. 0.107% reads hits to SILVA database. Still waiting for the publication of PhyloFLASH.\nI have also tried a software- Kaiju, which got 47% reads hits to NCBI nr database, 31% reads hits in RefSeq Complete Genomes database, 38% reads hits in proGenomes database.\nInteresting, challenging but confusing. Maybe for environmental samples, assemble is necessary.\nLooking forward to more suggestions shared from you.\nBest.",
+                "tools": []
+            }
+        ]
+    },
+    {
+        "id": 18,
+        "url": "http://seqanswers.com/forums/archive/index.php/t-81918.html",
+        "title": "suitable aligner for human RNA-seq",
+        "question": {
+            "user": "yueli",
+            "date": "04-19-2018, 06:42 AM",
+            "content": "\nHello,\n\nHuman RNA-seq dataset was generated from Illumina HiSeq 3000 with 2X100 cycles run.\n\nThe first step is making alignment of the reads to the human genome. These are many aligner, such as: %%Bowtie%%, %%GASSST%%, %%PASS%%, %%SOAP%%, %%BOAT%%. Each aligners has different performs in different kinds of data.\n\nWhich is the best suitable aligner for RNA-seq data?\n\nThank you in advance for great help!\n\nSincerely,\n\nYue",
+            "tools": [
+                "Bowtie",
+                "GASSST",
+                "PASS",
+                "SOAP",
+                "BOAT"
+            ]
+        },
+        "answers": [
+            {
+                "user": "colindaven",
+                "date": "05-02-2018, 04:01 AM",
+                "content": "\n%%STAR%% or %%Hisat2%%, and NOT Tophat2",
+                "tools": [
+                    "STAR",
+                    "Hisat2"
+                ]
+            }
+        ]
+    },
+    {
+        "id": 19,
+        "url": "http://seqanswers.com/forums/archive/index.php/t-81897.html",
+        "title": "Need simple way to get coverage per 10kb interval on reference",
+        "question": {
+            "user": "jmartin",
+            "date": "04-18-2018, 02:15 PM",
+            "content": "\nIs there a tool that can tell me coverage per some uniform interval along a set of reference contigs? I know I could use %%bedtools%% coverage and build a bed file defining the intervals, but I was asked if there wasn't already a tool that could just do uniform intervals on its own without having to setup a bedfile to define the intervals.",
+            "tools": [
+                "bedtools"
+            ]
+        },
+        "answers": [
+            {
+                "user": "GenoMax",
+                "date": "04-19-2018, 04:19 AM",
+                "content": "\nUse %%mosdepth%% (https://github.com/brentp/mosdepth)and option --by 10000.\n\nYou can also use %%deepTools%% (https://deeptools.readthedocs.io/en/develop/)and option multiBamSummary bins.",
+                "tools": [
+                    "mosdepth",
+                    "deepTools"
+                ]
+            },
+            {
+                "user": "Mizzou55",
+                "date": "04-19-2018, 10:36 AM",
+                "content": "\nDoes the --by option sum up the coverage for an interval (10000), or does it provide the depth at each interval?",
+                "tools": []
+            },
+            {
+                "user": "jmartin",
+                "date": "04-19-2018, 01:19 PM",
+                "content": "\nThanks for the suggestion, mosdepth is just what I need!\n\n@Mizzou55 it looks like its reporting the average depth across the requested intervals. If you want depths at specific positions in your reference I guess you'd have to setup a bed file with the positions you want reported",
+                "tools": []
+            }
+        ]
+    },
+    {
+        "id": 20,
+        "url": "http://seqanswers.com/forums/archive/index.php/t-81825.html",
+        "title": "Pipeline construction (metagenomics 101)",
+        "question": {
+            "user": "sbW",
+            "date": "04-14-2018, 07:21 AM",
+            "content": "\nHello guys / gals,\nI really feel that this might be one of the last options and almost a cry for help, I've been reading and studying metagenomics field for over a month now, and I still have a not properly understood the concepts of it. If you would help me or guide me in any way into a general direction of better understanding it i would be extremely grateful.\n\nSo here is the problem, I am a master student who's new to bioinformatics field (had only 1 lecture of it) and now I am assigned to make a pipeline for metagenomic analysis. There are some main ideas that are expected of me, and I've been reading literature on it, but I find it really hard to review this literature as I do not fully understand them and also I have never written a thing like that.\n\nSo the objective is to propose a pipeline, in which sampled data would be placed into phylogenetic trees to see who is in the sample in reference to some refence database. The input is FASTA files from metagenomic bins ( there's a pipeline for sorting them into contigs, filtering , quality control and etc. ) which is expected to be a single genome in a single bin. From this place I should take over and suggest tools for further data processing. The steps in my pipeline should be:\n\n1) Selecting Marker genes\n2) Indentifying them in the bins\n3) Allignment processing\n4) Concatenation of marker genes\n5) Applyig evolutionary models and\n6) infering phylogenetic trees.\n\n\nSo here goes some questions about it, and sorry if the answers are obvious to you (because they are not for me..) :\n\nI've seen in literature that %%Amphora%%(2) and %%Phylophlan%% are the methods using concatenated marker gene phylogeny, but others (most that i found) use OTUs that seem to be used as the same thing, is there a difference between them?\n\nI try to refer to the literature I am reading, but there is too much variation and I do not feel confident that they are answering the same questions I should be. Is there any good/ working pipelines that are working on the same or similar protocol that i described?\n\nHow should i choose the reference genomes and reference marker genes, as I cannot see any correlation between different literature, maybe you have any information where I could read it up?\n\nIf you have any comprehensive literature that might be helpful on any of the steps (with full explanations of what is going on in each step), could you share it?\n\n\nTL; DR\n\nrookie at bioinformatics requests for help in building a pipeline, all help would be appreciated.\n\nThank you for your time",
+            "tools": [
+                "Amphora",
+                "Phylophlan"
+            ]
+        },
+        "answers": [
+            {
+                "user": "Liam_Gallagher",
+                "date": "04-20-2018, 08:00 AM",
+                "content": "\nCheck this: http://ab.inf.uni-tuebingen.de/software/megan6/\nIt uses %%DIAMOND%% to align sequences, then %%MEGAN%% for the taxonomic analysis.\nHope it helps!",
+                "tools": [
+                    "DIAMOND",
+                    "MEGAN"
+                ]
+            }
+        ]
+    },
+    {
+        "id": 21,
+        "url": "http://seqanswers.com/forums/archive/index.php/t-81707.html",
+        "title": "Number of reads in paired end fastq files",
+        "question": {
+            "user": "bong28",
+            "date": "04-08-2018, 10:27 AM",
+            "content": "\nI have two fastq files from paired end sequencing. I got those two files after converting a bam file to fastq. I was doing a quality check on the files, when I saw the number of sequences option in FASTQC tool gave different number for both files.\nThe number of sequences for read 1 was : 508168252\nThe number of sequences for read 2 was : 512336921\n\nShouldn't this be the same?",
+            "tools": []
+        },
+        "answers": [
+            {
+                "user": "GenoMax",
+                "date": "04-08-2018, 01:57 PM",
+                "content": "\nNormally yes.\n\nI suggest that you use use \"repair.sh\" from %%BBMap%% suite (https://jgi.doe.gov/data-and-tools/bbtools/bb-tools-user-guide/repair-guide/) to re-pair the reads and remove singletons to a separate file. Assuming your conversion has properly worked.",
+                "tools": [
+                    "BBMap"
+                ]
+            },
+            {
+                "user": "bong28",
+                "date": "04-08-2018, 10:53 PM",
+                "content": "\nThanks for your reply",
+                "tools": []
+            }
+        ]
+    },
+    {
+        "id": 22,
+        "url": "http://seqanswers.com/forums/archive/index.php/t-81679.html",
+        "title": "Pooled sample for GWAS power",
+        "question": {
+            "user": "laurence_13",
+            "date": "04-06-2018, 07:00 AM",
+            "content": "\nHi,\n\nI'm very new to the forum, if you have any suggestions, please share them.\n\nSo i'm working with honey bee to identify QTL associated to a resistance trait (quantitative trait) using GWAS (by calling SNPs).\nHoney bee queens are diploid and males progeniture inherit 1/2 of their genes (so they are haploid).\nWe want to sequence the queens, but can't use them, so we sampled the males progeny. I made 4 pools of 6 males for each queen.\n\nMy question is this: Is it better to do all my pipeline to SNP calling on each of the 4 pools individually before joining the results together, or should i joint the pools raw reads before starting my pipeline to enhance statistical power?\n\nMy logic is that if I don't initially joint them, I can later compare allele frequency between each replicate to insure that rare variants are not eliminated.\n\nthanks",
+            "tools": []
+        },
+        "answers": [
+            {
+                "user": "gringer",
+                "date": "04-17-2018, 04:06 PM",
+                "content": "\nMy usual approach is to do the mapping separately, and do variant calling in parallel with %%samtools%% mpileup in multi-BAM mode (i.e. using more than one BAM file on the command line). This increases the chance that a rare/odd variant will be picked up, and makes sure that all variants are called in all samples.",
+                "tools": [
+                    "samtools"
+                ]
+            }
+        ]
+    },
+    {
+        "id": 23,
+        "url": "http://seqanswers.com/forums/archive/index.php/t-81581.html",
+        "title": "gene expression profilling",
+        "question": {
+            "user": "dayana42200",
+            "date": "04-02-2018, 03:07 AM",
+            "content": "\nHello everyone.\n\nI have a questions on gene expression profiling.\n\n1. Does the end product of gene expression profiling is in a DNA sequence? If so, does the sequence is in normal DNA sequence or mutated DNA sequence?\n2. What are the method use to develop the expression profile?\n3. Please share any related article of the method. Ive have search a lot on the method, but i cant understand since im not from bioinformatic background.\n4. If anyone familiar with BRCA1 gene expression profiling, can anyone share with me the development of the profile?\n\nThank you for your time and reply.",
+            "tools": []
+        },
+        "answers": [
+            {
+                "user": "GenoMax",
+                "date": "04-02-2018, 04:28 AM",
+                "content": "\n1. If you are doing RNAseq then yes you would sequence DNA that is derived from RNA. Unless you know beforehand the DNA being sequenced may be normal or mutated.\n2. %%DESeq2%% , %%edgeR%% and %%LIMMA%% are some of the popular methods used for differential gene expression. They can also generate normalized data giving you a profile of gene expression.\n3. Original concept came from microarrays. This link (https://www.genome.gov/10000533/dna-microarray-technology/)contains a basic introduction.\n4. I am not sure what you referring to when you say profile. You can refer to this publication (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2667820/)for a set of 50 genes that was identified to predict risk/classify breast cancers.",
+                "tools": [
+                    "DESeq2",
+                    "edgeR",
+                    "LIMMA"
+                ]
+            },
+            {
+                "user": "dayana42200",
+                "date": "04-04-2018, 07:07 PM",
+                "content": "\n@GenoMax\n\nIve read the introduction of microarray. I dont really understand this statement.\n\n\"Both sets of labeled DNA are then inserted into the chip and allowed to hybridize - or bind - to the synthetic DNA on the chip.\n\nIf the individual does not have a mutation for the gene, both the red and green samples will bind to the sequences on the chip that represent the sequence without the mutation (the \"normal\" sequence).\n\nIf the individual does possess a mutation, the individual's DNA will not bind properly to the DNA sequences on the chip that represent the \"normal\" sequence but instead will bind to the sequence on the chip that represents the mutated DNA\"\n\n1. Synthetic DNA in the microarray, is the synthetic DNA is normal or mutated DNA or both?\n2. Also for BRCA1 profile, I mean is a strand of DNA in a certain length that is able to detect BRCA1 gene.",
+                "tools": []
+            }
+        ]
+    },
+    {
+        "id": 24,
+        "url": "http://seqanswers.com/forums/archive/index.php/t-81560.html",
+        "title": "NGS-Ig data",
+        "question": {
+            "user": "pablo12",
+            "date": "03-31-2018, 07:47 AM",
+            "content": "\nDear users,\n\nI'd like to ask you for your advise on a certain project that I am working on.\n\nMy job is to retrospectively analyse NGS data from patients suffering from ALL and MM (IGH).\nHowever, I am not a bioinformatician. I just received the sequencing data in Excel (and .csv) files and I'm supposed to analyse these data.\n\nOf course, I've heard of %%IMGT/VQUEST%% and %%IgBlast%% and it is no problem for me to work with these programmes. But the issue is that I can't do this with tens of thousands of sequences.\n\nAfter further research, I came across the R tool tcR. It seems to be a well-done programme. Unfortunately, I always receive error messages when trying to integrate my files in it.\n\nI found out that it might be useful to convert my files into .txt files or to work with VDJ-tools, Immunoseq, mixcr or other tools. But I do not have access to these programmes or they require Linux (which I don't have; Windows).\n\nIn addition, the sequencing data in my Excel files are not in fasta-format. But if I would change this by editing the sequences manually I'd be busy for the next three months.\n\nMy goal is to analyse my data for gene usage and to be able to search quickly for potential subclones.\n\n\nI look forward to hearing your opinion! :)\nThanks in advance!\n\nPablo",
+            "tools": [
+                "IMGT/VQUEST",
+                "IgBlast"
+            ]
+        },
+        "answers": [
+            {
+                "user": "colindaven",
+                "date": "04-16-2018, 05:49 AM",
+                "content": "\nYou can probably use the sequences from the CSV files to create fasta files with a bit of creativity.\n\nHave a look at good text editors like Notepad++ to get this done.\n\nAlso check out %%Galaxy%% for user friendly processing tools.",
+                "tools": [
+                    "Galaxy"
+                ]
+            }
+        ]
+    },
+    {
+        "id": 25,
+        "url": "http://seqanswers.com/forums/archive/index.php/t-81451.html",
+        "title": "Microarray data (bedGraph) to metaplot.",
+        "question": {
+            "user": "rivered",
+            "date": "03-26-2018, 01:00 PM",
+            "content": "\nHi all,\n\nI am running into troubles with the microarray data I am trying to analyze. Lets try to explain this clearly. I have two sets of genes for which Iam trying to find differences in histone modifications. For most of the histone modifications, I was able to get pretty elaborate .bam files and making the metaplots was easy-peazy (attach3).\n\nFor some of the older data published, such as from microarray data, the process is less straight forward. I converted the microarray data to .bed files and after this to .bam files to analyze them with the R metagene package. For most .bam files this package works great. However because there is no read count available but only intensity the metaplot package does not give nice outputs.\n\nHere is an example of the .bedgraph file used to make .bam (added a mockID)\nchrnumber; start; end; normalized intensity\nChr1 25 50 0.005\nChr1 60 85 0.001\nChr1 113 138 0.001\nChr1 154 179 0.359\nChr1 185 210 0.001\nChr1 219 244 0.004\nChr1 254 279 4.599\nChr1 287 312 3.908\n\nAnd this is how the .bam files look\nid-1 0 Chr1 26 255 25M * 0 0 * *\nid-2 0 Chr1 61 255 25M * 0 0 * *\nid-3 0 Chr1 114 255 25M * 0 0 * *\nid-4 0 Chr1 155 255 25M * 0 0 * *\n\n\nI added an attachment to view the output from the metagene package. When I view these .bedgraph file in IGV for example the curves look really nice for the histone marks, compared to the .bam files generated from the .bedgraphs. This is most likely also the reason why the metagene package is not able to plot my data well.\n\nI tried plotting the .bedGraphs with another package called metagene-maker but this program gives me IndexError: list index out of range. I think this error is caused because most of the reads are not in my designated .bed files with the regions of the genes I want to map. It would take quite some effort to do this manually and this is probably not the way to go. I was thinking about giving the .bam file some mock read count, and use the intensity as the mapping quality but most likely this is not a great idea from a bioinformatics view, and could give some problems upon publication.\n\nI am just wondering what the way forward would be from a bioinformaticians view as other complete .bam files give beautifull output.\n\nSo summing it up; I have .bed, .bam and .bedGraph files from microarray data; location and intensity of predesigned probes mapped to genome. Want to know which is the best way to make metaplots of this data against .bed files with self-defined regions (in .bed format).\n\nHelp would be greatly appreciated!\nR",
+            "tools": []
+        },
+        "answers": [
+            {
+                "user": "colindaven",
+                "date": "04-16-2018, 06:05 AM",
+                "content": "\nTricky. Perhaps its not possible.\n\nHowever, you can do something similar I believe with deeptools (see the installation in the usegalaxy.eu server for example) if you convert from bedgraph to bigwig.\n\nThats a bit of a mission in itself, but java-genomics-toolkit can help you do that.\n\nBest of luck",
+                "tools": []
+            },
+            {
+                "user": "rivered",
+                "date": "04-24-2018, 03:39 AM",
+                "content": "\nThank you for your reply. In the end I decided to use the bed files to make scorematrices with the library(\"genomation\") package in R. These could be plotted with plotMeta function and statistics could be done with ks.test on colmeans from scorematrices.\n\n%%Deeptools%% works as well but this would have been more effort. Good luck to anyone in the future struggling with this.",
+                "tools": [
+                    "Deeptools"
+                ]
+            }
+        ]
+    }
+]
