@@ -53,7 +53,14 @@ window.onload = function () {
 		//svg = d3.select("body").append("svg")
 		svg = d3.select("#d3wf").append("svg")
 		        .attr("width", width)
-		        .attr("height", height);
+		        .attr("height", height)
+				.classed("svg-content-responsive", true)
+		.call(d3.zoom().on("zoom", function () {
+				svg.attr("transform", d3.event.transform)
+			})
+			.scaleExtent([1,4])
+            .translateExtent([[0,0],[width,height]])
+			).on("dblclick.zoom", null);
 
 
 		//buildTree(); // Run this for initialization
@@ -123,10 +130,22 @@ window.onload = function () {
 				.links(mylinks)
 	            .start();
 				
+			// define arrow markers for graph links
+			svg.append('svg:defs').append('svg:marker')
+			.attr('id', 'end-arrow')
+				.attr('viewBox', '0 -5 10 10')
+				.attr('refX', 10)
+				.attr('markerWidth', 6)
+				.attr('markerHeight', 6)
+				.attr('orient', 'auto')
+				.append('svg:path')
+				.attr('d', 'M0,-5L10,0L0,5')
+				.attr('fill', '#000');	
+				
 				
 			var pad = 3;
-	        var nodeHeight = 50;
-			var nodeWidth = 50;
+	        var nodeHeight = 35;
+			var nodeWidth = 35;
 			
 
 			var node = svg.selectAll(".node")
@@ -149,10 +168,11 @@ window.onload = function () {
 	            .data(mynodes)
 	            .enter().append("text")
 	            .attr("class", "label")
+				.attr("dx", 30)
+				.attr("dy", ".36em")
 	            .text(function (d) { return d.text; })
 	            .call(obc_cola.drag);
 
-		
 			obc_cola.on("tick", function () {
 	            
 	            node.attr("x", function (d) { return d.x - nodeWidth / 2 + 3; })
@@ -162,6 +182,22 @@ window.onload = function () {
 	                .attr("y1", function (d) { return d.source.y; })
 	                .attr("x2", function (d) { return d.target.x; })
 				    .attr("y2", function (d) { return d.target.y; })
+					
+				link.attr("x1", function (d) { return d.source.x; })
+					.attr("y1", function (d) { return d.source.y; })
+					.attr("x2", function (d) {			   
+						   if((d.source.x - d.target.x)>0){
+								return d.target.x+25; 
+							}else{
+								return d.target.x-25; 
+							}
+					   })
+				.attr("y2", function (d) {return d.target.y;})			   
+						   
+				
+				
+				.attr("marker-end","url(#end-arrow)");  	
+					
 					
 				label.attr("x", function (d) { return d.x; })
 	                 .attr("y", function (d) {
