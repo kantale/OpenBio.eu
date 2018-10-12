@@ -211,80 +211,69 @@ window.onload = function () {
 		} // update
 
 	  	/** Toggle node children on click **/	
-	  	function collapse(d) {
-
-			if(d.children){  //if clicked node has already open children remove them
-				mynodes  = mynodes.filter(function(x) { 
-					return d.children.indexOf(x) < 0;
-				});
-							
-				d.children.forEach(function(f) {
-					if(f.children){
-						mynodes  = mynodes.filter(function(x) { 
-							return f.children.indexOf(x) < 0;
+  function collapse(d) {
+    
+		  if(d.children){  //if clicked node has already open children remove them
+ 			//remove children nodes from nodes
+			mynodes  = mynodes.filter(function(x) {return d.children.indexOf(x) < 0; });
+						
+			//update Links, links should re-initialized based to the new nodes since nodes indexing is changed
+			mylinks=[];
+			var mysource, mytarget;
+			mynodes.find(function(item, i){						
+					 mytarget=i;
+						mynodes.find(function(item_, i_){
+							if(item_.id === item.parent) mysource =i_;						
 						});
-					}
-						
-				});
-				
-			//update Links
-			//add links directed to children nodes
-			var tmp_links=[];
-				mynodes.forEach(function(n) {
-					mylinks.forEach(function(x) { 
-						
-						if(n.id==x.target.id) {
-							tmp_links.push(x);
-						}			
-
-					})	
-				});
-				
-				mylinks = mylinks.filter(function(x) {
-					return tmp_links.indexOf(x) >= 0;
-				});
-
-				
-				d.children=null;
-	 
-			}
-			else { //if clicked node has closed children, open them
-			
-				treeData.forEach(function(n) {
-						
-					// add children nodes
-					if(n.parent==d.id) {
-						tmp_children.push(n);
-						mynodes.push(n);
+			if(typeof mysource!=='undefined' & typeof mytarget!=='undefined') mylinks.push({source: mysource,target:mytarget});
 								
-						//add links directed to children nodes
-						var mysource, mytarget;
-						treeData.find(function(item, i) {
-							if(item.id === d.id){
-								mysource=i;
-							}
-						});
-						
-						treeData.find(function(item, i){
-							if(item.id === n.id){
-								mytarget =i;
-							}
-						});
-												
-						mylinks.push({source: mysource,target:mytarget});
-					}
-
-				});
-					 
-				d.children = tmp_children;
-				tmp_children=[];
+			});
 			
-			}
-
-			update();
-	  
 		
-	 	} // collapse 
+			//recusrsive: call recursivelly the remove children part of collapse function if needed		
+				var my_children=d.children;
+				d.children=null;	
+					my_children.forEach(function(f){
+						if(f.children) collapse(f);
+					})
+
+		}else { //if clicked node has closed children, open them
+	
+      		treeData.forEach(function(n) {
+				// add children nodes
+					if(n.parent==d.id){
+							tmp_children.push(n);
+							mynodes.push(n);	
+						}	
+					})	
+					
+			//add links directed to children nodes
+			addLinksToNode(d);
+
+			d.children = tmp_children;
+			tmp_children=[];
+		
+		}
+		
+		//update with the new nodes and links (removed or added)
+		update();
+  }
+  
+  
+  //add links to a specific node
+   function addLinksToNode(d) { 
+   			var mysource, mytarget;
+			mynodes.find(function(item, i){						
+					if(item.parent === d.id) mytarget=i;
+						mynodes.find(function(item, i){
+							if(item.id === d.id) mysource =i;						
+						});
+							
+			
+				if(typeof mysource!=='undefined' & typeof mytarget!=='undefined') mylinks.push({source: mysource,target:mytarget});
+								
+			});
+   }// collapse 
 
 	 	//Initialize with an empty workflow
 
