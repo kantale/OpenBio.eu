@@ -1,3 +1,14 @@
+Instead of wget you can use:
+
+```
+curl -O -J -L <URL>
+
+-O, --remote-name          Write output to a file named as the remote file  
+-J, --remote-header-name   Use the header-provided filename
+-L, --location      Follow redirects (H) 
+```
+
+This is useful for example in windows when using git bash prompt.  
 
 ### jQuery 3.3.1
 
