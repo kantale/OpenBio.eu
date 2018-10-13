@@ -4,6 +4,7 @@ import re
 
 '''
 /Users/antonakd/anaconda3/bin/python do.py 
+https://gist.github.com/kantale/c60ddec0470fbeb0034e2294634d1166
 '''
 
 fn = 'questions.txt'
