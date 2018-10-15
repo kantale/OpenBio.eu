@@ -67,6 +67,10 @@ pre {
     height: 200px;  
 }
 
+#d3wf {
+  overflow: auto;
+}
+
 /* https://getbootstrap.com/docs/4.1/examples/sticky-footer/ */
 /*
 .footer {
