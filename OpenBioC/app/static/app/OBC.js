@@ -277,12 +277,12 @@ window.onload = function () {
 
 	 	//Initialize with an empty workflow
 
-	 	function initTree() {
+	 	window.initTree = function() {
 	 		mynodes=[],mylinks=[],children=[],tmp_children=[];
 	 		window.buildTree([]); // [] means empty workflow
 	 	}
 
-	 	initTree();
+	 	window.initTree();
 	 	
 	} // if (true)
 
