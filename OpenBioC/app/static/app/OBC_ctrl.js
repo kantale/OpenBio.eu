@@ -579,6 +579,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     /*
     * Navbar -> Tools/Data --> Appropriate input --> "Create New" button --> Pressed
+    * FIXME function namae tooooooools
     */
     $scope.toools_search_create_new_pressed = function() {
 
@@ -1085,6 +1086,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.inner_hide_all_navbar();
         $scope.show_workflows = true;
     };
+
+    $scope.workflow_clear_button_pressed = function() {
+        window.initTree();
+    }
 
     // WORKFLOWS END 
 
