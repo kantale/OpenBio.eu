@@ -31,14 +31,15 @@ window.onload = function () {
 
 	//Galateia's code
 	if (true) { //Activate/deactivate code
+	
 
 		/* initialize global variables */
 		//var cola,svg,root,treeData; // Alex commented it out. There were undefined 
 
 		//We should run these commands only once!
-		var mynodes=[],mylinks=[],children=[],tmp_children=[];
+		var mynodes=[],mylinks=[],children=[],tmp_children=[], parents=[];
 
-		var width = 960, height = 500;
+		var width = 768, height = 517;
 
 	    var color = d3.scaleOrdinal(d3.schemeCategory20);
 
@@ -58,8 +59,10 @@ window.onload = function () {
 		.call(d3.zoom().on("zoom", function () {
 				svg.attr("transform", d3.event.transform)
 			})
-			.scaleExtent([1,4])
-            .translateExtent([[0,0],[width,height]])
+			//.scaleExtent([1,4])
+			//.translateExtent([[0,0],[0,0]])
+			//.translateExtent([[0,0],[width/4,height/4]])
+            //.translateExtent([[0,0],[width,height]])
 			).on("dblclick.zoom", null);
 
 
@@ -90,39 +93,50 @@ window.onload = function () {
 			];
 
 			*/
-	 		
-			workflow.forEach(function(d) {
-				if(d.parent=='#') {
-					root = d;
-				 	mynodes.push(root);
-				 }			
-		  	});
-		  	treeData = workflow;	
-		  	update();	  
-
-		  	if (false) {
-				d3.json("/static/app/data.json", function (error, data) {
-
-					/* read the given data */			
-					data.forEach(function(d) {
-						if(d.parent=='#'){
-							root = d;
-					 		mynodes.push(root);
-					 	}			
-			  		});
 			
-				 	treeData = data;	
-				 	update();	  
-					  
-				});	
-			}
-		
+			//NEW STUFF
+			//get existing data if any and merge them with new data		
+			if(window.treeData) workflow = workflow.concat(treeData);
+			
+				workflow.forEach(function(d) {
+					if(d.parent=='#') {
+						root = d;
+						if(mynodes.indexOf(root) == -1) mynodes.push(root);
+					 }			
+				});
+			
+			
+				treeData = workflow;
+				
+				
+				update();	
+				
+				if (false) {
+					d3.json("/static/app/data.json", function (error, data) {
+
+						/* read the given data */			
+						data.forEach(function(d) {
+							if(d.parent=='#'){
+								root = d;
+								mynodes.push(root);
+							}			
+						});
+				
+						treeData = data;	
+						update();	  
+						  
+					});	
+				}
+			
 		} // buildTree
 
 		/** update graph: add and remove nodes/links **/
 		function update() {
 		
 			d3.selectAll("svg > *").remove();
+			
+			//call the function to add the links to final nodes	
+			addLinks();
 		
 			/* initialize cola */  
 			  obc_cola
@@ -174,15 +188,19 @@ window.onload = function () {
 	            .call(obc_cola.drag);
 
 			obc_cola.on("tick", function () {
-	            
-	            node.attr("x", function (d) { return d.x - nodeWidth / 2 + 3; })
-	                .attr("y", function (d) { return d.y - nodeHeight / 2 + 3; });
+		            node.attr("x", function (d) {
+							var newdim = d.x - nodeWidth / 2 + 3 ;
+							return Math.max(0, Math.min(760, newdim));
+								
+						})
+	                .attr("y", function (d) { 
+							var newdimy = d.y - nodeHeight / 2 + 3 ;
+							return Math.max(0, Math.min(510, newdimy)); 
 					
-				link.attr("x1", function (d) { return d.source.x; })
-	                .attr("y1", function (d) { return d.source.y; })
-	                .attr("x2", function (d) { return d.target.x; })
-				    .attr("y2", function (d) { return d.target.y; })
 					
+					});
+				
+		
 				link.attr("x1", function (d) { return d.source.x; })
 					.attr("y1", function (d) { return d.source.y; })
 					.attr("x2", function (d) {			   
@@ -208,72 +226,153 @@ window.onload = function () {
 	          
 	        });
 			
-		} // update
-
-	  	/** Toggle node children on click **/	
+		} // update end
+		
+	/** Toggle nodes' children on double click **/	
   function collapse(d) {
     
-		  if(d.children){  //if clicked node has already open children remove them
- 			//remove children nodes from nodes
+		  if(d.children){  	////if clicked node has already open children CLOSE them
+			
+			//do not include the ones with flag "open"
+			d.children  = d.children.filter(function(y) {return y.flag!=="open";});
+						
+			//remove (not flaged) children nodes from total nodes
 			mynodes  = mynodes.filter(function(x) {return d.children.indexOf(x) < 0; });
 						
-			//update Links, links should re-initialized based to the new nodes since nodes indexing is changed
-			mylinks=[];
-			var mysource, mytarget;
-			mynodes.find(function(item, i){						
-					 mytarget=i;
-						mynodes.find(function(item_, i_){
-							if(item_.id === item.parent) mysource =i_;						
-						});
-			if(typeof mysource!=='undefined' & typeof mytarget!=='undefined') mylinks.push({source: mysource,target:mytarget});
-								
-			});
-			
-		
-			//recusrsive: call recursivelly the remove children part of collapse function if needed		
+				//remove children RECURSIVELY
 				var my_children=d.children;
 				d.children=null;	
 					my_children.forEach(function(f){
 						if(f.children) collapse(f);
 					})
 
-		}else { //if clicked node has closed children, open them
+			}else { 	////if clicked node has closed children, OPEN them
 	
-      		treeData.forEach(function(n) {
-				// add children nodes
-					if(n.parent==d.id){
-							tmp_children.push(n);
-							mynodes.push(n);	
-						}	
-					})	
-					
-			//add links directed to children nodes
-			addLinksToNode(d);
-
-			d.children = tmp_children;
+			tmp_children = findChildren(d);
+			mynodes = mynodes.concat(tmp_children);	//add children to total nodes		
+			if(tmp_children.length > 0) d.children = tmp_children; //each node has an array of its' children
 			tmp_children=[];
 		
 		}
 		
-		//update with the new nodes and links (removed or added)
+		//update graph with the new nodes(removed or added)
 		update();
   }
+  //collapse end
   
   
-  //add links to a specific node
-   function addLinksToNode(d) { 
-   			var mysource, mytarget;
-			mynodes.find(function(item, i){						
-					if(item.parent === d.id) mytarget=i;
-						mynodes.find(function(item, i){
-							if(item.id === d.id) mysource =i;						
-						});
-							
+  //find all children of a given node
+  function findChildren(d){
+		treeData.forEach(function(n) {
+			// add children nodes
+				if(n.parent==d.id){
+				//check if already exists in nodes (can be a child of another node)
+					if(!existsInNodes(n)){	
+						tmp_children.push(n);
+					}else{
+					 //add NEW PARENTS and OPEN FLAG to existing node
+					 addNodeInfo(n);				 
+					}
+				}	
+		})  
+		
+		return tmp_children;
+  
+  }
+  
+    //check if a node object exists in mynodes
+	function existsInNodes(n){
+		var answer=false;
+			mynodes.find(function(item, i){	
+				if(item.id==n.id)
+				answer=true;
+			})
+		
+		return answer;
+	}
+	
+	//add new link to existing node (when new parent is added)
+	function addNodeInfo(n){	
+
+		mynodes.find(function(item, i){	
+			if(item.id==n.id){ //if it is already part of the graph	add a flag so it stays always open
+				item.flag="open";
+				
+				mynodes.find(function(item2, i2){	
+				   if(item2.id==n.parent){
+			   
+					   //check if parents exists
+					   if(typeof item.parents!== "undefined"){
+						   if(item.parents.indexOf(item2.id) < 0){
+									parents.push(item2.id);
+									item.parents=item.parents.concat(parents);
+									parents=[];
+								}
+					    }else{
+						   parents.push(item2.id);
+						   item.parents=parents;
+						   parents=[];
+						   
+						 }			
+					}
 			
-				if(typeof mysource!=='undefined' & typeof mytarget!=='undefined') mylinks.push({source: mysource,target:mytarget});
-								
+				})
+				
+				//add recursively the OPEN FLAG
+				addOpenFlag(item.parent);
+				if(item.parents) { 
+					item.parents.forEach(function(i){
+						addOpenFlag(i);
+					})
+				}
+
+			}
+			
+		})	
+	}
+	
+	function addOpenFlag(item){
+
+		mynodes.forEach(function(f){
+			if(item === f.id){
+				f.flag="open";
+				addOpenFlag(f);
+				} 
+			})
+
+	}
+
+   //** his function adds all the links to the approproate nodes **//
+   function addLinks(){
+   		mylinks=[];
+		var mysource, mytarget;
+		mynodes.find(function(item, i){
+
+			mytarget=i;
+			
+			mynodes.find(function(item_, i_){ //add link from parent node
+				if(item_.id === item.parent) 
+				{
+					mysource =i_;	
+					mylinks.push({source: mysource,target:mytarget});
+				}					
 			});
-   }// collapse 
+											
+			if(typeof item.parents!=="undefined"){ //add links from the extra parents if any		
+				mynodes.find(function(item_, i_){			
+					item.parents.forEach(function(p) {
+						if(item_.id === p) 
+						mysource =i_;		
+						mylinks.push({source: mysource,target:mytarget});	
+					})
+				
+				});		
+			}
+			
+		});
+
+   }
+
 
 	 	//Initialize with an empty workflow
 
@@ -281,11 +380,34 @@ window.onload = function () {
 	 		mynodes=[],mylinks=[],children=[],tmp_children=[];
 	 		window.buildTree([]); // [] means empty workflow
 	 	}
-
 	 	window.initTree();
 	 	
 	} // if (true)
 
+		//clear function
+		window.clear=function() {
+			d3.selectAll("svg > *").remove();
+	 		mynodes=[],mylinks=[],children=[],tmp_children=[];
+			update();
+	 	}
+		
+		//fit function
+		window.fit=function(){
+			/*
+			mynodes.forEach(function(d){
+				d.fixed=false;
+				update();
+			})	
+			*/
+		}
+		
+		//expand all function
+		window.expand=function(){
+			treeData.forEach(function(f){
+				collapse(f);				
+			})
+			
+		}
 
 	// END OF GALATEIA's code
 
