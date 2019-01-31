@@ -240,6 +240,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 window.CSRF_TOKEN = data['csrf_token'];
                 $scope.username = data['username'];
                 $scope.show_login = false;
+
+                $("#signModal").modal('close')
             },
             function(data) {
                 $scope.login_error_message = data['error_message'];

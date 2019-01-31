@@ -79,3 +79,15 @@ wget https://d3js.org/d3.v4.min.js
 ### WebCola v. 3.3.8
 wget https://github.com/tgdwyer/WebCola/archive/v3.3.8.tar.gz
 
+## Create a bundle for everything
+
+tar cvf send.tar angular.js angular.min.js d3.v4.min.js jquery-3.3.1.js jquery-3.3.1.min.js css fontawesome ui-select-0.19.8 jstree-3.3.5 bower-angular-sanitize-1.7.2 ngJsTree-0.0.10 ace-builds-1.4.1 WebCola-3.3.8/ js
+
+### Materialize v1.0.0
+wget https://github.com/Dogfalo/materialize/releases/download/1.0.0/materialize-v1.0.0.zip 
+
+### Animate 3.7.0
+wget https://daneden.github.io/animate.css/
+
+
+
