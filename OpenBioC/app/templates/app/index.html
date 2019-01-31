@@ -15,9 +15,18 @@
 	<script src="/static/app/jquery-2.1.1/jquery-2.1.1.min.js"></script>
 	-->
 
-	<!-- Kontstantina CSS -->
-	<link rel="stylesheet" href="/static/app/konstantina/css/style.css" type="text/css"/>
-	
+
+	<!-- Google Icon Font-->
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+	<!-- Materialize Css-->
+	<link type="text/css" rel="stylesheet" href="/static/app/materialize/css/materialize.min.css" media="screen,projection" />
+
+	<!-- Animate Css FIXME: Add animate as external dependency-->
+	<link rel="stylesheet" href="/static/app/konstantina/css/animate-v3.7.0.css">
+
+	<!-- Custom Css -->
+	<link rel="stylesheet" href="/static/app/konstantina/css/style.css">	
 
 	<!-- FOR DRAGGABLE
 	<script src="/static/app/jquery-ui-1.12.1.custom/jquery-ui.min.js" type="text/javascript" charset="utf-8"></script>
@@ -113,9 +122,32 @@
 <body>
 
 <div id="angular_div" ng-app="OBC_app" ng-controller="OBC_ctrl" ng-init="init()">
-{% include "app/navbar.html" %}
+
+{% include "app/navbar2.html" %}
+<!-- Sign In Form -->
+<!-- Sign Up Form -->
+
+<div class="splitter-container">
+
+    <!-- --- LEFT PANEL / left_panel.html -->
+			{% include "app/left_panel.html" %}
+
+
+    <!-- --- RIGHT PANEL / right_panel.html -->
+			{% include "app/right_panel.html" %}
+
+
+</div>
+
+THIS IS THE USERNAME: <span ng-bind="username"></span>
+
+
+{# include "app/navbar.html" #} <!-- AK version -->
 {# include "app/navbar_default.html" #}
 
+
+
+{% comment %}
 <div class="container py-5" ng-show="show_login">
 {% include "app/login.html" %}
 </div>
@@ -147,6 +179,7 @@
 <div class="container" ng-show="show_tools">
 {% include "app/tools.html" %}
 </div>
+{% endcomment %}
 
 {% comment %}
 <!-- https://github.com/angular-ui/ui-select/wiki/ui-select-match -->
@@ -176,12 +209,11 @@ LOGO FOOTER
 
 </div> <!-- angular controler -->
 
-<script src="/static/app/OBC_app.js"></script>
-<script src="/static/app/OBC_ctrl.js"></script>
-<script src="/static/app/OBC.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript" src="/static/app/materialize/js/materialize.min.js"></script>
+<script type="text/javascript" src="/static/app/konstantina/js/ui.js"></script>
+<script type="text/javascript" src="/static/app/OBC_app.js"></script>
+<script type="text/javascript" src="/static/app/OBC_ctrl.js"></script>
+<script type="text/javascript" src="/static/app/OBC.js" type="text/javascript" charset="utf-8"></script>
 </body>
-<!-- konstanina comment 2 -->
-
-Hello world 2
 </html>
 
