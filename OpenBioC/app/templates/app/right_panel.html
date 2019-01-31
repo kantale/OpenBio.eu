@@ -1,0 +1,137 @@
+<!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+<!-- -------------------------------------------------------- Right Panel ---------------------------------------------------------------------------- -->
+<!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+<div class="rightPanel">
+    <div style="margin: 20px;">
+        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+        <!-- ---------------------------------------------- Create Tool / Data Right Panel ------------------------------------------------------------------- -->
+        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+        <div class="faster" id="createToolDataDiv" style="display: none;">
+            <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
+                <p>
+                    <h5>Create Tool/Data</h5>
+                    <small class="form-text text-muted">
+                        kantale, created at Thu 20 Sep 2018 15:25:24, forked from <a href="#">plink/1.9/1</a>
+                    </small>
+                </p>
+                <!-- Buttons -->
+                <div class="row right-align">
+                    <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
+                        data-tooltip="Expand All"><i class="material-icons">expand_more</i></a>
+                    <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
+                        data-tooltip="Collapse All"><i class="material-icons">expand_less</i></a>
+                    <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
+                        data-tooltip="Save"><i class="material-icons">save</i></a>
+                    <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
+                        data-tooltip="Fork"><i class="material-icons">device_hub</i></a>
+                </div>
+            </div>
+
+            <ul id="createToolDataAccordion" class="collapsible expandable popout faster">
+                <!-- --------------------------------------------------------------------------------------- -->
+                <!-- ------------------------------------ General ------------------------------------------ -->
+                <!-- --------------------------------------------------------------------------------------- -->
+                <li id="toolsDataGeneral">
+                    <div class="collapsible-header">
+                        <i class="material-icons arrow">keyboard_arrow_right</i>
+                        <i class="material-icons">info</i>
+                        General
+                    </div>
+                    <div class="collapsible-body">
+                        <div class="row">
+                            <form class="col s12">
+                                <div class="input-field">
+                                    <input id="generalWebsite" type="text" class="validate">
+                                    <label for="generalWebsite">Website</label>
+                                </div>
+                                <div class="input-field">
+                                    <textarea id="generalDescription" class="validate materialize-textarea"></textarea>
+                                    <label for="generalDescription">Description</label>
+                                </div>
+                                <div class="input-field chips left-align"></div>
+                            </form>
+                        </div>
+                    </div>
+                </li>
+                <!-- --------------------------------------------------------------------------------------- -->
+                <!-- -------------------------------- Dependencies ----------------------------------------- -->
+                <!-- --------------------------------------------------------------------------------------- -->
+                <li id="toolsDataDependencies">
+                    <div class="collapsible-header">
+                        <i class="material-icons arrow">keyboard_arrow_right</i>
+                        <i class="material-icons">format_list_bulleted</i>
+                        Dependencies
+                    </div>
+                    <div class="collapsible-body">
+                        <div class="row">
+                            Panel with tree goes here
+                        </div>
+                    </div>
+                </li>
+                <!-- --------------------------------------------------------------------------------------- -->
+                <!-- -------------------------------- Installation ----------------------------------------- -->
+                <!-- --------------------------------------------------------------------------------------- -->
+                <li id="toolsDataInstallation">
+                    <div class="collapsible-header">
+                        <i class="material-icons arrow">keyboard_arrow_right</i>
+                        <i class="material-icons">computer</i>
+                        Installation
+                        <span class="badge"><i class="material-icons md-red">error_outline</i></span>
+                    </div>
+                    <div class="collapsible-body">
+                        <div class="row">
+                            <p>Hide variables from depended tools (Dropdown???)</p>
+                            <p>installation commands</p>
+                            <p>validation commands</p>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+        <!-- --------------------------------------------------- Edit Workflow Right Panel ------------------------------------------------------------------- -->
+        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+        <div id="workflowsRightPanel" class="faster" style="display: none;">
+            <!-- --------------------------------------------------------------------------------------- -->
+            <!-- ------------------------------------ Graph -------------------------------------------- -->
+            <!-- --------------------------------------------------------------------------------------- -->
+            <div class="row">
+                <svg></svg>
+            </div>
+            <hr>
+            <!-- --------------------------------------------------------------------------------------- -->
+            <!-- ------------------------------- Edit Workflow ----------------------------------------- -->
+            <!-- --------------------------------------------------------------------------------------- -->
+            <ul id="editWorkflowAccordion" class="collapsible expandable faster" style="margin-top:0px;">
+                <li class="disabled">
+                    <div class="collapsible-header">
+                        <i class="material-icons arrow">keyboard_arrow_right</i>
+                        <i class="material-icons">place</i>
+                        Edit (name)
+                    </div>
+                    <div class="collapsible-body">
+                        <p>(bash commands)</p>
+                        <div class="row">
+                            <form class="col s12">
+                                <div class="input-field col s12">
+                                    <input id="editWorkflowName" type="text" class="validate">
+                                    <label for="editWorkflowName">Name</label>
+                                </div>
+                                <div class="input-field col s12">
+                                    <textarea id="editWorkflowDescription" class="validate materialize-textarea"></textarea>
+                                    <label for="editWorkflowDescription">Description</label>
+                                </div>
+                                <div class="row col s12">
+                                    <div class="col s3 offset-s9">
+                                        <a class="waves-effect waves-light btn" style="margin:2px">cancel</a>
+                                        <a class="waves-effect waves-light btn" style="margin:2px">save</a>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
