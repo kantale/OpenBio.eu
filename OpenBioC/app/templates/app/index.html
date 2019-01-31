@@ -16,6 +16,18 @@
 	-->
 
 
+	<!-- Google Icon Font-->
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+	<!-- Materialize Css-->
+	<link type="text/css" rel="stylesheet" href="/static/app/materialize/css/materialize.min.css" media="screen,projection" />
+
+	<!-- Animate Css FIXME: Add animate as external dependency-->
+	<link rel="stylesheet" href="/static/app/konstantina/css/animate-v3.7.0.css">
+
+	<!-- Custom Css -->
+	<link rel="stylesheet" href="/static/app/konstantina/css/style.css">	
+
 	<!-- FOR DRAGGABLE
 	<script src="/static/app/jquery-ui-1.12.1.custom/jquery-ui.min.js" type="text/javascript" charset="utf-8"></script>
 	<link rel="stylesheet" href="/static/app/jquery-ui-1.12.1.custom/jquery-ui.min.css" type="text/css"/>
@@ -27,8 +39,10 @@
 	-->
 
 	<!-- This is version 4.0 -->
+	<!--
 	<link rel="stylesheet" href="/static/app/css/bootstrap.min.css" type="text/css"/>
 	<script defer src="/static/app/js/bootstrap.min.js"></script>
+	-->
 
 	
 
@@ -43,7 +57,7 @@
 	<!-- This is version 1.7.2 -->
 	<script src="/static/app/angular.min.js"></script>
 	
-	<!-- For Select-->
+	<!-- For Select Perhaps we never use it!-->
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/3.4.5/select2.css">    
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.8.5/css/selectize.default.css">
 	<script src='/static/app/bower-angular-sanitize-1.7.2/angular-sanitize.min.js'></script>
@@ -108,9 +122,32 @@
 <body>
 
 <div id="angular_div" ng-app="OBC_app" ng-controller="OBC_ctrl" ng-init="init()">
-{% include "app/navbar.html" %}
+
+{% include "app/navbar2.html" %}
+<!-- Sign In Form -->
+<!-- Sign Up Form -->
+
+<div class="splitter-container">
+
+    <!-- --- LEFT PANEL / left_panel.html -->
+			{% include "app/left_panel.html" %}
+
+
+    <!-- --- RIGHT PANEL / right_panel.html -->
+			{% include "app/right_panel.html" %}
+
+
+</div>
+
+THIS IS THE USERNAME: <span ng-bind="username"></span>
+
+
+{# include "app/navbar.html" #} <!-- AK version -->
 {# include "app/navbar_default.html" #}
 
+
+
+{% comment %}
 <div class="container py-5" ng-show="show_login">
 {% include "app/login.html" %}
 </div>
@@ -142,6 +179,7 @@
 <div class="container" ng-show="show_tools">
 {% include "app/tools.html" %}
 </div>
+{% endcomment %}
 
 {% comment %}
 <!-- https://github.com/angular-ui/ui-select/wiki/ui-select-match -->
@@ -156,10 +194,8 @@
 			    </ui-select-choices>	
 			</ui-select>
 			bbb
+</div>
 {% endcomment %}
-</div>
-</div>
-</div>
 
 {% comment %}
 LOGO FOOTER
@@ -173,12 +209,11 @@ LOGO FOOTER
 
 </div> <!-- angular controler -->
 
-<script src="/static/app/OBC_app.js"></script>
-<script src="/static/app/OBC_ctrl.js"></script>
-<script src="/static/app/OBC.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript" src="/static/app/materialize/js/materialize.min.js"></script>
+<script type="text/javascript" src="/static/app/konstantina/js/ui.js"></script>
+<script type="text/javascript" src="/static/app/OBC_app.js"></script>
+<script type="text/javascript" src="/static/app/OBC_ctrl.js"></script>
+<script type="text/javascript" src="/static/app/OBC.js" type="text/javascript" charset="utf-8"></script>
 </body>
-<!-- konstanina comment 2 -->
-
-Hello world 2
 </html>
 

@@ -563,7 +563,6 @@ def login(request, **kwargs):
     View url: 'login/'
     '''
 
-
     if not 'login_username' in kwargs:
         return fail('username is required')
     login_username = kwargs['login_username']

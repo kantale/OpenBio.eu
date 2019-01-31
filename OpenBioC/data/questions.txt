@@ -928,11 +928,135 @@ Thank you for your reply. In the end I decided to use the bed files to make scor
 
 %%Deeptools%% works as well but this would have been more effort. Good luck to anyone in the future struggling with this.
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+26
+http://seqanswers.com/forums/archive/index.php/t-81448.html
+View Full Version : Question: counting after aligning miRNA reads to miRBase mature miRNA instead of refe
+inah@bi.vt.edu
+03-26-2018, 07:09 PM
+I have human miRNA-seq data. In the past I have aligned these data using Bowtie2 to the reference genome (Homo_sapiens.GRCh38.dna.toplevel.fa), and I have subsequently performed counting using featureCounts with the annotation file hsa.gff3 from miRBase. . Now I have aligned the reads to the mature miRNA from miRBase (mature.fa), but when I look at the resulting bam files, the reads have a flag of 4 (segment unmapped) and there is no position information in mature.fa.
 
+So can I use mature.fa as the reference for alignment and if so how is counting performed?
 
+Thanks, Ina
+sbarberan
+03-26-2018, 11:39 PM
+Hi Ina,
 
+I use %samtools% and %picard-tools% to get the counts for miRNAs.
 
+Here is what I would do for bowtie2 alignment to miRBase
+bowtie2 -L8 --local -x miRBase-mature-hsa-index -U FILE.fastq -S FILE.sam
+samtools view -b -S FILE.sam > FILE.bam
+samtools sort FILE.bam > FILE.sorted
+picard-tools BuildBamIndex I=FILE.sorted
+picard-tools BamIndexStats I=FILE.sorted > FILE.txt
 
+Makes sense?
+
+Cheers,
+sergio
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+27
+http://seqanswers.com/forums/archive/index.php/t-81203.html
+View Full Version : help for NGS and assembly
+wanadou
+03-14-2018, 09:29 AM
+Hello
+
+I think to do the whole genome sequencing of a halophyte plant (350 Mbp) using the Hiseq Pe150 which generate data with 30X coverage
+1- this strategy could it be effective to make an de novo assembly in order to have a draft genome?
+or
+the sequencing using PacBio (1 cell SMRT) to generate sequences with more bigger size is it effective to make de novo assembly of the draft genome?
+nucacidhunter
+03-14-2018, 01:38 PM
+The genome size is relatively small so you will have better assembly if you sequence with PacBio but one SMRT cell will not be enough. You should consider 50x coverage (17.5 Gb) which will require 3-4 Sequel SMRT cells. You can also sequence 2 SMRT cells and then do a preliminary assembly and decide on further sequencing.
+
+Illumina sequencing will result in lots of short contigs especially if the plant genome is composed of repeat regions.
+
+I do not think any of these platforms will enable complete assembly but the results will be better if DNA is from a homozygous plant.
+wanadou
+03-15-2018, 10:16 AM
+Hello nucacidhunter,
+Thanks for your reply
+The cost of sequencing using PacBio is relatively high. the sequencing of 1 cell SMRT can give 5Gb. I think to do an preliminary assembly for a draft genome. In second time i will do sequencing using Illumina platform which provide 50X coverage. this second sequencing can be used to do hybrid assembly in ordre to have complete genome.
+you think this strategy is feasible? or 10-15X coverage given by PacBio is insuffusant to do draft genome assembly
+nucacidhunter
+03-15-2018, 12:26 PM
+It depends on the genome. You might look at repeat content of a related species if it is available. I have seen Illumina based assembled contigs which were couple of hundred bases larger than the sequencing length.
+
+I do not think either of these platforms alone or in combination will give complete assembly but I would recommend to do 2 SMRT cells and assemble then depending on results decide for more sequencing on one. For instance, if you are interested in particular genes or region covered by PacBio contigs then Illumina will be good to increase accuracy. Depending on your application an incomplete assembly might be enough.
+
+PacBio is sensitive to carry over of contaminants from DNA extraction so you should try an extraction method that result in long fragments and is free from carbohydrates and phenolic compounds. Link for PacBio calculator:
+https://www.pacb.com/cn/calculator-whole-genome-sequencing/
+colindaven
+04-16-2018, 05:10 PM
+Its' very tricky to analyse 10X pacbio data and do a de novo assembly. I have had very bad experiences in the past with this setup, getting poor N50s and putting lots of effort in. 30x+ is far, far better since you need a lot of the longest reads to span gaps AND self correct reads for a decent assembly .
+
+There were a few tools for low coverage pacbio hybrid assembly, %DBG2OLC% for example
+Markiyan
+04-16-2018, 07:13 PM
+Please use Illumina 2x250 or 2x300 in any de novo appication! (in addition to the pacbio).
+
+It means 1-2 runs (2x250 or 2x300) using MiSeq or 1/2 of the HiSeq 2500 RR 2x250.
+
+Usually it gives you significantly better assemblies than 2x150 or 2x100 bp runs.
+
+PS: Make sure a PCR-free library prep is used.
+gringer
+04-18-2018, 03:37 AM
+If you want cheap, [MinION](https://store.nanoporetech.com/basic.html) is always available (starter discount is $1000 for two flow cells and a rapid kit). The consensus assemblies are less accurate than PacBio, but if you're doing Illumina as well for local assembly correction (which I also recommend) that probably won't matter as much.
+luc
+04-21-2018, 03:16 AM
+The sequencer is certainly cheap, but to my knowledge not the reagents and additional flowcells. PacBio might be more affordable?
+
+If you want cheap, [MinION](https://store.nanoporetech.com/basic.html) is always available (starter discount is $1000 for two flow cells and a rapid kit). The consensus assemblies are less accurate than PacBio, but if you're doing Illumina as well for local assembly correction (which I also recommend) that probably won't matter as much.
+gringer
+04-21-2018, 03:25 AM
+As far as I know, ONT is the only sequencing machine supplier that publishes all their prices on their store website; you can have a look and see for yourself!
+
+At the moment marginal cost per base for the MinION is approximately equal to PacBio Sequel or Illumina MiSeq, with longer reads, a shorter sample preparation time, and no net capital expense for the sequencer. Flow cells are cheaper if ordered in bulk, and those who want the maximum affordability (and have lots of money to throw around) can purchase a PromethION.
+
+Reminder: all those costs are on the ONT store website (https://store.nanoporetech.com/).
+soungalo
+04-22-2018, 01:46 PM
+You won't be able to get a de novo assembly this way.
+Regarding the Illumina strategy - to get a decent assembly you'll have to:
+a. Increase coverage (50-60X should be OK)
+b. Use longer reads (250bp), preferably use an insert size allowing for merging paired end reads.
+c. Use various insert size libraries (for example by applying mate-pair technology).
+
+As for PacBio - except for the simplest genomes, pure PacBio data cannot produce a decent assembly. Hybrid approaches are nice, but you'll still need lots of Illumina data, which means considerable costs.
+gringer
+04-22-2018, 02:00 PM
+You won't be able to get a good de-novo assembly from Illumina data alone, and longer SBS reads won't fix that. Consider things like 28S rRNA gene regions, where kilobase-length regions are repeated many times in tandem; those will never be properly assembled from just Illumina data.
+
+A hybrid approaches with reasonable long-read coverage (e.g. 40-100X) for generating assembly scaffolds and low short-read coverage (e.g. 40X) for local correction should produce somewhat contiguous sequences (e.g. N50 > 100 kb) that have a high accuracy. Contiguity can be improved with more long-range techniques like Hi-C and optical mapping.
+
+Single-technology sequencing is (at the moment) a false economy. The additional money spent on hybrid sequencing approaches is more than made up for by the reduced pain on the bioinformatics end of things.
+nucacidhunter
+04-22-2018, 02:14 PM
+As far as I know, ONT is the only sequencing machine supplier that publishes all their prices on their store website; you can have a look and see for yourself!
+Reminder: all those costs are on the ONT store website (https://store.nanoporetech.com/).
+
+This is because ONT sells their consumables directly but other companies such as PacBio sell them through a local distributor that have different margin and shipping costs depending on global location.
+
+A 50-80x coverage with PacBio alone depending on genome heterogeneity results in very good assembly.
+gringer
+04-22-2018, 03:25 PM
+other companies such as PacBio sell them through a local distributor that have different margin and shipping costs depending on global location.
+
+That's not the only reason. Sigma also has region-specific pricing. Without logging in, I choose the location when I first visit the site (presumably stored as a cookie for subsequent visits), and their website gives me prices for items.
+luc
+04-23-2018, 01:16 AM
+Final costs depend on reagent costs and yields (and reliability). Results for both systems will depend a lot on DNA sample quality. At current yields the Sequel runs will yield more data/dollar in our hands, if one is not ordering a pack of 48 or 300 nanopore flowcells. The average nanopore read lengths will be longer, but results/flowcells seem much more variable.
+
+As far as I know, ONT is the only sequencing machine supplier that publishes all their prices on their store website; you can have a look and see for yourself!
+
+At the moment marginal cost per base for the MinION is approximately equal to PacBio Sequel or Illumina MiSeq, with longer reads, a shorter sample preparation time, and no net capital expense for the sequencer. Flow cells are cheaper if ordered in bulk, and those who want the maximum affordability (and have lots of money to throw around) can purchase a PromethION.
+
+Reminder: all those costs are on the ONT store website (https://store.nanoporetech.com/).
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+28
 
 
 
