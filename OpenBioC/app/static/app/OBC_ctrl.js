@@ -73,6 +73,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tool_variables = [{name: '', value: '', description: ''}];
         $scope.tools_var_jstree_id_show = true;
 
+        $scope.get_init_data();
 
 
     };
@@ -241,7 +242,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.username = data['username'];
                 $scope.show_login = false;
 
-                $("#signModal").modal('close')
+                //console.log('111');
+                $("#signModal").modal('close');
+                //console.log('222');
             },
             function(data) {
                 $scope.login_error_message = data['error_message'];
@@ -371,9 +374,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     /// TOOLS 
 
     /*
-    * Navbar --> Tools/Data --> pressed
+    * Runs from init() at startup
+    * Fetch init data from server. 
     */
-    $scope.navbar_tools_pressed = function() {
+    $scope.get_init_data = function() {
         $scope.inner_hide_all_navbar();
         $scope.show_tools = true;
         $scope.tools_search_1();
@@ -936,9 +940,16 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     $scope.tools_search_jstree_model = [];
     angular.copy($scope.tools_search_jstree_model_init, $scope.tools_search_jstree_model);
 
+    /*
+    * An item in tool tree on the search panel is selected
+    */
     $scope.tools_search_jstree_select_node = function(e, data) {
         //console.log(data.node.data.name);
         $scope.tools_search_show_item(data.node.data);
+
+
+        window.createToolDataBtn_click();
+
 
     };
 

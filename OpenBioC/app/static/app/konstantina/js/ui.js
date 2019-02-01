@@ -159,7 +159,13 @@ window.onload = function () {
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // -------------------------------------------------------- Create Tool Data Button Click ---------------------------------------------------------------------------------------
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    document.getElementById('createToolDataBtn').addEventListener("click", function () {
+
+    /*
+    * This function is called when the the createToolDataBtn is clicked
+    * We also call this function inside angular whenever a node in the dependency tree on search panel is selected.
+    * Since we want to call this from angular we have to globally register it. FIXME!!!!
+    */
+    window.createToolDataBtn_click = function() {
         if (document.getElementById('createToolDataDiv').style.display == 'none') {
             document.getElementById('createToolDataDiv').style.display = 'block';
             $('#createToolDataDiv').animateCss('slideInDown', function () {
@@ -167,7 +173,10 @@ window.onload = function () {
                 instance.open(0);
             });
         }
-    });
+
+    };
+
+    document.getElementById('createToolDataBtn').addEventListener("click", window.createToolDataBtn_click);
 
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --------------------------------------------------------- Cancel Tool Data Button Click --------------------------------------------------------------------------------------
