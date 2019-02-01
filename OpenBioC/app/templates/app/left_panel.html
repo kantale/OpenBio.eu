@@ -49,9 +49,9 @@
                         <a id="createToolDataBtn" class="waves-effect waves-light btn" ng-click="toools_search_create_new_pressed()" ng-class="{'disabled': !username}" ng-show="(!tools_search_warning) && tools_search_name && tools_search_version">create tool/data</a>
                         <a id="cancelToolDataBtn" class="waves-effect waves-light btn">cancel tool/data</a>
                     </div>
-                    <div class="row" ng-show="tools_search_warning">
-                        <div class="col s12">
-                            <span ng-bind="tools_search_warning"></span>
+                    <div class="row col s12" ng-show="tools_search_warning">
+                        <div class="card-panel orange lighten-1 center-align" style="padding:10px">
+                            <span class="white-text" ng-bind="tools_search_warning"></span>
                         </div>
                     </div>
                     <!-- Tree list 
