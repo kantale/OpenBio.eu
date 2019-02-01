@@ -137,7 +137,7 @@ window.onload = function () {
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     // ------------------------------------------ Sign up button clicked ---------------------------------------------
-    document.getElementById('signUpBtn').addEventListener('click', function () {
+    document.getElementById('modalSignUpBtn').addEventListener('click', function () {
         $('#signInForm').animateCss('fadeOut', function () {
             document.getElementById('signInForm').style.display = 'none';
             document.getElementById('signUpForm').style.display = 'block';
@@ -146,7 +146,7 @@ window.onload = function () {
         });
     });
     // ------------------------------------------ Sign in button clicked ---------------------------------------------
-    document.getElementById('signInBtn').addEventListener('click', function () {
+    document.getElementById('modalSignInBtn').addEventListener('click', function () {
         $('#signUpForm').animateCss('fadeOut', function () {
             document.getElementById('signUpForm').style.display = 'none';
             document.getElementById('signInForm').style.display = 'block';
