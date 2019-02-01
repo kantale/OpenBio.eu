@@ -24,7 +24,7 @@
                 <div class="collapsible-header">
                     <i class="material-icons arrow">keyboard_arrow_right</i>
                     <i class="material-icons">filter_drama</i>
-                    Tools/Data<span class="new badge" data-badge-caption="found">4</span>
+                    Tools/Data<span class="new badge" data-badge-caption="found" ng-bind="tools_search_tools_number"></span>
                 </div>
                 <div class="collapsible-body">
                     <div class="row">
@@ -32,24 +32,29 @@
                         <form class="col s12">
                             <div class="row">
                                 <div class="input-field col s12 m4 grid-s12-m4-l4">
-                                    <input id="toolsDataName" type="text" class="validate">
+                                    <input id="toolsDataName" type="text" class="validate" ng-model="tools_search_name" ng-change="tools_search_input_changed()">
                                     <label for="toolsDataName">Name</label>
                                 </div>
                                 <div class="input-field col s12 m4 grid-s12-m4-l4">
-                                    <input id="toolsDataVersion" type="text" class="validate">
+                                    <input id="toolsDataVersion" type="text" class="validate" ng-model="tools_search_version" ng-change="tools_search_input_changed()">
                                     <label for="toolsDataVersion">Version</label>
                                 </div>
                                 <div class="input-field col s12 m4 grid-s12-m4-l4">
-                                    <input id="toolsDataEdit" type="text" class="validate">
+                                    <input id="toolsDataEdit" type="text" class="validate" ng-model="tools_search_edit" ng-change="tools_search_input_changed()">
                                     <label for="toolsDataEdit">Edit</label>
                                 </div>
                             </div>
                         </form>
                         <!-- Test buttons -->
-                        <a id="createToolDataBtn" class="waves-effect waves-light btn">create tool/data</a>
+                        <a id="createToolDataBtn" class="waves-effect waves-light btn" ng-click="toools_search_create_new_pressed()" ng-class="{'disabled': !username}" ng-show="(!tools_search_warning) && tools_search_name && tools_search_version">create tool/data</a>
                         <a id="cancelToolDataBtn" class="waves-effect waves-light btn">cancel tool/data</a>
                     </div>
-                    <!-- Tree list -->
+                    <div class="row" ng-show="tools_search_warning">
+                        <div class="col s12">
+                            <span ng-bind="tools_search_warning"></span>
+                        </div>
+                    </div>
+                    <!-- Tree list 
                     <div class="row">
                         <p>-----------------------------</p>
                         <p>-----------------------------</p>
@@ -57,6 +62,14 @@
                         <p>-----------------------------</p>
                         <p>-----------------------------</p>
                     </div>
+                     -->
+
+                    <div class="row left-align">
+                        <div class="col">
+                            <div js-tree="tools_search_jstree_config" should-apply="tools_search_jstree_config_apply()" ng-model="tools_search_jstree_model" tree="tools_search_jstree" tree-events="select_node:tools_search_jstree_select_node"></div>
+                        </div>
+                    </div>
+
                 </div>
             </li>
             <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
