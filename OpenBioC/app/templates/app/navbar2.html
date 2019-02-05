@@ -93,8 +93,10 @@
             <div class="row">
                 <h4>Sign Up</h4>
             </div>
-            <div class="row">
-                <span ng-bind="signup_error_message"></span>
+            <div class="row col s12" ng-show="signup_error_message">
+                <div class="card-panel red lighten-1 center-align" style="padding:10px">
+                    <span class="white-text" ng-bind="signup_error_message"></span>
+                </div>
             </div>
             <form>
                 <div class="row">

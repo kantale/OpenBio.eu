@@ -1,10 +1,15 @@
 /*
 
-TODO:
+DONE:
 1. Signup error (i.e. confirm password not match)
 2. Toast. after signup "success", with "X" button. Programmatically close. 
 
 */
+
+// ui.js
+// style.css ->konstantina
+// navbar2.html
+
 
 
 
@@ -15,6 +20,17 @@ window.onload = function () {
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     var animationEnded;
     function init() {
+
+        // Toast
+        function generateToast(message, classes, duration) {
+            var htmlMessage = '<span>' + message + '</span><button onclick="M.Toast.dismissAll()" class="btn-flat"><i class="material-icons">close</i></button>';
+            M.toast({
+                html: htmlMessage,
+                classes: classes,
+                displayLength: duration
+            });
+        }
+        generateToast('success message here', 'green lighten-2 black-text', 'stay on');
 
         var avatarImg = '/static/app/images/konstantina/img_avatar.png';
         var avatars = document.getElementsByClassName('imgAvatar');
@@ -176,7 +192,7 @@ window.onload = function () {
     * Since we want to call this from angular we have to globally register it. FIXME!!!!
     */
 
-    window.createToolDataBtn_click = function() {
+    window.createToolDataBtn_click = function () {
         if (document.getElementById('createToolDataDiv').style.display == 'none') {
             document.getElementById('createToolDataDiv').style.display = 'block';
             $('#createToolDataDiv').animateCss('slideInDown', function () {
@@ -188,7 +204,7 @@ window.onload = function () {
     };
 
 
-//    document.getElementById('createToolDataBtn').addEventListener("click", window.createToolDataBtn_click);
+    //    document.getElementById('createToolDataBtn').addEventListener("click", window.createToolDataBtn_click);
 
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --------------------------------------------------------- Cancel Tool Data Button Click --------------------------------------------------------------------------------------
