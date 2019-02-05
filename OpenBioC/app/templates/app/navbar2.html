@@ -93,27 +93,30 @@
             <div class="row">
                 <h4>Sign Up</h4>
             </div>
+            <div class="row">
+                <span ng-bind="signup_error_message"></span>
+            </div>
             <form>
                 <div class="row">
                     <div class="input-field col s12 m6 grid-s12-m6-l6">
-                        <input id="signUpUsername" type="text" class="validate">
+                        <input id="signUpUsername" type="text" class="validate" ng-model="signup_username">
                         <label for="signUpUsername">Username</label>
                     </div>
                     <div class="input-field col s12 m6 grid-s12-m6-l6">
-                        <input id="signUpEmail" type="email" class="validate">
+                        <input id="signUpEmail" type="email" class="validate" ng-model="signup_email">
                         <label for="signUpEmail">Email</label>
                     </div>
                     <div class="input-field col s12 m6 grid-s12-m6-l6">
-                        <input id="signUpPassword" type="password" class="validate">
+                        <input id="signUpPassword" type="password" class="validate" ng-model="signup_password">
                         <label for="signUpPassword">Password</label>
                     </div>
                     <div class="input-field col s12 m6 grid-s12-m6-l6">
-                        <input id="signUpConfirmPassword" type="password" class="validate">
+                        <input id="signUpConfirmPassword" type="password" class="validate" ng-model="signup_confirm_password">
                         <label for="signUpConfirmPassword">Confirm Password</label>
                     </div>
                 </div>
-                <div class="row col s12">
-                    <button class="btn modal-close waves-effect waves-light" type="submit" name="action">Sign up</button>
+                <div class="row col s12"> 
+                    <button class="btn waves-effect waves-light" ng-click="signup_signup_pressed()">Sign up</button> <!-- modal-close --> 
                     <p>
                         <small class="form-text text-muted">
                             By clicking Sign Up, you agree to our <a href="#">Terms</a>

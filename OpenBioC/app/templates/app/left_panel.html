@@ -45,8 +45,12 @@
                                 </div>
                             </div>
                         </form>
-                        <!-- Test buttons -->
-                        <a id="createToolDataBtn" class="waves-effect waves-light btn" ng-click="toools_search_create_new_pressed()" ng-class="{'disabled': !username}" ng-show="(!tools_search_warning) && tools_search_name && tools_search_version">create tool/data</a>
+                        <!-- Test buttons --> 
+                        <!-- 
+                            ng-class="{'disabled': !username}" 
+                            ng-show="(!tools_search_warning) && tools_search_name && tools_search_version"
+                        --> 
+                        <a id="createToolDataBtn" class="waves-effect waves-light btn" ng-click="tools_search_create_new_pressed()">create tool/data</a>
                         <a id="cancelToolDataBtn" class="waves-effect waves-light btn">cancel tool/data</a>
                     </div>
                     <div class="row col s12" ng-show="tools_search_warning">
