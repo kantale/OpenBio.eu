@@ -213,6 +213,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.show_signup = false;
                 $scope.general_success_message = 'Thank you for registering to openbio.eu . A validation link has been sent to ' + $scope.signup_email;
                 $scope.general_alert_message = '';
+
+                // Sign up modal close + Sign in modal close.
+                $("#signModal").modal('close');
             },
             function (data) {
                 $scope.signup_error_message = data['error_message'];
@@ -242,9 +245,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.username = data['username'];
                 $scope.show_login = false;
 
-                //console.log('111');
+                //Close modal sign in 
                 $("#signModal").modal('close');
-                //console.log('222');
             },
             function(data) {
                 $scope.login_error_message = data['error_message'];
@@ -585,14 +587,19 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     /*
     * Navbar -> Tools/Data --> Appropriate input --> "Create New" button --> Pressed
-    * FIXME function namae tooooooools
     */
-    $scope.toools_search_create_new_pressed = function() {
+    $scope.tools_search_create_new_pressed = function() {
 
         if (!$scope.username) {
-            $scope.tools_info_error_message = 'Login to create new tools';
+            //$scope.tools_info_error_message = 'Login to create new tools';
+            $scope.tools_search_warning = 'Login to create new tools';
             return;
         }
+        $scope.tools_search_warning = '';
+
+    
+        window.createToolDataBtn_click();
+
 
         $scope.show_tools_info = true;
         $scope.show_workflows_info = false; // TODO. THIS SHOULDN'T BE HERE

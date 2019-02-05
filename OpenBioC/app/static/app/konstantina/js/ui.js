@@ -1,3 +1,13 @@
+/*
+
+TODO:
+1. Signup error (i.e. confirm password not match)
+2. Toast. after signup "success", with "X" button. Programmatically close. 
+
+*/
+
+
+
 window.onload = function () {
 
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -165,6 +175,7 @@ window.onload = function () {
     * We also call this function inside angular whenever a node in the dependency tree on search panel is selected.
     * Since we want to call this from angular we have to globally register it. FIXME!!!!
     */
+
     window.createToolDataBtn_click = function() {
         if (document.getElementById('createToolDataDiv').style.display == 'none') {
             document.getElementById('createToolDataDiv').style.display = 'block';
@@ -176,7 +187,8 @@ window.onload = function () {
 
     };
 
-    document.getElementById('createToolDataBtn').addEventListener("click", window.createToolDataBtn_click);
+
+//    document.getElementById('createToolDataBtn').addEventListener("click", window.createToolDataBtn_click);
 
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --------------------------------------------------------- Cancel Tool Data Button Click --------------------------------------------------------------------------------------
