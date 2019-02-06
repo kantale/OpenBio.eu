@@ -46,11 +46,13 @@ If you crated a virtual environment with conda, to activate it run:
 conda activate obc_python 
 ```
 
-### Install Django 2.1.0
+### Install Django 2.1.5
 
 ```
-pip install Django==2.1.0
+pip install Django==2.1.5
 ```
+* Note: Django 2.1.0 [seems to have an issue with SQLite](https://stackoverflow.com/questions/53637182/django-no-such-table-main-auth-user-old)
+
 
 ### Install other useful packages:
 
