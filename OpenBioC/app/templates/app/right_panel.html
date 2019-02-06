@@ -18,9 +18,6 @@
                         <span ng-show="tools_info_forked_from">, forked from <a href ng-click="tools_search_show_item(tools_info_forked_from)"><span ng-bind="tools_info_forked_from | tool_label"></span></a></span>
                     </small>
                 </p>
-                <p>
-                    TOAST!: <span ng-bind="tools_info_success_message"></span>
-                </p>
                 <!-- Buttons -->
                 <div class="row right-align">
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
@@ -71,9 +68,21 @@
                         Dependencies
                     </div>
                     <div class="collapsible-body">
-                        <div class="row">
-                            Panel with tree goes here
+
+
+                        <div class="row" ng-show="tools_info_editable">
+                            
+                                <strong>Drop here a tool from the search tree, to add it as a dependency. Right click to delete it.</strong>
+                        
                         </div>
+                        <div class="row">
+                            
+                                <div id="tools_dep_jstree_id" js-tree="tools_dep_jstree_config" should-apply="tools_search_jstree_config_apply()" ng-model="tools_dep_jstree_model" tree="tools_dep_jstree"></div>
+                     
+                        </div>
+
+
+
                     </div>
                 </li>
                 <!-- --------------------------------------------------------------------------------------- -->
@@ -89,6 +98,7 @@
                     <div class="collapsible-body">
                         <div class="row">
                             <p>Hide variables from depended tools (Dropdown???)</p>
+                            <div id="tools_var_jstree_id" js-tree="tools_var_jstree_config" should-apply="tools_search_jstree_config_apply()" ng-model="tools_var_jstree_model" tree="tools_var_jstree" ng-show="tools_var_jstree_id_show"></div>
                             <p>installation commands</p>
                             <div id="tool_installation_editor"></div> 
                             <p>validation commands</p>

@@ -686,6 +686,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             },
             function(data) {
                 $scope.tools_info_success_message = 'Tool/Data successfully saved';
+                generateToast($scope.tools_info_success_message, 'green lighten-2 black-text', 'stay on');
                 $scope.tools_info_editable = false;
                 $scope.tool_info_created_at = data['created_at'];
                 $scope.tools_info_edit = data['edit'];
@@ -722,13 +723,16 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         $scope.tools_info_editable = true;
         $scope.tools_info_error_message = '';
-        $scope.tools_info_success_message = "Create a new Edit of this Tool/Data";
+        $scope.tools_info_success_message = "Tool successfully forked. Press Save after completing your edits";
+        generateToast($scope.tools_info_success_message, 'green lighten-2 black-text', 'stay on'); 
+
         $scope.tools_info_forked_from = {
             'name': $scope.tools_info_name, 
             'version': $scope.tools_info_version, 
             'edit' :$scope.tools_info_edit
         }
         $scope.tool_changes = '';
+
 
         //If the parent tool does not have variables, add empty:
         if ($scope.tool_variables.length == 0) {
