@@ -124,32 +124,29 @@
                                 <table class="centered highlight">
                                     <thead>
                                         <tr>
-                                            <th>Name1</th>
-                                            <th>Name2</th>
-                                            <th>Name3</th>
+                                            <th>Name</th>
+                                            <th>Value</th>
+                                            <th>Description</th>
+                                            <!--
                                             <th>
                                                 <a class="waves-effect waves-light btn-small tooltipped green darken-1" style="padding-left: 7px; padding-right:7px" data-position="bottom"
                                                 data-tooltip="Add new variable"><i class="material-icons">add</i></a>
                                             </th>
+                                            -->
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td><input type="text" placeholder="name1"></td>
-                                            <td><input type="text" placeholder="name2"></td>
-                                            <td><input type="text" placeholder="name3"></td>
+                                        <tr ng-repeat="x in tool_variables"> 
+                                            <td><input type="text" placeholder="name1" ng-model="x.name" ng-disabled="!tools_info_editable"></td>
+                                            <td><input type="text" placeholder="name2" ng-model="x.value" ng-disabled="!tools_info_editable"></td>
+                                            <td><input type="text" placeholder="name3" ng-model="x.description" ng-disabled="!tools_info_editable"></td>
                                             <td>
-                                                <a class="waves-effect waves-light btn-small tooltipped red darken-1" style="padding-left: 7px; padding-right:7px" data-position="bottom"
-                                                data-tooltip="Remove variable"><i class="material-icons">remove</i></a>
+                                                <a class="waves-effect waves-light btn-small tooltipped green darken-1" style="padding-left: 7px; padding-right:7px" data-position="bottom"
+                                                data-tooltip="Add new variable" ng-click="tools_info_add_variable()" ng-if="$last && x.name && x.value && x.description && tools_info_editable"><i class="material-icons">add</i></a>
                                             </td>
-                                        </tr>
-                                        <tr>
-                                            <td><input type="text" placeholder="name1"></td>
-                                            <td><input type="text" placeholder="name2"></td>
-                                            <td><input type="text" placeholder="name3"></td>
                                             <td>
                                                 <a class="waves-effect waves-light btn-small tooltipped red darken-1" style="padding-left: 7px; padding-right:7px" data-position="bottom"
-                                                data-tooltip="Remove variable"><i class="material-icons">remove</i></a>
+                                                data-tooltip="Remove variable" ng-click="tools_info_remove_variable($index)" ng-if="(!$first) && tools_info_editable"><i class="material-icons">remove</i></a>
                                             </td>
                                         </tr>
                                     </tbody>
