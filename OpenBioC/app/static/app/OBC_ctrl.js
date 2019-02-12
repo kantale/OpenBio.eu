@@ -595,6 +595,20 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             $scope.tools_search_warning = 'Login to create new tools';
             return;
         }
+
+        //Check if tool search name and version are non empty 
+        if (!($scope.tools_search_name && $scope.tools_search_version)) {
+            $scope.tools_search_warning = 'Tools and version should not be empty';
+            return;
+        }
+
+        //Edit SHOULD BE EMPTY!
+        if ($scope.tools_search_edit) {
+            $scope.tools_search_warning = 'An edit number will be assigned after you save your tool (leave it empty)';
+            return;
+        }
+
+
         $scope.tools_search_warning = '';
 
     
