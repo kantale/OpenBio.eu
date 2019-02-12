@@ -96,13 +96,59 @@
                         <span class="badge"><i class="material-icons md-red">error_outline</i></span>
                     </div>
                     <div class="collapsible-body">
+                        <!-- Hide Variables -->
                         <div class="row">
                             <p>Hide variables from depended tools (Dropdown???)</p>
                             <div id="tools_var_jstree_id" js-tree="tools_var_jstree_config" should-apply="tools_search_jstree_config_apply()" ng-model="tools_var_jstree_model" tree="tools_var_jstree" ng-show="tools_var_jstree_id_show"></div>
-                            <p>installation commands</p>
+                        </div>
+                        <!-- Installation -->
+                        <div class="row">
+                            <h5>Installation Commands</h5>
                             <div id="tool_installation_editor"></div> 
-                            <p>validation commands</p>
-                            <div id="tool_validation_editor"></div> 
+                        </div>
+                        <!-- Validation -->
+                        <div class="row">
+                            <h5>Validation Commands</h5>
+                            <div id="tool_validation_editor"></div>
+                        </div>
+                        <!-- Variables -->
+                        <div class="row">
+                            <h5>Variables</h5>
+                            <div class="col s12">
+                                <table class="centered highlight">
+                                    <thead>
+                                        <tr>
+                                            <th>Name1</th>
+                                            <th>Name2</th>
+                                            <th>Name3</th>
+                                            <th>
+                                                <a class="waves-effect waves-light btn-small tooltipped green darken-1" style="padding-left: 7px; padding-right:7px" data-position="bottom"
+                                                data-tooltip="Add new variable"><i class="material-icons">add</i></a>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><input type="text" placeholder="name1"></td>
+                                            <td><input type="text" placeholder="name2"></td>
+                                            <td><input type="text" placeholder="name3"></td>
+                                            <td>
+                                                <a class="waves-effect waves-light btn-small tooltipped red darken-1" style="padding-left: 7px; padding-right:7px" data-position="bottom"
+                                                data-tooltip="Remove variable"><i class="material-icons">remove</i></a>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><input type="text" placeholder="name1"></td>
+                                            <td><input type="text" placeholder="name2"></td>
+                                            <td><input type="text" placeholder="name3"></td>
+                                            <td>
+                                                <a class="waves-effect waves-light btn-small tooltipped red darken-1" style="padding-left: 7px; padding-right:7px" data-position="bottom"
+                                                data-tooltip="Remove variable"><i class="material-icons">remove</i></a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </li>
