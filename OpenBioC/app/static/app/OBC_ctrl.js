@@ -970,9 +970,15 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */
     $scope.tools_search_jstree_select_node = function(e, data) {
         //console.log(data.node.data.name);
+
+        //Check if the tool pane is editable. If we do not include this check. All edits will be lost!
+
+        if ($scope.tools_info_editable) {
+            alert('ALL CHANGES WILL BE LOST!!');
+            return;
+        }
+
         $scope.tools_search_show_item(data.node.data);
-
-
         window.createToolDataBtn_click();
 
 

@@ -75,7 +75,13 @@
                                 <strong>Drop here a tool from the search tree, to add it as a dependency. Right click to delete it.</strong>
                         
                         </div>
-                        <div class="row">
+                        <div class="row" ng-show="!tools_info_editable">
+                            
+                                <strong>Tool Dependency Tree</strong>
+                        
+                        </div>
+
+                        <div class="row left-align">
                             
                                 <div id="tools_dep_jstree_id" js-tree="tools_dep_jstree_config" should-apply="tools_search_jstree_config_apply()" ng-model="tools_dep_jstree_model" tree="tools_dep_jstree"></div>
                      
