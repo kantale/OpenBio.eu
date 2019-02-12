@@ -700,7 +700,7 @@ window.onload = function () {
     $(document).on('dnd_stop.vakata', function (e, data) {
 
 
-        console.log('tessssttt');
+        //console.log('tessssttt');
 
         var target = $(data.event.target);
 
