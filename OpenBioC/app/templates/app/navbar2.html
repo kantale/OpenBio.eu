@@ -9,7 +9,7 @@
             <!-- Navbar Content -->
             <ul id="main-nav" class="right hide-on-med-and-down">
                 <li><a class="black-text" href="#">Home</a></li>
-                <li ng-show="!username"><a id="signInBtn" href="#signModal" class="modal-trigger black-text">Sign in</a></li>
+                <li ng-show="!username"><a href id="signInBtn" class="modal-trigger black-text" ng-click="navbar_signup_pressed()">Sign in</a></li> <!-- href="#signModal" -->
                 <li ng-show="username">
                     <a class="dropdown-trigger valign-wrapper black-text" href="#" data-target="profile">
                         <img class="circle responsive-img imgAvatar" alt="Avatar">
@@ -75,7 +75,7 @@
                     </p>
                 </div>
                 <div class="row col s12">
-                    <button class="btn waves-effect waves-light" type="submit" name="action" ng-click="login_login_pressed()">Sign
+                    <button class="btn waves-effect waves-light" name="action" ng-click="login_login_pressed()">Sign
                         in</button> <!-- modal-close-->
                     <p>
                         <small class="form-text text-muted">
