@@ -726,6 +726,24 @@ window.onload = function () {
 
     init();
 
+    if (true) {
+
+        //Disable drop event. So that users cannot drop tool nodes in the installation/validation editors
+        tool_installation_editor.container.addEventListener("drop", function (e) {
+            //This doesn't work
+            //e.preventDefault();
+            //return false;
+
+            //Curiously.. this works!
+            tool_installation_editor.undo();
+        });
+
+        tool_validation_editor.container.addEventListener("drop", function (e) { // drop
+            tool_validation_editor.undo();
+        });
+    }
+
+
 
     // https://github.com/ezraroi/ngJsTree/issues/20
     // We have to register the event on the document.. 
