@@ -13,7 +13,7 @@ DONE:
 
 /*
 * generateToast('success message here', 'green lighten-2 black-text', 'stay on');
-*/ 
+*/
 function generateToast(message, classes, duration) {
     var htmlMessage = '<span>' + message + '</span><button onclick="M.Toast.dismissAll()" class="btn-flat"><i class="material-icons">close</i></button>';
     M.toast({
@@ -22,6 +22,15 @@ function generateToast(message, classes, duration) {
         displayLength: duration
     });
 }
+
+// ---------------------------------------------- Warning Modal --------------------------------------------------
+// $('#warningModal').modal({
+//     // Callback function called before modal is closed.
+//     onCloseStart: function () {
+//         alert('closed');
+//     },
+//     dismissible: false 
+// });
 
 
 window.onload = function () {
@@ -32,7 +41,7 @@ window.onload = function () {
     var animationEnded;
     function init() {
 
-        
+
 
         var avatarImg = '/static/app/images/konstantina/img_avatar.png';
         var avatars = document.getElementsByClassName('imgAvatar');
@@ -43,7 +52,9 @@ window.onload = function () {
         // ----------------------------------- Sidebar for navbar initialization -----------------------------------------
         $('.sidenav').sidenav();
         // ---------------------------------------- Modal initialization -------------------------------------------------
-        $('.modal').modal();
+        $('#warningModal').modal({
+            dismissible: false
+        });
         // -------------------------------------- Dropdown initialization ------------------------------------------------
         $(".dropdown-trigger").dropdown();
         // --------------------------------------- Tooltip initialization ------------------------------------------------
@@ -181,6 +192,26 @@ window.onload = function () {
             $('#signInForm').animateCss('fadeIn', function () {
             });
         });
+    });
+
+    // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // ----------------------------------------------------- Expand All / Collapse All Button Click ---------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // --------------------------------------- Expand All button clicked ---------------------------------------------
+    document.getElementById('expandAllBtn').addEventListener('click', function () {
+        var instance = M.Collapsible.getInstance($('#createToolDataAccordion'));
+        var childrenNum = instance.el.childElementCount;
+        for (var i = 0; i < childrenNum; i++) {
+            instance.open(i);
+        }
+    });
+    // -------------------------------------- Collapse All button clicked --------------------------------------------
+    document.getElementById('collapseAllBtn').addEventListener('click', function () {
+        var instance = M.Collapsible.getInstance($('#createToolDataAccordion'));
+        var childrenNum = instance.el.childElementCount;
+        for (var i = 0; i < childrenNum; i++) {
+            instance.close(i);
+        }
     });
 
 
@@ -388,6 +419,7 @@ window.onload = function () {
         var img = document.createElement('img');
         img.src = splitterImg;
         img.style.paddingTop = '10px';
+        $(img).attr('draggable', 'false');
         $(img).attr('id', 'splitterImg');
 
         newDiv.append(img);
@@ -732,13 +764,13 @@ window.onload = function () {
                 //console.log('Right stop');
                 //console.log(tool);
 
-                angular.element($('#angular_div')).scope().$apply(function(){
+                angular.element($('#angular_div')).scope().$apply(function () {
                     angular.element($('#angular_div')).scope().tool_get_dependencies(tool, 1); // 1 = drag from search jstree to dependencies jstree
                 });
             }
             else if (target.closest('#d3wf').length) { // We are dropping it to the workflow graph editor
 
-                angular.element($('#angular_div')).scope().$apply(function(){
+                angular.element($('#angular_div')).scope().$apply(function () {
                     angular.element($('#angular_div')).scope().tool_get_dependencies(tool, 2); // 2 = drag from search jstree to workflow editing
                 });
 
@@ -768,8 +800,8 @@ window.onload = function () {
     * JSTree item moves. Change the class (for visualization only)
     */
     $(document).on('dnd_move.vakata', function (e, data) {
-//      $('#vakata-dnd').find('.jstree-icon').removeClass('jstree-er').addClass('jstree-ok');
-//      return;
+        //      $('#vakata-dnd').find('.jstree-icon').removeClass('jstree-er').addClass('jstree-ok');
+        //      return;
         var target = $(data.event.target);
         var this_id = data.data.nodes[0]; // plink/1.9/3/1"
 
@@ -778,11 +810,11 @@ window.onload = function () {
 
 
         if (this_id_array[3] == '1') { // This is an item from tools_search tree
-            
+
             if (
                 (target.closest('#tools_dep_jstree_id').length && (!tool_installation_editor.getReadOnly())) || //We allow it if it is over the div with the tree AND the the tool_installation_editor is not readonly (this is a workaround to avoid checking angular: tools_info_editable)
                 (target.closest('#d3wf').length) // The Workflow graph editor
-               ) { 
+            ) {
                 data.helper.find('.jstree-icon').removeClass('jstree-er').addClass('jstree-ok');
             }
             else {
@@ -793,8 +825,8 @@ window.onload = function () {
         else if (this_id_array[3] == "3") { // This is an item from validation js tree
 
             if (
-                (target.closest('#tool_installation_editor').length && (!tool_installation_editor.getReadOnly())) || 
-                (target.closest('#tool_validation_editor').length   && (!tool_validation_editor.getReadOnly()))       ) {
+                (target.closest('#tool_installation_editor').length && (!tool_installation_editor.getReadOnly())) ||
+                (target.closest('#tool_validation_editor').length && (!tool_validation_editor.getReadOnly()))) {
                 data.helper.find('.jstree-icon').removeClass('jstree-er').addClass('jstree-ok');
             }
             else {
