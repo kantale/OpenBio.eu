@@ -104,8 +104,8 @@
                     <div class="collapsible-body">
                         <!-- Hide Variables -->
                         <div class="row">
-                            <p>Hide variables from depended tools (Dropdown???)</p>
-                            <div id="tools_var_jstree_id" js-tree="tools_var_jstree_config" should-apply="tools_search_jstree_config_apply()" ng-model="tools_var_jstree_model" tree="tools_var_jstree" ng-show="tools_var_jstree_id_show"></div>
+                            <strong><a href ng-click="tools_var_jstree_id_show_clicked()"><span ng-show="tools_var_jstree_id_show">Hide</span><span ng-show="!tools_var_jstree_id_show">Show</span> variables from dependent tools</a></strong>
+                            <div class="left-align" id="tools_var_jstree_id" js-tree="tools_var_jstree_config" should-apply="tools_search_jstree_config_apply()" ng-model="tools_var_jstree_model" tree="tools_var_jstree" ng-show="tools_var_jstree_id_show"></div>
                         </div>
                         <!-- Installation -->
                         <div class="row">
@@ -137,9 +137,9 @@
                                     </thead>
                                     <tbody>
                                         <tr ng-repeat="x in tool_variables"> 
-                                            <td><input type="text" placeholder="name1" ng-model="x.name" ng-disabled="!tools_info_editable"></td>
-                                            <td><input type="text" placeholder="name2" ng-model="x.value" ng-disabled="!tools_info_editable"></td>
-                                            <td><input type="text" placeholder="name3" ng-model="x.description" ng-disabled="!tools_info_editable"></td>
+                                            <td><input type="text" placeholder="name" ng-model="x.name" ng-disabled="!tools_info_editable"></td>
+                                            <td><input type="text" placeholder="value" ng-model="x.value" ng-disabled="!tools_info_editable"></td>
+                                            <td><input type="text" placeholder="description" ng-model="x.description" ng-disabled="!tools_info_editable"></td>
                                             <td>
                                                 <a class="waves-effect waves-light btn-small tooltipped green darken-1" style="padding-left: 7px; padding-right:7px" data-position="bottom"
                                                 data-tooltip="Add new variable" ng-click="tools_info_add_variable()" ng-if="$last && x.name && x.value && x.description && tools_info_editable"><i class="material-icons">add</i></a>
