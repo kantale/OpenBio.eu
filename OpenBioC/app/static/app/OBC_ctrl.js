@@ -189,10 +189,15 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * Navbar --> Signup --> pressed 
     */
     $scope.navbar_signup_pressed = function() {
-    	$scope.inner_hide_all_navbar();
-        $scope.inner_hide_all_error_and_general_messages();
+    	// $scope.inner_hide_all_navbar(); // FROM OLD UI. NOT RELEVANT IN M
+        //$scope.inner_hide_all_error_and_general_messages(); // FROM OLD UI. NOT RELEVANT IN M
 
-        $scope.show_signup = true;
+        //$scope.show_signup = true; // FROM OLD UI. NOT RELEVANT IN M
+
+        $scope.signup_error_message = '';
+        $scope.login_error_message = '';
+        //$("#signModal").modal('open');
+        M.Modal.getInstance($("#signModal")).open();
     };
 
     /*
@@ -966,6 +971,17 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     $scope.tools_search_jstree_model = [];
     angular.copy($scope.tools_search_jstree_model_init, $scope.tools_search_jstree_model);
 
+
+    /* 
+    * Raise a modal "all your edits will be list. Are you aure?". Raised when:
+    * 1. Click an item in the jstree tools
+    * 2. Click Cancel in Tool Search
+    */
+    $scope.tools_search_raise_edit_are_you_sure_modal = function() {
+        $scope.modal_data = null;
+        M.Modal.getInstance($("#warningModal")).open();
+    };
+
     /*
     * An item in tool tree on the search panel is selected
     */
@@ -975,12 +991,19 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //Check if the tool pane is editable. If we do not include this check. All edits will be lost!
         //If it editable show a modal (see function tools_search_jstree_modal_editable)
 
+        //Save in a variable the data of the item that has been clicked
+        $scope.modal_data = data;
         if ($scope.tools_info_editable) {
-            M.Modal.getInstance($("#warningModal")).open();
-            $scope.modal_data = data; //Save in a variable the data of the item that has been clicked
-            return;
+            $scope.tools_search_raise_edit_are_you_sure_modal();
         }
+        else {
+            // Pressed an item in tool search tree, but the tool_info is not editable
+            // Simulate a YES response from warning modal
+            $scope.tools_search_jstree_modal_editable(true);
+        }
+
     };
+
 
     /*
     * Called by Yes/No on Modal "All tool edits will be lost!"
@@ -990,11 +1013,21 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */
     $scope.tools_search_jstree_modal_editable = function(yes_no) {
         $scope.tools_search_jstree_modal_editable_response = yes_no;
-        M.Modal.getInstance($("#warningModal")).close();
 
-        if ($scope.tools_search_jstree_modal_editable_response) {
-            $scope.tools_search_show_item($scope.modal_data.node.data);
-            window.createToolDataBtn_click();
+        //If modal is open, close it
+        if (M.Modal.getInstance($("#warningModal")).isOpen) {
+            M.Modal.getInstance($("#warningModal")).close();
+        }
+
+        if ($scope.tools_search_jstree_modal_editable_response) { // This means, she clicked YES AFTER clicking on tree
+            if ($scope.modal_data) {
+                $scope.tools_search_show_item($scope.modal_data.node.data);
+                window.createToolDataBtn_click();
+            }
+            else {
+                window.cancelToolDataBtn_click(); // She clicked YES after CANCEL button 
+                $scope.tools_info_editable = false;
+            }
         }
 
     };

@@ -69,9 +69,9 @@
                             ng-class="{'disabled': !username}" 
                             ng-show="(!tools_search_warning) && tools_search_name && tools_search_version"
                         -->
-                        <a id="createToolDataBtn" class="waves-effect waves-light btn"
-                            ng-click="tools_search_create_new_pressed()">create tool/data</a>
-                        <a id="cancelToolDataBtn" class="waves-effect waves-light btn">cancel tool/data</a>
+                        <a href id="createToolDataBtn" class="waves-effect waves-light btn"
+                            ng-click="tools_search_create_new_pressed()" ng-show="(!tools_info_editable)">create</a>
+                        <a href id="cancelToolDataBtn" class="waves-effect waves-light btn" ng-show="tools_info_editable" ng-click="tools_search_raise_edit_are_you_sure_modal()">cancel</a>
                     </div>
                     <div class="row col s12" ng-show="tools_search_warning">
                         <div class="card-panel orange lighten-1 center-align" style="padding:10px">

@@ -242,14 +242,15 @@ window.onload = function () {
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --------------------------------------------------------- Cancel Tool Data Button Click --------------------------------------------------------------------------------------
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    document.getElementById('cancelToolDataBtn').addEventListener("click", function () {
+    window.cancelToolDataBtn_click = function() {
+        //document.getElementById('cancelToolDataBtn').addEventListener("click", function () {
         if (document.getElementById('createToolDataDiv').style.display == 'block') {
             $('#createToolDataDiv').animateCss('slideOutUp', function () {
                 document.getElementById('createToolDataDiv').style.display = 'none';
                 closeCollapsiblesOfAccordion('createToolDataAccordion');
             });
         }
-    });
+    };
 
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --------------------------------------------------------- Enable Edit Workflow Button Click ----------------------------------------------------------------------------------
