@@ -723,6 +723,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.show_workflows_info = false;
         $scope.tools_info_editable = false;
         $scope.tools_search_3(item);
+        M.updateTextFields(); // The text inputs in Materialize needs to be updated after change.
     };
 
     /*
@@ -972,15 +973,29 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //console.log(data.node.data.name);
 
         //Check if the tool pane is editable. If we do not include this check. All edits will be lost!
+        //If it editable show a modal (see function tools_search_jstree_modal_editable)
 
         if ($scope.tools_info_editable) {
-            alert('ALL CHANGES WILL BE LOST!!');
+            M.Modal.getInstance($("#warningModal")).open();
+            $scope.modal_data = data; //Save in a variable the data of the item that has been clicked
             return;
         }
+    };
 
-        $scope.tools_search_show_item(data.node.data);
-        window.createToolDataBtn_click();
+    /*
+    * Called by Yes/No on Modal "All tool edits will be lost!"
+    * M.Modal.getInstance($("#warningModal")).open()
+    * tools_search_jstree_modal_editable_response = True // YES IS PRESSED !
+    * tools_search_jstree_modal_editable_response = False // NO IS PRESSED!
+    */
+    $scope.tools_search_jstree_modal_editable = function(yes_no) {
+        $scope.tools_search_jstree_modal_editable_response = yes_no;
+        M.Modal.getInstance($("#warningModal")).close();
 
+        if ($scope.tools_search_jstree_modal_editable_response) {
+            $scope.tools_search_show_item($scope.modal_data.node.data);
+            window.createToolDataBtn_click();
+        }
 
     };
 
@@ -1136,6 +1151,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     }
 
     // WORKFLOWS END 
+
 
 }); 
 
