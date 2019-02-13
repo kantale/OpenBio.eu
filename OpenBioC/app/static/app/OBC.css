@@ -90,10 +90,9 @@ pre {
 */
 
 /* D3 / WebCola */
-
 .node {
-  stroke: #fff;
-  stroke-width: 1.5px;
+  stroke: #515151;
+  stroke-width: 0.5px;
   cursor: move;
 }
 
@@ -106,20 +105,90 @@ pre {
 
 .link {
   fill: none;
-  stroke: #000;
+  stroke: #515151;
   stroke-width: 1.5px;
-  opacity: 1;
+  opacity: 0.8;
   marker-end: url(#end-arrow);
    
 }
 
+
 .label {
-    fill: black;
-    font-family: Verdana;
-    font-size: 18px;
-    text-anchor: start;
-    cursor: move;
-}
+        fill: #515151;
+        font-family: Verdana;
+        font-size: 12px;
+        text-anchor: middle;
+        cursor: move;
+    }
+
+/*
+
+.node {
+            cursor: move;
+            fill: #404040;
+            rx: 3;
+            ry: 3;
+        }
+
+        .group {
+            stroke: none;
+            fill: #ffc0b0;
+            stroke-width: 6;
+            rx: 5;
+            ry: 5;
+            stroke: #ffc0b0;
+        }
+
+        .link {
+            stroke: darkslategrey;
+            fill: none;
+            stroke-width: 2px;
+            stroke-opacity: 1;
+            marker-end: url(#end-arrow);
+        }
+
+        .linkarrow {
+            stroke: darkslategrey;
+            fill: darkslategrey;
+            stroke-width: 0px;
+            stroke-opacity: 1;
+            marker-end: url(#end-arrow);
+        }
+
+        .linkoutline {
+            stroke: white;
+            stroke-width: 4px;
+            fill: none;
+        }
+
+        .linkarrowoutline {
+            stroke: none;
+            stroke-width: 1px;
+            fill: white;
+        }
+
+        .label {
+            fill: white;
+            font-family: Verdana;
+            font-size: 15px;
+            text-anchor: middle;
+            cursor: move;
+        }
+
+        .swatchlabel {
+            font-family: Verdana;
+            font-size: 15px;
+        }
+
+        .ghost {
+            fill: red;
+            fill-opacity: 0.5;
+            stroke: red;
+            stroke-width: 2;
+        }
+
+*/
+
 
 
 
