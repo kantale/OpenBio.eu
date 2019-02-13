@@ -1,0 +1,196 @@
+/*
+Part taken from: https://bootstrapious.com/p/bootstrap-sidebar
+*/
+
+.wrapper {
+    display: flex;
+    width: 100%;
+    align-items: stretch;
+}
+
+#sidebar {
+    width: 350px;
+    position: fixed;
+    top: 60px;  /* https://stackoverflow.com/questions/37721260/bootstrap-sidebar-and-content-under-navbar */
+    left: 0;
+    height: 100vh;
+    z-index: 0;
+    background: #f8f9fa; /* #7386D5; */
+    color: #000;
+    /*transition: all 0.3s;*/
+
+}
+
+#content {
+
+    width: 100%;
+    padding-top:20px;
+    padding-left: 300px;
+    min-height: 100vh;
+    /*transition: all 0.3s;*/
+}
+
+#tools_list_group{
+    max-height: 300px;
+    overflow:scroll;
+    -webkit-overflow-scrolling: touch;
+}
+
+#tool_installation_editor { 
+
+    height: 275px;
+    border: 1px solid #DDD;
+    border-radius: 4px;
+    border-bottom-right-radius: 0px;
+    margin-top: 5px;
+}
+
+
+#tool_validation_editor { 
+
+    height: 200px;
+    border: 1px solid #DDD;
+    border-radius: 4px;
+    border-bottom-right-radius: 0px;
+    margin-top: 5px;
+}
+
+/* https://stackoverflow.com/a/8306643/5626738 */ 
+pre {
+    white-space: pre-wrap;
+}
+
+#tools_dep_jstree_id {
+/*    border-style: double;
+    border-width: medium;*/
+    border: 1px solid red;
+    height: 200px;  
+}
+
+#d3wf {
+  overflow: auto;
+}
+
+/* https://getbootstrap.com/docs/4.1/examples/sticky-footer/ */
+/*
+.footer {
+  position: relative;
+  bottom: 0;
+  width: 100%;
+  height: 216px; /* Set the fixed height of the footer here END COMMENT HERE
+  line-height: 60px; /* Vertically center the text there  END COMMENT HERE
+  background-color: #f5f5f5;
+}
+*/
+
+/* https://stackoverflow.com/questions/34644442/jstree-drag-drop-icon-not-showing-while-moving 
+#vakata-dnd {
+    background: #000;
+}
+*/
+
+/* D3 / WebCola */
+
+.node {
+  stroke: #515151;
+  stroke-width: 0.5px;
+  cursor: move;
+}
+
+.group {
+  stroke: #fff;
+  stroke-width: 1.5px;
+  cursor: move;
+  opacity: 0.7;
+}
+
+.link {
+  fill: none;
+  stroke: #515151;
+  stroke-width: 1.5px;
+  opacity: 0.8;
+  marker-end: url(#end-arrow);
+   
+}
+
+
+.label {
+        fill: #515151;
+        font-family: Verdana;
+        font-size: 12px;
+        text-anchor: middle;
+        cursor: move;
+    }
+
+/*
+
+.node {
+            cursor: move;
+            fill: #404040;
+            rx: 3;
+            ry: 3;
+        }
+
+        .group {
+            stroke: none;
+            fill: #ffc0b0;
+            stroke-width: 6;
+            rx: 5;
+            ry: 5;
+            stroke: #ffc0b0;
+        }
+
+        .link {
+            stroke: darkslategrey;
+            fill: none;
+            stroke-width: 2px;
+            stroke-opacity: 1;
+            marker-end: url(#end-arrow);
+        }
+
+        .linkarrow {
+            stroke: darkslategrey;
+            fill: darkslategrey;
+            stroke-width: 0px;
+            stroke-opacity: 1;
+            marker-end: url(#end-arrow);
+        }
+
+        .linkoutline {
+            stroke: white;
+            stroke-width: 4px;
+            fill: none;
+        }
+
+        .linkarrowoutline {
+            stroke: none;
+            stroke-width: 1px;
+            fill: white;
+        }
+
+        .label {
+            fill: white;
+            font-family: Verdana;
+            font-size: 15px;
+            text-anchor: middle;
+            cursor: move;
+        }
+
+        .swatchlabel {
+            font-family: Verdana;
+            font-size: 15px;
+        }
+
+        .ghost {
+            fill: red;
+            fill-opacity: 0.5;
+            stroke: red;
+            stroke-width: 2;
+        }
+
+*/
+
+
+
+
+
