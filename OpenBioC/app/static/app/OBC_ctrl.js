@@ -163,7 +163,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.user_profile_error_message = '';
         $scope.user_profile_success_message = '';
         $scope.tools_info_error_message = '';
-        $scope.workflows_info_error_message = '';
+        //$scope.workflows_info_error_message = '';
         $scope.tools_info_success_message = '';
     };
 
@@ -623,7 +623,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
 
         $scope.show_tools_info = true;
-        $scope.show_workflows_info = false; // TODO. THIS SHOULDN'T BE HERE
+        //$scope.show_workflows_info = false; // TODO. THIS SHOULDN'T BE HERE
 
         $scope.tools_info_editable = true;
         $scope.tools_info_forked_from = null;
@@ -659,7 +659,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */
     $scope.workflows_search_create_new_pressed = function() {
         if (!$scope.username) {
-            $scope.workflows_info_error_message = 'Login to create new Workflows';
+            $scope.workflows_search_warning = 'Login to create new Workflows';
             return;
         }
 
@@ -687,9 +687,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         window.createWorkflowBtn_click();
 
         $scope.workflows_info_name = $scope.workflows_search_name;
-        $scope.workflow_info_username = $scope.username;
+        $scope.workflows_info_username = $scope.username;
+        $scope.workflows_info_editable = true;
 
-        $scope.workflows_info_error_message = '';
+        //$scope.workflows_info_error_message = '';
 
 
     };
