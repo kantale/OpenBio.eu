@@ -10,24 +10,30 @@
             <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
                 <p>
                     <h5>
-                        <span ng-bind="tools_info_name"></span>/<span ng-bind="tools_info_version"></span><span ng-show="!tools_info_editable">/<span ng-bind="tools_info_edit"></span></span>
+                        <span ng-bind="tools_info_name"></span>/<span ng-bind="tools_info_version"></span><span
+                            ng-show="!tools_info_editable">/<span ng-bind="tools_info_edit"></span></span>
                     </h5>
                     <small class="form-text text-muted">
                         <span ng-bind="tool_info_username"></span>
-                        <span ng-show="!tools_info_editable">, created at <span ng-bind="tool_info_created_at"></span></span>
-                        <span ng-show="tools_info_forked_from">, forked from <a href ng-click="tools_search_show_item(tools_info_forked_from)"><span ng-bind="tools_info_forked_from | tool_label"></span></a></span>
+                        <span ng-show="!tools_info_editable">, created at <span
+                                ng-bind="tool_info_created_at"></span></span>
+                        <span ng-show="tools_info_forked_from">, forked from <a href
+                                ng-click="tools_search_show_item(tools_info_forked_from)"><span
+                                    ng-bind="tools_info_forked_from | tool_label"></span></a></span>
                     </small>
                 </p>
                 <!-- Buttons -->
                 <div class="row right-align">
-                    <a id="expandAllBtn" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
-                        data-tooltip="Expand All"><i class="material-icons">expand_more</i></a>
-                    <a id="collapseAllBtn" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
-                        data-tooltip="Collapse All"><i class="material-icons">expand_less</i></a>
+                    <a id="expandAllBtn1" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
+                        data-position="bottom" data-tooltip="Expand All"><i class="material-icons">expand_more</i></a>
+                    <a id="collapseAllBtn1" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
+                        data-position="bottom" data-tooltip="Collapse All"><i class="material-icons">expand_less</i></a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
-                        data-tooltip="Save" ng-click="tool_create_save_pressed()" ng-show="tools_info_editable"><i class="material-icons">save</i></a>
+                        data-tooltip="Save" ng-click="tool_create_save_pressed()" ng-show="tools_info_editable"><i
+                            class="material-icons">save</i></a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
-                        data-tooltip="Fork" ng-click="tool_info_fork_pressed()" ng-show="!tools_info_editable" ng-class="{'disabled': !username}"><i class="material-icons">device_hub</i></a>
+                        data-tooltip="Fork" ng-click="tool_info_fork_pressed()" ng-show="!tools_info_editable"
+                        ng-class="{'disabled': !username}"><i class="material-icons">device_hub</i></a>
                 </div>
             </div>
 
@@ -45,11 +51,13 @@
                         <div class="row">
                             <form class="col s12">
                                 <div class="input-field">
-                                    <input id="generalWebsite" type="text" class="validate" ng-model="tool_website" ng-disabled="!tools_info_editable">
+                                    <input id="generalWebsite" type="text" class="validate" ng-model="tool_website"
+                                        ng-disabled="!tools_info_editable">
                                     <label for="generalWebsite">Website</label>
                                 </div>
                                 <div class="input-field">
-                                    <textarea id="generalDescription" class="validate materialize-textarea" ng-model="tool_description" ng-disabled="!tools_info_editable"></textarea>
+                                    <textarea id="generalDescription" class="validate materialize-textarea"
+                                        ng-model="tool_description" ng-disabled="!tools_info_editable"></textarea>
                                     <label for="generalDescription">Description</label>
                                 </div>
                                 <div class="input-field chips left-align"></div>
@@ -71,20 +79,23 @@
 
 
                         <div class="row" ng-show="tools_info_editable">
-                            
-                                <strong>Drop here a tool from the search tree, to add it as a dependency. Right click to delete it.</strong>
-                        
+
+                            <strong>Drop here a tool from the search tree, to add it as a dependency. Right click to
+                                delete it.</strong>
+
                         </div>
                         <div class="row" ng-show="!tools_info_editable">
-                            
-                                <strong>Tool Dependency Tree</strong>
-                        
+
+                            <strong>Tool Dependency Tree</strong>
+
                         </div>
 
                         <div class="row left-align">
-                            
-                                <div id="tools_dep_jstree_id" js-tree="tools_dep_jstree_config" should-apply="tools_search_jstree_config_apply()" ng-model="tools_dep_jstree_model" tree="tools_dep_jstree"></div>
-                     
+
+                            <div id="tools_dep_jstree_id" js-tree="tools_dep_jstree_config"
+                                should-apply="tools_search_jstree_config_apply()" ng-model="tools_dep_jstree_model"
+                                tree="tools_dep_jstree"></div>
+
                         </div>
 
 
@@ -104,13 +115,18 @@
                     <div class="collapsible-body">
                         <!-- Hide Variables -->
                         <div class="row">
-                            <strong><a href ng-click="tools_var_jstree_id_show_clicked()"><span ng-show="tools_var_jstree_id_show">Hide</span><span ng-show="!tools_var_jstree_id_show">Show</span> variables from dependent tools</a></strong>
-                            <div class="left-align" id="tools_var_jstree_id" js-tree="tools_var_jstree_config" should-apply="tools_search_jstree_config_apply()" ng-model="tools_var_jstree_model" tree="tools_var_jstree" ng-show="tools_var_jstree_id_show"></div>
+                            <strong><a href ng-click="tools_var_jstree_id_show_clicked()"><span
+                                        ng-show="tools_var_jstree_id_show">Hide</span><span
+                                        ng-show="!tools_var_jstree_id_show">Show</span> variables from dependent
+                                    tools</a></strong>
+                            <div class="left-align" id="tools_var_jstree_id" js-tree="tools_var_jstree_config"
+                                should-apply="tools_search_jstree_config_apply()" ng-model="tools_var_jstree_model"
+                                tree="tools_var_jstree" ng-show="tools_var_jstree_id_show"></div>
                         </div>
                         <!-- Installation -->
                         <div class="row">
                             <h5>Installation Commands</h5>
-                            <div id="tool_installation_editor"></div> 
+                            <div id="tool_installation_editor"></div>
                         </div>
                         <!-- Validation -->
                         <div class="row">
@@ -136,17 +152,27 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr ng-repeat="x in tool_variables"> 
-                                            <td><input type="text" placeholder="name" ng-model="x.name" ng-disabled="!tools_info_editable"></td>
-                                            <td><input type="text" placeholder="value" ng-model="x.value" ng-disabled="!tools_info_editable"></td>
-                                            <td><input type="text" placeholder="description" ng-model="x.description" ng-disabled="!tools_info_editable"></td>
+                                        <tr ng-repeat="x in tool_variables">
+                                            <td><input type="text" placeholder="name" ng-model="x.name"
+                                                    ng-disabled="!tools_info_editable"></td>
+                                            <td><input type="text" placeholder="value" ng-model="x.value"
+                                                    ng-disabled="!tools_info_editable"></td>
+                                            <td><input type="text" placeholder="description" ng-model="x.description"
+                                                    ng-disabled="!tools_info_editable"></td>
                                             <td>
-                                                <a class="waves-effect waves-light btn-small tooltipped green darken-1" style="padding-left: 7px; padding-right:7px" data-position="bottom"
-                                                data-tooltip="Add new variable" ng-click="tools_info_add_variable()" ng-if="$last && x.name && x.value && x.description && tools_info_editable"><i class="material-icons">add</i></a>
+                                                <a class="waves-effect waves-light btn-small tooltipped green darken-1"
+                                                    style="padding-left: 7px; padding-right:7px" data-position="bottom"
+                                                    data-tooltip="Add new variable" ng-click="tools_info_add_variable()"
+                                                    ng-if="$last && x.name && x.value && x.description && tools_info_editable"><i
+                                                        class="material-icons">add</i></a>
                                             </td>
                                             <td>
-                                                <a class="waves-effect waves-light btn-small tooltipped red darken-1" style="padding-left: 7px; padding-right:7px" data-position="bottom"
-                                                data-tooltip="Remove variable" ng-click="tools_info_remove_variable($index)" ng-if="(!$first) && tools_info_editable"><i class="material-icons">remove</i></a>
+                                                <a class="waves-effect waves-light btn-small tooltipped red darken-1"
+                                                    style="padding-left: 7px; padding-right:7px" data-position="bottom"
+                                                    data-tooltip="Remove variable"
+                                                    ng-click="tools_info_remove_variable($index)"
+                                                    ng-if="(!$first) && tools_info_editable"><i
+                                                        class="material-icons">remove</i></a>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -154,7 +180,8 @@
                             </div>
                         </div>
                         <div class="row col s12">
-                            <button class="btn waves-effect waves-light" ng-click="tool_info_validate_pressed()">Validate</button>
+                            <button class="btn waves-effect waves-light"
+                                ng-click="tool_info_validate_pressed()">Validate</button>
                         </div>
                         <div class="row col s12 left-align">
                             <code>
@@ -170,6 +197,35 @@
         <!-- --------------------------------------------------- Edit Workflow Right Panel ------------------------------------------------------------------- -->
         <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
         <div id="workflowsRightPanel" class="faster" style="display: none;">
+            <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
+                <p>
+                    <h5>
+                        <span ng-bind="tools_info_name"></span>/<span ng-bind="tools_info_version"></span><span
+                            ng-show="!tools_info_editable">/<span ng-bind="tools_info_edit"></span></span>
+                    </h5>
+                    <small class="form-text text-muted">
+                        <span ng-bind="tool_info_username"></span>
+                        <span ng-show="!tools_info_editable">, created at <span
+                                ng-bind="tool_info_created_at"></span></span>
+                        <span ng-show="tools_info_forked_from">, forked from <a href
+                                ng-click="tools_search_show_item(tools_info_forked_from)"><span
+                                    ng-bind="tools_info_forked_from | tool_label"></span></a></span>
+                    </small>
+                </p>
+                <!-- Buttons -->
+                <div class="row right-align">
+                    <a id="expandAllBtn2" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
+                        data-position="bottom" data-tooltip="Expand All"><i class="material-icons">expand_more</i></a>
+                    <a id="collapseAllBtn2" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
+                        data-position="bottom" data-tooltip="Collapse All"><i class="material-icons">expand_less</i></a>
+                    <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
+                        data-tooltip="Save" ng-click="tool_create_save_pressed()" ng-show="tools_info_editable"><i
+                            class="material-icons">save</i></a>
+                    <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
+                        data-tooltip="Fork" ng-click="tool_info_fork_pressed()" ng-show="!tools_info_editable"
+                        ng-class="{'disabled': !username}"><i class="material-icons">device_hub</i></a>
+                </div>
+            </div>
             <!-- --------------------------------------------------------------------------------------- -->
             <!-- ------------------------------------ Graph -------------------------------------------- -->
             <!-- --------------------------------------------------------------------------------------- -->
@@ -196,7 +252,8 @@
                                     <label for="editWorkflowName">Name</label>
                                 </div>
                                 <div class="input-field col s12">
-                                    <textarea id="editWorkflowDescription" class="validate materialize-textarea"></textarea>
+                                    <textarea id="editWorkflowDescription"
+                                        class="validate materialize-textarea"></textarea>
                                     <label for="editWorkflowDescription">Description</label>
                                 </div>
                                 <div class="row col s12">

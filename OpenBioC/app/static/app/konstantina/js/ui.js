@@ -100,13 +100,13 @@ window.onload = function () {
                 // Callback function called before collapsible is opened
                 onOpenStart: function (event) {
                     // Workflows right panel collapsible
-//                    if (event.id == 'workflows') {
-//                        if (document.getElementById('workflowsRightPanel').style.display == 'none') {
-//                            document.getElementById('workflowsRightPanel').style.display = 'block';
-//                            $('#workflowsRightPanel').animateCss('slideInDown', function () {
-//                            });
-//                        }
-//                    }
+                    //                    if (event.id == 'workflows') {
+                    //                        if (document.getElementById('workflowsRightPanel').style.display == 'none') {
+                    //                            document.getElementById('workflowsRightPanel').style.display = 'block';
+                    //                            $('#workflowsRightPanel').animateCss('slideInDown', function () {
+                    //                            });
+                    //                        }
+                    //                    }
                     // Disabled collapsible
                     if (!event.classList.contains('disabled')) {
                         event.getElementsByClassName('arrow')[0].innerHTML = 'keyboard_arrow_down';
@@ -198,22 +198,29 @@ window.onload = function () {
     // ----------------------------------------------------- Expand All / Collapse All Button Click ---------------------------------------------------------------------------------
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --------------------------------------- Expand All button clicked ---------------------------------------------
-    document.getElementById('expandAllBtn').addEventListener('click', function () {
-        var instance = M.Collapsible.getInstance($('#createToolDataAccordion'));
-        var childrenNum = instance.el.childElementCount;
-        for (var i = 0; i < childrenNum; i++) {
-            instance.open(i);
-        }
-    });
+    // function expandAllBtnClicked(event) {
+    //     console.log(event);
+    //     // console.log(accordionId);
+    //     // var instance = M.Collapsible.getInstance($(accordionId));
+    //     // console.log(instance);
+    //     // var childrenNum = instance.el.childElementCount;
+    //     // for (var i = 0; i < childrenNum; i++) {
+    //     //     instance.open(i);
+    //     // }
+    // }
+    // document.getElementById('expandAllBtn1').addEventListener('click', expandAllBtnClicked);
+    // document.getElementById('expandAllBtn2').addEventListener('click', expandAllBtnClicked);
+    
     // -------------------------------------- Collapse All button clicked --------------------------------------------
-    document.getElementById('collapseAllBtn').addEventListener('click', function () {
-        var instance = M.Collapsible.getInstance($('#createToolDataAccordion'));
-        var childrenNum = instance.el.childElementCount;
-        for (var i = 0; i < childrenNum; i++) {
-            instance.close(i);
-        }
-    });
-
+    // function collapseAllBtnClicked(event, accordionId) {
+    //     var instance = M.Collapsible.getInstance($('#' + accordionId));
+    //     // var childrenNum = instance.el.childElementCount;
+    //     // for (var i = 0; i < childrenNum; i++) {
+    //     //     instance.close(i);
+    //     // }
+    // }
+    // document.getElementById('collapseAllBtn1').addEventListener('click', collapseAllBtnClicked(event, 'createToolDataAccordion'));
+    // document.getElementById('collapseAllBtn2').addEventListener('click', collapseAllBtnClicked(event, 'editWorkflowAccordion'));
 
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // -------------------------------------------------------- Create Tool Data Button Click ---------------------------------------------------------------------------------------
@@ -242,7 +249,7 @@ window.onload = function () {
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --------------------------------------------------------- Cancel Tool Data Button Click --------------------------------------------------------------------------------------
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    window.cancelToolDataBtn_click = function() {
+    window.cancelToolDataBtn_click = function () {
         //document.getElementById('cancelToolDataBtn').addEventListener("click", function () {
         if (document.getElementById('createToolDataDiv').style.display == 'block') {
             $('#createToolDataDiv').animateCss('slideOutUp', function () {
@@ -253,7 +260,7 @@ window.onload = function () {
     };
 
 
-    window.createWorkflowBtn_click = function() {
+    window.createWorkflowBtn_click = function () {
         if (document.getElementById('workflowsRightPanel').style.display == 'none') {
             document.getElementById('workflowsRightPanel').style.display = 'block';
             $('#workflowsRightPanel').animateCss('slideInDown', function () {
