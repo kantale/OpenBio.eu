@@ -73,6 +73,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tool_variables = [{name: '', value: '', description: ''}];
         $scope.tools_var_jstree_id_show = true;
 
+        $scope.workflows_info_editable = false;
+
         $scope.get_init_data();
 
 
@@ -577,7 +579,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.workflows_search_warning = 'Invalid Edit value';
                 return;
             }
-            $scope.workflows_search_warning = 'Edit value should be empty to create new tools';
+            $scope.workflows_search_warning = 'Edit value should be empty to create new Workflows';
             $scope.workflows_search_2(); // UNCOMMENT ME!!!!!!!!
             return; 
         }
@@ -603,7 +605,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         //Check if tool search name and version are non empty 
         if (!($scope.tools_search_name && $scope.tools_search_version)) {
-            $scope.tools_search_warning = 'Tools and version should not be empty';
+            $scope.tools_search_warning = 'Name and Version should not be empty';
             return;
         }
 
@@ -661,8 +663,29 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             return;
         }
 
-        $scope.show_tools_info = false;
-        $scope.show_workflows_info = true;
+        //Check if worfklows search name are empty 
+        if (!$scope.workflows_search_name) {
+            $scope.workflows_search_warning = 'Name should not be empty';
+            return;
+        }
+
+        //Edit SHOULD BE EMPTY!
+        if ($scope.workflows_search_edit) {
+            $scope.worfflows_search_warning = 'An edit number will be assigned after you save your workflow (leave it empty)';
+            return;
+        }
+
+
+
+        //$scope.show_tools_info = false;
+        //$scope.show_workflows_info = true;
+
+        //Close tool accordion
+        window.cancelToolDataBtn_click();
+
+        //Open Workflows accordion
+        window.createWorkflowBtn_click();
+
         $scope.workflows_info_name = $scope.workflows_search_name;
         $scope.workflow_info_username = $scope.username;
 

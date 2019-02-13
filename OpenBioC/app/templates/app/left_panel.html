@@ -70,7 +70,7 @@
                             ng-show="(!tools_search_warning) && tools_search_name && tools_search_version"
                         -->
                         <a href id="createToolDataBtn" class="waves-effect waves-light btn"
-                            ng-click="tools_search_create_new_pressed()" ng-show="(!tools_info_editable)">create</a>
+                            ng-click="tools_search_create_new_pressed()" ng-show="(!tools_info_editable) && (!tools_search_warning)">create</a>
                         <a href id="cancelToolDataBtn" class="waves-effect waves-light btn" ng-show="tools_info_editable" ng-click="tools_search_raise_edit_are_you_sure_modal()">cancel</a>
                     </div>
                     <div class="row col s12" ng-show="tools_search_warning">
@@ -105,31 +105,35 @@
                 <div class="collapsible-header">
                     <i class="material-icons arrow">keyboard_arrow_right</i>
                     <i class="material-icons">place</i>
-                    Workflows<span class="new badge" data-badge-caption="found">3</span>
+                    Workflows<span class="new badge" data-badge-caption="found" ng-bind="workflows_search_tools_number"></span>
                 </div>
                 <div class="collapsible-body">
                     <div class="row">
                         <!-- Form -->
                         <form class="col s12">
                             <div class="row">
-                                <div class="input-field col s12 m4 grid-s12-m4-l4">
-                                    <input id="workflowsName" type="text" class="validate">
+                                <div class="input-field col s12 m6 grid-s12-m6-l6">
+                                    <input id="workflowsName" type="text" class="validate" ng-model="workflows_search_name" ng-change="workflows_search_input_changed()">
                                     <label for="workflowsName">Name</label>
                                 </div>
-                                <div class="input-field col s12 m4 grid-s12-m4-l4">
-                                    <input id="workflowsVersion" type="text" class="validate">
-                                    <label for="workflowsVersion">Version</label>
-                                </div>
-                                <div class="input-field col s12 m4 grid-s12-m4-l4">
-                                    <input id="workflowsEdit" type="text" class="validate">
+                                <div class="input-field col s12 m6 grid-s12-m6-l6">
+                                    <input id="workflowsEdit" type="text" class="validate" ng-model="workflows_search_edit" ng-change="workflows_search_input_changed()">
                                     <label for="workflowsEdit">Edit</label>
                                 </div>
                             </div>
                         </form>
                         <!-- Test buttons -->
-                        <a id="enableEditWorkflowBtn" class="waves-effect waves-light btn">Enable Edit</a>
-                        <a id="disableEditWorkflowBtn" class="waves-effect waves-light btn">Disable edit</a>
+                        <a href id="enableEditWorkflowBtn" class="waves-effect waves-light btn" ng-click="workflows_search_create_new_pressed()" ng-show="(!workflows_info_editable) && (!workflows_search_warning)">Create</a>
+                        <a href id="disableEditWorkflowBtn" class="waves-effect waves-light btn" ng-show="workflows_info_editable" ng-click="tools_search_raise_edit_are_you_sure_modal()">Cancel</a> <!-- TOOLS!!! FIXME -->
                     </div>
+
+                    <div class="row col s12" ng-show="workflows_search_warning">
+                        <div class="card-panel orange lighten-1 center-align" style="padding:10px">
+                            <span class="white-text" ng-bind="workflows_search_warning"></span>
+                        </div>
+                    </div>
+
+
                     <!-- Tree list -->
                     <div class="row">
                         <p>-----------------------------</p>
