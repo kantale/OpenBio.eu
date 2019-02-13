@@ -198,29 +198,36 @@ window.onload = function () {
     // ----------------------------------------------------- Expand All / Collapse All Button Click ---------------------------------------------------------------------------------
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --------------------------------------- Expand All button clicked ---------------------------------------------
-    // function expandAllBtnClicked(event) {
-    //     console.log(event);
-    //     // console.log(accordionId);
-    //     // var instance = M.Collapsible.getInstance($(accordionId));
-    //     // console.log(instance);
-    //     // var childrenNum = instance.el.childElementCount;
-    //     // for (var i = 0; i < childrenNum; i++) {
-    //     //     instance.open(i);
-    //     // }
-    // }
-    // document.getElementById('expandAllBtn1').addEventListener('click', expandAllBtnClicked);
-    // document.getElementById('expandAllBtn2').addEventListener('click', expandAllBtnClicked);
+    document.getElementById('expandAllBtn1').addEventListener('click', function(){
+        var instance = M.Collapsible.getInstance($('#createToolDataAccordion'));
+        var childrenNum = instance.el.childElementCount;
+        for (var i = 0; i < childrenNum; i++) {
+            instance.open(i);
+        }
+    });
+    document.getElementById('expandAllBtn2').addEventListener('click', function(){
+        var instance = M.Collapsible.getInstance($('#editWorkflowAccordion'));
+        var childrenNum = instance.el.childElementCount;
+        for (var i = 0; i < childrenNum; i++) {
+            instance.open(i);
+        }
+    });
     
     // -------------------------------------- Collapse All button clicked --------------------------------------------
-    // function collapseAllBtnClicked(event, accordionId) {
-    //     var instance = M.Collapsible.getInstance($('#' + accordionId));
-    //     // var childrenNum = instance.el.childElementCount;
-    //     // for (var i = 0; i < childrenNum; i++) {
-    //     //     instance.close(i);
-    //     // }
-    // }
-    // document.getElementById('collapseAllBtn1').addEventListener('click', collapseAllBtnClicked(event, 'createToolDataAccordion'));
-    // document.getElementById('collapseAllBtn2').addEventListener('click', collapseAllBtnClicked(event, 'editWorkflowAccordion'));
+    document.getElementById('collapseAllBtn1').addEventListener('click', function(){
+        var instance = M.Collapsible.getInstance($('#createToolDataAccordion'));
+        var childrenNum = instance.el.childElementCount;
+        for (var i = 0; i < childrenNum; i++) {
+            instance.close(i);
+        }
+    });
+    document.getElementById('collapseAllBtn2').addEventListener('click', function(){
+        var instance = M.Collapsible.getInstance($('#editWorkflowAccordion'));
+        var childrenNum = instance.el.childElementCount;
+        for (var i = 0; i < childrenNum; i++) {
+            instance.close(i);
+        }
+    });
 
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // -------------------------------------------------------- Create Tool Data Button Click ---------------------------------------------------------------------------------------
