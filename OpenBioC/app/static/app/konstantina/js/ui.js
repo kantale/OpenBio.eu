@@ -100,13 +100,13 @@ window.onload = function () {
                 // Callback function called before collapsible is opened
                 onOpenStart: function (event) {
                     // Workflows right panel collapsible
-                    if (event.id == 'workflows') {
-                        if (document.getElementById('workflowsRightPanel').style.display == 'none') {
-                            document.getElementById('workflowsRightPanel').style.display = 'block';
-                            $('#workflowsRightPanel').animateCss('slideInDown', function () {
-                            });
-                        }
-                    }
+//                    if (event.id == 'workflows') {
+//                        if (document.getElementById('workflowsRightPanel').style.display == 'none') {
+//                            document.getElementById('workflowsRightPanel').style.display = 'block';
+//                            $('#workflowsRightPanel').animateCss('slideInDown', function () {
+//                            });
+//                        }
+//                    }
                     // Disabled collapsible
                     if (!event.classList.contains('disabled')) {
                         event.getElementsByClassName('arrow')[0].innerHTML = 'keyboard_arrow_down';
@@ -251,6 +251,17 @@ window.onload = function () {
             });
         }
     };
+
+
+    window.createWorkflowBtn_click = function() {
+        if (document.getElementById('workflowsRightPanel').style.display == 'none') {
+            document.getElementById('workflowsRightPanel').style.display = 'block';
+            $('#workflowsRightPanel').animateCss('slideInDown', function () {
+            });
+        }
+    };
+
+
 
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --------------------------------------------------------- Enable Edit Workflow Button Click ----------------------------------------------------------------------------------
