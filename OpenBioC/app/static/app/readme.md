@@ -89,5 +89,9 @@ wget https://github.com/Dogfalo/materialize/releases/download/1.0.0/materialize-
 ### Animate 3.7.0
 wget https://daneden.github.io/animate.css/
 
+### Cytoscape 3.4.0
+```
+ wget https://github.com/cytoscape/cytoscape.js/archive/v3.4.0.tar.gz 
+```
 
 
