@@ -808,8 +808,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */
     $scope.tools_info_add_variable = function() {
         $('.tooltipped').tooltip('close');
-        $scope.tool_variables.push({name:'', value: '', description: ''});
-        $('.tooltipped').tooltip();  
+        $scope.tool_variables.push({name:'', value: '', description: ''});  
     };
 
     /*
