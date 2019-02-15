@@ -110,6 +110,7 @@ window.onload = function () {
                     // Disabled collapsible
                     if (!event.classList.contains('disabled')) {
                         event.getElementsByClassName('arrow')[0].innerHTML = 'keyboard_arrow_down';
+                        M.updateTextFields();
                     }
                 },
                 // Callback function called after collapsible is opened
