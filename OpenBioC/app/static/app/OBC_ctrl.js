@@ -1051,10 +1051,27 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             else {
                 window.cancelToolDataBtn_click(); // She clicked YES after CANCEL button 
                 $scope.tools_info_editable = false;
+
+                // Konstantina
+                // $scope.open_div_on_right_panel();
             }
         }
 
     };
+
+    // Konstantina
+    // get called when we want to open something to the right panel
+    // $scope.open_div_on_right_panel = function() {
+    //     var parent = document.getElementsByClassName('rightPanel')[0].getElementsByTagName('div')[0];
+    //     var child = $(parent).find('div:visible');
+    //     if(child.length > 0){
+    //         // right panel has visible content
+    //         // open warning modal 
+    //     }
+    //     else{
+    //         // right panel is empty
+    //     }
+    // };
 
     //JSTREE END tools_search
 
