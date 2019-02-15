@@ -920,7 +920,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                         $scope.tools_var_jstree_model.push(data['variables_jstree'][i]);
                     }
                 }
-                else if (what_to_do == 2) { //DRAG FROM SWARCH TREE TO WORKFLOW DIV
+                else if (what_to_do == 2) { //DRAG FROM SEARCH TREE TO WORKFLOW DIV
                     window.buildTree(data['dependencies_jstree'])
                 }
             },
