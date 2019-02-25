@@ -1,0 +1,491 @@
+<!DOCTYPE>
+
+<html>
+	<head>
+		<title>cytoscape-cxtmenu.js demo</title>
+
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+
+		<link href="https://unpkg.com/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+		<script src="/static/cytoscape.min.js"></script>
+
+		<!-- for testing with local version of cytoscape.js -->
+		<!--<script src="../cytoscape.js/build/cytoscape.js"></script>-->
+		<script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+		<script src="/static/cytoscape.js"></script>
+		<script src="/static/cytoscape-cxtmenu.js"></script>
+		<script src="/static/CytoscapeEdgeEditation.js"></script>
+		<!--Import Google Icon Font-->
+		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+		<!-- Compiled and minified CSS -->
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+		<!--Let browser know website is optimized for mobile-->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+		<link rel="stylesheet" type="text/css" href="/static/pell.min.css">
+		
+		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+		
+
+		<script src="https://unpkg.com/popper.js@1.14.7/dist/umd/popper.js"></script>
+		<script src="/static/cytoscape-popper.js"></script>
+		<script src="https://unpkg.com/tippy.js@4.0.1/umd/index.all.min.js"></script>
+		<link rel="stylesheet" href="https://unpkg.com/tippy.js@4.0.1/index.css" />
+		
+		<link rel="stylesheet" href="https://unpkg.com/tippy.js@4/themes/light.css" />
+		<link rel="stylesheet" href="https://unpkg.com/tippy.js@4/themes/light-border.css"/>
+		<link rel="stylesheet" href="https://unpkg.com/tippy.js@4/themes/google.css"/>
+		<link rel="stylesheet" href="https://unpkg.com/tippy.js@4/themes/translucent.css"/>
+	
+		<style>
+			body {
+				font-family: helvetica;
+				font-size: 14px;
+				overflow: hidden;
+			}
+
+			#cy {
+				width: 100%;
+				height: 100%;
+				position: absolute;
+				left: 0;
+				top: 0;
+				z-index: 999;
+				border-style: solid;
+			}
+
+			h1 {
+				opacity: 0.5;
+				font-size: 1em;
+			}
+
+			/* you can set the disabled style how you like on the text/icon */
+			.cxtmenu-disabled {
+				opacity: 0.333;
+			}
+			
+			.tippy-tooltip.tomato-theme {
+				background-color: gray;
+				color: black;
+			}
+		</style>
+
+		<script>
+			window.author = "{{ author }}";
+		
+			function getID() {
+				return '_' + Math.random().toString(36).substr(2, 9);
+			}
+			
+			function saveGraph() {
+				cy.json({userPanningEnabled: true, userZoomingEnabled: true});
+				return axios.post('/graph/nikos', cy.json());
+				/*.then(function (response) {
+					console.log(response);
+				})
+				.catch(function (error) {
+					console.log(error);
+				});*/
+			}
+
+			window.addEventListener('DOMContentLoaded', function(){
+				var cy = window.cy = cytoscape({
+					container: document.getElementById('cy'),
+					ready: function(){
+					},
+					style: [
+						{
+							selector: 'node',
+							css: {
+								'content': 'data(label)',
+								'font-size': '12pt'
+							}
+						},
+						{
+							selector: 'edge',
+							css: {
+								'width': 3,
+								'curve-style': 'bezier',
+								'target-arrow-shape': 'triangle'
+							}
+						},
+						{
+							selector: 'edge[type="neutral"]',
+							style: {
+								'line-color': 'gray',
+								'target-arrow-color': 'gray',
+							}
+						},
+						{
+							selector: 'edge[type="neutral-note"]',
+							style: {
+								'line-color': 'gray',
+								'line-style': 'dashed',
+								'target-arrow-color': 'gray',
+							}
+						},
+						{
+							selector: 'node[type="solution"]',
+							style: {
+								'background-color': 'yellow'
+							}
+						},
+						{
+							selector: 'node[type="issue"]',
+							style: {
+								'background-color': 'blue'
+							}
+						},
+						{
+							selector: 'node[type="note"]',
+							style: {
+								'background-color': 'gray'
+							}
+						},
+						{
+							selector: 'node[type="position-in-favor"]',
+							style: {
+								'background-color': 'green'
+							}
+						},
+						{
+							selector: 'node[type="position-against"]',
+							style: {
+								'background-color': 'red'
+							}
+						}
+					],
+					elements: {
+						nodes: [
+							//{ data: { id: 'j', name: 'Jerry', type: 'type1' } },
+							//{ data: { id: 'e', name: 'Elaine', type: 'type1' } }
+						],
+						edges: [
+							//{ data: { source: 'j', target: 'e' } }
+						]
+					}
+				});
+
+				cy.cxtmenu({
+					selector: 'node, edge',
+					commands: [
+						{
+							content: '<span class="fa fa-edit fa-2x"></span>',
+							select: function(ele){
+								openModal(ele);
+							}
+						},
+						{
+							content: '<span class="fa fa-thumbs-up fa-2x"></span>',
+							select: function(ele){
+								ele.data().likes++;
+								saveGraph();
+							},
+							enabled: true
+						},
+						{
+							content: '<span class="fa fa-thumbs-down fa-2x"></span>',
+							select: function(ele){
+								ele.data().dislikes++;
+								saveGraph();
+							},
+							enabled: true
+						},						
+						{
+							content: '<span class="fa fa-trash fa-2x"></span>',
+							select: function(ele){
+								cy.remove(cy.elements('node[id = "' + ele.id() + '"]'));
+								saveGraph();
+							}
+						}
+					]
+				});
+				cy.cxtmenu({
+					selector: 'core',
+					commands: [
+						{
+							content: 'New Issue',
+							select: function(event){
+								addIssueNode(getID(), 'New issue', 'New issue', '{{ author }}');
+								saveGraph();
+							}
+						},
+						{
+							content: 'New Note',
+							select: function(){
+								addNoteNode(getID(), 'New note', 'New note', '{{ author }}');
+								saveGraph();
+							}
+						},
+						{
+							content: 'New Solution',
+							select: function(){
+								addSolutionNode(getID(), 'New solution', 'New solution', '{{ author }}');
+								saveGraph();
+							}
+						},
+						{
+							content: 'New Position In Favor',
+							select: function(){
+								addPositionInFavorNode(getID(), 'Position in favor', 'Position in favor', '{{ author }}');
+								saveGraph();
+							}
+						},
+						{
+							content: 'New Position Against',
+							select: function(){
+								addPositionAgainstNode(getID(), 'Position against', 'Position against', '{{ author }}');
+								saveGraph();
+							}
+						}
+					]
+				});
+
+				var handles = new CytoscapeEdgeEditation;
+				handles.init(cy);
+
+				handles.registerHandle({
+					positionX: "center",
+					positionY: "top",
+					color: "gray",
+					type: "neutral",
+					single: false,
+					nodeTypeNames: ['issue', 'position-in-favor', 'position-against', 'solution']
+				});
+				
+				handles.registerHandle({
+					positionX: "center",
+					positionY: "top",
+					color: "gray",
+					type: "neutral-note",
+					single: false,
+					nodeTypeNames: ['note']
+				});
+		
+				function addNode(id, text, label, type, author) {
+					console.log('add node');
+					
+					cy.add({
+						data: { id: id, text: text, label: label, type: type, author: author, likes: 0, dislikes: 0, date: new Date()}
+					});
+				}
+				
+				function addIssueNode(id, text, label, author) {
+					addNode(id, text, label, 'issue', author);
+				}
+				
+				//addIssueNode('basic', 'the text', 'label', 'nikos', 'foo');
+				
+				function addSolutionNode(id, text, label, author) {
+					addNode(id, text, label, 'solution', author);
+				}
+				
+				function addNoteNode(id, text, label, author) {
+					addNode(id, text, label, 'note', author);
+				}
+				
+				function addPositionInFavorNode(id, text, label, author) {
+					addNode(id, text, label, 'position-in-favor', author);
+				}
+				
+				function addPositionAgainstNode(id, text, label, author) {
+					addNode(id, text, label, 'position-against', author);
+				}
+				
+		
+				function addEdge(id, source, target, type) {
+					cy.add({
+						data: { id: id, source: source, target: target, type: type}
+					});
+				}		
+
+				function addNeutralEdge(id, source, target) {
+					addEdge(id, source, target, 'neutral');
+				}
+		
+				//ADJUST HEIGHT
+				var resizeViewport = function(){
+					$("cy").height($(window).height());
+					cy.resize();
+				};
+
+				$(window).resize(resizeViewport);
+				resizeViewport();
+
+				//LAYOUT
+				cy.layout({
+					name: 'random',
+					fit: true,
+					padding: 40,
+					boundingBox: {x1: -200, y1: -200, x2: 300, y2: 200}
+				});
+				
+				/*axios.post('/discourse/nikos', cy.json())
+				.then(function (response) {
+					console.log(response);
+				})
+				.catch(function (error) {
+					console.log(error);
+				});*/
+  
+				axios.get('/graph').then(function (response) {
+					cy.json(response.data)
+				});
+				cy.userPanningEnabled(true);
+				
+				cy.on('mouseup', function(event) {
+					saveGraph();
+				});
+				
+				
+				var tippyDiv;
+				cy.on('mouseover', 'node', function(event) {
+					var a = event.cyTarget;
+					$('#tippy-text').html(a.data().text);
+					$('#tippy-author-name').text(a.data().author);
+					$('#tippy-number-of-likes').text(a.data().likes);
+					$('#tippy-number-of-dislikes').text(a.data().dislikes);
+					$('#tippy-date').text((new Date(a.data().date)).toLocaleString('en-GB', { timeZone: 'UTC' }));
+					if (a.data().type == 'issue') {
+						$('#tippy-likes').hide();
+					}
+					else {
+						$('#tippy-likes').show();
+					}
+					var makeTippy = function(node){
+						return tippy(node.popperRef(), {
+							content: function(){
+								var div = document.getElementById('tippy-popup');
+								return div.innerHTML;
+							},
+							trigger: 'manual',
+							arrow: true,
+							placement: 'bottom',
+							hideOnClick: true,
+							multiple: true,
+							sticky: true,
+							theme: 'tomato'
+						});
+					};
+					tippyDiv = makeTippy(a);
+					tippyDiv.show();					
+				});
+				
+				cy.on('mouseout', 'node', function(event) {
+					tippyDiv.hide();
+				});
+			});
+		
+			var node = null;
+			function openModal(ele) {
+				node = ele;
+				$('#modal-title').text('Edit Node: ' + ele.data().id);
+				$('#node-text').val(ele.data().text);
+				
+				if (ele.data().author == '{{ author }}') {
+					document.querySelector('.pell-content').setAttribute('contenteditable', true)
+				}
+				else {
+					document.querySelector('.pell-content').removeAttribute('contenteditable');
+				}
+				console.log(ele.data().author);
+				$('#node-author').text(ele.data().author);
+				editor.content.innerHTML = ele.data().text;				
+				
+				$('.modal').modal('open');
+			}
+		
+			function editNodeText() {
+				node.data('text', editor.content.innerHTML);
+				var label = editor.content.innerHTML.replace(/<\/?[^>]+(>|$)/g, "");
+				if (label.length >= 30) {
+					node.data('label', label.slice(0, 30) + '...');
+				}
+				else {
+					node.data('label', editor.content.innerHTML.replace(/<\/?[^>]+(>|$)/g, ""));
+				}
+				saveGraph();
+			}
+		</script>
+	</head>
+
+	<body>
+		<h1>Discourse graph Demo</h1>
+
+		<div id="cy"></div>
+		
+		
+		<!-- tippy popup -->
+		<div id="tippy-popup" style="display: none;">
+			<span class="fa fa-user fa-2x"></span>
+			<br>
+			<b><p id="tippy-author-name"></p></b>
+			<p id="tippy-text"></p>
+			<p id="tippy-date">15/02/2019</p>
+			<p id="tippy-likes">Likes: <span id="tippy-number-of-likes"></span>, Dislikes: <span id="tippy-number-of-dislikes"></span></p>
+		</div>
+		
+		<!-- Modal Structure -->
+		<div id="modal1" class="modal">
+			<div class="modal-content">
+				<h4 id="modal-title"></h4>
+				<div class="input-field">
+					<div id="editor" class="pell"></div>
+					<p>User: <b id="node-author"></b></p>
+					<p>Date: <b>30/01/2019</b></p>
+					<div>
+						HTML output:
+						<div id="html-output" style="white-space:pre-wrap;"></div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<a href="#!" class="modal-close waves-effect waves-green btn-flat" onclick="editNodeText()">Save</a>
+			</div>
+		</div>
+		
+		<!-- Compiled and minified JavaScript -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+		<script>
+			$(document).ready(function(){
+				$('.modal').modal();
+			});
+		</script>
+		<script src="/static/pell.min.js"></script>
+		<script>
+			var editor = window.editor = pell.init({
+				element: document.getElementById('editor'),
+				onChange: function (html) { 
+					document.getElementById('html-output').textContent = html;
+				},
+				defaultParagraphSeparator: 'div',
+				styleWithCSS: false,
+				actions: [
+					'bold',
+					'underline',
+					'italic',
+					'heading1',
+					'heading2',
+					'olist',
+					'ulist',
+					'link',
+					'code',
+					'line',
+					'paragraph',
+					'quote'
+				],
+
+				classes: {
+					actionbar: 'pell-actionbar',
+					button: 'pell-button',
+					content: 'pell-content',
+					selected: 'pell-button-selected'
+				}
+			});
+			//editor.content.innerHTML = '<ul><li>Initial content!</li></ul>'
+			//document.querySelector('.pell-content').removeAttribute('contenteditable');
+			//document.querySelector('.pell-content').setAttribute('contenteditable', true)
+			editor.content.innerHTML = '';
+		</script>
+	</body>
+</html>
