@@ -799,7 +799,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * Navbar --> tools/data --> Aprioprate input (search) --> Create New (tool, pressed) --> Installation (tab, pressed) --> "-" (variables) (pressed)
     */
     $scope.tools_info_remove_variable = function(index) {
-        $('.tooltipped').tooltip('close');
+        // $('.tooltipped').tooltip('close');
         $scope.tool_variables.splice(index, 1);
     };
 
@@ -807,7 +807,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * Navbar --> tools/data --> Appropriate input (search) --> Create New (tool, pressed) --> Installation (tab, pressed) --> "+" (variables) (pressed)
     */
     $scope.tools_info_add_variable = function() {
-        $('.tooltipped').tooltip('close');
+        // $('.tooltipped').tooltip('close');
         $scope.tool_variables.push({name:'', value: '', description: ''});  
     };
 
