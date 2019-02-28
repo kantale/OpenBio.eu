@@ -52,6 +52,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.general_success_message = window.general_success_message;
         $scope.general_alert_message = window.general_alert_message;
         $scope.password_reset_token = window.password_reset_token;
+
+        $scope.main_container_show = true;
+        $scope.profile_container_show = false;
+
         $scope.inner_hide_all_navbar();
         $scope.inner_hide_all_error_messages();
         
@@ -138,6 +142,18 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             }
         });
     };
+
+
+    $scope.navbar_profile_clicked = function() {
+        $scope.main_container_show = false;
+        $scope.profile_container_show = true;
+    };
+
+    $scope.profile_save_pressed = function() {
+        $scope.main_container_show = true;
+        $scope.profile_container_show = false;
+    };
+
 
     /*
     * Hide everything 

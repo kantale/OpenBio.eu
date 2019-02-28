@@ -129,7 +129,7 @@
 <!-- Sign In Form -->
 <!-- Sign Up Form -->
 
-<div class="splitter-container">
+<div class="splitter-container" ng-show="main_container_show">
 
     <!-- --- LEFT PANEL / left_panel.html -->
 			{% include "app/left_panel.html" %}
@@ -138,6 +138,14 @@
     <!-- --- RIGHT PANEL / right_panel.html -->
 			{% include "app/right_panel.html" %}
 
+
+</div>
+
+<div class="profile_container" ng-show="profile_container_show">
+
+	PROFILE!!
+
+	<a href ng-click="profile_save_pressed()">SAVE</a>
 
 </div>
 
