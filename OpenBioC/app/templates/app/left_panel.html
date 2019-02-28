@@ -64,14 +64,14 @@
                                 </div>
                             </div>
                         </form>
-                        <!-- Test buttons -->
+                        <!-- Tools. Create / Cancer  buttons -->
                         <!-- 
                             ng-class="{'disabled': !username}" 
                             ng-show="(!tools_search_warning) && tools_search_name && tools_search_version"
                         -->
                         <a href id="createToolDataBtn" class="waves-effect waves-light btn"
                             ng-click="tools_search_create_new_pressed()" ng-show="(!tools_info_editable) && (!tools_search_warning)">create</a>
-                        <a href id="cancelToolDataBtn" class="waves-effect waves-light btn" ng-show="tools_info_editable" ng-click="tools_search_raise_edit_are_you_sure_modal()">cancel</a>
+                        <a href id="cancelToolDataBtn" class="waves-effect waves-light btn" ng-show="tools_info_editable" ng-click="tools_search_raise_edit_are_you_sure_modal('TOOLS_CANCEL_BUTTON')">cancel</a>
                     </div>
                     <div class="row col s12" ng-show="tools_search_warning">
                         <div class="card-panel orange lighten-1 center-align" style="padding:10px">
@@ -122,9 +122,9 @@
                                 </div>
                             </div>
                         </form>
-                        <!-- Test buttons -->
+                        <!-- Create / Cancel buttons in Workflows -->
                         <a href id="enableEditWorkflowBtn" class="waves-effect waves-light btn" ng-click="workflows_search_create_new_pressed()" ng-show="(!workflows_info_editable) && (!workflows_search_warning)">Create</a>
-                        <a href id="disableEditWorkflowBtn" class="waves-effect waves-light btn" ng-show="workflows_info_editable" ng-click="tools_search_raise_edit_are_you_sure_modal()">Cancel</a> <!-- TOOLS!!! FIXME -->
+                        <a href id="disableEditWorkflowBtn" class="waves-effect waves-light btn" ng-show="workflows_info_editable" ng-click="tools_search_raise_edit_are_you_sure_modal('WORKFLOWS_CANCEL_BUTTON')">Cancel</a> <!-- TOOLS!!! FIXME -->
                     </div>
 
                     <div class="row col s12" ng-show="workflows_search_warning">
