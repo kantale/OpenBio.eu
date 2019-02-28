@@ -127,7 +127,7 @@ window.onload = function () {
                         if (document.getElementById('workflowsRightPanel').style.display == 'block') {
                             $('#workflowsRightPanel').animateCss('slideOutUp', function () {
                                 document.getElementById('workflowsRightPanel').style.display = 'none';
-                                disableEditWorkflow();
+                                // disableEditWorkflow(); // This disables the edit workflow window
                             });
                         }
                     }
@@ -150,7 +150,7 @@ window.onload = function () {
         // M.updateTextFields();
 
         // -------------------------------- Listener for DISABLE EDIT workflow button ------------------------------------
-        document.getElementById('disableEditWorkflowBtn').addEventListener("click", disableEditWorkflow);
+        // document.getElementById('disableEditWorkflowBtn').addEventListener("click", disableEditWorkflow);
 
         // --------------------------------------- Splitter bar initialization -------------------------------------------
         $('.splitter-container').SplitterBar();
@@ -267,7 +267,7 @@ window.onload = function () {
         }
     };
 
-
+    // SHOW WORKFLKOW ACCORDION RIGHT  
     window.createWorkflowBtn_click = function () {
         if (document.getElementById('workflowsRightPanel').style.display == 'none') {
             document.getElementById('workflowsRightPanel').style.display = 'block';
@@ -276,6 +276,14 @@ window.onload = function () {
         }
     };
 
+    // HIDE WORKFLOW ACCORDION RIGHT 
+    window.cancelWorkflowBtn_click = function() {
+        if (document.getElementById('workflowsRightPanel').style.display == 'block') {
+            document.getElementById('workflowsRightPanel').style.display = 'none';
+            $('#workflowsRightPanel').animateCss('slideInDown', function () {
+            });
+        }
+    };
 
 
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

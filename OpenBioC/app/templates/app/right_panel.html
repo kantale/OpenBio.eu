@@ -252,12 +252,12 @@
                         <div class="row">
                             <form class="col s12">
                                 <div class="input-field col s12">
-                                    <input id="editWorkflowName" type="text" class="validate">
+                                    <input id="editWorkflowName" type="text" class="validate" ng-model="workflows_step_name">
                                     <label for="editWorkflowName">Name</label>
                                 </div>
                                 <div class="input-field col s12">
                                     <textarea id="editWorkflowDescription"
-                                        class="validate materialize-textarea"></textarea>
+                                        class="validate materialize-textarea" ng-model="workflows_step_description"></textarea>
                                     <label for="editWorkflowDescription">Description</label>
                                 </div>
                                 <div class="row col s12">

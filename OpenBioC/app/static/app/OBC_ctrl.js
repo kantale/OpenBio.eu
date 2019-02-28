@@ -74,6 +74,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tools_var_jstree_id_show = true;
 
         $scope.workflows_info_editable = false;
+        $scope.workflows_step_name = '';
+        $scope.workflows_step_description = '';
 
         $scope.get_init_data();
 
@@ -592,31 +594,16 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     };
 
+
     /*
-    * Navbar -> Tools/Data --> Appropriate input --> "Create New" button --> Pressed
+    * Create new tool button pressed.
+    * All checks are ok.
     */
-    $scope.tools_search_create_new_pressed = function() {
-
-        if (!$scope.username) {
-            //$scope.tools_info_error_message = 'Login to create new tools';
-            $scope.tools_search_warning = 'Login to create new tools';
-            return;
-        }
-
-        //Check if tool search name and version are non empty 
-        if (!($scope.tools_search_name && $scope.tools_search_version)) {
-            $scope.tools_search_warning = 'Name and Version should not be empty';
-            return;
-        }
-
-        //Edit SHOULD BE EMPTY!
-        if ($scope.tools_search_edit) {
-            $scope.tools_search_warning = 'An edit number will be assigned after you save your tool (leave it empty)';
-            return;
-        }
-
-
+    $scope.tools_search_create_new_pressed_ok = function() {
         $scope.tools_search_warning = '';
+
+        //Close Workflow right panel
+        window.cancelWorkflowBtn_click();
 
         //Triggers animation to open right window
         window.createToolDataBtn_click();
@@ -651,7 +638,60 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         tool_validation_editor.setReadOnly(false);
 
         $scope.tools_var_jstree_id_show = true; // Show variable/dependency tree
+    };
 
+
+    /*
+    * Navbar -> Tools/Data --> Appropriate input --> "Create New" button --> Pressed
+    */
+    $scope.tools_search_create_new_pressed = function() {
+
+        if (!$scope.username) {
+            //$scope.tools_info_error_message = 'Login to create new tools';
+            $scope.tools_search_warning = 'Login to create new tools';
+            return;
+        }
+
+        //Check if tool search name and version are non empty 
+        if (!($scope.tools_search_name && $scope.tools_search_version)) {
+            $scope.tools_search_warning = 'Name and Version should not be empty';
+            return;
+        }
+
+        //Edit SHOULD BE EMPTY!
+        if ($scope.tools_search_edit) {
+            $scope.tools_search_warning = 'An edit number will be assigned after you save your tool (leave it empty)';
+            return;
+        }
+
+        //If workflows are editable then raise a modal to ask user if she want to lose all edits.
+        if ($scope.workflows_info_editable) {
+            $scope.tools_search_raise_edit_are_you_sure_modal('TOOLS_CREATE_BUTTON');
+            return;
+        }
+
+        // Everything seems ok.
+        $scope.tools_search_create_new_pressed_ok();
+
+
+    };
+
+    /*
+    * Create new workflow. All checks are ok. 
+    */
+    $scope.workflows_search_create_new_pressed_ok = function() {
+        //Close tool accordion
+        $scope.tools_info_editable = false;
+        window.cancelToolDataBtn_click();
+
+        //Open Workflows accordion
+        window.createWorkflowBtn_click();
+
+        $scope.workflows_step_name = '';
+        $scope.workflows_step_description = '';
+        $scope.workflows_info_name = $scope.workflows_search_name;
+        $scope.workflows_info_username = $scope.username;
+        $scope.workflows_info_editable = true;
     };
 
     /*
@@ -681,22 +721,14 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             return;
         }
 
+        $scope.workflows_search_create_new_pressed_ok();
+
         //Open a modal window. The Yes/No buttons of the window are binded to tools_search_jstree_modal_editable 
         //window.createToolDataBtn_click();
 
 
         //$scope.show_tools_info = false;
         //$scope.show_workflows_info = true;
-
-        //Close tool accordion
-        window.cancelToolDataBtn_click();
-
-        //Open Workflows accordion
-        window.createWorkflowBtn_click();
-
-        $scope.workflows_info_name = $scope.workflows_search_name;
-        $scope.workflows_info_username = $scope.username;
-        $scope.workflows_info_editable = true;
 
         //$scope.workflows_info_error_message = '';
 
@@ -1011,7 +1043,6 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * 1. Click an item in the jstree tools
     * 2. Click Cancel in Tool Search
     * the results are capture by function: tools_search_jstree_modal_editable(yes_no)
-    * TOOLS_CANCEL_BUTTON, WORKFLOWS_CANCEL_BUTTON, TOOL_SEARCH_JSTREE, WORKFLOWS_CREATE_BUTTON 
     */
     $scope.tools_search_raise_edit_are_you_sure_modal = function(who_called_me) {
         M.Modal.getInstance($("#warningModal")).open();
@@ -1048,7 +1079,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * tools_search_jstree_modal_editable_response = True // YES IS PRESSED !
     * tools_search_jstree_modal_editable_response = False // NO IS PRESSED!
     * Who called me value: 
-    * TOOLS_CANCEL_BUTTON, WORKFLOWS_CANCEL_BUTTON, TOOL_SEARCH_JSTREE, WORKFLOWS_CREATE_BUTTON 
+    * TOOLS_CANCEL_BUTTON, WORKFLOWS_CANCEL_BUTTON, TOOL_SEARCH_JSTREE, WORKFLOWS_CREATE_BUTTON, TOOLS_CREATE_BUTTON
     */
     $scope.tools_search_jstree_modal_editable = function(yes_no) {
         $scope.tools_search_jstree_modal_editable_response = yes_no;
@@ -1067,14 +1098,26 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             console.log($scope.modal_data);
 
             if (who_called_me == 'TOOL_SEARCH_JSTREE') { // This means, she clicked YES AFTER clicking on tools js tree 
-                console.log('MODAL WHO CALLED ME: TOOL_SEARCH_JSTREE')
+                console.log('MODAL WHO CALLED ME: TOOL_SEARCH_JSTREE');
                 $scope.tools_search_show_item($scope.modal_data.node.data);
                 window.createToolDataBtn_click();
             }
+            else if (who_called_me == 'TOOLS_CREATE_BUTTON') {
+                $scope.tools_search_create_new_pressed_ok();
+            }
             else if (who_called_me == 'TOOLS_CANCEL_BUTTON') {
-                $console.log('MODAL WHO CALLED ME: TOOLS_CANCEL_BUTTON')
-                window.cancelToolDataBtn_click(); // She clicked YES after CANCEL button 
+                console.log('MODAL WHO CALLED ME: TOOLS_CANCEL_BUTTON');
+                window.cancelToolDataBtn_click(); // Close Tool panel
                 $scope.tools_info_editable = false;
+            }
+            else if (who_called_me == 'WORKFLOWS_CANCEL_BUTTON') {
+                console.log('MODAL WHO CALLED ME: WORKFLOWS_CANCEL_BUTTON');
+                $scope.workflows_info_editable = false;
+                window.cancelWorkflowBtn_click(); // Close WORFKLOW accordion
+
+            }
+            else if (who_called_me == 'WORKFLOWS_CREATE_BUTTON') {
+                $scope.workflows_search_create_new_pressed_ok();
             }
             else {
                 throw "ERROR: 7847"; // This should never happen
