@@ -618,7 +618,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         $scope.tools_search_warning = '';
 
-    
+        //Triggers animation to open right window
         window.createToolDataBtn_click();
 
 
@@ -675,6 +675,14 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             return;
         }
 
+        //If tools are editable then raise a modal to ask user if she want to lose all edits.
+        if ($scope.tools_info_editable) {
+            $scope.tools_search_raise_edit_are_you_sure_modal('WORKFLOWS_CREATE_BUTTON');
+            return;
+        }
+
+        //Open a modal window. The Yes/No buttons of the window are binded to tools_search_jstree_modal_editable 
+        //window.createToolDataBtn_click();
 
 
         //$scope.show_tools_info = false;
@@ -1002,10 +1010,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * Raise a modal "all your edits will be list. Are you aure?". Raised when:
     * 1. Click an item in the jstree tools
     * 2. Click Cancel in Tool Search
+    * the results are capture by function: tools_search_jstree_modal_editable(yes_no)
+    * TOOLS_CANCEL_BUTTON, WORKFLOWS_CANCEL_BUTTON, TOOL_SEARCH_JSTREE, WORKFLOWS_CREATE_BUTTON 
     */
-    $scope.tools_search_raise_edit_are_you_sure_modal = function() {
-        $scope.modal_data = null;
+    $scope.tools_search_raise_edit_are_you_sure_modal = function(who_called_me) {
         M.Modal.getInstance($("#warningModal")).open();
+        $("#warningModal").data('who_called_me', who_called_me);
+
     };
 
     /*
@@ -1020,7 +1031,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //Save in a variable the data of the item that has been clicked
         $scope.modal_data = data;
         if ($scope.tools_info_editable) {
-            $scope.tools_search_raise_edit_are_you_sure_modal();
+            $scope.tools_search_raise_edit_are_you_sure_modal('TOOL_SEARCH_JSTREE');
         }
         else {
             // Pressed an item in tool search tree, but the tool_info is not editable
@@ -1036,44 +1047,42 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * M.Modal.getInstance($("#warningModal")).open()
     * tools_search_jstree_modal_editable_response = True // YES IS PRESSED !
     * tools_search_jstree_modal_editable_response = False // NO IS PRESSED!
+    * Who called me value: 
+    * TOOLS_CANCEL_BUTTON, WORKFLOWS_CANCEL_BUTTON, TOOL_SEARCH_JSTREE, WORKFLOWS_CREATE_BUTTON 
     */
     $scope.tools_search_jstree_modal_editable = function(yes_no) {
         $scope.tools_search_jstree_modal_editable_response = yes_no;
+
+        //Who called me?
+        var who_called_me = $("#warningModal").data('who_called_me');
 
         //If modal is open, close it
         if (M.Modal.getInstance($("#warningModal")).isOpen) {
             M.Modal.getInstance($("#warningModal")).close();
         }
 
-        if ($scope.tools_search_jstree_modal_editable_response) { // This means, she clicked YES AFTER clicking on tree
-            if ($scope.modal_data) {
+        if ($scope.tools_search_jstree_modal_editable_response) { // She clicked YES
+            console.log('CLICKED YES MODAL');
+            console.log('MODAL DATA:');
+            console.log($scope.modal_data);
+
+            if (who_called_me == 'TOOL_SEARCH_JSTREE') { // This means, she clicked YES AFTER clicking on tools js tree 
+                console.log('MODAL WHO CALLED ME: TOOL_SEARCH_JSTREE')
                 $scope.tools_search_show_item($scope.modal_data.node.data);
                 window.createToolDataBtn_click();
             }
-            else {
+            else if (who_called_me == 'TOOLS_CANCEL_BUTTON') {
+                $console.log('MODAL WHO CALLED ME: TOOLS_CANCEL_BUTTON')
                 window.cancelToolDataBtn_click(); // She clicked YES after CANCEL button 
                 $scope.tools_info_editable = false;
-
-                // Konstantina
-                // $scope.open_div_on_right_panel();
             }
+            else {
+                throw "ERROR: 7847"; // This should never happen
+            }
+
         }
 
     };
-
-    // Konstantina
-    // get called when we want to open something to the right panel
-    // $scope.open_div_on_right_panel = function() {
-    //     var parent = document.getElementsByClassName('rightPanel')[0].getElementsByTagName('div')[0];
-    //     var child = $(parent).find('div:visible');
-    //     if(child.length > 0){
-    //         // right panel has visible content
-    //         // open warning modal 
-    //     }
-    //     else{
-    //         // right panel is empty
-    //     }
-    // };
 
     //JSTREE END tools_search
 
