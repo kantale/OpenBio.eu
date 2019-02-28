@@ -1061,7 +1061,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         //Save in a variable the data of the item that has been clicked
         $scope.modal_data = data;
-        if ($scope.tools_info_editable) {
+        if ($scope.tools_info_editable || $scope.workflows_info_editable) {
             $scope.tools_search_raise_edit_are_you_sure_modal('TOOL_SEARCH_JSTREE');
         }
         else {
@@ -1101,6 +1101,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 console.log('MODAL WHO CALLED ME: TOOL_SEARCH_JSTREE');
                 $scope.tools_search_show_item($scope.modal_data.node.data);
                 window.createToolDataBtn_click();
+                window.cancelWorkflowBtn_click();
+                $scope.tools_info_editable = false;
+                $scope.workflows_info_editable = false;
             }
             else if (who_called_me == 'TOOLS_CREATE_BUTTON') {
                 $scope.tools_search_create_new_pressed_ok();
