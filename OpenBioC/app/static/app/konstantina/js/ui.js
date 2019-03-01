@@ -895,7 +895,9 @@ window.onload = function () {
         //We should run these commands only once!
         var mynodes=[],mylinks=[],children=[],tmp_children=[], parents=[];
 
-        var width = 768, height = 517;
+		 // var height = document.getElementById('d3wf').style.height;
+		//  var width = document.getElementById('d3wf').style.width;
+        //var width = 768, height = 517;
 
         var color = d3.scaleOrdinal(d3.schemeCategory20);
 
@@ -903,19 +905,18 @@ window.onload = function () {
         obc_cola = cola.d3adaptor(d3)
                 .linkDistance(100)
                 .avoidOverlaps(true)
-                .handleDisconnected(false)
-                .size([width, height]); 
+                .handleDisconnected(false);
+                //.size([width, height]); 
 
-        //svg = d3.select("body").append("svg")
         svg = d3.select("#d3wf").append("svg")
-                .attr("width", width)
-                .attr("height", height)
+                //.attr("width", width)
+                //.attr("height", height)
                 .classed("svg-content-responsive", true)
             .call(d3.zoom().on("zoom", function () {
                 svg.attr("transform", d3.event.transform)
             })
-            .scaleExtent([1,2])
-            .translateExtent([[0,0],[width,height]])
+            //.scaleExtent([1,2])
+            //.translateExtent([[0,0],[width,height]])
             ).on("dblclick.zoom", null);
         
         
@@ -926,6 +927,7 @@ window.onload = function () {
         /* Function that initializes cola and tree root */  
         //function buildTree() {
         window.buildTree = function(workflow) {
+
             /*
             Example of workflow
             var workflow = [
@@ -948,10 +950,10 @@ window.onload = function () {
             ];
 
             */
-            
             //NEW STUFF
             //get existing data if any and merge them with new data     
             if(window.treeData) workflow = workflow.concat(treeData);
+			
             
                 workflow.forEach(function(d) {
                     if(d.parent=='#') {
@@ -962,7 +964,8 @@ window.onload = function () {
             
             
                 treeData = workflow;
-                
+                console.log("treeData :");
+				console.log(treeData);
                 
                 update();   
                 
@@ -1305,6 +1308,13 @@ window.onload = function () {
             treeData.forEach(function(f){
                 collapse(f);                
             })
+            
+        }
+		
+		//expand all function
+        window.saveWorkflow=function(){
+            console.log("save : "+treeData);
+			console.log(treeData);
             
         }
 

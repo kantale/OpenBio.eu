@@ -69,6 +69,7 @@ pre {
 
 #d3wf {
   overflow: auto;
+  border: 1px solid grey;
 }
 
 /* https://getbootstrap.com/docs/4.1/examples/sticky-footer/ */
@@ -112,6 +113,12 @@ pre {
    
 }
 
+.svg-content-responsive{
+	width: 95%;
+	height: 95%;	
+	
+}
+
 
 .label {
         fill: #515151;
@@ -120,6 +127,7 @@ pre {
         text-anchor: middle;
         cursor: move;
     }
+
 
 /*
 
