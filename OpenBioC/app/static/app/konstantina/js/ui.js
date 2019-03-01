@@ -902,7 +902,7 @@ window.onload = function () {
 
 
     //Galateia's code
-    if (true) { //Activate/deactivate code
+    if (false) { //Activate/deactivate code
     
 
         /* initialize global variables */
@@ -1147,37 +1147,37 @@ window.onload = function () {
             
         } // update end
         
-    /** Toggle nodes' children on double click **/  
-  function collapse(d) {
-    
-          if(d.children){   ////if clicked node has already open children CLOSE them
+            /** Toggle nodes' children on double click **/  
+          function collapse(d) {
             
-            //do not include the ones with flag "open"
-            d.children  = d.children.filter(function(y) {return y.flag!=="open";});
-                        
-            //remove (not flaged) children nodes from total nodes
-            mynodes  = mynodes.filter(function(x) {return d.children.indexOf(x) < 0; });
-                        
-                //remove children RECURSIVELY
-                var my_children=d.children;
-                d.children=null;    
-                    my_children.forEach(function(f){
-                        if(f.children) collapse(f);
-                    })
+                  if(d.children){   ////if clicked node has already open children CLOSE them
+                    
+                    //do not include the ones with flag "open"
+                    d.children  = d.children.filter(function(y) {return y.flag!=="open";});
+                                
+                    //remove (not flaged) children nodes from total nodes
+                    mynodes  = mynodes.filter(function(x) {return d.children.indexOf(x) < 0; });
+                                
+                        //remove children RECURSIVELY
+                        var my_children=d.children;
+                        d.children=null;    
+                            my_children.forEach(function(f){
+                                if(f.children) collapse(f);
+                            })
 
-            }else {     ////if clicked node has closed children, OPEN them
-    
-            tmp_children = findChildren(d);
-            mynodes = mynodes.concat(tmp_children); //add children to total nodes       
-            if(tmp_children.length > 0) d.children = tmp_children; //each node has an array of its' children
-            tmp_children=[];
-        
-        }
-        
-        //update graph with the new nodes(removed or added)
-        update();
-  }
-  //collapse end
+                    }else {     ////if clicked node has closed children, OPEN them
+            
+                    tmp_children = findChildren(d);
+                    mynodes = mynodes.concat(tmp_children); //add children to total nodes       
+                    if(tmp_children.length > 0) d.children = tmp_children; //each node has an array of its' children
+                    tmp_children=[];
+                
+                }
+                
+                //update graph with the new nodes(removed or added)
+                update();
+          }
+          //collapse end
   
   
   //find all children of a given node
