@@ -69,7 +69,16 @@ pre {
 
 #d3wf {
   overflow: auto;
+  border: 1px solid red;
+  height: 200px;  
 }
+
+#cywf {
+  overflow: auto;
+  border: 1px solid red;
+  height: 400px;  
+}
+
 
 /* https://getbootstrap.com/docs/4.1/examples/sticky-footer/ */
 /*
