@@ -110,6 +110,7 @@ window.onload = function () {
                     // Disabled collapsible
                     if (!event.classList.contains('disabled')) {
                         event.getElementsByClassName('arrow')[0].innerHTML = 'keyboard_arrow_down';
+                        M.updateTextFields();
                     }
                 },
                 // Callback function called after collapsible is opened
@@ -126,7 +127,7 @@ window.onload = function () {
                         if (document.getElementById('workflowsRightPanel').style.display == 'block') {
                             $('#workflowsRightPanel').animateCss('slideOutUp', function () {
                                 document.getElementById('workflowsRightPanel').style.display = 'none';
-                                disableEditWorkflow();
+                                // disableEditWorkflow(); // This disables the edit workflow window
                             });
                         }
                     }
@@ -149,7 +150,7 @@ window.onload = function () {
         // M.updateTextFields();
 
         // -------------------------------- Listener for DISABLE EDIT workflow button ------------------------------------
-        document.getElementById('disableEditWorkflowBtn').addEventListener("click", disableEditWorkflow);
+        // document.getElementById('disableEditWorkflowBtn').addEventListener("click", disableEditWorkflow);
 
         // --------------------------------------- Splitter bar initialization -------------------------------------------
         $('.splitter-container').SplitterBar();
@@ -198,29 +199,36 @@ window.onload = function () {
     // ----------------------------------------------------- Expand All / Collapse All Button Click ---------------------------------------------------------------------------------
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --------------------------------------- Expand All button clicked ---------------------------------------------
-    // function expandAllBtnClicked(event) {
-    //     console.log(event);
-    //     // console.log(accordionId);
-    //     // var instance = M.Collapsible.getInstance($(accordionId));
-    //     // console.log(instance);
-    //     // var childrenNum = instance.el.childElementCount;
-    //     // for (var i = 0; i < childrenNum; i++) {
-    //     //     instance.open(i);
-    //     // }
-    // }
-    // document.getElementById('expandAllBtn1').addEventListener('click', expandAllBtnClicked);
-    // document.getElementById('expandAllBtn2').addEventListener('click', expandAllBtnClicked);
+    document.getElementById('expandAllBtn1').addEventListener('click', function(){
+        var instance = M.Collapsible.getInstance($('#createToolDataAccordion'));
+        var childrenNum = instance.el.childElementCount;
+        for (var i = 0; i < childrenNum; i++) {
+            instance.open(i);
+        }
+    });
+    document.getElementById('expandAllBtn2').addEventListener('click', function(){
+        var instance = M.Collapsible.getInstance($('#editWorkflowAccordion'));
+        var childrenNum = instance.el.childElementCount;
+        for (var i = 0; i < childrenNum; i++) {
+            instance.open(i);
+        }
+    });
     
     // -------------------------------------- Collapse All button clicked --------------------------------------------
-    // function collapseAllBtnClicked(event, accordionId) {
-    //     var instance = M.Collapsible.getInstance($('#' + accordionId));
-    //     // var childrenNum = instance.el.childElementCount;
-    //     // for (var i = 0; i < childrenNum; i++) {
-    //     //     instance.close(i);
-    //     // }
-    // }
-    // document.getElementById('collapseAllBtn1').addEventListener('click', collapseAllBtnClicked(event, 'createToolDataAccordion'));
-    // document.getElementById('collapseAllBtn2').addEventListener('click', collapseAllBtnClicked(event, 'editWorkflowAccordion'));
+    document.getElementById('collapseAllBtn1').addEventListener('click', function(){
+        var instance = M.Collapsible.getInstance($('#createToolDataAccordion'));
+        var childrenNum = instance.el.childElementCount;
+        for (var i = 0; i < childrenNum; i++) {
+            instance.close(i);
+        }
+    });
+    document.getElementById('collapseAllBtn2').addEventListener('click', function(){
+        var instance = M.Collapsible.getInstance($('#editWorkflowAccordion'));
+        var childrenNum = instance.el.childElementCount;
+        for (var i = 0; i < childrenNum; i++) {
+            instance.close(i);
+        }
+    });
 
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // -------------------------------------------------------- Create Tool Data Button Click ---------------------------------------------------------------------------------------
@@ -259,7 +267,7 @@ window.onload = function () {
         }
     };
 
-
+    // SHOW WORKFLKOW ACCORDION RIGHT  
     window.createWorkflowBtn_click = function () {
         if (document.getElementById('workflowsRightPanel').style.display == 'none') {
             document.getElementById('workflowsRightPanel').style.display = 'block';
@@ -268,6 +276,14 @@ window.onload = function () {
         }
     };
 
+    // HIDE WORKFLOW ACCORDION RIGHT 
+    window.cancelWorkflowBtn_click = function() {
+        if (document.getElementById('workflowsRightPanel').style.display == 'block') {
+            document.getElementById('workflowsRightPanel').style.display = 'none';
+            $('#workflowsRightPanel').animateCss('slideInDown', function () {
+            });
+        }
+    };
 
 
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -886,7 +902,7 @@ window.onload = function () {
 
 
     //Galateia's code
-    if (true) { //Activate/deactivate code
+    if (false) { //Activate/deactivate code
     
 
         /* initialize global variables */
@@ -1134,37 +1150,37 @@ window.onload = function () {
             
         } // update end
         
-    /** Toggle nodes' children on double click **/  
-  function collapse(d) {
-    
-          if(d.children){   ////if clicked node has already open children CLOSE them
+            /** Toggle nodes' children on double click **/  
+          function collapse(d) {
             
-            //do not include the ones with flag "open"
-            d.children  = d.children.filter(function(y) {return y.flag!=="open";});
-                        
-            //remove (not flaged) children nodes from total nodes
-            mynodes  = mynodes.filter(function(x) {return d.children.indexOf(x) < 0; });
-                        
-                //remove children RECURSIVELY
-                var my_children=d.children;
-                d.children=null;    
-                    my_children.forEach(function(f){
-                        if(f.children) collapse(f);
-                    })
+                  if(d.children){   ////if clicked node has already open children CLOSE them
+                    
+                    //do not include the ones with flag "open"
+                    d.children  = d.children.filter(function(y) {return y.flag!=="open";});
+                                
+                    //remove (not flaged) children nodes from total nodes
+                    mynodes  = mynodes.filter(function(x) {return d.children.indexOf(x) < 0; });
+                                
+                        //remove children RECURSIVELY
+                        var my_children=d.children;
+                        d.children=null;    
+                            my_children.forEach(function(f){
+                                if(f.children) collapse(f);
+                            })
 
-            }else {     ////if clicked node has closed children, OPEN them
-    
-            tmp_children = findChildren(d);
-            mynodes = mynodes.concat(tmp_children); //add children to total nodes       
-            if(tmp_children.length > 0) d.children = tmp_children; //each node has an array of its' children
-            tmp_children=[];
-        
-        }
-        
-        //update graph with the new nodes(removed or added)
-        update();
-  }
-  //collapse end
+                    }else {     ////if clicked node has closed children, OPEN them
+            
+                    tmp_children = findChildren(d);
+                    mynodes = mynodes.concat(tmp_children); //add children to total nodes       
+                    if(tmp_children.length > 0) d.children = tmp_children; //each node has an array of its' children
+                    tmp_children=[];
+                
+                }
+                
+                //update graph with the new nodes(removed or added)
+                update();
+          }
+          //collapse end
   
   
   //find all children of a given node
