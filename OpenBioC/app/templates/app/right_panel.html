@@ -214,6 +214,10 @@
                 </p>
                 <!-- Buttons -->
                 <div class="row right-align">
+                    <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
+                        data-position="bottom" data-tooltip="Fit">Fit</a>
+                    <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
+                        data-position="bottom" data-tooltip="Clear">Clear</a>
                     <a id="expandAllBtn2" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
                         data-position="bottom" data-tooltip="Expand All"><i class="material-icons">expand_more</i></a>
                     <a id="collapseAllBtn2" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
@@ -229,9 +233,15 @@
             <!-- --------------------------------------------------------------------------------------- -->
             <!-- ------------------------------------ Graph -------------------------------------------- -->
             <!-- --------------------------------------------------------------------------------------- -->
+            <!--
             <div class="row">
                 <div id="d3wf"></div>
             </div>
+            -->
+            <div class="row">
+                <div id="cywf"></div>
+            </div>
+
             <hr>
             <!-- --------------------------------------------------------------------------------------- -->
             <!-- ------------------------------- Edit Workflow ----------------------------------------- -->
@@ -248,12 +258,12 @@
                         <div class="row">
                             <form class="col s12">
                                 <div class="input-field col s12">
-                                    <input id="editWorkflowName" type="text" class="validate">
+                                    <input id="editWorkflowName" type="text" class="validate" ng-model="workflows_step_name">
                                     <label for="editWorkflowName">Name</label>
                                 </div>
                                 <div class="input-field col s12">
                                     <textarea id="editWorkflowDescription"
-                                        class="validate materialize-textarea"></textarea>
+                                        class="validate materialize-textarea" ng-model="workflows_step_description"></textarea>
                                     <label for="editWorkflowDescription">Description</label>
                                 </div>
                                 <div class="row col s12">
