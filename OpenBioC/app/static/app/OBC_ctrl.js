@@ -1083,6 +1083,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         else {
             // Pressed an item in tool search tree, but the tool_info is not editable
             // Simulate a YES response from warning modal
+            $("#warningModal").data('who_called_me', 'TOOL_SEARCH_JSTREE');
             $scope.tools_search_jstree_modal_editable(true);
         }
 
@@ -1112,6 +1113,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             console.log('CLICKED YES MODAL');
             console.log('MODAL DATA:');
             console.log($scope.modal_data);
+
+            console.log('WHO CALLED MODAL:');
+            console.log(who_called_me);
 
             if (who_called_me == 'TOOL_SEARCH_JSTREE') { // This means, she clicked YES AFTER clicking on tools js tree 
                 console.log('MODAL WHO CALLED ME: TOOL_SEARCH_JSTREE');
