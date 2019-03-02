@@ -826,7 +826,7 @@ window.onload = function () {
                     angular.element($('#angular_div')).scope().tool_get_dependencies(tool, 1); // 1 = drag from search jstree to dependencies jstree
                 });
             }
-            else if (target.closest('#d3wf').length) { // We are dropping it to the workflow graph editor
+            else if (target.closest('#cywf').length) { // We are dropping it to the workflow graph editor. //Changed from old: d3wf
 
                 angular.element($('#angular_div')).scope().$apply(function () {
                     angular.element($('#angular_div')).scope().tool_get_dependencies(tool, 2); // 2 = drag from search jstree to workflow editing
@@ -871,7 +871,7 @@ window.onload = function () {
 
             if (
                 (target.closest('#tools_dep_jstree_id').length && (!tool_installation_editor.getReadOnly())) || //We allow it if it is over the div with the tree AND the the tool_installation_editor is not readonly (this is a workaround to avoid checking angular: tools_info_editable)
-                (target.closest('#d3wf').length) // The Workflow graph editor
+                (target.closest('#cywf').length) // The Workflow graph editor . // changed from . d3wf
             ) {
                 data.helper.find('.jstree-icon').removeClass('jstree-er').addClass('jstree-ok');
             }
@@ -905,14 +905,14 @@ window.onload = function () {
 /**
 global vars intiialization
 **/			
-var cy;
+//var cy;
 
 /**
 parse data from openbioc to meet the cytoscape.js requirements
 **/
 function parseWorkflow(incomingData){
 
-var myNodes =[], myEdges=[];
+    var myNodes =[], myEdges=[];
 
 	/*initialize my data object*/
 	incomingData.forEach(function(d) {
@@ -932,129 +932,152 @@ var myNodes =[], myEdges=[];
 	
 }
 
-
-initializeTree();
-
-
 function initializeTree(){
 
 
-cy = cytoscape({
-	  container: document.getElementById('cywf'), // container to render in
-	  elements: [] ,
+    cy = cytoscape({
+          container: document.getElementById('cywf'), // container to render in
+          //elements: [] ,
 
-	  style: [ // the stylesheet for the graph
-		{
-		  selector: 'node',
-			"style": {
-			"shape": "round-rectangle",
-			"label": "data(id)",
-			"height": 15,
-			"width": 15
-		  }
-		},
+          elements: [ // list of graph elements to start with
+                { // node a
+                  data: { id: 'a' }
+                },
+                { // node b
+                  data: { id: 'b' }
+                },
+                { // edge ab
+                  data: { id: 'ab', source: 'a', target: 'b' }
+                }
+          ],
 
-		{
-		  selector: 'edge',
-			"style": {
-			'curve-style': 'bezier',
-			'target-arrow-shape': 'triangle',
-			'width': 2,
-			'line-color': '#ddd',
-			'target-arrow-color': '#ddd'
-		  }
-		}
-	  ],
+          style: [ // the stylesheet for the graph
+            {
+              selector: 'node',
+                "style": {
+                "shape": "round-rectangle",
+                "label": "data(id)",
+                "height": 15,
+                "width": 15
+              }
+            },
 
-	  layout: {
-		name: 'breadthfirst',
-		directed: true,
-        padding: 2
-	  }
-	  
-	});
+            {
+              selector: 'edge',
+                "style": {
+                'curve-style': 'bezier',
+                'target-arrow-shape': 'triangle',
+                'width': 2,
+                'line-color': '#ddd',
+                'target-arrow-color': '#ddd'
+              }
+            }
+          ],
+
+        zoom: 1,
+        pan: { x: 0, y: 0 },    
+
+          layout: {
+            name: 'breadthfirst',
+            directed: true,
+            padding: 2
+          }
+          
+
+
+        });
+
+        //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.
+        document.querySelector('canvas[data-id="layer2-node"]').style.position = null;
 
 
 }
+
+
+initializeTree();
+
+
+
 
 //add new data to the graph
 //activate the collapse-expand option
-function buildTree(myworkflow) {
+window.buildTree = function(myworkflow) {
+//function buildTree(myworkflow) {
 
-// get existing data if any
-var currentElements = cy.json().elements;
-// parse incoming data and transform to cytoscape format
-var treeData=parseWorkflow(myworkflow);
-
-
-
-
-//concat all data
-if(typeof  currentElements.nodes!== 'undefined'){
-
-	//check if new node exists in current data
-	
-	treeData.nodes.forEach(function(element) {
-	
-	  var bfs = cy.elements().bfs({
-	  //roots: '#',
-	  visit: function(v, e, u, i, depth){
-			console.log(element.data.id);
-			console.log(v.id());
-			/*
-		  if(element.data.id===v.id())
-			console.log( 'visit ' + v.id() );
-			*/
-			}
-		});
-	
-	});
-	
-
-	var allNodes=[], allEdges=[];
-	allNodes = currentElements.nodes.concat(treeData.nodes);
-	allEdges = currentElements.edges.concat(treeData.edges);
-	
-		treeData = {
-		  nodes: allNodes,
-		  edges: allEdges
-		};
-
-}
+    // get existing data if any
+    var currentElements = cy.json().elements;
+    // parse incoming data and transform to cytoscape format
+    var treeData=parseWorkflow(myworkflow);
 
 
-// this is needed because cy.add() causes multiple instances of layout
-initializeTree();
 
-	cy.json({elements: treeData});   // Add new data
-	cy.ready(function () {           // Wait for nodes to be added
-	
-		cy.layout({                   // Call layout
-			name: 'breadthfirst',
-			directed: true,
-			padding: 2
-		}).run();
-		
-	});	
-	
-	
-	//cy.$("#" + nodes[0].data.id).successors().targets().style("display", "none");
-	//
-	cy.on('click', 'node', function(event){
-		
-		  //connectedEdges: next level
-		  //successors: next levels recursively 
-			   
-			  if (this.successors().targets().style("display") == "none"){
-			    //console.log("OPEN");
-				//this.successors().targets().style("display", "element");
-				this.connectedEdges().targets().style("display", "element");
-			  } else {
-				//hide the children nodes and edges recursively
-				//console.log("CLOSE");
-				this.successors().targets().style("display", "none");
-			  }
-		});
+
+    //concat all data
+    if(typeof  currentElements.nodes!== 'undefined'){
+
+    	//check if new node exists in current data
+    	
+    	treeData.nodes.forEach(function(element) {
+    	
+    	  var bfs = cy.elements().bfs({
+    	  //roots: '#',
+    	  visit: function(v, e, u, i, depth){
+    			console.log(element.data.id);
+    			console.log(v.id());
+    			/*
+    		  if(element.data.id===v.id())
+    			console.log( 'visit ' + v.id() );
+    			*/
+    			}
+    		});
+    	
+    	});
+    	
+
+    	var allNodes=[], allEdges=[];
+    	allNodes = currentElements.nodes.concat(treeData.nodes);
+    	allEdges = currentElements.edges.concat(treeData.edges);
+    	
+    		treeData = {
+    		  nodes: allNodes,
+    		  edges: allEdges
+    		};
+
+    }
+
+
+    // this is needed because cy.add() causes multiple instances of layout
+    initializeTree();
+
+    	cy.json({elements: treeData});   // Add new data
+    	cy.ready(function () {           // Wait for nodes to be added
+    	
+    		cy.layout({                   // Call layout
+    			name: 'breadthfirst',
+    			directed: true,
+    			padding: 2
+    		}).run();
+    		
+    	});	
+    	
+    	
+    	//cy.$("#" + nodes[0].data.id).successors().targets().style("display", "none");
+    	//
+    	cy.on('click', 'node', function(event){
+    		
+    		  //connectedEdges: next level
+    		  //successors: next levels recursively 
+    			   
+    			  if (this.successors().targets().style("display") == "none"){
+    			    //console.log("OPEN");
+    				//this.successors().targets().style("display", "element");
+    				this.connectedEdges().targets().style("display", "element");
+    			  } else {
+    				//hide the children nodes and edges recursively
+    				//console.log("CLOSE");
+    				this.successors().targets().style("display", "none");
+    			  }
+    		});
 		
 }
 
