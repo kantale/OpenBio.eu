@@ -285,20 +285,30 @@ window.onload = function () {
         }
     };
 
+    // Workflows --> Edit --> Open
+    window.openEditWorkflowBtn_click = function() {
+        M.Collapsible.getInstance($('#editWorkflowAccordion')).open(0);
+    };
+
+    // Workflows --> Edit --> Close
+    window.closeEditWorkflowBtn_click = function() {
+        M.Collapsible.getInstance($('#editWorkflowAccordion')).close(0);
+    };
+
 
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --------------------------------------------------------- Enable Edit Workflow Button Click ----------------------------------------------------------------------------------
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    document.getElementById('enableEditWorkflowBtn').addEventListener("click", function () {
-        var collapsibles = document.getElementById('editWorkflowAccordion').getElementsByTagName('li');
-        for (var i = 0; i < collapsibles.length; i++) {
-            if (collapsibles[i].classList.contains('disabled')) {
-                collapsibles[i].classList.remove('disabled');
-            }
-        }
-        var instance = M.Collapsible.getInstance($('#editWorkflowAccordion'));
-        instance.open(0);
-    });
+//    document.getElementById('enableEditWorkflowBtn').addEventListener("click", function () {
+//        var collapsibles = document.getElementById('editWorkflowAccordion').getElementsByTagName('li');
+//        for (var i = 0; i < collapsibles.length; i++) {
+//            if (collapsibles[i].classList.contains('disabled')) {
+//                collapsibles[i].classList.remove('disabled');
+//            }
+//        }
+//        var instance = M.Collapsible.getInstance($('#editWorkflowAccordion'));
+//        instance.open(0);
+//    });
 
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // -------------------------------------------------------- Disable Edit Workflow Button Click ----------------------------------------------------------------------------------
