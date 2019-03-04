@@ -668,6 +668,12 @@ window.onload = function () {
 
         setGridClassToElements(itemsLeftPanel, sizeForLeft);
         setGridClassToElements(itemsRightPanel, sizeForRight);
+
+        //When moving splitter , readjust cytoscape positions. 
+        //Cytospcape avoids doing that, for efficiency
+        if (typeof cy !== 'undefined') {
+            cy.resize();
+        }
     }
 
     // -------------------------------- Get elements which row alignment should be fixed  ----------------------------    
