@@ -916,7 +916,7 @@ function parseWorkflow(incomingData){
 
 	/*initialize my data object*/
 	incomingData.forEach(function(d) {
-		var myNode = { data: { 'id':  d.id}};
+		var myNode = { data: { id:  d.id, label: d.text, name: d.data.name, version:d.data.version, edit:d.data.edit, type:d.data.type }};
 		myNodes.push(myNode);
 		if(d.parent != "#"){
 			var myEdge =  { data: { 'id': d.parent+d.id, 'weight': 1, 'source': d.parent, 'target': d.id } };
@@ -937,26 +937,27 @@ function initializeTree(){
 
     cy = cytoscape({
           container: document.getElementById('cywf'), // container to render in
-          //elements: [] ,
+          elements: [] ,
 
-          elements: [ // list of graph elements to start with
-                { // node a
-                  data: { id: 'a' }
-                },
-                { // node b
-                  data: { id: 'b' }
-                },
-                { // edge ab
-                  data: { id: 'ab', source: 'a', target: 'b' }
-                }
-          ],
+          //elements: [ // list of graph elements to start with
+          //      { // node a
+          //        data: { id: 'a' }
+          //      },
+          //      { // node b
+          //        data: { id: 'b' }
+          //      },
+          //      { // edge ab
+          //        data: { id: 'ab', source: 'a', target: 'b' }
+          //      }
+          //],
 
           style: [ // the stylesheet for the graph
             {
               selector: 'node',
                 "style": {
                 "shape": "round-rectangle",
-                "label": "data(id)",
+                //"label": "data(id)",
+                "label": "data(label)",
                 "height": 15,
                 "width": 15
               }
