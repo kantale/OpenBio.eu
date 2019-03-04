@@ -81,6 +81,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.workflows_step_name = '';
         $scope.workflows_step_description = '';
         $scope.worfklows_step_ace_init = '# Insert the BASH commands for this step\n\n';
+        $scope.workflow_step_error_message = '';
 
         $scope.get_init_data();
 
@@ -1318,6 +1319,16 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * workflows --> Step --> Button: Add Step --> Clicked 
     */
     $scope.workflow_step_add = function() {
+
+        if (!$scope.tools_name_regexp.test($scope.workflows_step_name)) {
+            $scope.workflow_step_error_message = 'Invalid step name';
+            return;
+        }
+
+        $scope.workflow_step_error_message = '';
+
+        workflow_step_editor.getValue();
+
 
     };
 
