@@ -259,9 +259,9 @@
                     <div class="collapsible-body">
                         <div class="row">
                             <form class="col s12">
-                                <div class="col s12">
+                                <div class="col s12" ng-show="workflow_step_error_message">
                                     <div class="card-panel orange lighten-1 center-align" style="padding:10px">
-                                        <span class="white-text"></span>
+                                        <span class="white-text" ng-bind="workflow_step_error_message"></span>
                                     </div>
                                 </div>
                                 <div class="input-field col s12">
