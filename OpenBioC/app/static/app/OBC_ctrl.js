@@ -979,7 +979,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                     }
                 }
                 else if (what_to_do == 2) { //DRAG FROM SEARCH TREE TO WORKFLOW DIV
-                    window.buildTree(data['dependencies_jstree'])
+                    window.buildTree(data['dependencies_jstree']);
+                    console.log('UPDATE THE GRAPH WITH:');
+                    console.log(data['dependencies_jstree']);
                 }
             },
             function(data) {
