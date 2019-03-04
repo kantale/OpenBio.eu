@@ -917,6 +917,7 @@ global vars intiialization
 **/			
 //var cy;
 
+
 /**
 parse data from openbioc to meet the cytoscape.js requirements
 **/
@@ -931,6 +932,9 @@ function parseWorkflow(incomingData){
 		if(d.parent != "#"){
 			var myEdge =  { data: { 'id': d.parent+d.id, 'weight': 1, 'source': d.parent, 'target': d.id } };
 			myEdges.push(myEdge);
+		}else{
+			roots=[];
+			roots.push(d.id);
 		}
 		
 	});
@@ -968,8 +972,8 @@ function initializeTree(){
                 "shape": "round-rectangle",
                 //"label": "data(id)",
                 "label": "data(label)",
-                "height": 15,
-                "width": 15
+                //"height": 15,
+                //"width": 15
               }
             },
 
@@ -1020,26 +1024,20 @@ window.buildTree = function(myworkflow) {
     // parse incoming data and transform to cytoscape format
     var treeData=parseWorkflow(myworkflow);
 
-
-
-
     //concat all data
     if(typeof  currentElements.nodes!== 'undefined'){
 
-    	//check if new node exists in current data
-    	
+		
+    	//check if new node exists in current data  	
     	treeData.nodes.forEach(function(element) {
     	
     	  var bfs = cy.elements().bfs({
-    	  //roots: '#',
-    	  visit: function(v, e, u, i, depth){
-    			console.log(element.data.id);
-    			console.log(v.id());
-    			/*
-    		  if(element.data.id===v.id())
-    			console.log( 'visit ' + v.id() );
-    			*/
-    			}
+    	  roots: '#',
+    	  visit: function(v, e, u, i, depth){   			
+    		  if(element.data.id===v.id()){
+				  openIds=[];  openIds.push(v.id());  			
+					}
+				}
     		});
     	
     	});
@@ -1047,14 +1045,21 @@ window.buildTree = function(myworkflow) {
 
     	var allNodes=[], allEdges=[];
     	allNodes = currentElements.nodes.concat(treeData.nodes);
-    	allEdges = currentElements.edges.concat(treeData.edges);
-    	
-    		treeData = {
-    		  nodes: allNodes,
-    		  edges: allEdges
-    		};
+			if(typeof  currentElements.edges!== 'undefined' && typeof  treeData.edges!== 'undefined' ) {
+				allEdges = currentElements.edges.concat(treeData.edges);
+			}
+				else{
+					if(typeof  currentElements.edges!== 'undefined')
+						allEdges = currentElements.edges;
+					if(typeof  treeData.edges!== 'undefined')
+						allEdges = treeData.edges;
+			}
+				treeData = {
+				  nodes: allNodes,
+				  edges: allEdges
+				};
 
-    }
+		}
 
 
     // this is needed because cy.add() causes multiple instances of layout
@@ -1072,22 +1077,34 @@ window.buildTree = function(myworkflow) {
     	});	
     	
     	
-    	//cy.$("#" + nodes[0].data.id).successors().targets().style("display", "none");
-    	//
+		// close all successors of root node
+		cy.$("#" + roots[0]).successors().targets().style("display", "none");	
+		
+		//
     	cy.on('click', 'node', function(event){
-    		
     		  //connectedEdges: next level
-    		  //successors: next levels recursively 
-    			   
+    		  //successors: next levels recursively
+
     			  if (this.successors().targets().style("display") == "none"){
-    			    //console.log("OPEN");
-    				//this.successors().targets().style("display", "element");
-    				this.connectedEdges().targets().style("display", "element");
-    			  } else {
-    				//hide the children nodes and edges recursively
-    				//console.log("CLOSE");
-    				this.successors().targets().style("display", "none");
+						//this.successors().targets().style("display", "element");
+						this.connectedEdges().targets().style("display", "element");
+					} else {
+						//hide the children nodes and edges recursively
+						console.log("successors targets");
+						this.successors().targets().forEach(function(element) {
+							console.log(element);
+							console.log(element.data.id);
+							console.log(element.style("display", "none"));
+							
+							
+						});
+							//this.successors().targets().style("display", "none");
+						
     			  }
+				  
+				  //
+				  
+				  
     		});
 		
 }
@@ -1095,7 +1112,6 @@ window.buildTree = function(myworkflow) {
 
 window.store=function(){
  json = cy.json();
-
 }
 
 window.clear=function(){
