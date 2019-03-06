@@ -200,8 +200,8 @@
             <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
                 <p>
                     <h5>
-                        <span ng-bind="workflows_info_name"></span><span
-                            ng-show="!workflows_info_editable">/<span ng-bind="workflows_info_edit"></span></span>
+                        <span ng-bind="workflows_info_name"></span><span ng-show="!workflows_info_editable">/<span
+                                ng-bind="workflows_info_edit"></span></span>
                     </h5>
                     <small class="form-text text-muted">
                         <span ng-bind="workflows_info_username"></span>
@@ -214,17 +214,19 @@
                 </p>
                 <!-- Buttons -->
                 <div class="row right-align">
-                    <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
-                        data-position="bottom" data-tooltip="Fit">Fit</a>
-                    <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
-                        data-position="bottom" data-tooltip="Clear">Clear</a>
+                    <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
+                        data-tooltip="Fit">Fit</a>
+                    <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
+                        data-tooltip="Clear">Clear</a>
+                    <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
+                        data-tooltip="Add Step" ng-click="workflow_info_add_step_clicked()">Add Step</a>
                     <a id="expandAllBtn2" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
                         data-position="bottom" data-tooltip="Expand All"><i class="material-icons">expand_more</i></a>
                     <a id="collapseAllBtn2" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
                         data-position="bottom" data-tooltip="Collapse All"><i class="material-icons">expand_less</i></a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
-                        data-tooltip="Save" ng-click="workflows_create_save_pressed()" ng-show="workflows_info_editable"><i
-                            class="material-icons">save</i></a>
+                        data-tooltip="Save" ng-click="workflows_create_save_pressed()"
+                        ng-show="workflows_info_editable"><i class="material-icons">save</i></a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fork" ng-click="workflows_info_fork_pressed()" ng-show="!workflows_info_editable"
                         ng-class="{'disabled': !username}"><i class="material-icons">device_hub</i></a>
@@ -247,29 +249,39 @@
             <!-- ------------------------------- Edit Workflow ----------------------------------------- -->
             <!-- --------------------------------------------------------------------------------------- -->
             <ul id="editWorkflowAccordion" class="collapsible expandable faster" style="margin-top:0px;">
-                <li class="disabled">
+                <li>
+                    <!-- class="disabled" -->
                     <div class="collapsible-header">
                         <i class="material-icons arrow">keyboard_arrow_right</i>
                         <i class="material-icons">place</i>
-                        Edit (name)
+                        Step
                     </div>
                     <div class="collapsible-body">
-                        <p>(bash commands)</p>
                         <div class="row">
                             <form class="col s12">
+                                <div class="col s12" ng-show="workflow_step_error_message">
+                                    <div class="card-panel orange lighten-1 center-align" style="padding:10px">
+                                        <span class="white-text" ng-bind="workflow_step_error_message"></span>
+                                    </div>
+                                </div>
                                 <div class="input-field col s12">
-                                    <input id="editWorkflowName" type="text" class="validate" ng-model="workflows_step_name">
+                                    <input id="editWorkflowName" type="text" class="validate"
+                                        ng-model="workflows_step_name">
                                     <label for="editWorkflowName">Name</label>
                                 </div>
+                                <div id="workflow_step_editor"></div>
+                                <!-- 
                                 <div class="input-field col s12">
                                     <textarea id="editWorkflowDescription"
                                         class="validate materialize-textarea" ng-model="workflows_step_description"></textarea>
                                     <label for="editWorkflowDescription">Description</label>
                                 </div>
+                                -->
                                 <div class="row col s12">
                                     <div class="col s3 offset-s9">
-                                        <a class="waves-effect waves-light btn" style="margin:2px">cancel</a>
-                                        <a class="waves-effect waves-light btn" style="margin:2px">save</a>
+                                        <a class="waves-effect waves-light btn" style="margin:2px">Cancel</a>
+                                        <a class="waves-effect waves-light btn" style="margin:2px"
+                                            ng-click="workflow_step_add()">Add</a>
                                     </div>
                                 </div>
                             </form>
