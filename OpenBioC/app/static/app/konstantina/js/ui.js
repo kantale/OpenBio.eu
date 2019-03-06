@@ -923,24 +923,56 @@ global vars intiialization
 **/			
 //var cy;
 
+openIds=[];
 
 /**
 parse data from openbioc to meet the cytoscape.js requirements
 **/
 function parseWorkflow(incomingData){
-
     var myNodes =[], myEdges=[];
 
 	/*initialize my data object*/
 	incomingData.forEach(function(d) {
-		var myNode = { data: { id:  d.id, label: d.text, name: d.data.name, version:d.data.version, edit:d.data.edit, type:d.data.type }};
-		myNodes.push(myNode);
-		if(d.parent != "#"){
-			var myEdge =  { data: { 'id': d.parent+d.id, 'weight': 1, 'source': d.parent, 'target': d.id } };
-			myEdges.push(myEdge);
-		}else{
-			roots=[];
-			roots.push(d.id);
+		
+		//TOOLS 
+		if(d.type==="tool"){
+			var myNode = { data: { id:  d.id, label: d.text, name: d.data.name, version:d.data.version, edit:d.data.edit, type:d.data.type }};
+			myNodes.push(myNode);
+			if(d.parent != "#"){
+				var myEdge =  { data: { 'id': d.parent+d.id, 'weight': 1, 'source': d.parent, 'target': d.id } };
+				myEdges.push(myEdge);
+			}else{
+				roots=[];
+				roots.push(d.id);
+			}
+		}
+		//STEPS
+		/*
+		  "name": "analysis",
+		   "tools": ["tool_1/asdf/asdfsdf", "tool_2/asdf/asdf"],
+		   "steps": ["step1", "step3"],
+		   "bash" : "sghaesjhfh;jerdgsejkfdkefjdfghjdgjdigjfid",
+		   "type" : "step"
+		*/
+		if(d.type==="step"){
+			var myNode = { data: { id:  d.name, name: d.name, type:d.type, bash: d.bash }};
+			myNodes.push(myNode);
+			//create edges to tools and/or steps
+			if(typeof d.tools!=="undefined"){
+				d.tools.forEach(function(element) {
+					var myEdge =  { data: { 'id': d.name+element, 'weight': 1, 'source': d.name, 'target': element } };
+					myEdges.push(myEdge);
+					
+				});
+			}
+			
+			if(typeof d.steps!=="undefined"){
+				d.steps.forEach(function(element) {
+					var myEdge =  { data: { 'id': d.name+element, 'weight': 1, 'source': d.name, 'target': element } };
+					myEdges.push(myEdge);
+					
+				});
+				}
 		}
 		
 	});
@@ -1027,26 +1059,38 @@ window.buildTree = function(myworkflow) {
 
     // get existing data if any
     var currentElements = cy.json().elements;
+	
+	
+	
+	
     // parse incoming data and transform to cytoscape format
     var treeData=parseWorkflow(myworkflow);
 
     //concat all data
     if(typeof  currentElements.nodes!== 'undefined'){
-
 		
+		//get positions 
+		currentElements.nodes.forEach(function(node) {
+			console.log("Node position : ");
+			console.log(node.position);
+		
+		});
+
     	//check if new node exists in current data  	
     	treeData.nodes.forEach(function(element) {
+
     	
     	  var bfs = cy.elements().bfs({
     	  roots: '#',
-    	  visit: function(v, e, u, i, depth){   			
+    	  visit: function(v, e, u, i, depth){ 	  
     		  if(element.data.id===v.id()){
-				  openIds=[];  openIds.push(v.id());  			
-					}
+				  openIds.push(v.id());  			
+	
 				}
-    		});
-    	
+			}
     	});
+    	
+    });
     	
 
     	var allNodes=[], allEdges=[];
@@ -1072,8 +1116,7 @@ window.buildTree = function(myworkflow) {
     initializeTree();
 
     	cy.json({elements: treeData});   // Add new data
-    	cy.ready(function () {           // Wait for nodes to be added
-    	
+    	cy.ready(function () {           // Wait for nodes to be added	
     		cy.layout({                   // Call layout
     			name: 'breadthfirst',
     			directed: true,
@@ -1096,16 +1139,15 @@ window.buildTree = function(myworkflow) {
 						this.connectedEdges().targets().style("display", "element");
 					} else {
 						//hide the children nodes and edges recursively
-						console.log("successors targets");
 						this.successors().targets().forEach(function(element) {
-							console.log(element);
-							console.log(element.data.id);
-							console.log(element.style("display", "none"));
-							
+							if(typeof  openIds!== 'undefined' && openIds.includes(element['_private'].data.id)){
+							}else{
+								element.style("display", "none");	
+							}
 							
 						});
-							//this.successors().targets().style("display", "none");
-						
+					
+					//this.successors().targets().style("display", "none");	
     			  }
 				  
 				  //
@@ -1122,6 +1164,7 @@ window.store=function(){
 
 window.clear=function(){
 	cy.destroy();
+	openIds=[];
 }
 
 
