@@ -80,6 +80,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.workflows_info_editable = false;
         $scope.workflows_step_name = '';
         $scope.workflows_step_description = '';
+        $scope.worfklows_step_ace_init = '# Insert the BASH commands for this step\n\n';
+        $scope.workflow_step_error_message = '';
 
         $scope.get_init_data();
 
@@ -1301,7 +1303,34 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     $scope.workflow_clear_button_pressed = function() {
         window.initTree();
-    }
+    };
+
+    /*
+    * Workflow --> Info --> Button: Add Step --> Clicked 
+    */
+    $scope.workflow_info_add_step_clicked = function() {
+        //Open accordion
+        window.openEditWorkflowBtn_click();
+
+        workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1);
+    };
+
+    /*
+    * workflows --> Step --> Button: Add Step --> Clicked 
+    */
+    $scope.workflow_step_add = function() {
+
+        if (!$scope.tools_name_regexp.test($scope.workflows_step_name)) {
+            $scope.workflow_step_error_message = 'Invalid step name';
+            return;
+        }
+
+        $scope.workflow_step_error_message = '';
+
+        workflow_step_editor.getValue();
+
+
+    };
 
     // WORKFLOWS END 
 

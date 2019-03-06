@@ -7,6 +7,10 @@ var tool_validation_editor = ace.edit("tool_validation_editor");
 tool_validation_editor.setTheme("ace/theme/textmate");
 tool_validation_editor.session.setMode("ace/mode/sh");
 
+var workflow_step_editor = ace.edit("workflow_step_editor");
+workflow_step_editor.setTheme("ace/theme/textmate");
+workflow_step_editor.session.setMode("ace/mode/sh");
+
 /*
 * It is important to register these events AFTER load so that they are triggered after custom JSTREE functions
 * More: https://groups.google.com/forum/#!topic/jstree/BYppISuCFRE
