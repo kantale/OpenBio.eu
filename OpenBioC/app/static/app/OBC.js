@@ -26,8 +26,8 @@ var compl = {
 
     callback(null, [
     {
-    	 caption: 'ABCDEFGHI',
-    	 value: 'ABCDEFGHI',
+    	 caption: 'tool.mitsos',
+    	 value: '$(tool_mitsos)',
     	 meta: 'TOOL'
     },
     {
