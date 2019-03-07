@@ -934,32 +934,35 @@ function parseWorkflow(incomingData){
 	/*initialize my data object*/
 	incomingData.forEach(function(d) {
 		
+		
 		//TOOLS 
 		if(d.type==="tool"){
-			var myNode = { data: { id:  d.id, label: d.text, name: d.data.name, version:d.data.version, edit:d.data.edit, type:d.data.type }};
-			myNodes.push(myNode);
-			if(d.parent != "#"){
-				var myEdge =  { data: { 'id': d.parent+d.id, 'weight': 1, 'source': d.parent, 'target': d.id } };
-				myEdges.push(myEdge);
-			}else{
-				roots=[];
-				roots.push(d.id);
-			}
+			
+			//remove special characters
+			d.id = d.id.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
+			d.parent = d.parent.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
+				if(d.parent != "#"){
+					var myNode = { data: { id:  d.id, label: d.text, name: d.data.name, version:d.data.version, edit:d.data.edit, type:d.data.type, root: 'no' }};
+					myNodes.push(myNode);
+					var myEdge =  { data: { 'id': d.parent+d.id, 'weight': 1, 'source': d.parent, 'target': d.id } };
+					myEdges.push(myEdge);
+				}else{
+					var myNode = { data: { id:  d.id, label: d.text, name: d.data.name, version:d.data.version, edit:d.data.edit, type:d.data.type, root: 'yes' }};
+					myNodes.push(myNode);	
+				}
 		}
+		
+		
 		//STEPS
-		/*
-		  "name": "analysis",
-		   "tools": ["tool_1/asdf/asdfsdf", "tool_2/asdf/asdf"],
-		   "steps": ["step1", "step3"],
-		   "bash" : "sghaesjhfh;jerdgsejkfdkefjdfghjdgjdigjfid",
-		   "type" : "step"
-		*/
 		if(d.type==="step"){
-			var myNode = { data: { id:  d.name, name: d.name, type:d.type, bash: d.bash }};
+			var myNode = { data: { id:  d.name, label: d.name, type:d.type, bash: d.bash }};
 			myNodes.push(myNode);
 			//create edges to tools and/or steps
 			if(typeof d.tools!=="undefined"){
+				//replace special characters
+				
 				d.tools.forEach(function(element) {
+					element = element.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
 					var myEdge =  { data: { 'id': d.name+element, 'weight': 1, 'source': d.name, 'target': element } };
 					myEdges.push(myEdge);
 					
@@ -981,6 +984,8 @@ function parseWorkflow(incomingData){
       nodes: myNodes,
       edges: myEdges
     };	
+	
+
 	
 }
 
@@ -1014,7 +1019,11 @@ function initializeTree(){
                 //"width": 15
               }
             },
-
+			{selectors: 'node[type="step"]',
+			   "style": {
+				   'background-color': 'red'
+			   }
+			},
             {
               selector: 'edge',
                 "style": {
@@ -1069,14 +1078,9 @@ window.buildTree = function(myworkflow) {
     //concat all data
     if(typeof  currentElements.nodes!== 'undefined'){
 		
-		//get positions 
-		currentElements.nodes.forEach(function(node) {
-			console.log("Node position : ");
-			console.log(node.position);
-		
-		});
 
-    	//check if new node exists in current data  	
+    	//TODO :check if new node exists in current data 
+		/*
     	treeData.nodes.forEach(function(element) {
 
     	
@@ -1091,6 +1095,8 @@ window.buildTree = function(myworkflow) {
     	});
     	
     });
+	*/
+	
     	
 
     	var allNodes=[], allEdges=[];
@@ -1127,33 +1133,29 @@ window.buildTree = function(myworkflow) {
     	
     	
 		// close all successors of root node
-		cy.$("#" + roots[0]).successors().targets().style("display", "none");	
-		
-		//
+		cy.json().elements.nodes.forEach(function(node) {
+			if(typeof  node.data.root!== 'undefined' && node.data.root==='yes')
+				cy.$("#" + node.data.id).successors().targets().style("display", "none");	
+		});
+				
+		// collapse - expand nodes
     	cy.on('click', 'node', function(event){
     		  //connectedEdges: next level
     		  //successors: next levels recursively
 
+			  if(this['_private'].data.type !== "step"){ //steps should never collapse
     			  if (this.successors().targets().style("display") == "none"){
-						//this.successors().targets().style("display", "element");
 						this.connectedEdges().targets().style("display", "element");
 					} else {
 						//hide the children nodes and edges recursively
 						this.successors().targets().forEach(function(element) {
-							if(typeof  openIds!== 'undefined' && openIds.includes(element['_private'].data.id)){
-							}else{
-								element.style("display", "none");	
-							}
-							
-						});
-					
-					//this.successors().targets().style("display", "none");	
-    			  }
+							if(typeof  openIds === 'undefined' || !openIds.includes(element['_private'].data.id))
+								element.style("display", "none");
+						});					
+    			  }	 
+			  }				  
 				  
-				  //
-				  
-				  
-    		});
+    	});
 		
 }
 
@@ -1163,7 +1165,8 @@ window.store=function(){
 }
 
 window.clear=function(){
-	cy.destroy();
+	//cy.destroy();
+	cy.remove('edge, node');
 	openIds=[];
 }
 
