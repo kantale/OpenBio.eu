@@ -1,15 +1,3 @@
-/*
-
-DONE:
-1. Signup error (i.e. confirm password not match)
-2. Toast. after signup "success", with "X" button. Programmatically close. 
-
-*/
-
-// ui.js
-// style.css ->konstantina
-// navbar2.html
-
 
 /*
 * generateToast('success message here', 'green lighten-2 black-text', 'stay on');
@@ -38,10 +26,7 @@ window.onload = function () {
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // ------------------------------------------------------------------- Initializations ------------------------------------------------------------------------------------------
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    var animationEnded;
     function init() {
-
-
 
         var avatarImg = '/static/app/images/konstantina/img_avatar.png';
         var avatars = document.getElementsByClassName('imgAvatar');
@@ -49,6 +34,12 @@ window.onload = function () {
             $(avatars[i]).attr('src', avatarImg);
         }
 
+        // ---------------------------------------- Pushpin initialization -----------------------------------------------
+        $('#scrollspyMenu').pushpin();
+        // ---------------------------------------- Scrollspy initialization ---------------------------------------------
+        $('.scrollspy').scrollSpy({
+            scrollOffset: 200
+        });
         // ----------------------------------- Sidebar for navbar initialization -----------------------------------------
         $('.sidenav').sidenav();
         // ---------------------------------------- Modal initialization -------------------------------------------------
@@ -119,35 +110,41 @@ window.onload = function () {
                     if (event.classList.contains('disabled')) {
                         event.classList.remove('active');
                     }
+                    if((event.id == 'workflowRightPanelGeneral') || (event.id == 'workflowRightPanelStep')){
+                        cy.resize();
+                    }
                 },
                 // Callback function called before collapsible is closed
                 onCloseStart: function (event) {
-                    // Workflows right panel collapsible
-                    if (event.id == 'workflows') {
-                        if (document.getElementById('workflowsRightPanel').style.display == 'block') {
-                            $('#workflowsRightPanel').animateCss('slideOutUp', function () {
-                                document.getElementById('workflowsRightPanel').style.display = 'none';
-                                // disableEditWorkflow(); // This disables the edit workflow window
-                            });
-                        }
-                    }
+                    // // Workflows right panel collapsible
+                    // if (event.id == 'workflows') {
+                    //     if (document.getElementById('workflowsRightPanel').style.display == 'block') {
+                    //         $('#workflowsRightPanel').animateCss('slideOutUp', function () {
+                    //             document.getElementById('workflowsRightPanel').style.display = 'none';
+                    //             // disableEditWorkflow(); // This disables the edit workflow window
+                    //         });
+                    //     }
+                    // }
                     // Disabled collapsible
                     if (!event.classList.contains('disabled')) {
                         event.getElementsByClassName('arrow')[0].innerHTML = 'keyboard_arrow_right';
                     }
+                },
+                // Callback function called after collapsible is closed
+                onCloseEnd: function (event) {
+                    if((event.id == 'workflowRightPanelGeneral') || (event.id == 'workflowRightPanelStep')){
+                        cy.resize();
+                    }
                 }
+
             });
         }
 
         // ------------------------------------ Initializations for profile page -----------------------------------------
-        // animationEnded = true;
-        // var activeBtn = document.getElementById('leftPanelButtons').getElementsByClassName('active')[0];
-        // showPanel(activeBtn.id.substring(0, activeBtn.id.indexOf("Btn")) + 'Panel');
-
-        // $('#profilePublicInfo').val(
-        //     'Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck.');
-        // M.textareaAutoResize($('#profilePublicInfo'));
-        // M.updateTextFields();
+        $('#profilePublicInfo').val(
+            'Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck.');
+        M.textareaAutoResize($('#profilePublicInfo'));
+        M.updateTextFields();
 
         // -------------------------------- Listener for DISABLE EDIT workflow button ------------------------------------
         // document.getElementById('disableEditWorkflowBtn').addEventListener("click", disableEditWorkflow);
@@ -199,30 +196,30 @@ window.onload = function () {
     // ----------------------------------------------------- Expand All / Collapse All Button Click ---------------------------------------------------------------------------------
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --------------------------------------- Expand All button clicked ---------------------------------------------
-    document.getElementById('expandAllBtn1').addEventListener('click', function(){
+    document.getElementById('expandAllBtn1').addEventListener('click', function () {
         var instance = M.Collapsible.getInstance($('#createToolDataAccordion'));
         var childrenNum = instance.el.childElementCount;
         for (var i = 0; i < childrenNum; i++) {
             instance.open(i);
         }
     });
-    document.getElementById('expandAllBtn2').addEventListener('click', function(){
+    document.getElementById('expandAllBtn2').addEventListener('click', function () {
         var instance = M.Collapsible.getInstance($('#editWorkflowAccordion'));
         var childrenNum = instance.el.childElementCount;
         for (var i = 0; i < childrenNum; i++) {
             instance.open(i);
         }
     });
-    
+
     // -------------------------------------- Collapse All button clicked --------------------------------------------
-    document.getElementById('collapseAllBtn1').addEventListener('click', function(){
+    document.getElementById('collapseAllBtn1').addEventListener('click', function () {
         var instance = M.Collapsible.getInstance($('#createToolDataAccordion'));
         var childrenNum = instance.el.childElementCount;
         for (var i = 0; i < childrenNum; i++) {
             instance.close(i);
         }
     });
-    document.getElementById('collapseAllBtn2').addEventListener('click', function(){
+    document.getElementById('collapseAllBtn2').addEventListener('click', function () {
         var instance = M.Collapsible.getInstance($('#editWorkflowAccordion'));
         var childrenNum = instance.el.childElementCount;
         for (var i = 0; i < childrenNum; i++) {
@@ -277,7 +274,7 @@ window.onload = function () {
     };
 
     // HIDE WORKFLOW ACCORDION RIGHT 
-    window.cancelWorkflowBtn_click = function() {
+    window.cancelWorkflowBtn_click = function () {
         if (document.getElementById('workflowsRightPanel').style.display == 'block') {
             document.getElementById('workflowsRightPanel').style.display = 'none';
             $('#workflowsRightPanel').animateCss('slideInDown', function () {
@@ -286,12 +283,12 @@ window.onload = function () {
     };
 
     // Workflows --> Edit --> Open
-    window.openEditWorkflowBtn_click = function() {
+    window.openEditWorkflowBtn_click = function () {
         M.Collapsible.getInstance($('#editWorkflowAccordion')).open(0);
     };
 
     // Workflows --> Edit --> Close
-    window.closeEditWorkflowBtn_click = function() {
+    window.closeEditWorkflowBtn_click = function () {
         M.Collapsible.getInstance($('#editWorkflowAccordion')).close(0);
     };
 
@@ -299,16 +296,16 @@ window.onload = function () {
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --------------------------------------------------------- Enable Edit Workflow Button Click ----------------------------------------------------------------------------------
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-//    document.getElementById('enableEditWorkflowBtn').addEventListener("click", function () {
-//        var collapsibles = document.getElementById('editWorkflowAccordion').getElementsByTagName('li');
-//        for (var i = 0; i < collapsibles.length; i++) {
-//            if (collapsibles[i].classList.contains('disabled')) {
-//                collapsibles[i].classList.remove('disabled');
-//            }
-//        }
-//        var instance = M.Collapsible.getInstance($('#editWorkflowAccordion'));
-//        instance.open(0);
-//    });
+    //    document.getElementById('enableEditWorkflowBtn').addEventListener("click", function () {
+    //        var collapsibles = document.getElementById('editWorkflowAccordion').getElementsByTagName('li');
+    //        for (var i = 0; i < collapsibles.length; i++) {
+    //            if (collapsibles[i].classList.contains('disabled')) {
+    //                collapsibles[i].classList.remove('disabled');
+    //            }
+    //        }
+    //        var instance = M.Collapsible.getInstance($('#editWorkflowAccordion'));
+    //        instance.open(0);
+    //    });
 
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // -------------------------------------------------------- Disable Edit Workflow Button Click ----------------------------------------------------------------------------------
@@ -331,101 +328,6 @@ window.onload = function () {
             instance.close(i);
         }
     }
-
-
-    // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // -------------------------------------------------------- Profile Page Collection Buttons Listener ----------------------------------------------------------------------------
-    // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    // ---------------------------------------- Hide panel with given id ---------------------------------------------
-    function hidePanel(panelId) {
-        animationEnded = false;
-        $('#' + panelId).animateCss('fadeOut', function () {
-            document.getElementById(panelId).style.display = 'none';
-            animationEnded = true;
-        });
-    }
-
-    // ---------------------------------------- Show panel with given id ---------------------------------------------
-    function showPanel(panelId) {
-        animationEnded = false;
-        document.getElementById(panelId).style.display = 'block';
-        $('#' + panelId).animateCss('fadeIn', function () {
-            animationEnded = true;
-        });
-    }
-
-    // --------------------------------------------- Find active panel -----------------------------------------------
-    function findBlockPanelId() {
-        var panels = document.getElementById('rightPanel').getElementsByClassName('panel');
-        for (var i = 0; i < panels.length; i++) {
-            if (panels[i].style.display == 'block') {
-                return panels[i].id;
-            }
-        }
-        return null;
-    }
-
-    // ------------------------------------------ Collection buttons listener ----------------------------------------
-    // document.getElementById('leftPanelButtons').addEventListener('click', function (event) {
-    //     if (animationEnded) {
-
-    //         var clickedBtn;
-    //         if (event.target.tagName == 'I') {
-    //             clickedBtn = event.target.parentNode;
-    //         }
-    //         else {
-    //             clickedBtn = event.target;
-    //         }
-
-    //         var activeButtons = clickedBtn.parentNode.getElementsByClassName('active');
-    //         for (var i = 0; i < activeButtons.length; i++) {
-    //             activeButtons[i].classList.remove('active');
-    //         }
-    //         document.getElementById(clickedBtn.id).classList.add('active');
-
-
-    //         if (clickedBtn.id == 'profileBtn') {
-    //             var blockPanelId = findBlockPanelId();
-    //             if ((blockPanelId != null) && (blockPanelId != 'profilePanel')) {
-    //                 hidePanel(blockPanelId);
-    //             }
-    //             if (document.getElementById('profilePanel').style.display == 'none') {
-    //                 showPanel('profilePanel');
-    //                 M.textareaAutoResize($('#profilePublicInfo'));
-    //                 M.updateTextFields();
-    //             }
-    //         }
-    //         else if (clickedBtn.id == 'inboxBtn') {
-    //             var blockPanelId = findBlockPanelId();
-    //             if ((blockPanelId != null) && (blockPanelId != 'inboxPanel')) {
-    //                 hidePanel(blockPanelId);
-    //             }
-    //             if (document.getElementById('inboxPanel').style.display == 'none') {
-    //                 showPanel('inboxPanel');
-    //             }
-    //         }
-    //         else if (clickedBtn.id == 'notificationsBtn') {
-    //             var blockPanelId = findBlockPanelId();
-    //             if ((blockPanelId != null) && (blockPanelId != 'notificationsPanel')) {
-    //                 hidePanel(blockPanelId);
-    //             }
-    //             if (document.getElementById('notificationsPanel').style.display == 'none') {
-    //                 showPanel('notificationsPanel');
-    //             }
-    //         }
-    //         else if (clickedBtn.id == 'settingsBtn') {
-    //             var blockPanelId = findBlockPanelId();
-    //             if ((blockPanelId != null) && (blockPanelId != 'settingsPanel')) {
-    //                 hidePanel(blockPanelId);
-    //             }
-    //             if (document.getElementById('settingsPanel').style.display == 'none') {
-    //                 showPanel('settingsPanel');
-    //             }
-    //         }
-    //     }
-    // });
-
 
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --------------------------------------------------------------------- Splitter Bar -------------------------------------------------------------------------------------------
@@ -915,314 +817,315 @@ window.onload = function () {
     // END OF KANTALE'S CODE
 
     // START OF GALATEIA'S CODE
-	
-	//Cytoscape Galateia's code
-	if(true){
-/**
-global vars intiialization
-**/			
-//var cy;
 
-openIds=[];
+    //Cytoscape Galateia's code
+    if (true) {
+        /**
+        global vars intiialization
+        **/
+        //var cy;
 
-/**
-parse data from openbioc to meet the cytoscape.js requirements
-**/
-function parseWorkflow(incomingData){
-    var myNodes =[], myEdges=[];
+        openIds = [];
 
-	/*initialize my data object*/
-	incomingData.forEach(function(d) {
-		
-		
-		//TOOLS 
-		if(d.type==="tool"){
-			
-			//remove special characters
-			d.id = d.id.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
-			d.parent = d.parent.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
-				if(d.parent != "#"){
-					var myNode = { data: { id:  d.id, label: d.text, name: d.data.name, version:d.data.version, edit:d.data.edit, type:d.data.type, root: 'no' }};
-					myNodes.push(myNode);
-					var myEdge =  { data: { 'id': d.parent+d.id, 'weight': 1, 'source': d.parent, 'target': d.id } };
-					myEdges.push(myEdge);
-				}else{
-					var myNode = { data: { id:  d.id, label: d.text, name: d.data.name, version:d.data.version, edit:d.data.edit, type:d.data.type, root: 'yes' }};
-					myNodes.push(myNode);	
-				}
-		}
-		
-		
-		//STEPS
-		if(d.type==="step"){
-			var myNode = { data: { id:  d.name, label: d.name, type:d.type, bash: d.bash }};
-			myNodes.push(myNode);
-			//create edges to tools and/or steps
-			if(typeof d.tools!=="undefined"){
-				//replace special characters
-				
-				d.tools.forEach(function(element) {
-					element = element.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
-					var myEdge =  { data: { 'id': d.name+element, 'weight': 1, 'source': d.name, 'target': element } };
-					myEdges.push(myEdge);
-					
-				});
-			}
-			
-			if(typeof d.steps!=="undefined"){
-				d.steps.forEach(function(element) {
-					var myEdge =  { data: { 'id': d.name+element, 'weight': 1, 'source': d.name, 'target': element } };
-					myEdges.push(myEdge);
-					
-				});
-				}
-		}
-		
-	});
-	
-	return {
-      nodes: myNodes,
-      edges: myEdges
-    };	
-	
+        /**
+        parse data from openbioc to meet the cytoscape.js requirements
+        **/
+        function parseWorkflow(incomingData) {
+            var myNodes = [], myEdges = [];
 
-	
-}
-
-function initializeTree(){
+            /*initialize my data object*/
+            incomingData.forEach(function (d) {
 
 
-    cy = cytoscape({
-          container: document.getElementById('cywf'), // container to render in
-          elements: [] ,
+                //TOOLS 
+                if (d.type === "tool") {
 
-          //elements: [ // list of graph elements to start with
-          //      { // node a
-          //        data: { id: 'a' }
-          //      },
-          //      { // node b
-          //        data: { id: 'b' }
-          //      },
-          //      { // edge ab
-          //        data: { id: 'ab', source: 'a', target: 'b' }
-          //      }
-          //],
+                    //remove special characters
+                    d.id = d.id.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
+                    d.parent = d.parent.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
+                    if (d.parent != "#") {
+                        var myNode = { data: { id: d.id, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'no' } };
+                        myNodes.push(myNode);
+                        var myEdge = { data: { 'id': d.parent + d.id, 'weight': 1, 'source': d.parent, 'target': d.id } };
+                        myEdges.push(myEdge);
+                    } else {
+                        var myNode = { data: { id: d.id, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'yes' } };
+                        myNodes.push(myNode);
+                    }
+                }
 
-          style: [ // the stylesheet for the graph
-            {
-              selector: 'node',
-                "style": {
-                "shape": "round-rectangle",
-                //"label": "data(id)",
-                "label": "data(label)",
-                //"height": 15,
-                //"width": 15
-              }
-            },
-			{selectors: 'node[type="step"]',
-			   "style": {
-				   'background-color': 'red'
-			   }
-			},
-            {
-              selector: 'edge',
-                "style": {
-                'curve-style': 'bezier',
-                'target-arrow-shape': 'triangle',
-                'width': 2,
-                'line-color': '#ddd',
-                'target-arrow-color': '#ddd'
-              }
+
+                //STEPS
+                if (d.type === "step") {
+                    var myNode = { data: { id: d.name, label: d.name, type: d.type, bash: d.bash } };
+                    myNodes.push(myNode);
+                    //create edges to tools and/or steps
+                    if (typeof d.tools !== "undefined") {
+                        //replace special characters
+
+                        d.tools.forEach(function (element) {
+                            element = element.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
+                            var myEdge = { data: { 'id': d.name + element, 'weight': 1, 'source': d.name, 'target': element } };
+                            myEdges.push(myEdge);
+
+                        });
+                    }
+
+                    if (typeof d.steps !== "undefined") {
+                        d.steps.forEach(function (element) {
+                            var myEdge = { data: { 'id': d.name + element, 'weight': 1, 'source': d.name, 'target': element } };
+                            myEdges.push(myEdge);
+
+                        });
+                    }
+                }
+
+            });
+
+            return {
+                nodes: myNodes,
+                edges: myEdges
+            };
+
+
+
+        }
+
+        function initializeTree() {
+
+
+            cy = cytoscape({
+                container: document.getElementById('cywf'), // container to render in
+                elements: [],
+
+                //elements: [ // list of graph elements to start with
+                //      { // node a
+                //        data: { id: 'a' }
+                //      },
+                //      { // node b
+                //        data: { id: 'b' }
+                //      },
+                //      { // edge ab
+                //        data: { id: 'ab', source: 'a', target: 'b' }
+                //      }
+                //],
+
+                style: [ // the stylesheet for the graph
+                    {
+                        selector: 'node',
+                        "style": {
+                            "shape": "round-rectangle",
+                            //"label": "data(id)",
+                            "label": "data(label)",
+                            //"height": 15,
+                            //"width": 15
+                        }
+                    },
+                    {
+                        selectors: 'node[type="step"]',
+                        "style": {
+                            'background-color': 'red'
+                        }
+                    },
+                    {
+                        selector: 'edge',
+                        "style": {
+                            'curve-style': 'bezier',
+                            'target-arrow-shape': 'triangle',
+                            'width': 2,
+                            'line-color': '#ddd',
+                            'target-arrow-color': '#ddd'
+                        }
+                    }
+                ],
+
+                zoom: 1,
+                pan: { x: 0, y: 0 },
+
+                layout: {
+                    name: 'breadthfirst',
+                    directed: true,
+                    padding: 2
+                }
+
+
+
+            });
+
+            //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.
+            document.querySelector('canvas[data-id="layer2-node"]').style.position = null;
+
+
+        }
+
+
+        initializeTree();
+
+
+
+
+        //add new data to the graph
+        //activate the collapse-expand option
+        window.buildTree = function (myworkflow) {
+            //function buildTree(myworkflow) {
+
+            // get existing data if any
+            var currentElements = cy.json().elements;
+
+
+
+
+            // parse incoming data and transform to cytoscape format
+            var treeData = parseWorkflow(myworkflow);
+
+            //concat all data
+            if (typeof currentElements.nodes !== 'undefined') {
+
+
+                //TODO :check if new node exists in current data 
+                /*
+                treeData.nodes.forEach(function(element) {
+        
+            	
+                  var bfs = cy.elements().bfs({
+                  roots: '#',
+                  visit: function(v, e, u, i, depth){ 	  
+                      if(element.data.id===v.id()){
+                          openIds.push(v.id());  			
+        	
+                        }
+                    }
+                });
+            	
+            });
+            */
+
+
+
+                var allNodes = [], allEdges = [];
+                allNodes = currentElements.nodes.concat(treeData.nodes);
+                if (typeof currentElements.edges !== 'undefined' && typeof treeData.edges !== 'undefined') {
+                    allEdges = currentElements.edges.concat(treeData.edges);
+                }
+                else {
+                    if (typeof currentElements.edges !== 'undefined')
+                        allEdges = currentElements.edges;
+                    if (typeof treeData.edges !== 'undefined')
+                        allEdges = treeData.edges;
+                }
+                treeData = {
+                    nodes: allNodes,
+                    edges: allEdges
+                };
+
             }
-          ],
-
-        zoom: 1,
-        pan: { x: 0, y: 0 },    
-
-          layout: {
-            name: 'breadthfirst',
-            directed: true,
-            padding: 2
-          }
-          
 
 
-        });
+            // this is needed because cy.add() causes multiple instances of layout
+            initializeTree();
 
-        //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.
-        document.querySelector('canvas[data-id="layer2-node"]').style.position = null;
+            cy.json({ elements: treeData });   // Add new data
+            cy.ready(function () {           // Wait for nodes to be added	
+                cy.layout({                   // Call layout
+                    name: 'breadthfirst',
+                    directed: true,
+                    padding: 2
+                }).run();
 
-
-}
-
-
-initializeTree();
-
-
-
-
-//add new data to the graph
-//activate the collapse-expand option
-window.buildTree = function(myworkflow) {
-//function buildTree(myworkflow) {
-
-    // get existing data if any
-    var currentElements = cy.json().elements;
-	
-	
-	
-	
-    // parse incoming data and transform to cytoscape format
-    var treeData=parseWorkflow(myworkflow);
-
-    //concat all data
-    if(typeof  currentElements.nodes!== 'undefined'){
-		
-
-    	//TODO :check if new node exists in current data 
-		/*
-    	treeData.nodes.forEach(function(element) {
-
-    	
-    	  var bfs = cy.elements().bfs({
-    	  roots: '#',
-    	  visit: function(v, e, u, i, depth){ 	  
-    		  if(element.data.id===v.id()){
-				  openIds.push(v.id());  			
-	
-				}
-			}
-    	});
-    	
-    });
-	*/
-	
-    	
-
-    	var allNodes=[], allEdges=[];
-    	allNodes = currentElements.nodes.concat(treeData.nodes);
-			if(typeof  currentElements.edges!== 'undefined' && typeof  treeData.edges!== 'undefined' ) {
-				allEdges = currentElements.edges.concat(treeData.edges);
-			}
-				else{
-					if(typeof  currentElements.edges!== 'undefined')
-						allEdges = currentElements.edges;
-					if(typeof  treeData.edges!== 'undefined')
-						allEdges = treeData.edges;
-			}
-				treeData = {
-				  nodes: allNodes,
-				  edges: allEdges
-				};
-
-		}
+            });
 
 
-    // this is needed because cy.add() causes multiple instances of layout
-    initializeTree();
+            // close all successors of root node
+            cy.json().elements.nodes.forEach(function (node) {
+                if (typeof node.data.root !== 'undefined' && node.data.root === 'yes')
+                    cy.$("#" + node.data.id).successors().targets().style("display", "none");
+            });
 
-    	cy.json({elements: treeData});   // Add new data
-    	cy.ready(function () {           // Wait for nodes to be added	
-    		cy.layout({                   // Call layout
-    			name: 'breadthfirst',
-    			directed: true,
-    			padding: 2
-    		}).run();
-    		
-    	});	
-    	
-    	
-		// close all successors of root node
-		cy.json().elements.nodes.forEach(function(node) {
-			if(typeof  node.data.root!== 'undefined' && node.data.root==='yes')
-				cy.$("#" + node.data.id).successors().targets().style("display", "none");	
-		});
-				
-		// collapse - expand nodes
-    	cy.on('click', 'node', function(event){
-    		  //connectedEdges: next level
-    		  //successors: next levels recursively
+            // collapse - expand nodes
+            cy.on('click', 'node', function (event) {
+                //connectedEdges: next level
+                //successors: next levels recursively
 
-			  if(this['_private'].data.type !== "step"){ //steps should never collapse
-    			  if (this.successors().targets().style("display") == "none"){
-						this.connectedEdges().targets().style("display", "element");
-					} else {
-						//hide the children nodes and edges recursively
-						this.successors().targets().forEach(function(element) {
-							if(typeof  openIds === 'undefined' || !openIds.includes(element['_private'].data.id))
-								element.style("display", "none");
-						});					
-    			  }	 
-			  }				  
-				  
-    	});
-		
-}
+                if (this['_private'].data.type !== "step") { //steps should never collapse
+                    if (this.successors().targets().style("display") == "none") {
+                        this.connectedEdges().targets().style("display", "element");
+                    } else {
+                        //hide the children nodes and edges recursively
+                        this.successors().targets().forEach(function (element) {
+                            if (typeof openIds === 'undefined' || !openIds.includes(element['_private'].data.id))
+                                element.style("display", "none");
+                        });
+                    }
+                }
+
+            });
+
+        }
 
 
-window.store=function(){
- json = cy.json();
-}
+        window.store = function () {
+            json = cy.json();
+        }
 
-window.clear=function(){
-	//cy.destroy();
-	cy.remove('edge, node');
-	openIds=[];
-}
+        window.clear = function () {
+            //cy.destroy();
+            cy.remove('edge, node');
+            openIds = [];
+        }
 
 
-window.fit=function(){
-	cy.reset();
-	cy.center();
+        window.fit = function () {
+            cy.reset();
+            cy.center();
 
-}
-		
-		
-		
-}
+        }
+
+
+
+    }
 
     //WebCola Galateia's code
     if (false) { //Activate/deactivate code
-    
+
 
         /* initialize global variables */
         //var cola,svg,root,treeData; // Alex commented it out. There were undefined 
 
         //We should run these commands only once!
-        var mynodes=[],mylinks=[],children=[],tmp_children=[], parents=[];
+        var mynodes = [], mylinks = [], children = [], tmp_children = [], parents = [];
 
-		 // var height = document.getElementById('d3wf').style.height;
-		//  var width = document.getElementById('d3wf').style.width;
+        // var height = document.getElementById('d3wf').style.height;
+        //  var width = document.getElementById('d3wf').style.width;
         //var width = 768, height = 517;
 
         var color = d3.scaleOrdinal(d3.schemeCategory20);
 
 
         obc_cola = cola.d3adaptor(d3)
-                .linkDistance(100)
-                .avoidOverlaps(true)
-                .handleDisconnected(false);
-                //.size([width, height]); 
+            .linkDistance(100)
+            .avoidOverlaps(true)
+            .handleDisconnected(false);
+        //.size([width, height]); 
 
         svg = d3.select("#d3wf").append("svg")
-                //.attr("width", width)
-                //.attr("height", height)
-                .classed("svg-content-responsive", true)
+            //.attr("width", width)
+            //.attr("height", height)
+            .classed("svg-content-responsive", true)
             .call(d3.zoom().on("zoom", function () {
                 svg.attr("transform", d3.event.transform)
             })
-            //.scaleExtent([1,2])
-            //.translateExtent([[0,0],[width,height]])
+                //.scaleExtent([1,2])
+                //.translateExtent([[0,0],[width,height]])
             ).on("dblclick.zoom", null);
-        
-        
-        
+
+
+
 
         //buildTree(); // Run this for initialization
 
-        /* Function that initializes cola and tree root */  
+        /* Function that initializes cola and tree root */
         //function buildTree() {
-        window.buildTree = function(workflow) {
+        window.buildTree = function (workflow) {
 
             /*
             Example of workflow
@@ -1248,54 +1151,54 @@ window.fit=function(){
             */
             //NEW STUFF
             //get existing data if any and merge them with new data     
-            if(window.treeData) workflow = workflow.concat(treeData);
-			
-            
-                workflow.forEach(function(d) {
-                    if(d.parent=='#') {
-                        root = d;
-                        if(mynodes.indexOf(root) == -1) mynodes.push(root);
-                     }          
-                });
-            
-            
-                treeData = workflow;
-                console.log("treeData :");
-				console.log(treeData);
-                
-                update();   
-                
-                if (false) {
-                    d3.json("/static/app/data.json", function (error, data) {
+            if (window.treeData) workflow = workflow.concat(treeData);
 
-                        /* read the given data */   
-                    
-                        data.forEach(function(d) {
-                            if(d.parent=='#'){
-                                root = d;
-                                mynodes.push(root);
-                            }           
-                        });
-                
-                        treeData = data;    
-                        update();     
-                          
-                    }); 
+
+            workflow.forEach(function (d) {
+                if (d.parent == '#') {
+                    root = d;
+                    if (mynodes.indexOf(root) == -1) mynodes.push(root);
                 }
-                
-            
+            });
+
+
+            treeData = workflow;
+            console.log("treeData :");
+            console.log(treeData);
+
+            update();
+
+            if (false) {
+                d3.json("/static/app/data.json", function (error, data) {
+
+                    /* read the given data */
+
+                    data.forEach(function (d) {
+                        if (d.parent == '#') {
+                            root = d;
+                            mynodes.push(root);
+                        }
+                    });
+
+                    treeData = data;
+                    update();
+
+                });
+            }
+
+
         } // buildTree
 
         /** update graph: add and remove nodes/links **/
         function update() {
 
-        
+
             d3.selectAll("svg > *").remove();
-            
+
             //call the function to add the links to final nodes 
             addLinks();
-            
-            /** constraints **/ 
+
+            /** constraints **/
             /*
             var el = document.getElementById("d3wf"),   
             x = el.offsetLeft, y = el.offsetTop,
@@ -1321,20 +1224,20 @@ window.fit=function(){
             mynodes = realGraphNodes;
             */
             //initialize cola: .nodes(virtualNodes)
-            
-            
 
-            /* initialize cola */  
-              obc_cola
+
+
+            /* initialize cola */
+            obc_cola
                 //.nodes(virtualNodes)
                 .nodes(mynodes)
                 .links(mylinks)
                 //.constraints(constraints)
                 .start();
-                
+
             // define arrow markers for graph links
             svg.append('svg:defs').append('svg:marker')
-            .attr('id', 'end-arrow')
+                .attr('id', 'end-arrow')
                 .attr('viewBox', '0 -5 10 10')
                 .attr('refX', 10)
                 .attr('markerWidth', 6)
@@ -1342,30 +1245,30 @@ window.fit=function(){
                 .attr('orient', 'auto')
                 .append('svg:path')
                 .attr('d', 'M0,-5L10,0L0,5')
-                .attr('fill', '#515151');   
-        
-                
+                .attr('fill', '#515151');
 
-            var margin = 6; 
+
+
+            var margin = 6;
             var pad = 3;
-        
+
 
             var node = svg.selectAll(".node")
-              .data(mynodes)
-              .enter().append("rect")
+                .data(mynodes)
+                .enter().append("rect")
                 .attr("class", "node")
                 .attr("rx", 5).attr("ry", 5)
                 .style("fill", '#C6E9D9') //color based on type
                 .call(obc_cola.drag)
                 .on("dblclick", collapse);
-                
-                var link = svg.selectAll(".link")
+
+            var link = svg.selectAll(".link")
                 .data(mylinks)
                 .enter().append("line")
-                .attr("class", function(d){ return ["link", d.source, d.target].join(" "); })
+                .attr("class", function (d) { return ["link", d.source, d.target].join(" "); })
                 .call(obc_cola.drag);
-                
-                var label = svg.selectAll(".label")
+
+            var label = svg.selectAll(".label")
                 .data(mynodes)
                 .enter().append("text")
                 .attr("class", "label")
@@ -1378,15 +1281,15 @@ window.fit=function(){
                     d.width = b.width + extra;
                     d.height = b.height + extra;
                 });
-                
+
 
             obc_cola.on("tick", function () {
-                
+
                 /*
                     node.attr("x", function (d) { return d.x; })
                         .attr("y", function (d) { return d.y; });
                 */
-                
+
                 /*  
                     node.attr("x", function (d) {
                             var newdim = d.x - nodeWidth / 2 + 3 ;
@@ -1399,224 +1302,223 @@ window.fit=function(){
     
                     });
                 */
-                
-                 // node.attr("cx", function(d) { return d.x = Math.max(r, Math.min(w - margin, d.x)); })
+
+                // node.attr("cx", function(d) { return d.x = Math.max(r, Math.min(w - margin, d.x)); })
                 //  .attr("cy", function(d) { return d.y = Math.max(r, Math.min(h - margin, d.y)); });
-                
+
                 node.each(function (d) { d.innerBounds = d.bounds.inflate(-margin); })
                     .attr("x", function (d) { return d.innerBounds.x; })
                     .attr("y", function (d) { return d.innerBounds.y; })
                     .attr("width", function (d) { return d.innerBounds.width(); })
                     .attr("height", function (d) { return d.innerBounds.height(); });
-                        
-                            
+
+
                 link.each(function (d) {
-                        d.route = cola.makeEdgeBetween(d.source.innerBounds, d.target.innerBounds, 5);
-                        if (isIE())  this.parentNode.insertBefore(this, this);
-                    });
+                    d.route = cola.makeEdgeBetween(d.source.innerBounds, d.target.innerBounds, 5);
+                    if (isIE()) this.parentNode.insertBefore(this, this);
+                });
 
                 link.attr("x1", function (d) { return d.route.sourceIntersection.x; })
                     .attr("y1", function (d) { return d.route.sourceIntersection.y; })
                     .attr("x2", function (d) { return d.route.arrowStart.x; })
-                    .attr("y2", function (d) { return d.route.arrowStart.y; }); 
-                                
-                    
-                 label
+                    .attr("y2", function (d) { return d.route.arrowStart.y; });
+
+
+                label
                     .attr("x", function (d) { return d.x })
                     .attr("y", function (d) { return d.y + (margin + pad) / 2 });
-                
-              
+
+
             });
-            
+
         } // update end
-        
-            /** Toggle nodes' children on double click **/  
-          function collapse(d) {
-            
-                  if(d.children){   ////if clicked node has already open children CLOSE them
-                    
-                    //do not include the ones with flag "open"
-                    d.children  = d.children.filter(function(y) {return y.flag!=="open";});
-                                
-                    //remove (not flaged) children nodes from total nodes
-                    mynodes  = mynodes.filter(function(x) {return d.children.indexOf(x) < 0; });
-                                
-                        //remove children RECURSIVELY
-                        var my_children=d.children;
-                        d.children=null;    
-                            my_children.forEach(function(f){
-                                if(f.children) collapse(f);
-                            })
 
-                    }else {     ////if clicked node has closed children, OPEN them
-            
-                    tmp_children = findChildren(d);
-                    mynodes = mynodes.concat(tmp_children); //add children to total nodes       
-                    if(tmp_children.length > 0) d.children = tmp_children; //each node has an array of its' children
-                    tmp_children=[];
-                
-                }
-                
-                //update graph with the new nodes(removed or added)
-                update();
-          }
-          //collapse end
-  
-  
-  //find all children of a given node
-  function findChildren(d){
-        treeData.forEach(function(n) {
-            // add children nodes
-                if(n.parent==d.id){
-                //check if already exists in nodes (can be a child of another node)
-                    if(!existsInNodes(n)){  
-                        tmp_children.push(n);
-                    }else{
-                     //add NEW PARENTS and OPEN FLAG to existing node
-                     addNodeInfo(n);                 
-                    }
-                }   
-        })  
-        
-        return tmp_children;
-  
-  }
-  
-    //check if a node object exists in mynodes
-    function existsInNodes(n){
-        var answer=false;
-            mynodes.find(function(item, i){ 
-                if(item.id==n.id)
-                answer=true;
-            })
-        
-        return answer;
-    }
-    
-    //add new link to existing node (when new parent is added)
-    function addNodeInfo(n){    
+        /** Toggle nodes' children on double click **/
+        function collapse(d) {
 
-        mynodes.find(function(item, i){ 
-            if(item.id==n.id){ //if it is already part of the graph add a flag so it stays always open
-                item.flag="open";
-                
-                mynodes.find(function(item2, i2){   
-                   if(item2.id==n.parent){
-               
-                       //check if parents exists
-                       if(typeof item.parents!== "undefined"){
-                           if(item.parents.indexOf(item2.id) < 0){
-                                    parents.push(item2.id);
-                                    item.parents=item.parents.concat(parents);
-                                    parents=[];
-                                }
-                        }else{
-                           parents.push(item2.id);
-                           item.parents=parents;
-                           parents=[];
-                           
-                         }          
-                    }
-            
+            if (d.children) {   ////if clicked node has already open children CLOSE them
+
+                //do not include the ones with flag "open"
+                d.children = d.children.filter(function (y) { return y.flag !== "open"; });
+
+                //remove (not flaged) children nodes from total nodes
+                mynodes = mynodes.filter(function (x) { return d.children.indexOf(x) < 0; });
+
+                //remove children RECURSIVELY
+                var my_children = d.children;
+                d.children = null;
+                my_children.forEach(function (f) {
+                    if (f.children) collapse(f);
                 })
-                
-                //add recursively the OPEN FLAG
-                addOpenFlag(item.parent);
-                if(item.parents) { 
-                    item.parents.forEach(function(i){
-                        addOpenFlag(i);
-                    })
-                }
+
+            } else {     ////if clicked node has closed children, OPEN them
+
+                tmp_children = findChildren(d);
+                mynodes = mynodes.concat(tmp_children); //add children to total nodes       
+                if (tmp_children.length > 0) d.children = tmp_children; //each node has an array of its' children
+                tmp_children = [];
 
             }
-            
-        })  
-    }
-    
-    function addOpenFlag(item){
 
-        mynodes.forEach(function(f){
-            if(item === f.id){
-                f.flag="open";
-                addOpenFlag(f);
-                } 
+            //update graph with the new nodes(removed or added)
+            update();
+        }
+        //collapse end
+
+
+        //find all children of a given node
+        function findChildren(d) {
+            treeData.forEach(function (n) {
+                // add children nodes
+                if (n.parent == d.id) {
+                    //check if already exists in nodes (can be a child of another node)
+                    if (!existsInNodes(n)) {
+                        tmp_children.push(n);
+                    } else {
+                        //add NEW PARENTS and OPEN FLAG to existing node
+                        addNodeInfo(n);
+                    }
+                }
             })
 
-    }
+            return tmp_children;
 
-   //** his function adds all the links to the approproate nodes **//
-   function addLinks(){
-        mylinks=[];
-        var mysource, mytarget;
-        mynodes.find(function(item, i){
+        }
 
-            mytarget=i;
-            
-            mynodes.find(function(item_, i_){ //add link from parent node
-                if(item_.id === item.parent) 
-                {
-                    mysource =i_;   
-                    mylinks.push({source: mysource,target:mytarget});
-                }                   
-            });
-                                            
-            if(typeof item.parents!=="undefined"){ //add links from the extra parents if any        
-                mynodes.find(function(item_, i_){           
-                    item.parents.forEach(function(p) {
-                        if(item_.id === p) 
-                        mysource =i_;       
-                        mylinks.push({source: mysource,target:mytarget});   
+        //check if a node object exists in mynodes
+        function existsInNodes(n) {
+            var answer = false;
+            mynodes.find(function (item, i) {
+                if (item.id == n.id)
+                    answer = true;
+            })
+
+            return answer;
+        }
+
+        //add new link to existing node (when new parent is added)
+        function addNodeInfo(n) {
+
+            mynodes.find(function (item, i) {
+                if (item.id == n.id) { //if it is already part of the graph add a flag so it stays always open
+                    item.flag = "open";
+
+                    mynodes.find(function (item2, i2) {
+                        if (item2.id == n.parent) {
+
+                            //check if parents exists
+                            if (typeof item.parents !== "undefined") {
+                                if (item.parents.indexOf(item2.id) < 0) {
+                                    parents.push(item2.id);
+                                    item.parents = item.parents.concat(parents);
+                                    parents = [];
+                                }
+                            } else {
+                                parents.push(item2.id);
+                                item.parents = parents;
+                                parents = [];
+
+                            }
+                        }
+
                     })
-                
-                });     
-            }
-            
-        });
 
-   }
+                    //add recursively the OPEN FLAG
+                    addOpenFlag(item.parent);
+                    if (item.parents) {
+                        item.parents.forEach(function (i) {
+                            addOpenFlag(i);
+                        })
+                    }
+
+                }
+
+            })
+        }
+
+        function addOpenFlag(item) {
+
+            mynodes.forEach(function (f) {
+                if (item === f.id) {
+                    f.flag = "open";
+                    addOpenFlag(f);
+                }
+            })
+
+        }
+
+        //** his function adds all the links to the approproate nodes **//
+        function addLinks() {
+            mylinks = [];
+            var mysource, mytarget;
+            mynodes.find(function (item, i) {
+
+                mytarget = i;
+
+                mynodes.find(function (item_, i_) { //add link from parent node
+                    if (item_.id === item.parent) {
+                        mysource = i_;
+                        mylinks.push({ source: mysource, target: mytarget });
+                    }
+                });
+
+                if (typeof item.parents !== "undefined") { //add links from the extra parents if any        
+                    mynodes.find(function (item_, i_) {
+                        item.parents.forEach(function (p) {
+                            if (item_.id === p)
+                                mysource = i_;
+                            mylinks.push({ source: mysource, target: mytarget });
+                        })
+
+                    });
+                }
+
+            });
+
+        }
 
 
         //Initialize with an empty workflow
-        window.initTree = function() {
-            mynodes=[],mylinks=[],children=[],tmp_children=[];
+        window.initTree = function () {
+            mynodes = [], mylinks = [], children = [], tmp_children = [];
             window.buildTree([]); // [] means empty workflow
         }
         window.initTree();
 
         //clear function
-        window.clear=function() {
-        
-            mynodes=[],mylinks=[],children=[],tmp_children=[];
-            window.treeData=[];
+        window.clear = function () {
+
+            mynodes = [], mylinks = [], children = [], tmp_children = [];
+            window.treeData = [];
             update();
-            
+
         }
-        
+
         //fit function
-        window.fit=function(){
+        window.fit = function () {
             d3.select("svg").attr("transform", "translate(0,0)");
             //d3.selectAll("svg > *").attr("transform", "translate(0,0)");
         }
-    
-    
+
+
         //expand all function
-        window.expand=function(){
-            treeData.forEach(function(f){
-                collapse(f);                
+        window.expand = function () {
+            treeData.forEach(function (f) {
+                collapse(f);
             })
-            
+
         }
-		
-		//expand all function
-        window.saveWorkflow=function(){
-            console.log("save : "+treeData);
-			console.log(treeData);
-            
+
+        //expand all function
+        window.saveWorkflow = function () {
+            console.log("save : " + treeData);
+            console.log(treeData);
+
         }
 
         function isIE() { return ((navigator.appName == 'Microsoft Internet Explorer') || ((navigator.appName == 'Netscape') && (new RegExp("Trident/.*rv:([0-9]{1,}[\.0-9]{0,})").exec(navigator.userAgent) != null))); }
 
-        
+
     } // if (true)
 
 

@@ -183,10 +183,46 @@ nav {
 
 /* Fixed action button */
 
-.fixed-action-btn {
+/* .fixed-action-btn {
     float: right;
     position: relative;
     right: 5px;
     padding-top: 0px;
     bottom: 61px;
+} */
+
+
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------------ Pushpin with Scrollspy ------------------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+.row .col {
+    float: none;
+}
+
+/* Class for when element is above threshold */
+
+.pin-top {
+  position: relative;
+}
+
+/* Class for when element is below threshold */
+
+.pin-bottom {
+  position: relative;
+}
+
+/* Class for when element is pinned */
+
+.pinned {
+  position: fixed !important;
+}
+
+#scrollspyMenu a.active {
+    font-weight: 500;
+    padding-left: 14px;
+    border-left: 2px solid #ee6e73
 }

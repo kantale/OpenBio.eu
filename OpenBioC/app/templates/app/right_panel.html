@@ -232,6 +232,37 @@
                         ng-class="{'disabled': !username}"><i class="material-icons">device_hub</i></a>
                 </div>
             </div>
+
+
+
+            <ul class="collapsible expandable faster" style="margin-top:0px;">
+                <li id="workflowRightPanelGeneral">
+                    <div class="collapsible-header">
+                        <i class="material-icons arrow">keyboard_arrow_right</i>
+                        <i class="material-icons">info</i>
+                        General
+                    </div>
+                    <div class="collapsible-body">
+                        <div class="row">
+                            <form class="col s12">
+                                <div class="input-field">
+                                    <input id="workflowsGeneralWebsite" type="text" class="validate">
+                                    <label for="workflowsGeneralWebsite">Website</label>
+                                </div>
+                                <div class="input-field">
+                                    <textarea id="workflowsGeneralDescription" class="validate materialize-textarea"></textarea>
+                                    <label for="workflowsGeneralDescription">Description</label>
+                                </div>
+                                <div class="input-field chips left-align"></div>
+                            </form>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+
+
+
+
             <!-- --------------------------------------------------------------------------------------- -->
             <!-- ------------------------------------ Graph -------------------------------------------- -->
             <!-- --------------------------------------------------------------------------------------- -->
@@ -249,7 +280,7 @@
             <!-- ------------------------------- Edit Workflow ----------------------------------------- -->
             <!-- --------------------------------------------------------------------------------------- -->
             <ul id="editWorkflowAccordion" class="collapsible expandable faster" style="margin-top:0px;">
-                <li>
+                <li id="workflowRightPanelStep">
                     <!-- class="disabled" -->
                     <div class="collapsible-header">
                         <i class="material-icons arrow">keyboard_arrow_right</i>
@@ -278,8 +309,9 @@
                                 </div>
                                 -->
                                 <div class="row col s12">
-                                    <div class="col s3 offset-s9">
+                                    <div class="right-align">
                                         <a class="waves-effect waves-light btn" style="margin:2px">Cancel</a>
+                                        <a class="waves-effect waves-light btn" style="margin:2px">Delete</a>
                                         <a class="waves-effect waves-light btn" style="margin:2px"
                                             ng-click="workflow_step_add()">Add</a>
                                     </div>

@@ -1,0 +1,334 @@
+<div class="row container" id="content">
+    <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+    <!-- -------------------------------------------------------------- ScrollSpy ------------------------------------------------------------------------ -->
+    <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+    <div>
+        <div id="scrollspyMenu" class="col s12 m12 l2 hide-on-med-and-down pushpin pushpin-demo-nav"
+            style="position:fixed; padding-top: 100px">
+            <ul class="section table-of-contents">
+                <li><a class="lien_projet" href="#profileCard">Profile</a></li>
+                <li><a class="lien_projet" href="#inboxCard">Inbox</a></li>
+                <li><a class="lien_projet" href="#notificationsCard">Notifications</a></li>
+                <li><a class="lien_projet" href="#settingsCard">Settings</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="col s12 m12 l10">
+        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+        <!-- ------------------------------------------------------- Profile --------------------------------------------------------------------------------- -->
+        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+        <div class="faster panel" id="profilePanel">
+            <div class="row">
+                <!-- --------------------------------------------------------------------------------------- -->
+                <!-- ------------------------------------ Profile Card ------------------------------------- -->
+                <!-- --------------------------------------------------------------------------------------- -->
+                <div class="col s12">
+                    <section id="profileCard" class="scrollspy section_projet">
+                        <div class="card">
+                            <div class="card-content">
+                                <blockquote><span class="card-title">Profile</span></blockquote>
+                                <div class="row">
+                                    <form class="col s12">
+                                        <div class="row valign-wrapper">
+                                            <div class="col s3">
+                                                <img src="img/img_avatar.png" alt=""
+                                                    data-target='editProfileImgDropdown'
+                                                    class="responsive-img dropdown-trigger circle">
+                                                <ul id='editProfileImgDropdown' class='dropdown-content'>
+                                                    <li><a href="#!">Edit</a></li>
+                                                    <li><a href="#!">Add</a></li>
+                                                    <li><a href="#!">Remove</a></li>
+                                                </ul>
+                                            </div>
+                                            <div class="col s9">
+                                                <div class="input-field col s12">
+                                                    <input id="profileFirstname" type="text" class="validate">
+                                                    <label for="profileFirstname">Firstname</label>
+                                                </div>
+                                                <div class="input-field col s12">
+                                                    <input id="profileLastname" type="text" class="validate">
+                                                    <label for="profileLastname">Lastname</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="input-field col s12">
+                                            <input id="profileUsername" type="text" class="validate"
+                                                value="username1234" disabled>
+                                            <label for="profileUsername">Username</label>
+                                        </div>
+                                        <div class="input-field col s12">
+                                            <input id="profileEmail" type="email" class="validate" value="mail@mail.com"
+                                                disabled>
+                                            <label for="profileEmail">Email</label>
+                                        </div>
+                                        <div class="input-field col s12">
+                                            <input id="profileWebsite" type="text" class="validate"
+                                                value="www.blah.com">
+                                            <label for="profileWebsite">Website</label>
+                                        </div>
+                                        <div class="input-field col s12">
+                                            <input id="profileAffiliation" type="text" class="validate">
+                                            <label for="profileAffiliation">Affiliation</label>
+                                        </div>
+                                        <div class="input-field col s12">
+                                            <textarea id="profilePublicInfo" class="materialize-textarea"></textarea>
+                                            <label for="profilePublicInfo">Public Information</label>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="row">
+                                    <blockquote><span class="card-title">Change Password</span></blockquote>
+                                    <form class="col s12">
+                                        <div class="input-field col s12">
+                                            <input id="profileOldPassword" type="password" class="validate">
+                                            <label for="profileOldPassword">Old Password</label>
+                                        </div>
+                                        <div class="input-field col s12">
+                                            <input id="profileNewPassword" type="password" class="validate">
+                                            <label for="profileNewPassword">New Password</label>
+                                        </div>
+                                        <div class="input-field col s12">
+                                            <input id="profileConfirmPassword" type="password" class="validate">
+                                            <label for="profileConfirmPassword">Confirm Password</label>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="card-action right-align">
+                                <button class="btn waves-effect waves-light" type="submit" name="action">Update</button>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <!-- --------------------------------------------------------------------------------------- -->
+                <!-- ------------------------------------- Temp Card --------------------------------------- -->
+                <!-- --------------------------------------------------------------------------------------- -->
+                <div class="col s12">
+                    <section id="inboxCard" class="scrollspy section_projet">
+                        <div class="card">
+                            <div class="card-content">
+                                <blockquote><span class="card-title">Indox</span></blockquote>
+                                <div class="row">
+                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                                    incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+                                    nostrud
+                                    exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem
+                                    ipsum
+                                    dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+                                    labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                                    exercitation
+                                    ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit
+                                    amet,
+                                    consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
+                                    dolore
+                                    magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+                                    nisi ut aliquip ex ea commodo consequat.
+                                </div>
+                            </div>
+                            <div class="card-action right-align">
+                                <button class="btn waves-effect waves-light" type="submit" name="action">Update</button>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <!-- --------------------------------------------------------------------------------------- -->
+                <!-- -------------------------------- Notifications Card ----------------------------------- -->
+                <!-- --------------------------------------------------------------------------------------- -->
+                <div class="col s12">
+                    <section id="notificationsCard" class="scrollspy section_projet">
+                        <div class="card">
+                            <div class="card-content">
+                                <blockquote><span class="card-title">Notifications</span></blockquote>
+                                <div class="row">
+                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                                    incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+                                    nostrud
+                                    exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem
+                                    ipsum
+                                    dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+                                    labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                                    exercitation
+                                    ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit
+                                    amet,
+                                    consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
+                                    dolore
+                                    magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+                                    nisi ut aliquip ex ea commodo consequat.
+                                </div>
+                            </div>
+                            <div class="card-action right-align">
+                                <button class="btn waves-effect waves-light" type="submit" name="action">Update</button>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <!-- --------------------------------------------------------------------------------------- -->
+                <!-- ------------------------------------ Settings Card ------------------------------------ -->
+                <!-- --------------------------------------------------------------------------------------- -->
+                <div class="col s12">
+                    <section id="settingsCard" class="scrollspy section_projet">
+                        <div class="card">
+                            <div class="card-content">
+                                <blockquote><span class="card-title">Settings</span></blockquote>
+                                <div class="row">
+                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                                    incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+                                    nostrud
+                                    exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem
+                                    ipsum
+                                    dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+                                    labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                                    exercitation
+                                    ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit
+                                    amet,
+                                    consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
+                                    dolore
+                                    magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+                                    nisi ut aliquip ex ea commodo consequat.
+                                </div>
+                            </div>
+                            <div class="card-action right-align">
+                                <button class="btn waves-effect waves-light" type="submit" name="action">Update</button>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+        <!-- -------------------------------------------------------- Temp ----------------------------------------------------------------------------------- -->
+        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+        <div class="container faster">
+            <div class="col s12">
+                <div class="card">
+                    <div class="card-content">
+                        <blockquote><span class="card-title">Settings</span></blockquote>
+                        <div class="row">
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                            incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+                            nostrud
+                            exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem
+                            ipsum
+                            dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+                            labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                            exercitation
+                            ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit
+                            amet,
+                            consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
+                            dolore
+                            magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+                            nisi ut aliquip ex ea commodo consequat.
+                        </div>
+                    </div>
+                    <div class="card-action right-align">
+                        <button class="btn waves-effect waves-light" type="submit" name="action">Update</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col s12">
+                <div class="card">
+                    <div class="card-content">
+                        <blockquote><span class="card-title">Settings</span></blockquote>
+                        <div class="row">
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                            incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+                            nostrud
+                            exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem
+                            ipsum
+                            dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+                            labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                            exercitation
+                            ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit
+                            amet,
+                            consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
+                            dolore
+                            magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+                            nisi ut aliquip ex ea commodo consequat.
+                        </div>
+                    </div>
+                    <div class="card-action right-align">
+                        <button class="btn waves-effect waves-light" type="submit" name="action">Update</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col s12">
+                <div class="card">
+                    <div class="card-content">
+                        <blockquote><span class="card-title">Settings</span></blockquote>
+                        <div class="row">
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                            incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+                            nostrud
+                            exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem
+                            ipsum
+                            dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+                            labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                            exercitation
+                            ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit
+                            amet,
+                            consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
+                            dolore
+                            magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+                            nisi ut aliquip ex ea commodo consequat.
+                        </div>
+                    </div>
+                    <div class="card-action right-align">
+                        <button class="btn waves-effect waves-light" type="submit" name="action">Update</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col s12">
+                <div class="card">
+                    <div class="card-content">
+                        <blockquote><span class="card-title">Settings</span></blockquote>
+                        <div class="row">
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                            incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+                            nostrud
+                            exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem
+                            ipsum
+                            dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+                            labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                            exercitation
+                            ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit
+                            amet,
+                            consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
+                            dolore
+                            magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+                            nisi ut aliquip ex ea commodo consequat.
+                        </div>
+                    </div>
+                    <div class="card-action right-align">
+                        <button class="btn waves-effect waves-light" type="submit" name="action">Update</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col s12">
+                <div class="card">
+                    <div class="card-content">
+                        <blockquote><span class="card-title">Settings</span></blockquote>
+                        <div class="row">
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                            incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+                            nostrud
+                            exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem
+                            ipsum
+                            dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+                            labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                            exercitation
+                            ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit
+                            amet,
+                            consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
+                            dolore
+                            magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+                            nisi ut aliquip ex ea commodo consequat.
+                        </div>
+                    </div>
+                    <div class="card-action right-align">
+                        <button class="btn waves-effect waves-light" type="submit" name="action">Update</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
