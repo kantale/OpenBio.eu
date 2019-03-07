@@ -146,6 +146,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         });
     };
 
+    /*
+    * Navbar --> Home --> clicked 
+    */
+    $scope.navbar_home_clicked = function() {
+        $scope.profile_container_show = false;
+        $scope.main_container_show = true;
+    };
 
     $scope.navbar_profile_clicked = function() {
         $scope.main_container_show = false;
