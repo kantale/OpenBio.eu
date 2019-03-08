@@ -820,268 +820,341 @@ window.onload = function () {
 
     //Cytoscape Galateia's code
     if (true) {
-        /**
-        global vars intiialization
-        **/
-        //var cy;
 
-        openIds = [];
+/**
+global vars intiialization
+**/         
+//var cy;
 
-        /**
-        parse data from openbioc to meet the cytoscape.js requirements
-        **/
-        function parseWorkflow(incomingData) {
-            var myNodes = [], myEdges = [];
+openIds=[];
 
-            /*initialize my data object*/
-            incomingData.forEach(function (d) {
+/**
+parse data from openbioc to meet the cytoscape.js requirements
+**/
+function parseWorkflow(incomingData){
+    var myNodes =[], myEdges=[];
 
-
-                //TOOLS 
-                if (d.type === "tool") {
-
-                    //remove special characters
-                    d.id = d.id.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
-                    d.parent = d.parent.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
-                    if (d.parent != "#") {
-                        var myNode = { data: { id: d.id, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'no' } };
-                        myNodes.push(myNode);
-                        var myEdge = { data: { 'id': d.parent + d.id, 'weight': 1, 'source': d.parent, 'target': d.id } };
-                        myEdges.push(myEdge);
-                    } else {
-                        var myNode = { data: { id: d.id, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'yes' } };
-                        myNodes.push(myNode);
-                    }
-                }
-
-
-                //STEPS
-                if (d.type === "step") {
-                    var myNode = { data: { id: d.name, label: d.name, type: d.type, bash: d.bash } };
-                    myNodes.push(myNode);
-                    //create edges to tools and/or steps
-                    if (typeof d.tools !== "undefined") {
-                        //replace special characters
-
-                        d.tools.forEach(function (element) {
-                            element = element.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
-                            var myEdge = { data: { 'id': d.name + element, 'weight': 1, 'source': d.name, 'target': element } };
-                            myEdges.push(myEdge);
-
-                        });
-                    }
-
-                    if (typeof d.steps !== "undefined") {
-                        d.steps.forEach(function (element) {
-                            var myEdge = { data: { 'id': d.name + element, 'weight': 1, 'source': d.name, 'target': element } };
-                            myEdges.push(myEdge);
-
-                        });
-                    }
-                }
-
-            });
-
-            return {
-                nodes: myNodes,
-                edges: myEdges
-            };
-
-
-
-        }
-
-        function initializeTree() {
-
-
-            cy = cytoscape({
-                container: document.getElementById('cywf'), // container to render in
-                elements: [],
-
-                //elements: [ // list of graph elements to start with
-                //      { // node a
-                //        data: { id: 'a' }
-                //      },
-                //      { // node b
-                //        data: { id: 'b' }
-                //      },
-                //      { // edge ab
-                //        data: { id: 'ab', source: 'a', target: 'b' }
-                //      }
-                //],
-
-                style: [ // the stylesheet for the graph
-                    {
-                        selector: 'node',
-                        "style": {
-                            "shape": "round-rectangle",
-                            //"label": "data(id)",
-                            "label": "data(label)",
-                            //"height": 15,
-                            //"width": 15
-                        }
-                    },
-                    {
-                        selectors: 'node[type="step"]',
-                        "style": {
-                            'background-color': 'red'
-                        }
-                    },
-                    {
-                        selector: 'edge',
-                        "style": {
-                            'curve-style': 'bezier',
-                            'target-arrow-shape': 'triangle',
-                            'width': 2,
-                            'line-color': '#ddd',
-                            'target-arrow-color': '#ddd'
-                        }
-                    }
-                ],
-
-                zoom: 1,
-                pan: { x: 0, y: 0 },
-
-                layout: {
-                    name: 'breadthfirst',
-                    directed: true,
-                    padding: 2
-                }
-
-
-
-            });
-
-            //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.
-            document.querySelector('canvas[data-id="layer2-node"]').style.position = null;
-
-
-        }
-
-
-        initializeTree();
-
-
-
-
-        //add new data to the graph
-        //activate the collapse-expand option
-        window.buildTree = function (myworkflow) {
-            //function buildTree(myworkflow) {
-
-            // get existing data if any
-            var currentElements = cy.json().elements;
-
-
-
-
-            // parse incoming data and transform to cytoscape format
-            var treeData = parseWorkflow(myworkflow);
-
-            //concat all data
-            if (typeof currentElements.nodes !== 'undefined') {
-
-
-                //TODO :check if new node exists in current data 
-                /*
-                treeData.nodes.forEach(function(element) {
+    /*initialize my data object*/
+    incomingData.forEach(function(d) {
         
-            	
-                  var bfs = cy.elements().bfs({
-                  roots: '#',
-                  visit: function(v, e, u, i, depth){ 	  
-                      if(element.data.id===v.id()){
-                          openIds.push(v.id());  			
-        	
-                        }
-                    }
+        
+        //TOOLS 
+        if(d.type==="tool"){
+            
+            //remove special characters
+            d.id = d.id.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
+            d.parent = d.parent.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
+                if(d.parent != "#"){
+                    var myNode = { data: { id:  d.id, label: d.text, name: d.data.name, version:d.data.version, edit:d.data.edit, type:d.data.type, root: 'no' }};
+                    myNodes.push(myNode);
+                    var myEdge =  { data: { 'id': d.parent+d.id, 'weight': 1, 'source': d.parent, 'target': d.id } };
+                    myEdges.push(myEdge);
+                }else{
+                    var myNode = { data: { id:  d.id, label: d.text, name: d.data.name, version:d.data.version, edit:d.data.edit, type:d.data.type, root: 'yes' }};
+                    myNodes.push(myNode);   
+                }
+        }
+        
+        
+        //STEPS
+        if(d.type==="step"){
+            var myNode = { data: { id:  d.name, label: d.name, type:d.type, bash: d.bash }};
+            myNodes.push(myNode);
+            //create edges to tools and/or steps
+            if(typeof d.tools!=="undefined"){
+                //replace special characters
+                
+                d.tools.forEach(function(element) {
+                    element = element.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
+                    var myEdge =  { data: { 'id': d.name+element, 'weight': 1, 'source': d.name, 'target': element } };
+                    myEdges.push(myEdge);
+                    
                 });
-            	
+            }
+            
+            if(typeof d.steps!=="undefined"){
+                d.steps.forEach(function(element) {
+                    var myEdge =  { data: { 'id': d.name+element, 'weight': 1, 'source': d.name, 'target': element } };
+                    myEdges.push(myEdge);
+                    
+                });
+                }
+        }
+        
+        //WORKFLOWS
+        if(d.type==="workflow"){
+            
+        
+        
+        
+        }
+        
+    });
+    
+    return {
+      nodes: myNodes,
+      edges: myEdges
+    };  
+    
+
+    
+}
+
+function initializeTree(){
+
+
+    cy = cytoscape({
+          container: document.getElementById('cywf'), // container to render in
+          elements: [] ,
+
+          //elements: [ // list of graph elements to start with
+          //      { // node a
+          //        data: { id: 'a' }
+          //      },
+          //      { // node b
+          //        data: { id: 'b' }
+          //      },
+          //      { // edge ab
+          //        data: { id: 'ab', source: 'a', target: 'b' }
+          //      }
+          //],
+
+          style: [ // the stylesheet for the graph
+            {
+              selector: 'node',
+                "style": {
+                "shape": "round-rectangle",
+                //"label": "data(id)",
+                "label": "data(label)",
+                //"height": 5,
+                //"width": 5
+              }
+            },
+            {selector: 'node[type="step"]',
+               "style": {
+                   'shape': 'ellipse',
+                   'background-color': 'red',
+                   //"height": 5,
+                   //"width": 5
+               }
+            },
+            {
+              selector: 'edge',
+                "style": {
+                'curve-style': 'bezier',
+                'target-arrow-shape': 'triangle',
+                'width': 2,
+                'line-color': '#ddd',
+                'target-arrow-color': '#ddd'
+              }
+            }
+          ],
+
+        zoom: 1,
+        pan: { x: 0, y: 0 },    
+
+          layout: {
+            name: 'breadthfirst',
+            directed: true,
+            padding: 2
+          }
+          
+
+
+        });
+        
+        /* add menu on node right click*/
+        
+            cy.cxtmenu({
+                selector: 'node',
+                    commands: [
+                        {
+                            content: 'Test',
+                            select: function(ele){
+                            console.log( "TEST");
+                            }
+                        },
+                        {
+                            content: 'Delete',
+                            select: function(ele){
+                            var j = cy.$('#'+ele.id());
+                            cy.remove(j);   
+                            
+                            }
+                        }
+                    ]
+                        
             });
-            */
+        
+
+        //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.
+        document.querySelector('canvas[data-id="layer2-node"]').style.position = null;
+
+
+}
+
+
+initializeTree();
 
 
 
-                var allNodes = [], allEdges = [];
-                allNodes = currentElements.nodes.concat(treeData.nodes);
-                if (typeof currentElements.edges !== 'undefined' && typeof treeData.edges !== 'undefined') {
-                    allEdges = currentElements.edges.concat(treeData.edges);
+
+//add new data to the graph
+//activate the collapse-expand option
+window.buildTree = function(myworkflow) {
+//function buildTree(myworkflow) {
+
+    // get existing data if any
+    var currentElements = cy.json().elements;
+    
+    
+    
+    
+    // parse incoming data and transform to cytoscape format
+    var treeData=parseWorkflow(myworkflow);
+
+    //concat all data
+    if(typeof  currentElements.nodes!== 'undefined'){
+        
+
+        //TODO :check if new node exists in current data 
+        /*
+        treeData.nodes.forEach(function(element) {
+
+        
+          var bfs = cy.elements().bfs({
+          roots: '#',
+          visit: function(v, e, u, i, depth){     
+              if(element.data.id===v.id()){
+                  openIds.push(v.id());             
+    
                 }
-                else {
-                    if (typeof currentElements.edges !== 'undefined')
+            }
+        });
+        
+    });
+    */
+    
+        
+
+        var allNodes=[], allEdges=[];
+        allNodes = currentElements.nodes.concat(treeData.nodes);
+            if(typeof  currentElements.edges!== 'undefined' && typeof  treeData.edges!== 'undefined' ) {
+                allEdges = currentElements.edges.concat(treeData.edges);
+            }
+                else{
+                    if(typeof  currentElements.edges!== 'undefined')
                         allEdges = currentElements.edges;
-                    if (typeof treeData.edges !== 'undefined')
+                    if(typeof  treeData.edges!== 'undefined')
                         allEdges = treeData.edges;
-                }
+            }
                 treeData = {
-                    nodes: allNodes,
-                    edges: allEdges
+                  nodes: allNodes,
+                  edges: allEdges
                 };
 
-            }
+        }
 
 
-            // this is needed because cy.add() causes multiple instances of layout
-            initializeTree();
+    // this is needed because cy.add() causes multiple instances of layout
+    initializeTree();
 
-            cy.json({ elements: treeData });   // Add new data
-            cy.ready(function () {           // Wait for nodes to be added	
-                cy.layout({                   // Call layout
-                    name: 'breadthfirst',
-                    directed: true,
-                    padding: 2
-                }).run();
+        cy.json({elements: treeData});   // Add new data
+        cy.ready(function () {           // Wait for nodes to be added  
+            cy.layout({                   // Call layout
+                name: 'breadthfirst',
+                directed: true,
+                padding: 2
+            }).run();
+            
+        }); 
+        
+        
+        // close all successors of root node
+        cy.json().elements.nodes.forEach(function(node) {
+            if(typeof  node.data.root!== 'undefined' && node.data.root==='yes')
+                cy.$("#" + node.data.id).successors().targets().style("display", "none");   
+        });
+                
+        // collapse - expand nodes
+        cy.on('click', 'node', function(event){
+              //connectedEdges: next level
+              //successors: next levels recursively
 
-            });
-
-
-            // close all successors of root node
-            cy.json().elements.nodes.forEach(function (node) {
-                if (typeof node.data.root !== 'undefined' && node.data.root === 'yes')
-                    cy.$("#" + node.data.id).successors().targets().style("display", "none");
-            });
-
-            // collapse - expand nodes
-            cy.on('click', 'node', function (event) {
-                //connectedEdges: next level
-                //successors: next levels recursively
-
-                if (this['_private'].data.type !== "step") { //steps should never collapse
-                    if (this.successors().targets().style("display") == "none") {
+              if(this['_private'].data.type !== "step"){ //steps should never collapse
+                  if (this.successors().targets().style("display") == "none"){
                         this.connectedEdges().targets().style("display", "element");
                     } else {
                         //hide the children nodes and edges recursively
-                        this.successors().targets().forEach(function (element) {
-                            if (typeof openIds === 'undefined' || !openIds.includes(element['_private'].data.id))
+                        this.successors().targets().forEach(function(element) {
+                            if(typeof  openIds === 'undefined' || !openIds.includes(element['_private'].data.id))
                                 element.style("display", "none");
-                        });
-                    }
-                }
+                        });                 
+                  }  
+              }               
+                  
+        });
+        
+        // show tooltip
+        
+           cy.on('mouseover', 'node', function (event) {
 
-            });
+            nodeId = this._private.data.id
+            myNode=cy.getElementById(nodeId);
+    
+        
+                //tippy
 
-        }
+                var makeTippy = function(node, text){
+                    return tippy( node.popperRef(), {
+                        content: function(){
+                            var div = document.createElement('div');
+                            div.innerHTML = text;
+                            return div;
+                        },
+                        trigger: 'manual',
+                        arrow: true,
+                        placement: 'right',
+                        hideOnClick: false,
+                        multiple: true,
+                        sticky: true
+                    });
+                };
+                
+                myTippy = makeTippy(myNode, nodeId);
+                myTippy.show();
+        
+                    
+          });
+          
+          // hide tooltip
+          cy.on('mouseout', 'node', function (event) {
+                myTippy.hide();
+          });
+             
+        
+
+        
+        
+}
 
 
-        window.store = function () {
-            json = cy.json();
-        }
+window.store=function(){
+ json = cy.json();
+}
 
-        window.clear = function () {
-            //cy.destroy();
-            cy.remove('edge, node');
-            openIds = [];
-        }
-
-
-        window.fit = function () {
-            cy.reset();
-            cy.center();
-
-        }
+window.clear=function(){
+    //cy.destroy();
+    cy.remove('edge, node');
+    openIds=[];
+}
 
 
+window.fit=function(){
+    cy.reset();
+    cy.center();
 
+}
     }
 
     //WebCola Galateia's code
