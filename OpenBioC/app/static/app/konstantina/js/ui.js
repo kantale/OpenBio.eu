@@ -978,6 +978,14 @@ function parseWorkflow(incomingData){
 				}
 		}
 		
+		//WORKFLOWS
+		if(d.type==="workflow"){
+			
+		
+		
+		
+		}
+		
 	});
 	
 	return {
@@ -1015,13 +1023,16 @@ function initializeTree(){
                 "shape": "round-rectangle",
                 //"label": "data(id)",
                 "label": "data(label)",
-                //"height": 15,
-                //"width": 15
+                //"height": 5,
+                //"width": 5
               }
             },
-			{selectors: 'node[type="step"]',
+			{selector: 'node[type="step"]',
 			   "style": {
-				   'background-color': 'red'
+				   'shape': 'ellipse',
+				   'background-color': 'red',
+				   //"height": 5,
+				   //"width": 5
 			   }
 			},
             {
@@ -1048,6 +1059,30 @@ function initializeTree(){
 
 
         });
+		
+		/* add menu on node right click*/
+		
+			cy.cxtmenu({
+				selector: 'node',
+					commands: [
+						{
+							content: 'Test',
+							select: function(ele){
+							console.log( "TEST");
+							}
+						},
+						{
+							content: 'Delete',
+							select: function(ele){
+							var j = cy.$('#'+ele.id());
+							cy.remove(j);	
+							
+							}
+						}
+					]
+						
+			});
+		
 
         //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.
         document.querySelector('canvas[data-id="layer2-node"]').style.position = null;
@@ -1156,6 +1191,47 @@ window.buildTree = function(myworkflow) {
 			  }				  
 				  
     	});
+		
+		// show tooltip
+		
+		   cy.on('mouseover', 'node', function (event) {
+
+			nodeId = this._private.data.id
+			myNode=cy.getElementById(nodeId);
+	
+		
+				//tippy
+
+				var makeTippy = function(node, text){
+					return tippy( node.popperRef(), {
+						content: function(){
+							var div = document.createElement('div');
+							div.innerHTML = text;
+							return div;
+						},
+						trigger: 'manual',
+						arrow: true,
+						placement: 'right',
+						hideOnClick: false,
+						multiple: true,
+						sticky: true
+					});
+				};
+				
+				myTippy = makeTippy(myNode, nodeId);
+				myTippy.show();
+		
+					
+		  });
+		  
+		  // hide tooltip
+		  cy.on('mouseout', 'node', function (event) {
+				myTippy.hide();
+		  });
+			 
+		
+
+		
 		
 }
 
