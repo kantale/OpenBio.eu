@@ -94,4 +94,25 @@ wget https://daneden.github.io/animate.css/
  wget https://github.com/cytoscape/cytoscape.js/archive/v3.4.0.tar.gz 
 ```
 
+### popper 1.14.7
+```
+wget -O "popper.min.js" https://unpkg.com/popper.js@1.14.7/dist/umd/popper.min.js
+```
+
+### cytoscape popper 1.0.4
+```
+wget https://github.com/cytoscape/cytoscape.js-popper/archive/v1.0.4.tar.gz 
+```
+
+### Tippy 4.0.1
+```
+wget -O "tippy.min.js" https://unpkg.com/tippy.js@4.0.1/umd/index.all.min.js
+wget -O "tippy.css" https://unpkg.com/tippy.js@4.0.1/index.css
+```
+
+### cytoscape js cxt menu
+```
+wget https://github.com/cytoscape/cytoscape.js-cxtmenu/archive/v3.0.2.tar.gz
+```
+
 
