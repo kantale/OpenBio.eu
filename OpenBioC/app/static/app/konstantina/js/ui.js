@@ -845,12 +845,12 @@ function parseWorkflow(incomingData){
             d.id = d.id.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
             d.parent = d.parent.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
                 if(d.parent != "#"){
-                    var myNode = { data: { id:  d.id, label: d.text, name: d.data.name, version:d.data.version, edit:d.data.edit, type:d.data.type, root: 'no' }};
+                    var myNode = { data: { id:  d.id, label: d.text, name: d.data.name, version:d.data.version, edit:d.data.edit, type:d.data.type, root: 'no', variables:d.variables }};
                     myNodes.push(myNode);
                     var myEdge =  { data: { 'id': d.parent+d.id, 'weight': 1, 'source': d.parent, 'target': d.id } };
                     myEdges.push(myEdge);
                 }else{
-                    var myNode = { data: { id:  d.id, label: d.text, name: d.data.name, version:d.data.version, edit:d.data.edit, type:d.data.type, root: 'yes' }};
+                    var myNode = { data: { id:  d.id, label: d.text, name: d.data.name, version:d.data.version, edit:d.data.edit, type:d.data.type, root: 'yes', variables:d.variables }};
                     myNodes.push(myNode);   
                 }
         }
