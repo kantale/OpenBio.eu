@@ -803,9 +803,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             },
             function(data) {
                 $scope.tools_info_error_message = data['error_message'];
+                generateToast($scope.tools_info_error_message, 'red lighten-2 black-text', 'stay on');
+
             },
             function(statusText) {
                 $scope.tools_info_error_message = statusText;
+                generateToast($scope.tools_info_error_message, 'red lighten-2 black-text', 'stay on');
             }
         );
     };
