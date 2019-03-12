@@ -992,9 +992,35 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                     }
                 }
                 else if (what_to_do == 2) { //DRAG FROM SEARCH TREE TO WORKFLOW DIV
-                    window.buildTree(data['dependencies_jstree']);
-                    console.log('UPDATE THE GRAPH WITH:');
+                    console.log('UPDATE THE GRAPH WITH: dependencies_jstree');
                     console.log(data['dependencies_jstree']);
+                    console.log('variables_jstree:');
+                    console.log(data['variables_jstree']);
+
+
+                    //Add the variable information to the tool nodes. 
+                    //By doing that we make sure that tool nodes have variable information
+                    //This is by far not optimal neither nice!
+                    data['variables_jstree'].forEach(function(variables_jstree_item) {
+                        if (variables_jstree_item.data.type == 'variable') {
+                            //We need to find the tool object of this variable
+                            for (var i=0; i<data['dependencies_jstree'].length; i++) {
+                                if (data['dependencies_jstree'][i].id == variables_jstree_item.parent) {
+                                    if (typeof data['dependencies_jstree'][i].variables !== 'undefined') {
+                                        data['dependencies_jstree'][i].variables.push(variables_jstree_item.data);
+                                    }
+                                    else {
+                                        data['dependencies_jstree'][i].variables = [variables_jstree_item.data];
+                                    }
+
+                                }
+                            }
+                        }
+                    });
+
+                    window.buildTree(data['dependencies_jstree']);
+
+
                 }
             },
             function(data) {
