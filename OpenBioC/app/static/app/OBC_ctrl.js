@@ -1017,6 +1017,14 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                             }
                         }
                     });
+                    //Make sure that all dependencies_jstree nodes have a variables field
+                    for (var i=0; i<data['dependencies_jstree'].length; i++) {
+                        if (typeof data['dependencies_jstree'][i].variables !== 'undefined') {
+                        }
+                        else {
+                            data['dependencies_jstree'][i].variables = [];
+                        }
+                    }
 
                     window.buildTree(data['dependencies_jstree']);
 
@@ -1343,9 +1351,72 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
+    * When a new tool is added (or removed from) to the workflow, we need to know what variables are available
+    * We use this info to update the tab completion to the step bash editor ace.  
+    */ 
+    $scope.workflow_update_tab_completion_info_to_step = function() {
+
+        // Remove all tab completion
+        // https://stackoverflow.com/questions/28920998/custom-autocompleter-and-periods
+        lang.setCompleters();
+
+        var completion_info = [];
+
+        cy.$('node').forEach(function(node) {
+            var this_data = node.data();
+            if (this_data.type=='tool') {
+                this_data.variables.forEach(function(variable) {
+                    completion_info.push({
+                        caption: 'tool.' + this_data.name + '.' + variable.name,
+                        value: '$(' + this_data.name + '_' + variable.value + ')',
+                        meta: variable.description
+                    });
+                });
+            }
+        });
+
+        //Create a new tab completion  object
+        var compl = {
+          identifierRegexps: [/[a-zA-Z_0-9\.\$\-\u00A2-\uFFFF]/],
+          getCompletions: function (editor, session, pos, prefix, callback) {
+            //alert(prefix);
+
+            callback(null, 
+//                [
+//                    {
+//                        caption: 'tool.mitsos',
+//                        value: '$(tool_mitsos)',
+//                        meta: 'TOOL'
+//                    },
+//                    {
+//                        caption: 'KLM',
+//                        value: 'NOP',
+//                        meta: 'STEP'
+//                    }
+//                ]
+
+            completion_info
+
+            );
+            //return;
+          }
+        }
+
+        //Load new completion info
+        lang.addCompleter(compl);
+
+
+
+    };
+
+    /*
     * Workflow --> Info --> Button: Add Step --> Clicked 
     */
     $scope.workflow_info_add_step_clicked = function() {
+
+        //Update tab completion info to step ace editor
+        $scope.workflow_update_tab_completion_info_to_step();
+
         //Open accordion
         window.openEditWorkflowBtn_click();
 
