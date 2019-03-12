@@ -26,10 +26,17 @@ var compl = {
 
     callback(null, [
     {
-    	 caption: 'tool.mitsos',
-    	 value: '$(tool_mitsos)',
+    	 caption: 'tool.mitsos.var1',
+    	 value: '$(tool_mitsos_var1)',
     	 meta: 'TOOL'
     },
+    {
+         caption: 'tool.mitsos.var2',
+         value: '$(tool_mitsos_var2)',
+         meta: 'TOOL'
+    },
+
+
     {
     	 caption: 'KLM',
     	 value: 'NOP',
