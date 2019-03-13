@@ -846,8 +846,11 @@ function parseWorkflow(incomingData){
             //remove special characters
 			
 			//.replace(/\//g,'__');
-		    d.id = d.id.replace(/\//g,'__').replace(/\"|,|\[|\]/g, '');
-			d.parent = d.parent.replace(/\//g,'__').replace(/\"|,|\[|\]/g, '');
+		    console.log("ID");
+			console.log(d.id);
+			d.id = d.id.replace(/\//g,'__').replace(/\"|,|\[|\]| /g, '');
+			d.parent = d.parent.replace(/\//g,'__').replace(/\"|,|\[|\]| /g, '');
+			console.log(d.id);
 			
             //d.id = d.id.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
             //d.parent = d.parent.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
