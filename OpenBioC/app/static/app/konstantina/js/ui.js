@@ -333,7 +333,8 @@ window.onload = function () {
     // --------------------------------------------------------------------- Splitter Bar -------------------------------------------------------------------------------------------
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     var splitterWidth = '5px';
-    var splitterImg = '/static/app/images/konstantina/dehaze.png';
+    var splitterWidthEdges = '15px';
+    // var splitterImg = '/static/app/images/konstantina/dehaze.png';
     var minPanelWidth = 320;
     var isDragging = false;
     var mousedown = false;
@@ -362,14 +363,6 @@ window.onload = function () {
 
         var newDiv = document.createElement('div');
         $(newDiv).attr('id', 'splitterBar');
-
-        var img = document.createElement('img');
-        img.src = splitterImg;
-        img.style.paddingTop = '10px';
-        $(img).attr('draggable', 'false');
-        $(img).attr('id', 'splitterImg');
-
-        newDiv.append(img);
 
         splitterBar = $(newDiv);
         splitterBar.css('background-color', '#cfd8dc');
@@ -423,7 +416,7 @@ window.onload = function () {
             var rightWidth = screenWidth - (eventPageX + leftOfLeft + splitterBar.width() / 2);
 
             // Show left panel
-            if (leftWidth <= parseInt(splitterWidth, 10)) {
+            if (leftWidth <= parseInt(splitterWidthEdges, 10)) {
                 if (dragEnabled) {
                     leftSide.width(minPanelWidth);
                 }
@@ -432,7 +425,7 @@ window.onload = function () {
                 }
             }
             // Show right panel
-            else if (rightWidth <= parseInt(splitterWidth, 10)) {
+            else if (rightWidth <= parseInt(splitterWidthEdges, 10)) {
                 if (dragEnabled) {
                     leftSide.width(screenWidth - minPanelWidth - parseInt(splitterWidth, 10));
                 }
@@ -449,6 +442,7 @@ window.onload = function () {
                 leftSide.width(screenWidth);
             }
             setRowAlignment();
+            setSlitterbarWidth();
         }
 
         return false;
@@ -499,6 +493,7 @@ window.onload = function () {
                     if (eventPageX <= minPanelWidth - ((2 / 3) * minPanelWidth)) {
                         leftSide.width(0);
                         setRowAlignment();
+                        setSlitterbarWidth();
                     }
                     if (!mousedown) {
                         isDragging = false;
@@ -510,6 +505,7 @@ window.onload = function () {
                     if (eventPageX >= screenWidth - (minPanelWidth - ((2 / 3) * minPanelWidth))) {
                         leftSide.width(screenWidth);
                         setRowAlignment();
+                        setSlitterbarWidth();
                     }
                     if (!mousedown) {
                         isDragging = false;
@@ -520,6 +516,7 @@ window.onload = function () {
                 else {
                     leftSide.width(eventPageX - leftOfLeft - splitterBar.width() / 2);
                     setRowAlignment();
+                    setSlitterbarWidth();
                     return;
                 }
             }
@@ -539,7 +536,7 @@ window.onload = function () {
 
         if (screenWidth < ((minPanelWidth * 2) + parseInt(splitterWidth, 10))) {
             dragEnabled = false;
-            var newLeftWidth = Math.floor($(window).width() - parseInt(splitterWidth, 10));
+            var newLeftWidth = Math.floor($(window).width() - parseInt(splitterWidthEdges, 10));
             document.getElementsByClassName('leftPanel')[0].setAttribute('style', 'width:' + newLeftWidth + 'px');
         }
         else {
@@ -547,6 +544,7 @@ window.onload = function () {
             var newLeftWidth = Math.floor(($(window).width() - parseInt(splitterWidth, 10)) / 2);
             document.getElementsByClassName('leftPanel')[0].setAttribute('style', 'width:' + newLeftWidth + 'px');
         }
+        setSlitterbarWidth();
     }
 
     // Sets the height of splitter container
@@ -556,22 +554,17 @@ window.onload = function () {
         document.getElementsByClassName('splitter-container')[0].style.height = (screenHeight - navbarHeight) + 'px';
     }
 
-    // function setSlitterbarWidth() {
-    //     var leftOfLeft = leftSide.position().left;
-    //     var screenWidth = Math.floor($(window).width());
-    //     var eventPageX = event.pageX;
-    //     if (eventPageX == undefined) {
-    //         eventPageX = parseInt(event.changedTouches[0].pageX);
-    //     }
-    //     var leftWidth = eventPageX - leftOfLeft - splitterBar.width() / 2;
-    //     var rightWidth = screenWidth - (eventPageX + leftOfLeft + splitterBar.width() / 2);
+    function setSlitterbarWidth() {
+        var leftWidth = document.getElementsByClassName('leftPanel')[0].offsetWidth;
+        var rightWidth = document.getElementsByClassName('rightPanel')[0].offsetWidth;
 
-    //     if(leftWidth == 0 || rightWidth == 0){
-    //         document.getElementById('splitterBar').style.width = '10px';
-    //         document.getElementById('spltterBar').style.width = '5px';
-    //     }
-
-    // }
+        if(leftWidth == 0 || rightWidth == 0){
+            document.getElementById('splitterBar').style.width = splitterWidthEdges; 
+        }
+        else{
+            document.getElementById('splitterBar').style.width = splitterWidth;
+        }
+    }
 
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // ----------------------------------------------------------------- Responsive Panels ------------------------------------------------------------------------------------------
