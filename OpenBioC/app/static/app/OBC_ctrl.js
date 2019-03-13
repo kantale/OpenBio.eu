@@ -1373,6 +1373,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                     });
                 });
             }
+            else if (this_data.type=='step') {
+                completion_info.push({
+                    caption: 'call(' + this_data.label + ')',
+                    value: 'call(' + this_data.label + ')',
+                    meta: 'STEP'
+                });
+            }
         });
 
         //Create a new tab completion  object
@@ -1420,7 +1427,59 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //Open accordion
         window.openEditWorkflowBtn_click();
 
-        workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1);
+        $scope.workflows_step_name = ''; //Clear STEP name
+        workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1); //Add default comment 
+    };
+
+    /*
+    * Remove commends from text
+    # Everything that starts with '#'
+    */
+    $scope.remove_bash_comments = function(t) {
+        
+        var no_comments = [];
+        var t_splitted = t.split('\n');
+
+        t_splitted.forEach(function(line){
+            //Check if this line is a comment
+            if (line.match(/^[\s]*#/)) {
+                //This is a comment. Ignore it
+            }
+            else {
+                //This is not a comment
+                no_comments.push(line);
+            }
+        });
+
+        return no_comments.join('\n');
+    };
+
+    /*
+    * Return a list of steps that are called in this bash script
+    */
+    $scope.get_steps_from_bash_script = function(t) {
+
+        var steps = [];
+
+        //Remove bash comments
+        var no_comments = $scope.remove_bash_comments(t);
+
+        var splitted = no_comments.split('\n');
+        splitted.forEach(function(line) {
+            var results = line.match(/((^call)|([\s]+call))\([\w]+\)/g); // Matches: "call(a)" , "  call(a)", "ABC call(a)", "ABC   call(a)"
+            if (results) {
+                results.forEach(function(result) {
+                    var step_name = result.match(/call\(([\w]+)\)/)[1];
+
+                    //Is there a node with type step and name step_name ?
+                    if (cy.$("node[type='step'][label='" + step_name + "']").length) {
+                        steps.push(step_name);
+                    } 
+                });
+            }
+        });
+
+        return steps;
     };
 
     /*
@@ -1435,7 +1494,22 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         $scope.workflow_step_error_message = '';
 
-        workflow_step_editor.getValue();
+        var bash_commands = workflow_step_editor.getValue(); //BASH Commands
+        var steps = $scope.get_steps_from_bash_script(bash_commands); //STEPS
+        //console.log('STEPS:');
+        //console.log(steps);
+
+        //The object to pass to buildTree has to be a list of node objects
+        var step_node = [{
+            name: $scope.workflows_step_name,
+            type: 'step',
+            bash: bash_commands,
+            steps: steps,
+            tools: [] 
+        }];
+
+
+        window.buildTree(step_node);
 
 
     };
