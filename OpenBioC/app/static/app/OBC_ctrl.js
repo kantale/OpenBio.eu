@@ -803,9 +803,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             },
             function(data) {
                 $scope.tools_info_error_message = data['error_message'];
+                generateToast($scope.tools_info_error_message, 'red lighten-2 black-text', 'stay on');
+
             },
             function(statusText) {
                 $scope.tools_info_error_message = statusText;
+                generateToast($scope.tools_info_error_message, 'red lighten-2 black-text', 'stay on');
             }
         );
     };
@@ -989,9 +992,43 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                     }
                 }
                 else if (what_to_do == 2) { //DRAG FROM SEARCH TREE TO WORKFLOW DIV
-                    window.buildTree(data['dependencies_jstree']);
-                    console.log('UPDATE THE GRAPH WITH:');
+                    console.log('UPDATE THE GRAPH WITH: dependencies_jstree');
                     console.log(data['dependencies_jstree']);
+                    console.log('variables_jstree:');
+                    console.log(data['variables_jstree']);
+
+
+                    //Add the variable information to the tool nodes. 
+                    //By doing that we make sure that tool nodes have variable information
+                    //This is by far not optimal neither nice!
+                    data['variables_jstree'].forEach(function(variables_jstree_item) {
+                        if (variables_jstree_item.data.type == 'variable') {
+                            //We need to find the tool object of this variable
+                            for (var i=0; i<data['dependencies_jstree'].length; i++) {
+                                if (data['dependencies_jstree'][i].id == variables_jstree_item.parent) {
+                                    if (typeof data['dependencies_jstree'][i].variables !== 'undefined') {
+                                        data['dependencies_jstree'][i].variables.push(variables_jstree_item.data);
+                                    }
+                                    else {
+                                        data['dependencies_jstree'][i].variables = [variables_jstree_item.data];
+                                    }
+
+                                }
+                            }
+                        }
+                    });
+                    //Make sure that all dependencies_jstree nodes have a variables field
+                    for (var i=0; i<data['dependencies_jstree'].length; i++) {
+                        if (typeof data['dependencies_jstree'][i].variables !== 'undefined') {
+                        }
+                        else {
+                            data['dependencies_jstree'][i].variables = [];
+                        }
+                    }
+
+                    window.buildTree(data['dependencies_jstree']);
+
+
                 }
             },
             function(data) {
@@ -1314,9 +1351,72 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
+    * When a new tool is added (or removed from) to the workflow, we need to know what variables are available
+    * We use this info to update the tab completion to the step bash editor ace.  
+    */ 
+    $scope.workflow_update_tab_completion_info_to_step = function() {
+
+        // Remove all tab completion
+        // https://stackoverflow.com/questions/28920998/custom-autocompleter-and-periods
+        lang.setCompleters();
+
+        var completion_info = [];
+
+        cy.$('node').forEach(function(node) {
+            var this_data = node.data();
+            if (this_data.type=='tool') {
+                this_data.variables.forEach(function(variable) {
+                    completion_info.push({
+                        caption: 'tool.' + this_data.name + '.' + variable.name,
+                        value: '$(' + this_data.name + '_' + variable.value + ')',
+                        meta: variable.description
+                    });
+                });
+            }
+        });
+
+        //Create a new tab completion  object
+        var compl = {
+          identifierRegexps: [/[a-zA-Z_0-9\.\$\-\u00A2-\uFFFF]/],
+          getCompletions: function (editor, session, pos, prefix, callback) {
+            //alert(prefix);
+
+            callback(null, 
+//                [
+//                    {
+//                        caption: 'tool.mitsos',
+//                        value: '$(tool_mitsos)',
+//                        meta: 'TOOL'
+//                    },
+//                    {
+//                        caption: 'KLM',
+//                        value: 'NOP',
+//                        meta: 'STEP'
+//                    }
+//                ]
+
+            completion_info
+
+            );
+            //return;
+          }
+        }
+
+        //Load new completion info
+        lang.addCompleter(compl);
+
+
+
+    };
+
+    /*
     * Workflow --> Info --> Button: Add Step --> Clicked 
     */
     $scope.workflow_info_add_step_clicked = function() {
+
+        //Update tab completion info to step ace editor
+        $scope.workflow_update_tab_completion_info_to_step();
+
         //Open accordion
         window.openEditWorkflowBtn_click();
 
