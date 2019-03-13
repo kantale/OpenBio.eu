@@ -832,6 +832,8 @@ openIds=[];
 parse data from openbioc to meet the cytoscape.js requirements
 **/
 function parseWorkflow(incomingData){
+
+	
     var myNodes =[], myEdges=[];
 
     /*initialize my data object*/
@@ -842,8 +844,13 @@ function parseWorkflow(incomingData){
         if(d.type==="tool"){
             
             //remove special characters
-            d.id = d.id.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
-            d.parent = d.parent.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
+			
+			//.replace(/\//g,'__');
+		    d.id = d.id.replace(/\//g,'__').replace(/\"|,|\[|\]/g, '');
+			d.parent = d.parent.replace(/\//g,'__').replace(/\"|,|\[|\]/g, '');
+			
+            //d.id = d.id.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
+            //d.parent = d.parent.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
                 if(d.parent != "#"){
                     var myNode = { data: { id:  d.id, label: d.text, name: d.data.name, version:d.data.version, edit:d.data.edit, type:d.data.type, root: 'no', variables:d.variables }};
                     myNodes.push(myNode);
@@ -865,7 +872,8 @@ function parseWorkflow(incomingData){
                 //replace special characters
                 
                 d.tools.forEach(function(element) {
-                    element = element.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
+                    //element = element.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
+					
                     var myEdge =  { data: { 'id': d.name+element, 'weight': 1, 'source': d.name, 'target': element } };
                     myEdges.push(myEdge);
                     
@@ -1140,7 +1148,57 @@ window.buildTree = function(myworkflow) {
 
 
 window.store=function(){
+  myObjects=[], myObject=''; 
  json = cy.json();
+ // create workflow object to store
+ /*node  format
+ 
+ data:
+	edit: 1
+	id: "tool6112"
+	label: "tool6/1/1"
+	name: "tool6"
+	root: "yes"
+	type: "tool"
+	version: "1"
+	
+ */
+ 
+ /*edge  format*/
+  
+  json.elements.nodes.forEach(function(d) {
+	  
+	json.elements.edges.forEach(function(f) {
+		if(d.data.root==='no'){
+		
+			if(d.data.id===f.data.target)
+				myObject = { data: {name: d.data.name, version: d.data.version, edit: d.data.edit},id:  d.data.id, parent: f.data.source , type: d.data.type, text: d.data.label};
+		  
+			}else{
+				myObject = { data: {name: d.data.name, version: d.data.version, edit: d.data.edit},id:  d.data.id, parent: '#' , type: d.data.type, text: d.data.label};
+				
+				}
+		});
+		
+		myObjects.push(myObject);
+
+});
+   
+   return   myObjects;
+	
+  /*
+STORED WORKFLOWS FORMAT
+  [{ 
+data: {name: "tool6", version: "1", edit: 1, type: "tool"}
+id: "tool6112"
+parent: "#"
+text: "tool6/1/1"
+type: "tool"
+  },...
+  ]
+  
+ */
+ 
 }
 
 window.clear=function(){
