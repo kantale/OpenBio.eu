@@ -1367,10 +1367,17 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             if (this_data.type=='tool') {
                 this_data.variables.forEach(function(variable) {
                     completion_info.push({
-                        caption: 'tool.' + this_data.name + '.' + variable.name,
-                        value: '$(' + this_data.name + '_' + variable.value + ')',
+                        caption: 'tool/' + this_data.name + '/' + this_data.version + '/' + this_data.edit + '/' +  variable.name,
+                        value: '$(' + this_data.name + '__' + this_data.version + '__' + this_data.edit + '__' + variable.name + ')',
                         meta: variable.description
                     });
+                });
+            }
+            else if (this_data.type=='step') {
+                completion_info.push({
+                    caption: 'call(' + this_data.label + ')',
+                    value: 'call(' + this_data.label + ')',
+                    meta: 'STEP'
                 });
             }
         });
@@ -1420,7 +1427,100 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //Open accordion
         window.openEditWorkflowBtn_click();
 
-        workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1);
+        $scope.workflows_step_name = ''; //Clear STEP name
+        workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1); //Add default comment 
+    };
+
+    /*
+    * Remove commends from text
+    # Everything that starts with '#'
+    */
+    $scope.remove_bash_comments = function(t) {
+        
+        var no_comments = [];
+        var t_splitted = t.split('\n');
+
+        t_splitted.forEach(function(line){
+            //Check if this line is a comment
+            if (line.match(/^[\s]*#/)) {
+                //This is a comment. Ignore it
+            }
+            else {
+                //This is not a comment
+                no_comments.push(line);
+            }
+        });
+
+        return no_comments.join('\n');
+    };
+
+    /*
+    * Return a list of steps that are called in this bash script
+    */
+    $scope.get_steps_from_bash_script = function(t) {
+
+        var steps = [];
+
+        //Remove bash comments
+        var no_comments = $scope.remove_bash_comments(t);
+
+        var splitted = no_comments.split('\n');
+        splitted.forEach(function(line) {
+            var results = line.match(/((^call)|([\s]+call))\([\w]+\)/g); // Matches: "call(a)" , "  call(a)", "ABC call(a)", "ABC   call(a)"
+            if (results) {
+                results.forEach(function(result) {
+                    var step_name = result.match(/call\(([\w]+)\)/)[1];
+
+                    //Is there a node with type step and name step_name ?
+                    if (cy.$("node[type='step'][label='" + step_name + "']").length) {
+                        steps.push(step_name);
+                    } 
+                });
+            }
+        });
+
+        return steps;
+    };
+
+    /*
+    * Return a list of tools whose variables are used in this bash script
+    */
+    $scope.get_tools_from_bash_script = function(t) {
+        var tools = [];
+
+        //Remove bash comments
+        var no_comments = $scope.remove_bash_comments(t);
+
+        var splitted = no_comments.split('\n');
+        splitted.forEach(function(line){
+           var results =  line.match(/\$\([\w]+__[\w]+__[\d]+__[\w]+\)/g);
+           if (results) {
+               results.forEach(function(result){
+                    var splitted_ids = result.match(/\$\(([\w]+__[\w]+__[\d]+)__([\w]+)\)/);
+                    var tool_id = splitted_ids[1] + '__2';
+                    var variable_id = splitted_ids[2];
+                    //Does this tool_id exist?
+                    var cy_tool_node = cy.$("node[type='tool'][id='" + tool_id + "']");
+                    if (cy_tool_node.length) {
+                        //IT EXISTS!
+
+                        //Does this tool has a variable with name: variable_id ?
+                        var tool_tool_variables = cy_tool_node.data().variables;
+                        tool_tool_variables.forEach(function(variable){
+                            if (variable.name == variable_id) {
+                                if (!tools.includes(tool_id)) {
+                                    tools.push(tool_id);
+                                }
+                            }
+                        });
+
+                    }
+
+               });
+            }
+        });
+
+        return tools;
     };
 
     /*
@@ -1435,7 +1535,26 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         $scope.workflow_step_error_message = '';
 
-        workflow_step_editor.getValue();
+        var bash_commands = workflow_step_editor.getValue(); //BASH Commands
+        var steps = $scope.get_steps_from_bash_script(bash_commands); //STEPS
+        var tools = $scope.get_tools_from_bash_script(bash_commands); //TOOLS
+        //console.log('STEPS:');
+        //console.log(steps);
+
+        //console.log('TOOLS:');
+        //console.log(tools);
+
+        //The object to pass to buildTree has to be a list of node objects
+        var step_node = [{
+            name: $scope.workflows_step_name,
+            type: 'step',
+            bash: bash_commands,
+            steps: steps,
+            tools: tools
+        }];
+
+
+        window.buildTree(step_node);
 
 
     };
