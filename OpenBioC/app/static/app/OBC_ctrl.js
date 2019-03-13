@@ -1367,8 +1367,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             if (this_data.type=='tool') {
                 this_data.variables.forEach(function(variable) {
                     completion_info.push({
-                        caption: 'tool.' + this_data.name + '.' + variable.name,
-                        value: '$(' + this_data.name + '_' + variable.value + ')',
+                        caption: 'tool/' + this_data.name + '/' + this_data.version + '/' + this_data.edit + '/' +  variable.name,
+                        value: '$(' + this_data.name + '__' + this_data.version + '__' + this_data.edit + '__' + variable.name + ')',
                         meta: variable.description
                     });
                 });
@@ -1483,6 +1483,47 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
+    * Return a list of tools whose variables are used in this bash script
+    */
+    $scope.get_tools_from_bash_script = function(t) {
+        var tools = [];
+
+        //Remove bash comments
+        var no_comments = $scope.remove_bash_comments(t);
+
+        var splitted = no_comments.split('\n');
+        splitted.forEach(function(line){
+           var results =  line.match(/\$\([\w]+__[\w]+__[\d]+__[\w]+\)/g);
+           if (results) {
+               results.forEach(function(result){
+                    var splitted_ids = result.match(/\$\(([\w]+__[\w]+__[\d]+)__([\w]+)\)/);
+                    var tool_id = splitted_ids[1] + '__2';
+                    var variable_id = splitted_ids[2];
+                    //Does this tool_id exist?
+                    var cy_tool_node = cy.$("node[type='tool'][id='" + tool_id + "']");
+                    if (cy_tool_node.length) {
+                        //IT EXISTS!
+
+                        //Does this tool has a variable with name: variable_id ?
+                        var tool_tool_variables = cy_tool_node.data().variables;
+                        tool_tool_variables.forEach(function(variable){
+                            if (variable.name == variable_id) {
+                                if (!tools.includes(tool_id)) {
+                                    tools.push(tool_id);
+                                }
+                            }
+                        });
+
+                    }
+
+               });
+            }
+        });
+
+        return tools;
+    };
+
+    /*
     * workflows --> Step --> Button: Add Step --> Clicked 
     */
     $scope.workflow_step_add = function() {
@@ -1496,8 +1537,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         var bash_commands = workflow_step_editor.getValue(); //BASH Commands
         var steps = $scope.get_steps_from_bash_script(bash_commands); //STEPS
+        var tools = $scope.get_tools_from_bash_script(bash_commands); //TOOLS
         //console.log('STEPS:');
         //console.log(steps);
+
+        //console.log('TOOLS:');
+        //console.log(tools);
 
         //The object to pass to buildTree has to be a list of node objects
         var step_node = [{
@@ -1505,7 +1550,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             type: 'step',
             bash: bash_commands,
             steps: steps,
-            tools: [] 
+            tools: tools
         }];
 
 

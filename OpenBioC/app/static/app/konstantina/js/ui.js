@@ -848,21 +848,33 @@ function parseWorkflow(incomingData){
 			//.replace(/\//g,'__');
 		    console.log("ID");
 			console.log(d.id);
-			d.id = d.id.replace(/\//g,'__').replace(/\"|,|\[|\]| /g, '');
-			d.parent = d.parent.replace(/\//g,'__').replace(/\"|,|\[|\]| /g, '');
-			console.log(d.id);
+            console.log(typeof d.id);
+            d.id = JSON.parse(d.id).join('__');
+			//d.id = d.id.replace(/\//g,'__').replace(/\"|,|\[|\]| /g, '');
+            console.log('NEW ID:');
+            console.log(d.id);
+            console.log('PARENT ID:');
+            console.log(d.parent);
+            
+			//d.parent = d.parent.replace(/\//g,'__').replace(/\"|,|\[|\]| /g, '');
+
 			
             //d.id = d.id.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
             //d.parent = d.parent.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
-                if(d.parent != "#"){
-                    var myNode = { data: { id:  d.id, label: d.text, name: d.data.name, version:d.data.version, edit:d.data.edit, type:d.data.type, root: 'no', variables:d.variables }};
-                    myNodes.push(myNode);
-                    var myEdge =  { data: { 'id': d.parent+d.id, 'weight': 1, 'source': d.parent, 'target': d.id } };
-                    myEdges.push(myEdge);
-                }else{
-                    var myNode = { data: { id:  d.id, label: d.text, name: d.data.name, version:d.data.version, edit:d.data.edit, type:d.data.type, root: 'yes', variables:d.variables }};
-                    myNodes.push(myNode);   
-                }
+            if(d.parent != "#"){
+                d.parent = JSON.parse(d.parent).join('__');
+                var myNode = { data: { id:  d.id, label: d.text, name: d.data.name, version:d.data.version, edit:d.data.edit, type:d.data.type, root: 'no', variables:d.variables }};
+                myNodes.push(myNode);
+                var myEdge =  { data: { 'id': d.parent+d.id, 'weight': 1, 'source': d.parent, 'target': d.id } };
+                myEdges.push(myEdge);
+            }else{
+                var myNode = { data: { id:  d.id, label: d.text, name: d.data.name, version:d.data.version, edit:d.data.edit, type:d.data.type, root: 'yes', variables:d.variables }};
+                myNodes.push(myNode);   
+            }
+
+            console.log('NEW PARENT ID:');
+            console.log(d.parent);
+            
         }
         
         
