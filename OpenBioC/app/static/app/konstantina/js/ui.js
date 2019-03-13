@@ -844,8 +844,13 @@ function parseWorkflow(incomingData){
         if(d.type==="tool"){
             
             //remove special characters
-            d.id = d.id.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
-            d.parent = d.parent.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
+			
+			//.replace(/\//g,'__');
+		    d.id = d.id.replace(/\//g,'__').replace(/\"|,|\[|\]/g, '');
+			d.parent = d.parent.replace(/\//g,'__').replace(/\"|,|\[|\]/g, '');
+			
+            //d.id = d.id.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
+            //d.parent = d.parent.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
                 if(d.parent != "#"){
                     var myNode = { data: { id:  d.id, label: d.text, name: d.data.name, version:d.data.version, edit:d.data.edit, type:d.data.type, root: 'no', variables:d.variables }};
                     myNodes.push(myNode);
@@ -867,7 +872,8 @@ function parseWorkflow(incomingData){
                 //replace special characters
                 
                 d.tools.forEach(function(element) {
-                    element = element.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
+                    //element = element.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
+					
                     var myEdge =  { data: { 'id': d.name+element, 'weight': 1, 'source': d.name, 'target': element } };
                     myEdges.push(myEdge);
                     
