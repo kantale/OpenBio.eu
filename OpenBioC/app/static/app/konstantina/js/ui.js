@@ -332,7 +332,7 @@ window.onload = function () {
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // --------------------------------------------------------------------- Splitter Bar -------------------------------------------------------------------------------------------
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    var splitterWidth = '20px';
+    var splitterWidth = '5px';
     var splitterImg = '/static/app/images/konstantina/dehaze.png';
     var minPanelWidth = 320;
     var isDragging = false;
@@ -555,6 +555,23 @@ window.onload = function () {
         var navbarHeight = document.getElementById('navbar').offsetHeight;
         document.getElementsByClassName('splitter-container')[0].style.height = (screenHeight - navbarHeight) + 'px';
     }
+
+    // function setSlitterbarWidth() {
+    //     var leftOfLeft = leftSide.position().left;
+    //     var screenWidth = Math.floor($(window).width());
+    //     var eventPageX = event.pageX;
+    //     if (eventPageX == undefined) {
+    //         eventPageX = parseInt(event.changedTouches[0].pageX);
+    //     }
+    //     var leftWidth = eventPageX - leftOfLeft - splitterBar.width() / 2;
+    //     var rightWidth = screenWidth - (eventPageX + leftOfLeft + splitterBar.width() / 2);
+
+    //     if(leftWidth == 0 || rightWidth == 0){
+    //         document.getElementById('splitterBar').style.width = '10px';
+    //         document.getElementById('spltterBar').style.width = '5px';
+    //     }
+
+    // }
 
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // ----------------------------------------------------------------- Responsive Panels ------------------------------------------------------------------------------------------
