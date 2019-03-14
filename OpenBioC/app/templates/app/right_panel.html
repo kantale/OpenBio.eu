@@ -60,8 +60,8 @@
                                         ng-model="tool_description" ng-disabled="!tools_info_editable"></textarea>
                                     <label for="generalDescription">Description</label>
                                 </div>
-                                <div class="input-field">
-                                    <textarea id="generalEditSummary" class="validate materialize-textarea"></textarea>
+                                <div class="input-field" ng-show="tools_info_forked_from">   
+                                    <textarea id="generalEditSummary" class="validate materialize-textarea" ng-model="tool_changes" ng-disabled="!tools_info_editable"></textarea>
                                     <label for="generalEditSummary">Edit Summary</label>
                                 </div>
                                 <div class="input-field chips left-align"></div>
