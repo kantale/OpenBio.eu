@@ -191,8 +191,6 @@ nav {
     bottom: 61px;
 } */
 
-
-
 /* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
 
 /* ------------------------------------------------------------------------ Pushpin with Scrollspy ------------------------------------------------------------------------------ */
@@ -206,23 +204,33 @@ nav {
 /* Class for when element is above threshold */
 
 .pin-top {
-  position: relative;
+    position: relative;
 }
 
 /* Class for when element is below threshold */
 
 .pin-bottom {
-  position: relative;
+    position: relative;
 }
 
 /* Class for when element is pinned */
 
 .pinned {
-  position: fixed !important;
+    position: fixed !important;
 }
 
 #scrollspyMenu a.active {
     font-weight: 500;
     padding-left: 14px;
     border-left: 2px solid #ee6e73
+}
+
+
+/* Switch colors */
+.switch label .lever {
+    background-color: #84c7c1;
+}
+
+.switch label .lever:after {
+    background-color: #26a69a;
 }
