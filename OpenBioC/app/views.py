@@ -850,6 +850,7 @@ def tools_add(request, **kwargs):
         tool_changes = kwargs.get('tool_changes', '')
         if not tool_changes:
             return fail('Edit summary cannot be empty')
+
     else:
         tool_forked_from = None
         tool_changes = None

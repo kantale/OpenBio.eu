@@ -1493,10 +1493,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         var splitted = no_comments.split('\n');
         splitted.forEach(function(line){
-           var results =  line.match(/\$\([\w]+__[\w]+__[\d]+__[\w]+\)/g);
+           var results =  line.match(/\$\([\w]+__[\w\.]+__[\d]+__[\w]+\)/g);
            if (results) {
                results.forEach(function(result){
-                    var splitted_ids = result.match(/\$\(([\w]+__[\w]+__[\d]+)__([\w]+)\)/);
+                    var splitted_ids = result.match(/\$\(([\w]+__[\w\.]+__[\d]+)__([\w]+)\)/);
                     var tool_id = splitted_ids[1] + '__2';
                     var variable_id = splitted_ids[2];
                     //Does this tool_id exist?
