@@ -25,15 +25,15 @@
                 <!-- Buttons -->
                 <div class="row right-align">
                     <a id="expandAllBtn1" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
-                        data-position="bottom" data-tooltip="Expand All"><i class="material-icons">expand_more</i></a>
+                        data-position="bottom" data-tooltip="Expand All"><i class="material-icons">unfold_more</i></a>
                     <a id="collapseAllBtn1" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
-                        data-position="bottom" data-tooltip="Collapse All"><i class="material-icons">expand_less</i></a>
+                        data-position="bottom" data-tooltip="Collapse All"><i class="material-icons">unfold_less</i></a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Save" ng-click="tool_create_save_pressed()" ng-show="tools_info_editable"><i
                             class="material-icons">save</i></a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fork" ng-click="tool_info_fork_pressed()" ng-show="!tools_info_editable"
-                        ng-class="{'disabled': !username}"><i class="material-icons">device_hub</i></a>
+                        ng-class="{'disabled': !username}"><i class="material-icons">call_split</i></a>
                 </div>
             </div>
 
@@ -60,8 +60,9 @@
                                         ng-model="tool_description" ng-disabled="!tools_info_editable"></textarea>
                                     <label for="generalDescription">Description</label>
                                 </div>
-                                <div class="input-field" ng-show="tools_info_forked_from">   
-                                    <textarea id="generalEditSummary" class="validate materialize-textarea" ng-model="tool_changes" ng-disabled="!tools_info_editable"></textarea>
+                                <div class="input-field" ng-show="tools_info_forked_from">
+                                    <textarea id="generalEditSummary" class="validate materialize-textarea"
+                                        ng-model="tool_changes" ng-disabled="!tools_info_editable"></textarea>
                                     <label for="generalEditSummary">Edit Summary</label>
                                 </div>
                                 <div class="input-field chips left-align"></div>
@@ -225,9 +226,9 @@
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Add Step" ng-click="workflow_info_add_step_clicked()">Add Step</a>
                     <a id="expandAllBtn2" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
-                        data-position="bottom" data-tooltip="Expand All"><i class="material-icons">expand_more</i></a>
+                        data-position="bottom" data-tooltip="Expand All"><i class="material-icons">unfold_more</i></a>
                     <a id="collapseAllBtn2" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
-                        data-position="bottom" data-tooltip="Collapse All"><i class="material-icons">expand_less</i></a>
+                        data-position="bottom" data-tooltip="Collapse All"><i class="material-icons">unfold_less</i></a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Save" ng-click="workflows_create_save_pressed()"
                         ng-show="workflows_info_editable"><i class="material-icons">save</i></a>
@@ -254,7 +255,8 @@
                                     <label for="workflowsGeneralWebsite">Website</label>
                                 </div>
                                 <div class="input-field">
-                                    <textarea id="workflowsGeneralDescription" class="validate materialize-textarea"></textarea>
+                                    <textarea id="workflowsGeneralDescription"
+                                        class="validate materialize-textarea"></textarea>
                                     <label for="workflowsGeneralDescription">Description</label>
                                 </div>
                                 <div class="input-field chips left-align"></div>
@@ -288,7 +290,7 @@
                     <!-- class="disabled" -->
                     <div class="collapsible-header">
                         <i class="material-icons arrow">keyboard_arrow_right</i>
-                        <i class="material-icons">place</i>
+                        <i class="material-icons">linear_scale</i>
                         Step
                     </div>
                     <div class="collapsible-body">
@@ -321,6 +323,78 @@
                                     </div>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+                </li>
+                <li id="workflowRightPanelInputsOutputs">
+                    <div class="collapsible-header">
+                        <i class="material-icons arrow">keyboard_arrow_right</i>
+                        <i class="material-icons">swap_horiz</i>
+                        Inputs/Outputs
+                    </div>
+                    <div class="collapsible-body">
+                        <div class="row">
+                            <h5>Variables</h5>
+                            <div class="col s12">
+                                <table class="centered highlight">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Description</th>
+                                            <th>Input/Output</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><input type="text" placeholder="name"></td>
+                                            <td><input type="text" placeholder="description"></td>
+                                            <td class="switch">
+                                                <label>
+                                                    IN
+                                                    <input type="checkbox">
+                                                    <span class="lever"></span>
+                                                    OUT
+                                                </label>
+                                            </td>
+                                            <td>
+                                                <a class="waves-effect waves-light btn-small tooltipped green darken-1"
+                                                    style="padding-left: 7px; padding-right:7px" data-position="bottom"
+                                                    data-tooltip="Add new variable"><i
+                                                        class="material-icons">add</i></a>
+                                            </td>
+                                            <td>
+                                                <a class="waves-effect waves-light btn-small tooltipped red darken-1"
+                                                    style="padding-left: 7px; padding-right:7px" data-position="bottom"
+                                                    data-tooltip="Remove variable"><i
+                                                        class="material-icons">remove</i></a>
+                                            </td>
+                                        </tr>
+                                        <!-- <tr ng-repeat="x in tool_variables">
+                                                <td><input type="text" placeholder="name" ng-model="x.name"
+                                                        ng-disabled="!tools_info_editable"></td>
+                                                <td><input type="text" placeholder="value" ng-model="x.value"
+                                                        ng-disabled="!tools_info_editable"></td>
+                                                <td><input type="text" placeholder="description" ng-model="x.description"
+                                                        ng-disabled="!tools_info_editable"></td>
+                                                <td>
+                                                    <a class="waves-effect waves-light btn-small tooltipped green darken-1"
+                                                        style="padding-left: 7px; padding-right:7px" data-position="bottom"
+                                                        data-tooltip="Add new variable" ng-click="tools_info_add_variable()"
+                                                        ng-if="$last && x.name && x.value && x.description && tools_info_editable"><i
+                                                            class="material-icons">add</i></a>
+                                                </td>
+                                                <td>
+                                                    <a class="waves-effect waves-light btn-small tooltipped red darken-1"
+                                                        style="padding-left: 7px; padding-right:7px" data-position="bottom"
+                                                        data-tooltip="Remove variable"
+                                                        ng-click="tools_info_remove_variable($index)"
+                                                        ng-if="(!$first) && tools_info_editable"><i
+                                                            class="material-icons">remove</i></a>
+                                                </td>
+                                            </tr> -->
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </li>
