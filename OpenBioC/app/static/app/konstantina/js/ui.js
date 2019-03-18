@@ -992,6 +992,25 @@ window.onload = function () {
                         }
                     },
                     {
+                        selector: 'node[type="input"]',
+                        "style": {
+                            'shape': 'ellipse',
+                            'background-color': 'green',
+                            //"height": 5,
+                            //"width": 5
+                        }
+                    },
+                    {
+                        selector: 'node[type="output"]',
+                        "style": {
+                            'shape': 'ellipse',
+                            'background-color': 'magenta',
+                            //"height": 5,
+                            //"width": 5
+                        }
+                    },
+
+                    {
                         selector: 'edge',
                         "style": {
                             'curve-style': 'bezier',
