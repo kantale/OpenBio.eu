@@ -722,6 +722,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.workflows_info_name = $scope.workflows_search_name;
         $scope.workflows_info_username = $scope.username;
         $scope.workflows_info_editable = true;
+
+        //Update Step Editor Tab completion 
+        $scope.workflow_update_tab_completion_info_to_step();
     };
 
     /*
@@ -1030,7 +1033,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                         }
                     }
 
-                    window.buildTree(data['dependencies_jstree']);
+                    window.buildTree(data['dependencies_jstree']); //FIXME SEE A46016A6E393 
+                    $scope.workflow_update_tab_completion_info_to_step(); 
 
 
                 }
@@ -1384,6 +1388,14 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                     meta: 'STEP'
                 });
             }
+            else if (this_data.type=='input' || this_data.type=='output') {
+                completion_info.push({
+                    caption: this_data.type + '/' + this_data.name,
+                    value: '$(' + this_data.name + ')',
+                    meta: this_data.description
+                });
+            }
+
         });
 
         //Create a new tab completion  object
@@ -1415,8 +1427,6 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         //Load new completion info
         lang.addCompleter(compl);
-
-
 
     };
 
@@ -1557,8 +1567,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             tools: tools
         }];
 
-
+        //Always when updating the graph, update also tab completion data for step editor! FIXME!! (bundle these things together!) A46016A6E393
         window.buildTree(step_node);
+        $scope.workflow_update_tab_completion_info_to_step();
 
 
     };
@@ -1596,7 +1607,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //console.log('Input / Output Variable to add:');
         //console.log(nodes_to_add);
 
-        window.buildTree(nodes_to_add);
+        window.buildTree(nodes_to_add); // FIXME. SEE A46016A6E393 
+        $scope.workflow_update_tab_completion_info_to_step();
     };
 
     // WORKFLOWS END 

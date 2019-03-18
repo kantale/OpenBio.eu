@@ -870,7 +870,7 @@ window.onload = function () {
 
                 //INPUTS/OUTPUTS
                 if (d.type === 'input' || d.type === 'output') {
-                    var myNode = {data: {id: d.name, label: d.name, type: d.type, description: d.description}};
+                    var myNode = {data: {id: d.name, label: d.name, name: d.name, type: d.type, description: d.description}};
                     myNodes.push(myNode);
                 }
 
