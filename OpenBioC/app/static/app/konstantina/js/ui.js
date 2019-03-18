@@ -868,6 +868,11 @@ window.onload = function () {
             /*initialize my data object*/
             incomingData.forEach(function (d) {
 
+                //INPUTS/OUTPUTS
+                if (d.type === 'input' || d.type === 'output') {
+                    var myNode = {data: {id: d.name, label: d.name, type: d.type, description: d.description}};
+                    myNodes.push(myNode);
+                }
 
                 //TOOLS 
                 if (d.type === "tool") {

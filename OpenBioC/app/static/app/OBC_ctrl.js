@@ -1577,6 +1577,28 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.workflow_input_outputs.splice(index, 1);
     };
 
+    /*
+    * Workflows --> Input/Outputs --> (Alter Input / Output variables) --> Update button --> pressed
+    */
+    $scope.workflow_step_input_output_update_pressed = function() {
+        var nodes_to_add = [];
+
+        $scope.workflow_input_outputs.forEach(function(input_output){
+            if (input_output.name && input_output.description) {
+                nodes_to_add.push({
+                    name: input_output.name,
+                    description: input_output.description,
+                    type: input_output.out ? 'output' : 'input'
+                })
+            }
+        });
+
+        //console.log('Input / Output Variable to add:');
+        //console.log(nodes_to_add);
+
+        window.buildTree(nodes_to_add);
+    };
+
     // WORKFLOWS END 
 
 
