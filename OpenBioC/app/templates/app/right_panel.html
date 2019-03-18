@@ -345,13 +345,13 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td><input type="text" placeholder="name"></td>
-                                            <td><input type="text" placeholder="description"></td>
+                                        <tr ng-repeat="x in workflow_input_outputs">
+                                            <td><input type="text" placeholder="Name" ng-model="x.name"></td>
+                                            <td><input type="text" placeholder="Description" ng-model="x.description"></td>
                                             <td class="switch">
                                                 <label>
                                                     IN
-                                                    <input type="checkbox">
+                                                    <input type="checkbox" ng-model="x.out">
                                                     <span class="lever"></span>
                                                     OUT
                                                 </label>
@@ -359,13 +359,17 @@
                                             <td>
                                                 <a class="waves-effect waves-light btn-small tooltipped green darken-1"
                                                     style="padding-left: 7px; padding-right:7px" data-position="bottom"
-                                                    data-tooltip="Add new variable"><i
+                                                    data-tooltip="Add new variable" 
+                                                    ng-if="$last && x.name && x.description && workflows_info_editable"
+                                                    ng-click="workflow_step_add_input_output()"><i
                                                         class="material-icons">add</i></a>
                                             </td>
                                             <td>
                                                 <a class="waves-effect waves-light btn-small tooltipped red darken-1"
                                                     style="padding-left: 7px; padding-right:7px" data-position="bottom"
-                                                    data-tooltip="Remove variable"><i
+                                                    data-tooltip="Remove variable"
+                                                    ng-if="(!$first) && workflows_info_editable"
+                                                    ng-click="workflow_step_remove_input_output($index)"><i
                                                         class="material-icons">remove</i></a>
                                             </td>
                                         </tr>

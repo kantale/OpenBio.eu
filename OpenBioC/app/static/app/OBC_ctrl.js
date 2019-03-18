@@ -84,6 +84,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1);
         $scope.workflow_step_error_message = '';
 
+        //The input and output variables of the workflow
+        $scope.workflow_input_outputs = [{name: '', description: '', out:true}]; // {name: 'aa', description: 'bb', out:true}, {name: 'cc', description: 'dd', out:false}
+
+
         $scope.get_init_data();
 
 
@@ -1557,6 +1561,20 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         window.buildTree(step_node);
 
 
+    };
+
+    /*
+    * Worfklows --> Input/Outpus --> Add variable button ('+') --> Pressed 
+    */
+    $scope.workflow_step_add_input_output = function() {
+        $scope.workflow_input_outputs.push({name:'', description: '', out:false});
+    };
+
+    /*
+    * Worfklwos --> Inputs/Outputs --> Remove Variable button ('-') --> Pressed
+    */
+    $scope.workflow_step_remove_input_output = function(index) {
+        $scope.workflow_input_outputs.splice(index, 1);
     };
 
     // WORKFLOWS END 
