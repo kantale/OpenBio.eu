@@ -1391,7 +1391,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             else if (this_data.type=='input' || this_data.type=='output') {
                 completion_info.push({
                     caption: this_data.type + '/' + this_data.name,
-                    value: '$(' + this_data.name + ')',
+                    value: '$(' + this_data.type + '__' + this_data.name + ')',
                     meta: this_data.description
                 });
             }
@@ -1497,6 +1497,42 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
+    * Return a list of input output variables from the bash script 
+    */ 
+    $scope.get_input_outputs_from_bash_script = function(t) {
+
+        //Remove bash comments. DUPLICATE FIXME
+        var no_comments = $scope.remove_bash_comments(t);
+        var inputs = [];
+        var outputs = [];
+
+        var splitted = no_comments.split('\n');
+        splitted.forEach(function(line) {
+            var results = line.match(/\$\((input|output)__[a-zA-Z0-9][\w]*\)/g); // [^_\w] Does not work??? 
+            if (results) {
+                results.forEach(function(result){
+                    var splitted = result.match(/\$\((input|output)__([\w]+)\)/);
+                    var input_output = splitted[1];
+                    var variable_name = splitted[2];
+                    //Does this variable exist in cytoscape?
+                    if (cy.$("node[type='" + input_output + "'][id='" + variable_name + "']").length) {
+                        //It exists
+                        if (input_output == "input") {
+                            inputs.push(variable_name);
+                        }
+                        else if (input_output == "output") {
+                            outputs.push(variable_name);
+                        }
+                    }
+                });
+            }
+        });
+
+        return {inputs: inpputs, outputs: outputs};
+
+    };
+
+    /*
     * Return a list of tools whose variables are used in this bash script
     */
     $scope.get_tools_from_bash_script = function(t) {
@@ -1552,6 +1588,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         var bash_commands = workflow_step_editor.getValue(); //BASH Commands
         var steps = $scope.get_steps_from_bash_script(bash_commands); //STEPS
         var tools = $scope.get_tools_from_bash_script(bash_commands); //TOOLS
+        var input_output = $scope.get_input_outputs_from_bash_script(bash_commands); // INPUT/OUTPUTS
         //console.log('STEPS:');
         //console.log(steps);
 
@@ -1564,7 +1601,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             type: 'step',
             bash: bash_commands,
             steps: steps,
-            tools: tools
+            tools: tools,
+            inputs: input_output.inputs,
+            outputs: input_output.outputs
         }];
 
         //Always when updating the graph, update also tab completion data for step editor! FIXME!! (bundle these things together!) A46016A6E393
