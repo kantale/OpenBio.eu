@@ -1487,7 +1487,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                     //Is there a node with type step and name step_name ?
                     if (cy.$("node[type='step'][label='" + step_name + "']").length) {
-                        steps.push(step_name);
+                        //Add it only if it not already there
+                        if (!steps.includes(step_name)) {
+                            steps.push(step_name);
+                        }
                     } 
                 });
             }
@@ -1517,11 +1520,16 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                     //Does this variable exist in cytoscape?
                     if (cy.$("node[type='" + input_output + "'][id='" + variable_name + "']").length) {
                         //It exists
+                        //Add them in their relevant list only if they are not already there
                         if (input_output == "input") {
-                            inputs.push(variable_name);
+                            if (!inputs.includes(variable_name)) {
+                                inputs.push(variable_name);
+                            }
                         }
                         else if (input_output == "output") {
-                            outputs.push(variable_name);
+                            if (!outputs.includes(variable_name)) {
+                                outputs.push(variable_name);
+                            }
                         }
                     }
                 });
@@ -1558,6 +1566,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                         var tool_tool_variables = cy_tool_node.data().variables;
                         tool_tool_variables.forEach(function(variable){
                             if (variable.name == variable_id) {
+                                //Add it if it not already there
                                 if (!tools.includes(tool_id)) {
                                     tools.push(tool_id);
                                 }
