@@ -873,6 +873,8 @@ window.onload = function () {
                     var myNode = {data: {id: d.name, label: d.name, name: d.name, type: d.type, description: d.description}};
                     myNodes.push(myNode);
                 }
+				
+				
 
                 //TOOLS 
                 if (d.type === "tool") {
@@ -936,6 +938,23 @@ window.onload = function () {
 
                         });
                     }
+					
+					
+					 if (typeof d.inputs !== "undefined") {
+                        d.inputs.forEach(function (element) {
+                            var myEdge = { data: { 'id': element+d.name, 'weight': 1, 'source': element, 'target': d.name } };
+                            myEdges.push(myEdge);
+
+                        });
+                    }
+					
+					if (typeof d.outputs !== "undefined") {
+                        d.outputs.forEach(function (element) {
+                            var myEdge = { data: { 'id': d.name + element, 'weight': 1, 'source': d.name, 'target': element } };
+                            myEdges.push(myEdge);
+
+                        });
+                    }
                 }
 
                 //WORKFLOWS
@@ -983,8 +1002,8 @@ window.onload = function () {
                             "shape": "round-rectangle",
                             //"label": "data(id)",
                             "label": "data(label)",
-                            //"height": 5,
-                            //"width": 5
+                            "height": 15,
+                            "width": 15
                         }
                     },
                     {
@@ -992,8 +1011,8 @@ window.onload = function () {
                         "style": {
                             'shape': 'ellipse',
                             'background-color': 'red',
-                            //"height": 5,
-                            //"width": 5
+                            "height": 5,
+                            "width": 5
                         }
                     },
                     {
@@ -1001,8 +1020,8 @@ window.onload = function () {
                         "style": {
                             'shape': 'ellipse',
                             'background-color': 'green',
-                            //"height": 5,
-                            //"width": 5
+                            "height": 15,
+                            "width": 15
                         }
                     },
                     {
@@ -1010,8 +1029,8 @@ window.onload = function () {
                         "style": {
                             'shape': 'ellipse',
                             'background-color': 'magenta',
-                            //"height": 5,
-                            //"width": 5
+                            "height": 15,
+                            "width": 15
                         }
                     },
 
