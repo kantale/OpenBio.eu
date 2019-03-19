@@ -1655,8 +1655,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //console.log('Input / Output Variable to add:');
         //console.log(nodes_to_add);
 
-        window.buildTree(nodes_to_add); // FIXME. SEE A46016A6E393 
-        $scope.workflow_update_tab_completion_info_to_step();
+        if (nodes_to_add.length) {
+            window.buildTree(nodes_to_add); // FIXME. SEE A46016A6E393 
+            $scope.workflow_update_tab_completion_info_to_step();
+        }
     };
 
     // WORKFLOWS END 
