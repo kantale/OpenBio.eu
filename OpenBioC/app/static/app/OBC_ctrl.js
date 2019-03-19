@@ -1528,7 +1528,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             }
         });
 
-        return {inputs: inpputs, outputs: outputs};
+        return {inputs: inputs, outputs: outputs};
 
     };
 
