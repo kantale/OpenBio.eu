@@ -878,27 +878,15 @@ window.onload = function () {
 
                 //TOOLS 
                 if (d.type === "tool") {
-
-                    //remove special characters
-
-                    //.replace(/\//g,'__');
-                    console.log("ID");
-                    console.log(d.id);
-                    console.log(typeof d.id);
+      
                     d.id = JSON.parse(d.id).join('__');
-                    //d.id = d.id.replace(/\//g,'__').replace(/\"|,|\[|\]| /g, '');
-                    console.log('NEW ID:');
-                    console.log(d.id);
-                    console.log('PARENT ID:');
-                    console.log(d.parent);
+					/*remove special characters*/
+					d.id = d.id.replace(/\./,'');
 
-                    //d.parent = d.parent.replace(/\//g,'__').replace(/\"|,|\[|\]| /g, '');
-
-
-                    //d.id = d.id.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
-                    //d.parent = d.parent.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
                     if (d.parent != "#") {
                         d.parent = JSON.parse(d.parent).join('__');
+						/*remove special characters*/
+						d.parent = d.parent.replace(/\./,'');
                         var myNode = { data: { id: d.id, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'no', variables: d.variables } };
                         myNodes.push(myNode);
                         var myEdge = { data: { 'id': d.parent + d.id, 'weight': 1, 'source': d.parent, 'target': d.id } };
@@ -908,8 +896,6 @@ window.onload = function () {
                         myNodes.push(myNode);
                     }
 
-                    console.log('NEW PARENT ID:');
-                    console.log(d.parent);
 
                 }
 
@@ -960,7 +946,7 @@ window.onload = function () {
                 //WORKFLOWS
                 if (d.type === "workflow") {
 
-
+					//TODO SHOW ?
 
 
                 }
@@ -1000,37 +986,43 @@ window.onload = function () {
                         selector: 'node',
                         "style": {
                             "shape": "round-rectangle",
+							"background-color": "#AFB4AE",
                             //"label": "data(id)",
                             "label": "data(label)",
-                            "height": 15,
-                            "width": 15
+                            //"height": 15,
+                            //"width": 15
                         }
                     },
                     {
                         selector: 'node[type="step"]',
                         "style": {
                             'shape': 'ellipse',
-                            'background-color': 'red',
-                            "height": 5,
-                            "width": 5
+							'background-color': '#007167',
+                            //'background-color': '#E8E406',
+                            //"height": 15,
+                            //"width": 15
                         }
                     },
                     {
                         selector: 'node[type="input"]',
                         "style": {
-                            'shape': 'ellipse',
-                            'background-color': 'green',
-                            "height": 15,
-                            "width": 15
+                            'shape': 'round-rectangle',
+							'border-width' : '3',
+							'border-color' : '#43A047',
+                            'background-color': '#AFB4AE',
+                            //"height": 15,
+                            //"width": 15
                         }
                     },
                     {
                         selector: 'node[type="output"]',
                         "style": {
-                            'shape': 'ellipse',
-                            'background-color': 'magenta',
-                            "height": 15,
-                            "width": 15
+                            'shape': 'round-rectangle',
+							'border-width' : '3',
+							'border-color' : '#E53935',
+                            'background-color': '#AFB4AE',
+                            //"height": 15,
+                            //"width": 15
                         }
                     },
 
@@ -1065,16 +1057,23 @@ window.onload = function () {
                 selector: 'node',
                 commands: [
                     {
-                        content: 'Test',
+                        content: 'Edit',
                         select: function (ele) {
-                            console.log("TEST");
+                            console.log("edit");
                         }
                     },
                     {
                         content: 'Delete',
                         select: function (ele) {
                             var j = cy.$('#' + ele.id());
-                            cy.remove(j);
+                            
+							/* remove node successors*/
+							j.successors().targets().forEach(function (element) {
+									cy.remove(element);
+								
+							})
+							/*remove node*/
+							cy.remove(j);
 
                         }
                     }
@@ -1086,13 +1085,10 @@ window.onload = function () {
             //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.
             document.querySelector('canvas[data-id="layer2-node"]').style.position = null;
 
-
         }
 
 
         initializeTree();
-
-
 
 
         //add new data to the graph
@@ -1103,21 +1099,17 @@ window.onload = function () {
             // get existing data if any
             var currentElements = cy.json().elements;
 
-
-
-
             // parse incoming data and transform to cytoscape format
             var treeData = parseWorkflow(myworkflow);
 
             //concat all data
             if (typeof currentElements.nodes !== 'undefined') {
 
-
                 //TODO :check if new node exists in current data 
+
                 /*
                 treeData.nodes.forEach(function(element) {
-        
-                
+               
                   var bfs = cy.elements().bfs({
                   roots: '#',
                   visit: function(v, e, u, i, depth){     
@@ -1130,7 +1122,6 @@ window.onload = function () {
                 
             });
             */
-
 
 
                 var allNodes = [], allEdges = [];
@@ -1166,10 +1157,12 @@ window.onload = function () {
             });
 
 
-            // close all successors of root node
+            // close all successors of root node		
             cy.json().elements.nodes.forEach(function (node) {
+				
                 if (typeof node.data.root !== 'undefined' && node.data.root === 'yes')
                     cy.$("#" + node.data.id).successors().targets().style("display", "none");
+
             });
 
             // collapse - expand nodes
@@ -1192,7 +1185,6 @@ window.onload = function () {
             });
 
             // show tooltip
-
             cy.on('mouseover', 'node', function (event) {
 
                 nodeId = this._private.data.id
@@ -1229,15 +1221,13 @@ window.onload = function () {
             });
 
 
-
-
-
         }
 
 
         window.store = function () {
-            myObjects = [], myObject = '';
+            //myObjects = [], myObject = '';
             json = cy.json();
+			return json;
             // create workflow object to store
             /*node  format
             
@@ -1254,6 +1244,7 @@ window.onload = function () {
 
             /*edge  format*/
 
+			/*
             json.elements.nodes.forEach(function (d) {
 
                 json.elements.edges.forEach(function (f) {
@@ -1273,6 +1264,7 @@ window.onload = function () {
             });
 
             return myObjects;
+			*/
 
             /*
           STORED WORKFLOWS FORMAT
