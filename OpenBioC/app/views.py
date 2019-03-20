@@ -919,8 +919,8 @@ def workflows_add(request, **kwargs):
     if not workflows_search_name.strip():
         return fail('Invalid tool name')
 
-    workflow_forked_from_info = kwargs['workflow_forked_from_info'] # If it does not exist, it should raise an Exception
-    if workflow_forked_from_info:
+    workflow_info_forked_from = kwargs['workflow_info_forked_from'] # If it does not exist, it should raise an Exception
+    if workflow_info_forked_from:
         return fail('NOT YET IMPLEMENTED')
     else:
         workflow_forked_from = None
@@ -965,15 +965,24 @@ def workflows_add(request, **kwargs):
     )
 
     #Save it
-    #new_tool.save()
+    new_workflow.save()
 
-    #ret = {
-    #    'edit': next_edit,
-    #    'created_at': datetime_to_str(new_workflow.created_at)
-    #}
+    # Get all tools that are used in this workflow
+    tool_nodes = [x for x in workflow['elements']['nodes'] if x['data']['type'] == 'tool']
+    tools = [Tool.objects.get(name=x['data']['name'], version=x['data']['version'], edit=x['data']['edit']) for x in tool_nodes]
+    if tools:
+        new_workflow.tools.add(*tools)
+        new_workflow.save()
+
+
+    ret = {
+        'edit': next_edit,
+        'created_at': datetime_to_str(new_workflow.created_at)
+    }
 
     return success(ret)
 
+    
 
 ### VIEWS END ######
 
