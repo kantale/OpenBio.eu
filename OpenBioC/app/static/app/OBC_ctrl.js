@@ -1118,7 +1118,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             }
             //plugins : ['types','checkbox']
             //plugins : []
-        };
+    };
 
     /*
     * Should the changes on the model be reflected on the tree? 
@@ -1368,6 +1368,59 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     //JSTREE END
 
     // WORKFLOWS 
+
+    //JSTREE workflows_search
+    $scope.workflows_search_jstree_config = {
+            core : {
+                multiple : false,
+                animation: true,
+                error : function(error) {
+                    $log.error('treeCtrl: error from js tree - ' + angular.toJson(error));
+                },
+                check_callback : function(operation, node, node_parent, node_position, more) { //https://stackoverflow.com/a/23486435/5626738
+
+                    console.log('First Tree Operation:', operation);
+
+                    if (operation === "move_node") {
+                        return false;
+                    }
+                    else if (operation === 'copy_node') {
+                        return false;
+                    }
+
+                    return true;
+                },
+                worker : true
+            },
+//            types : {
+//                default : {
+//                    icon : 'fa fa-flash'
+//                },
+//                star : {
+//                    icon : 'fa fa-star'
+//                },
+//                cloud : {
+//                    icon : 'fa fa-cloud'
+//                }
+//            },
+            version : 1,
+            plugins : ['dnd', 'types'],
+            types : {
+                default : {
+                    icon : 'fa fa-sitemap' //
+                }
+            },
+            dnd: {
+                is_draggable : function(node) {
+                    return true;
+                }
+            }
+            //plugins : ['types','checkbox']
+            //plugins : []
+    };
+
+
+
     /*
     * Navbar --> Tools/Data --> pressed
     */
