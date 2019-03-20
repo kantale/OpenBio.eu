@@ -909,6 +909,17 @@ def tools_add(request, **kwargs):
 
     return success(ret)
 
+@has_data
+def workflows_add(request, **kwargs):
+    if request.user.is_anonymous: # Server should always check..
+        return fail('Please login to create new tools')
+
+    workflow_website = kwargs.get('workflow_website', '')
+    workflow_description = kwargs.get('workflow_description', '')
+    if not workflow_description.strip():
+        return fail('Description cannot be empty')
+
+    return fail('sdfddfsdd')
 
 ### VIEWS END ######
 

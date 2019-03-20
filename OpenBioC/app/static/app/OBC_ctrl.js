@@ -78,6 +78,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tools_var_jstree_id_show = true;
 
         $scope.workflows_info_editable = false;
+        $scope.workflow_website = '';
+        $scope.workflow_description = '';
+        $scope.workflows_info_error_message = '';
         $scope.workflows_step_name = '';
         $scope.workflows_step_description = '';
         $scope.worfklows_step_ace_init = '# Insert the BASH commands for this step\n\n';
@@ -1659,6 +1662,30 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             window.buildTree(nodes_to_add); // FIXME. SEE A46016A6E393 
             $scope.workflow_update_tab_completion_info_to_step();
         }
+    };
+
+    /*
+    * Workflows --> Save button --> pressed 
+    */
+    $scope.workflows_create_save_pressed = function() {
+        $scope.ajax(
+            'workflows_add/',
+            {
+                workflow_website : $scope.workflow_website,
+                workflow_description : $scope.workflow_description
+            },
+            function(data) {
+
+            },
+            function(data) {
+                $scope.workflows_info_error_message = data['error_message'];
+                generateToast($scope.workflows_info_error_message, 'red lighten-2 black-text', 'stay on');
+
+            },
+            function(statusText) {
+
+            }
+        );
     };
 
     // WORKFLOWS END 
