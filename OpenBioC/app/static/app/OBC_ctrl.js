@@ -37,7 +37,17 @@ angular.module('OBC_app').filter('tool_label', function() {
             return '';
         }
 
-        return tool.name + '/' + tool.version +'/' + tool.edit;
+        return tool.name + '/' + tool.version + '/' + tool.edit;
+    }
+});
+
+angular.module('OBC_app').filter('workflow_label', function() {
+    return function(workflow) {
+        if (workflow === null) {
+            return '';
+        }
+
+        return tool.name + '/' + tool.edit;
     }
 });
 
@@ -647,6 +657,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //$scope.show_workflows_info = false; // TODO. THIS SHOULDN'T BE HERE
 
         $scope.tools_info_editable = true;
+        $scope.tool_info_created_at = null;
         $scope.tools_info_forked_from = null;
         $scope.tools_info_name = $scope.tools_search_name;
         $scope.tools_info_version = $scope.tools_search_version;
@@ -723,9 +734,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         $scope.workflows_step_name = '';
         $scope.workflows_step_description = '';
-        $scope.workflows_info_name = $scope.workflows_search_name;
+        $scope.workflow_info_name = $scope.workflows_search_name;
         $scope.workflows_info_username = $scope.username;
         $scope.workflows_info_editable = true;
+        $scope.workflow_info_created_at = null;
+        $scope.workflow_info_forked_from = null;
 
         //Update Step Editor Tab completion 
         $scope.workflow_update_tab_completion_info_to_step();
@@ -1007,6 +1020,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                     console.log(data['dependencies_jstree']);
                     console.log('variables_jstree:');
                     console.log(data['variables_jstree']);
+
+                    if (!$scope.workflows_info_editable) {
+                        generateToast('You cannot edit this workflow. You can fork it, or create a new one.', 'red lighten-2 black-text', 'stay on');
+                        return;
+                    }
 
 
                     //Add the variable information to the tool nodes. 
@@ -1672,15 +1690,18 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.ajax(
             'workflows_add/',
             {
-                workflows_search_name: $scope.workflows_search_name,
-                workflow_forked_from_info : $scope.workflow_info_forked_from,
+                workflows_search_name: $scope.workflow_info_name,
+                workflow_info_forked_from : $scope.workflow_info_forked_from,
 
                 workflow_website : $scope.workflow_website,
                 workflow_description : $scope.workflow_description,
                 workflow_json : cy.json()
             },
             function(data) {
-
+                $scope.workflow_info_created_at = data['created_at'];
+                $scope.workflow_info_edit = data['edit'];
+                $scope.workflows_info_editable = false;
+                workflow_step_editor.setReadOnly(true);
             },
             function(data) {
                 $scope.workflows_info_error_message = data['error_message'];
@@ -1688,7 +1709,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
             },
             function(statusText) {
-
+                $scope.workflows_info_error_message = statusText;
+                generateToast($scope.workflows_info_error_message, 'red lighten-2 black-text', 'stay on');
             }
         );
     };

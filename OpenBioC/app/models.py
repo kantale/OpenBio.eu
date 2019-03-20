@@ -95,6 +95,9 @@ class Workflow(models.Model):
     forked_from = models.ForeignKey(to="Workflow", null=True, on_delete=models.CASCADE, related_name='forked_from_related') #Is this forked from another tool?
     changes = models.TextField(null=True) # What changes have been made from forked tool?
 
+    # Links to the tools used (for stats)
+    tools = models.ManyToManyField(Tool)
+
     created_at = models.DateTimeField(auto_now_add=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#datefield 
 
 
