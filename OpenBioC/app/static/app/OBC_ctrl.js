@@ -80,6 +80,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.workflows_info_editable = false;
         $scope.workflow_website = '';
         $scope.workflow_description = '';
+        $scope.workflow_info_forked_from = null; // From which workflow was this workflow forked from?
         $scope.workflows_info_error_message = '';
         $scope.workflows_step_name = '';
         $scope.workflows_step_description = '';
@@ -1671,8 +1672,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.ajax(
             'workflows_add/',
             {
+                workflows_search_name: $scope.workflows_search_name,
+                workflow_forked_from_info : $scope.workflow_info_forked_from,
+
                 workflow_website : $scope.workflow_website,
-                workflow_description : $scope.workflow_description
+                workflow_description : $scope.workflow_description,
+                workflow_json : cy.json()
             },
             function(data) {
 

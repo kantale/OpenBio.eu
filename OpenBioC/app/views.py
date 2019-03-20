@@ -914,12 +914,66 @@ def workflows_add(request, **kwargs):
     if request.user.is_anonymous: # Server should always check..
         return fail('Please login to create new tools')
 
+
+    workflows_search_name = kwargs.get('workflows_search_name', '')
+    if not workflows_search_name.strip():
+        return fail('Invalid tool name')
+
+    workflow_forked_from_info = kwargs['workflow_forked_from_info'] # If it does not exist, it should raise an Exception
+    if workflow_forked_from_info:
+        return fail('NOT YET IMPLEMENTED')
+    else:
+        workflow_forked_from = None
+        workflow_changes = None
+
+
     workflow_website = kwargs.get('workflow_website', '')
     workflow_description = kwargs.get('workflow_description', '')
     if not workflow_description.strip():
         return fail('Description cannot be empty')
 
-    return fail('sdfddfsdd')
+    workflow = kwargs.get('workflow_json', '')
+    if not workflow:
+        return fail ('worflows json object if empty') # This should never happen!
+
+    if not workflow['elements']:
+        return fail('workflow graph cannot be empty')
+
+    #Get the maximum version. FIXME DUPLIXATE CODE
+    workflow_all = Workflow.objects.filter(name=workflows_search_name)
+    if not workflow_all.exists():
+        next_edit = 1
+    else:
+        max_edit = workflow_all.aggregate(Max('edit'))
+        next_edit = max_edit['edit__max'] + 1
+
+
+    new_workflow = Workflow(
+        obc_user=OBC_user.objects.get(user=request.user), 
+        name = workflows_search_name,
+        edit = next_edit,
+        website = workflow_website,
+        description = workflow_description,
+
+        # FIXME !! SERIOUS!
+        # This is redundand. We do json.loads and the json.dumps.
+        # On the other hand, how else can we check if elements are not empty? (perhaps on the backend..)
+        workflow = simplejson.dumps(workflow),
+        forked_from = workflow_forked_from,
+        changes = workflow_changes,
+
+    )
+
+    #Save it
+    #new_tool.save()
+
+    #ret = {
+    #    'edit': next_edit,
+    #    'created_at': datetime_to_str(new_workflow.created_at)
+    #}
+
+    return success(ret)
+
 
 ### VIEWS END ######
 
