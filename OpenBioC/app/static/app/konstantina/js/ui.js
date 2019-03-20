@@ -1038,7 +1038,7 @@ window.onload = function () {
                     }
                 ],
 
-                zoom: 1,
+                //zoom: 1,
                 pan: { x: 0, y: 0 },
 
                 layout: {
@@ -1105,23 +1105,13 @@ window.onload = function () {
             //concat all data
             if (typeof currentElements.nodes !== 'undefined') {
 
-                //TODO :check if new node exists in current data 
-
-                /*
-                treeData.nodes.forEach(function(element) {
-               
-                  var bfs = cy.elements().bfs({
-                  roots: '#',
-                  visit: function(v, e, u, i, depth){     
-                      if(element.data.id===v.id()){
-                          openIds.push(v.id());             
-            
-                        }
-                    }
-                });
-                
-            });
-            */
+                /* check if new node exists in current data */
+				 treeData.nodes.forEach(function(element) {
+					 currentElements.nodes.forEach(function(celement){
+						if(element.data.id===celement.data.id)
+						  openIds.push(element.data.id);
+					 });      
+				});
 
 
                 var allNodes = [], allEdges = [];
