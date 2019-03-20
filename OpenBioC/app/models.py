@@ -83,6 +83,14 @@ class Workflow(models.Model):
     name = models.CharField(max_length=256)
     edit = models.IntegerField()
 
+    website = models.URLField(max_length=256, null=True)
+    description = models.TextField(null=False) # Unlike tools description cannot be empty
+
+    # JSON serialized,  The workflow cytoscape graph , cy.json. 
+    # TODO: When deploying in Postgresql change this to JSONField
+    # https://docs.djangoproject.com/en/2.1/ref/contrib/postgres/fields/#jsonfield 
+    workflow = models.TextField(null=False)
+
     obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
     forked_from = models.ForeignKey(to="Workflow", null=True, on_delete=models.CASCADE, related_name='forked_from_related') #Is this forked from another tool?
     changes = models.TextField(null=True) # What changes have been made from forked tool?
