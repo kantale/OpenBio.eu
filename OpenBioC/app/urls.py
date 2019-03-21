@@ -18,4 +18,5 @@ urlpatterns = [
 	path('tools_add/', views.tools_add), # Add a new tool
 	path('tool_get_dependencies/', views.tool_get_dependencies), # Get a JSTREE with a dependencies of this tool
 	path('workflows_add/', views.workflows_add), # Add (or Save) a new workflow 
+	path('workflows_search_3/', views.workflows_search_3), # Search (and get the details) for a specific SINGLE workflow. 
 ]

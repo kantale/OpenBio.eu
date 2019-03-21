@@ -511,6 +511,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     /*
     * Search SPECIFIC tool. Update UI
+    * See also workflows_search_3
     */ 
     $scope.tools_search_3 = function(item) {
         $scope.ajax(
@@ -1148,6 +1149,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     /*
     * An item in tool tree on the search panel is selected
     * Defined in: tree-events="select_node:tools_search_jstree_select_node" 
+    * See also: workflows_search_jstree_select_node 
     */
     $scope.tools_search_jstree_select_node = function(e, data) {
         //console.log(data.node.data.name);
@@ -1431,9 +1433,74 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * See also: tools_search_jstree_select_node
     */
     $scope.workflows_search_jstree_select_node = function(e, data) {
+        //console.log('Workflow search tree clicked node data:');
+        //console.log(data);
 
+        $scope.workflows_search_show_item(data.node.data);
     };
 
+
+    /*
+    * Show a WORKFLOW on UI
+    * See also tools_search_show_item
+    */
+    $scope.workflows_search_show_item = function(item) {
+        //$scope.show_tools_info = true;
+        //$scope.show_workflows_info = false;
+        //$scope.tools_info_editable = false;
+        //$scope.tools_search_3(item);
+        //M.updateTextFields(); // The text inputs in Materialize needs to be updated after change.
+
+        //console.log('WORFKLOW ITEM IN workflows_search_show_item:');
+        //console.log(item);
+
+        //FIX: Do this according to tools_search_show_item
+        window.cancelToolDataBtn_click();
+        window.createWorkflowBtn_click();
+        $scope.workflows_search_3(item);
+    };
+
+    /*
+    * Get the details from the backend of a particular workflow and update the UI
+    * See also: tools_search_3
+    */ 
+    $scope.workflows_search_3 = function(item) {
+        $scope.ajax(
+            'workflows_search_3/',
+            {
+                workflow_name: item.name,
+                workflow_edit: item.edit,
+            },
+            function(data) {
+                $scope.workflows_info_username = data['username'];
+                $scope.workflow_info_name = item.name;
+                $scope.workflow_info_edit = item.edit;
+                $scope.workflow_info_created_at = data['created_at'];
+                $scope.workflow_website = data['website'];
+                $scope.workflow_description = data['description'];
+
+                //Load the graph. TODO: WHAT HAPPENS WHEN WE CLICK TO NODE? IT IS NOT REGISTERED
+                cy.json(data['workflow']);
+                cy.resize();
+
+                //Load the input/output variables
+                // $scope.workflow_input_outputs . [{name: '', description: '', out:true}];
+                $scope.workflow_input_outputs = [];
+                if (cy.$('node[type="input"] , node[type="output"]').length) {
+                    cy.$('node[type="input"] , node[type="output"]').forEach(function(variable){
+                        var data = variable.data();
+                        $scope.workflow_input_outputs.push({name: data.name, description: data.description, out: data.type === 'output'});
+                    });
+                }
+            },
+            function(data) {
+                generateToast(data['error_message'], 'red lighten-2 black-text', 'stay on');
+            },
+            function(statusText) {
+                generateToast(statusText, 'red lighten-2 black-text', 'stay on');
+            },
+        );
+    };
 
     /*
     * Navbar --> Tools/Data --> pressed
