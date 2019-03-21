@@ -277,6 +277,16 @@ def tool_to_json(tool):
         'edit': tool.edit,
     }
 
+def workflow_to_json(workflow):
+    if not workflow:
+        return None
+
+    return {
+        'name': tool.name,
+        'edit': tool.edit,
+    }
+
+
 def tool_text_jstree(tool):
     '''
     The JS tree tool text
@@ -934,7 +944,7 @@ def workflows_add(request, **kwargs):
 
     workflow_info_forked_from = kwargs['workflow_info_forked_from'] # If it does not exist, it should raise an Exception
     if workflow_info_forked_from:
-        return fail('NOT YET IMPLEMENTED')
+        return fail('FORK FROM NOT YET IMPLEMENTED')
     else:
         workflow_forked_from = None
         workflow_changes = None
@@ -1012,6 +1022,7 @@ def workflows_search_3(request, **kwargs):
         'website': workflow.website,
         'description': workflow.description,
         'created_at': datetime_to_str(workflow.created_at),
+        'forked_from': workflow_to_json(workflow.forked_from),
         'workflow' : simplejson.loads(workflow.workflow),
     }
 
