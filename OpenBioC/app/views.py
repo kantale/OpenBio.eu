@@ -995,7 +995,27 @@ def workflows_add(request, **kwargs):
 
     return success(ret)
 
-    
+@has_data
+def workflows_search_3(request, **kwargs):
+    '''
+    This is triggered when there is a key-change on the workflow-search pane
+    See also:  tools_search_3
+    '''
+
+    workflow_name = kwargs['workflow_name']
+    workflow_edit = kwargs['workflow_edit']
+
+    workflow = Workflow.objects.get(name = workflow_name, edit=workflow_edit)
+
+    ret = {
+        'username': workflow.obc_user.user.username,
+        'website': workflow.website,
+        'description': workflow.description,
+        'created_at': datetime_to_str(workflow.created_at),
+        'workflow' : simplejson.loads(workflow.workflow),
+    }
+
+    return success(ret)
 
 ### VIEWS END ######
 
