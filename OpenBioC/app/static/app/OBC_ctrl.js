@@ -1147,6 +1147,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     /*
     * An item in tool tree on the search panel is selected
+    * Defined in: tree-events="select_node:tools_search_jstree_select_node" 
     */
     $scope.tools_search_jstree_select_node = function(e, data) {
         //console.log(data.node.data.name);
@@ -1419,6 +1420,27 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             //plugins : []
     };
 
+    $scope.workflows_search_jstree_model_init = [
+        {
+            'id': 'aaa',
+            'text': 'bbb',
+            'parent': '#',
+            'data': {},
+            'state': { 'opened': true}
+        }
+    ];
+
+    $scope.workflows_search_jstree_model = [];
+    angular.copy($scope.workflows_search_jstree_model_init, $scope.workflows_search_jstree_model);
+
+    /*
+    * An item in workflow tree on the search panel is selected
+    * Defined in: tree-events="select_node:workflows_search_jstree_select_node" 
+    * See also: tools_search_jstree_select_node
+    */
+    $scope.workflows_search_jstree_select_node = function(e, data) {
+
+    };
 
 
     /*
