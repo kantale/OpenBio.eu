@@ -496,7 +496,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             },
             function(data) {
                 $scope.workflows_search_tools_number = data['workflows_search_tools_number'];
-                //angular.copy(data['tools_search_jstree'], $scope.tools_search_jstree_model);  // UNCOMMENT ME !!!!!
+                angular.copy(data['workflows_search_jstree'], $scope.workflows_search_jstree_model);  
 
             },
             function(data) {
@@ -626,7 +626,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 return;
             }
             $scope.workflows_search_warning = 'Edit value should be empty to create new Workflows';
-            $scope.workflows_search_2(); // UNCOMMENT ME!!!!!!!!
+            $scope.workflows_search_2(); 
             return; 
         }
 
@@ -1420,15 +1420,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             //plugins : []
     };
 
-    $scope.workflows_search_jstree_model_init = [
-        {
-            'id': 'aaa',
-            'text': 'bbb',
-            'parent': '#',
-            'data': {},
-            'state': { 'opened': true}
-        }
-    ];
+    $scope.workflows_search_jstree_model_init = [];
 
     $scope.workflows_search_jstree_model = [];
     angular.copy($scope.workflows_search_jstree_model_init, $scope.workflows_search_jstree_model);

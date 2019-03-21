@@ -42,6 +42,7 @@ g = {
     'SEARCH_TOOL_TREE_ID': '1',
     'DEPENDENCY_TOOL_TREE_ID': '2',
     'VARIABLES_TOOL_TREE_ID': '3',
+    'SEARCH_WORKFLOW_TREE_ID': '4',
     'format_time_string' : '%a, %d %b %Y %H:%M:%S', # RFC 2822 Internet email standard. https://docs.python.org/2/library/time.html#time.strftime   # '%Y-%m-%d, %H:%M:%S'
 }
 
@@ -278,11 +279,17 @@ def tool_to_json(tool):
 
 def tool_text_jstree(tool):
     '''
-    The JS tree text
+    The JS tree tool text
     The id should have 4 fields.
     '''
     return '/'.join(map(str, [tool.name, tool.version, tool.edit]))
 
+
+def workflow_text_jstree(workflow):
+    '''
+    The JS tree workflow text
+    '''
+    return '/'.join(map(str, [workflow.name, workflow.edit]))
 
 def tool_id_jstree(tool, id_):
     '''
@@ -292,6 +299,12 @@ def tool_id_jstree(tool, id_):
     #return tool_text_jstree(tool) + '/' + str(id_) 
     return simplejson.dumps([tool.name, tool.version, str(tool.edit), str(id_)])
 
+def workflow_id_jstree(workflow, id_):
+    '''
+    The JS Tree workflow id
+    Return a JSON string so thaty it can have many fields
+    '''
+    return simplejson.dumps([workflow.name, str(workflow.edit), str(id_)])
 
 def tool_variable_text_jstree(variable):
     '''
@@ -702,22 +715,22 @@ def workflows_search_2(request, **kwargs):
 
     # Build JS TREE structure
 
-    '''
-    tools_search_jstree = []
+    
+    workflows_search_jstree = []
     for x in results:
         to_add = {
-            'data': {'name': x.name, 'version': x.version, 'edit': x.edit},
-            'text': tool_text_jstree(x),
-            'id': tool_id_jstree(x, g['SEARCH_TOOL_TREE_ID']),
-            'parent': tool_id_jstree(x.forked_from, g['SEARCH_TOOL_TREE_ID']) if x.forked_from else '#',
+            'data': {'name': x.name, 'edit': x.edit},
+            'text': workflow_text_jstree(x),
+            'id': workflow_id_jstree(x, g['SEARCH_WORKFLOW_TREE_ID']),
+            'parent': workflow_id_jstree(x.forked_from, g['SEARCH_WORKFLOW_TREE_ID']) if x.forked_from else '#',
             'state': { 'opened': True},
         }
-        tools_search_jstree.append(to_add)
-    '''
+        workflows_search_jstree.append(to_add)
+        
 
     ret = {
         'workflows_search_tools_number' : results.count(),
-        #'tools_search_jstree' : tools_search_jstree,
+        'workflows_search_jstree' : workflows_search_jstree,
     }
 
     return success(ret)
