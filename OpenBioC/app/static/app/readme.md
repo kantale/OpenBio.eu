@@ -42,6 +42,12 @@ wget https://ajax.googleapis.com/ajax/libs/angularjs/1.7.2/angular.js
 ### Angular Sanitize 1.7.2
 wget https://github.com/angular/bower-angular-sanitize/archive/v1.7.2.tar.gz
 
+### select2 ATTENTION THIS IS A VERY OLD RELEASE 4 Nov 2013 !!!
+wget -O "select2_3.4.5.tar.gz" https://github.com/select2/select2/archive/3.4.5.tar.gz
+
+### selectize js ATTENTION! VERY OLD!! (25 Nov 2013) https://github.com/selectize/selectize.js/releases?after=v0.11.0
+wget -O "selectizejs-0.8.5.tar.gz" https://github.com/selectize/selectize.js/archive/v0.8.5.tar.gz
+
 ### Angular UI select
 wget https://github.com/angular-ui/ui-select/archive/v0.19.8.tar.gz
 
