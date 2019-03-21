@@ -212,8 +212,8 @@
                         <span ng-bind="workflows_info_username"></span>
                         <span ng-show="!workflows_info_editable">, created at <span
                                 ng-bind="workflow_info_created_at"></span></span>
-                        <span ng-show="workflow_info_forked_from">, forked from NOT YET IMPLEMENTED<a href
-                                ng-click="tools_search_show_item(workflow_info_forked_from)"><span
+                        <span ng-show="workflow_info_forked_from">, forked from <a href
+                                ng-click="workflows_search_show_item(workflow_info_forked_from)"><span
                                     ng-bind="workflow_info_forked_from | workflow_label"></span></a></span>
                     </small>
                 </p>
@@ -259,8 +259,8 @@
                                         class="validate materialize-textarea" ng-model="workflow_description" ng-disabled="!workflows_info_editable"></textarea>
                                     <label for="workflowsGeneralDescription">Description</label>
                                 </div>
-                                <div class="input-field">
-                                    <textarea id="workflowsGeneralEditSummary" class="validate materialize-textarea"></textarea>
+                                <div class="input-field" ng-show="workflow_info_forked_from">
+                                    <textarea id="workflowsGeneralEditSummary" class="validate materialize-textarea" ng-model="workflow_changes" ng-disabled="!workflows_info_editable"></textarea>
                                     <label for="workflowsGeneralEditSummary">Edit Summary</label>
                                 </div>
                                 <div class="input-field chips left-align"></div>
@@ -355,7 +355,7 @@
                                             <td class="switch">
                                                 <label>
                                                     IN
-                                                    <input type="checkbox" ng-model="x.out" style="display:none">
+                                                    <input type="checkbox" ng-model="x.out" style="display:none" ng-disabled="!workflows_info_editable">
                                                     <span class="lever"></span>
                                                     OUT
                                                 </label>

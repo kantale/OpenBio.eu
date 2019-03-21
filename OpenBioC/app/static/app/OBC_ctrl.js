@@ -47,7 +47,7 @@ angular.module('OBC_app').filter('workflow_label', function() {
             return '';
         }
 
-        return tool.name + '/' + tool.edit;
+        return workflow.name + '/' + workflow.edit;
     }
 });
 
@@ -1457,7 +1457,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //FIX: Do this according to tools_search_show_item
         window.cancelToolDataBtn_click();
         window.createWorkflowBtn_click();
+        $scope.workflows_info_editable = false;
         $scope.workflows_search_3(item);
+        M.updateTextFields();
     };
 
     /*
@@ -1478,10 +1480,14 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.workflow_info_created_at = data['created_at'];
                 $scope.workflow_website = data['website'];
                 $scope.workflow_description = data['description'];
+                $scope.workflow_info_forked_from = data['forked_from'];
 
                 //Load the graph. TODO: WHAT HAPPENS WHEN WE CLICK TO NODE? IT IS NOT REGISTERED
                 cy.json(data['workflow']);
                 cy.resize();
+
+                //Make step editor readonly
+                workflow_step_editor.setReadOnly(true);
 
                 //Load the input/output variables
                 // $scope.workflow_input_outputs . [{name: '', description: '', out:true}];
@@ -1847,6 +1853,28 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 generateToast($scope.workflows_info_error_message, 'red lighten-2 black-text', 'stay on');
             }
         );
+    };
+
+    /*
+    * Workflows --> Fork Icon --> Pressed
+    */
+    $scope.workflows_info_fork_pressed = function() {
+        if (!$scope.username) {
+            //It will never reach here. FORK is disabled in UI if user is not logged in.
+            generateToast("Login to create new Workflows", 'red lighten-2 black-text', 'stay on');
+            return;
+        }
+
+        $scope.workflows_info_editable = true;
+        generateToast("Workflows successfully forked. Press Save after completing your edits", 'green lighten-2 black-text', 'stay on'); 
+
+         $scope.workflow_info_forked_from = {
+            'name': $scope.workflow_info_name,  
+            'edit': $scope.workflow_info_edit
+        }
+        $scope.workflow_changes = '';
+        workflow_step_editor.setReadOnly(false);
+
     };
 
     // WORKFLOWS END 
