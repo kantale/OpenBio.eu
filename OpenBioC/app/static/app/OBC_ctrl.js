@@ -1886,6 +1886,38 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
+    * Calleds from ui.js, when a user drags a worklfow in current workflow
+    * workflow = {'name': ... , 'edit': '...'}
+    */
+    $scope.workflow_add_workflow = function(workflow) {
+        //console.log('WORKFLOW TO BE ADDED:');
+        //console.log(workflow);
+
+        //Fetch info of this workflow
+        $scope.ajax(
+            'workflows_search_3/',
+            {
+                workflow_name : workflow.name,
+                workflow_edit : workflow.edit
+            },
+            function(data) {
+                workflow_cytoscape = data['workflow'];
+                
+                //Create the nodes that will be added 
+                var nodes_to_add = []
+                workflow_cytoscape.elements.nodes.forEach(function(node){ nodes_to_add.push(node.data) });
+                window.buildTree(nodes_to_add);  
+            },
+            function(data) {
+                generateToast("ERROR 81711", 'red lighten-2 black-text', 'stay on');
+            },
+            function(statusText) {
+                generateToast("ERROR 81761", 'red lighten-2 black-text', 'stay on');
+            }
+        );
+    };
+
+    /*
     * worfklows --> info (right panel) --> button "Clear" --> Pressed
     */
     $scope.workflow_info_clear_pressed = function() {

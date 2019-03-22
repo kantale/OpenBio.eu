@@ -796,6 +796,22 @@ window.onload = function () {
                 }
             }
         }
+        else if (this_id_array[2] == '4') { // this is an item from workflows_search_tree. The id is the 3rd element
+            if (target.closest('#cywf').length && (!workflow_step_editor.getReadOnly())) {
+
+                var workflow = {
+                    name : this_id_array[0],
+                    edit : this_id_array[1]
+                };
+
+                angular.element($('#angular_div')).scope().$apply(function () {
+                    angular.element($('#angular_div')).scope().workflow_add_workflow(workflow); 
+                });
+            }
+            else {
+                // Do nothing
+            }
+        }
 
     });
 
@@ -818,7 +834,7 @@ window.onload = function () {
 
             if (
                 (target.closest('#tools_dep_jstree_id').length && (!tool_installation_editor.getReadOnly())) || //We allow it if it is over the div with the tree AND the the tool_installation_editor is not readonly (this is a workaround to avoid checking angular: tools_info_editable)
-                (target.closest('#cywf').length) // The Workflow graph editor . // changed from . d3wf
+                (target.closest('#cywf').length && (!workflow_step_editor.getReadOnly())) // The Workflow graph editor . // changed from . d3wf
             ) {
                 data.helper.find('.jstree-icon').removeClass('jstree-er').addClass('jstree-ok');
             }
@@ -838,6 +854,14 @@ window.onload = function () {
                 data.helper.find('.jstree-icon').removeClass('jstree-ok').addClass('jstree-er');
             }
 
+        }
+        else if (this_id_array[2] == '4') { // this is an item from workflows_search_tree. The id is the 3rd element
+            if (target.closest('#cywf').length && (!workflow_step_editor.getReadOnly())) {
+                data.helper.find('.jstree-icon').removeClass('jstree-er').addClass('jstree-ok');
+            }
+            else {
+                data.helper.find('.jstree-icon').removeClass('jstree-ok').addClass('jstree-er');
+            }
         }
 
 
@@ -881,23 +905,29 @@ window.onload = function () {
       
                     d.id = JSON.parse(d.id).join('__');
 					/*remove special characters*/
-					d.id = d.id.replace(/\./,'');
+					d.id = d.id.replace(/\./g,'');
 
-                    if (d.parent != "#") {
-                        d.parent = JSON.parse(d.parent).join('__');
+                    if ("parent" in d) {
+                        d.dep_id = d.parent;
+                        d.parent = '#';
+                    }
+
+                    if (d.dep_id != "#") {
+                        d.dep_id = JSON.parse(d.dep_id).join('__');
 						/*remove special characters*/
-						d.parent = d.parent.replace(/\./,'');
+						d.dep_id = d.dep_id.replace(/\./g,'');
+
                         //var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'no', variables: d.variables } };
-                        var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'no', variables: d.variables } };
+                        var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'no', dep_id: d.dep_id, variables: d.variables } };
+
                         myNodes.push(myNode);
-                        var myEdge = { data: { 'id': d.parent + d.id, 'weight': 1, 'source': d.parent, 'target': d.id } };
+                        var myEdge = { data: { 'id': d.dep_id + d.id, 'weight': 1, 'source': d.dep_id, 'target': d.id } };
                         myEdges.push(myEdge);
                     } else {
                         //var myNode = { data: { id: d.id, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'yes', variables: d.variables } };
-                        var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'yes', variables: d.variables } };
+                        var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'yes', dep_id: d.dep_id, variables: d.variables } };
                         myNodes.push(myNode);
                     }
-
 
                 }
 
@@ -906,7 +936,7 @@ window.onload = function () {
                 if (d.type === "step") {
                     //Why this redundancy?
                     //jstree uses d.name, cytoscape uses d.label and we also need an id...
-                    var myNode = { data: { id: d.name, name:d.name, label: d.name, type: d.type, bash: d.bash } };
+                    var myNode = { data: { id: d.name, name:d.name, label: d.name, type: d.type, bash: d.bash, tools:d.tools, steps:d.steps, inputs:d.inputs, outputs:d.outputs } };
                     myNodes.push(myNode);
                     //create edges to tools and/or steps
                     if (typeof d.tools !== "undefined") {
@@ -956,6 +986,13 @@ window.onload = function () {
                 }
 
             });
+
+            console.log('NODES:');
+            console.log(myNodes);
+            console.log('EDGES:');
+            console.log(myEdges);
+
+
 
             return {
                 nodes: myNodes,

@@ -1023,6 +1023,10 @@ def workflows_search_3(request, **kwargs):
     '''
     This is triggered when there is a key-change on the workflow-search pane
     See also:  tools_search_3
+
+    OR:
+
+    When a user drags a workflow from the jstree and drops it in a current workflow
     '''
 
     workflow_name = kwargs['workflow_name']
