@@ -788,6 +788,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     /*
     * Navbar --> Tools/data --> Appropriate input --> "Create New" button --> Pressed --> Filled input --> Save (button) --> Pressed
+    * See also: workflows_create_save_pressed 
     */
     $scope.tool_create_save_pressed = function() {
 
@@ -1825,6 +1826,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     /*
     * Workflows --> Save button --> pressed 
+    * See also: tool_create_save_pressed 
     */
     $scope.workflows_create_save_pressed = function() {
         $scope.ajax(
@@ -1835,6 +1837,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                 workflow_website : $scope.workflow_website,
                 workflow_description : $scope.workflow_description,
+                workflow_changes: $scope.workflow_changes,
                 workflow_json : cy.json()
             },
             function(data) {
@@ -1842,6 +1845,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.workflow_info_edit = data['edit'];
                 $scope.workflows_info_editable = false;
                 workflow_step_editor.setReadOnly(true);
+
+                generateToast('Workflow successfully saved', 'green lighten-2 black-text', 'stay on');
+
+
             },
             function(data) {
                 $scope.workflows_info_error_message = data['error_message'];

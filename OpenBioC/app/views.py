@@ -282,8 +282,8 @@ def workflow_to_json(workflow):
         return None
 
     return {
-        'name': tool.name,
-        'edit': tool.edit,
+        'name': workflow.name,
+        'edit': workflow.edit,
     }
 
 
@@ -943,8 +943,12 @@ def workflows_add(request, **kwargs):
         return fail('Invalid tool name')
 
     workflow_info_forked_from = kwargs['workflow_info_forked_from'] # If it does not exist, it should raise an Exception
+
+    workflow_changes = kwargs['workflow_changes']
     if workflow_info_forked_from:
-        return fail('FORK FROM NOT YET IMPLEMENTED')
+        if not workflow_changes:
+            return fail('Edit Summary cannot be empty')
+        workflow_forked_from = Workflow.objects.get(name=workflow_info_forked_from['name'], edit=workflow_info_forked_from['edit'])
     else:
         workflow_forked_from = None
         workflow_changes = None
