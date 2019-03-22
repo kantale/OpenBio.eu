@@ -962,6 +962,69 @@ window.onload = function () {
 
         }
 
+        /*
+        * After importing a graph or adding new nodes, we need to register cytoscape events.
+        * This function is called from buildtree and also from angular when we do: cy.json(data['workflow']) from angular
+        */
+        window.cy_setup_events = function() {
+            // collapse - expand nodes
+            cy.on('click', 'node', function (event) {
+                //connectedEdges: next level
+                //successors: next levels recursively
+
+                if (this['_private'].data.type !== "step") { //steps should never collapse
+                    if (this.successors().targets().style("display") == "none") {
+                        this.connectedEdges().targets().style("display", "element");
+                    } else {
+                        //hide the children nodes and edges recursively
+                        this.successors().targets().forEach(function (element) {
+                            if (typeof openIds === 'undefined' || !openIds.includes(element['_private'].data.id))
+                                element.style("display", "none");
+                        });
+                    }
+                }
+
+            });
+
+            /* show tooltip */
+            cy.on('mouseover', 'node', function (event) {
+
+                nodeId = this._private.data.id
+                myNode = cy.getElementById(nodeId);
+
+
+                //tippy
+                var makeTippy = function (node, text) {
+                    return tippy(node.popperRef(), {
+                        content: function () {
+                            var div = document.createElement('div');
+                            div.innerHTML = text;
+                            return div;
+                        },
+                        trigger: 'manual',
+                        arrow: true,
+                        placement: 'right',
+                        hideOnClick: false,
+                        multiple: true,
+                        //followCursor: true,
+                        //theme: 'light', 
+                        sticky: true
+                    });
+                };
+
+                myTippy = makeTippy(myNode, nodeId);
+                myTippy.show();
+
+
+            });
+
+            // hide tooltip
+            cy.on('mouseout', 'node', function (event) {
+                myTippy.hide();
+            });
+
+        }
+
         function initializeTree() {
 
 
@@ -1155,63 +1218,7 @@ window.onload = function () {
 
             });
 
-            // collapse - expand nodes
-            cy.on('click', 'node', function (event) {
-                //connectedEdges: next level
-                //successors: next levels recursively
-
-                if (this['_private'].data.type !== "step") { //steps should never collapse
-                    if (this.successors().targets().style("display") == "none") {
-                        this.connectedEdges().targets().style("display", "element");
-                    } else {
-                        //hide the children nodes and edges recursively
-                        this.successors().targets().forEach(function (element) {
-                            if (typeof openIds === 'undefined' || !openIds.includes(element['_private'].data.id))
-                                element.style("display", "none");
-                        });
-                    }
-                }
-
-            });
-
-            /* show tooltip */
-            cy.on('mouseover', 'node', function (event) {
-
-                nodeId = this._private.data.id
-                myNode = cy.getElementById(nodeId);
-
-
-                //tippy
-                var makeTippy = function (node, text) {
-                    return tippy(node.popperRef(), {
-                        content: function () {
-                            var div = document.createElement('div');
-                            div.innerHTML = text;
-                            return div;
-                        },
-                        trigger: 'manual',
-                        arrow: true,
-                        placement: 'right',
-                        hideOnClick: false,
-                        multiple: true,
-						//followCursor: true,
-						//theme: 'light', 
-                        sticky: true
-                    });
-                };
-
-                myTippy = makeTippy(myNode, nodeId);
-                myTippy.show();
-
-
-            });
-
-            // hide tooltip
-            cy.on('mouseout', 'node', function (event) {
-                myTippy.hide();
-            });
-
-
+            window.cy_setup_events();
         }
 
 
