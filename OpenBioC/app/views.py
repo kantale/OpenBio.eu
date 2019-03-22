@@ -944,7 +944,7 @@ def workflows_add(request, **kwargs):
 
     workflow_info_forked_from = kwargs['workflow_info_forked_from'] # If it does not exist, it should raise an Exception
 
-    workflow_changes = kwargs['workflow_changes']
+    workflow_changes = kwargs.get('workflow_changes', None)
     if workflow_info_forked_from:
         if not workflow_changes:
             return fail('Edit Summary cannot be empty')
