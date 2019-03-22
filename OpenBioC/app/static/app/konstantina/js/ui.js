@@ -887,12 +887,14 @@ window.onload = function () {
                         d.parent = JSON.parse(d.parent).join('__');
 						/*remove special characters*/
 						d.parent = d.parent.replace(/\./,'');
-                        var myNode = { data: { id: d.id, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'no', variables: d.variables } };
+                        //var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'no', variables: d.variables } };
+                        var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'no', variables: d.variables } };
                         myNodes.push(myNode);
                         var myEdge = { data: { 'id': d.parent + d.id, 'weight': 1, 'source': d.parent, 'target': d.id } };
                         myEdges.push(myEdge);
                     } else {
-                        var myNode = { data: { id: d.id, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'yes', variables: d.variables } };
+                        //var myNode = { data: { id: d.id, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'yes', variables: d.variables } };
+                        var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'yes', variables: d.variables } };
                         myNodes.push(myNode);
                     }
 
@@ -902,7 +904,9 @@ window.onload = function () {
 
                 //STEPS
                 if (d.type === "step") {
-                    var myNode = { data: { id: d.name, label: d.name, type: d.type, bash: d.bash } };
+                    //Why this redundancy?
+                    //jstree uses d.name, cytoscape uses d.label and we also need an id...
+                    var myNode = { data: { id: d.name, name:d.name, label: d.name, type: d.type, bash: d.bash } };
                     myNodes.push(myNode);
                     //create edges to tools and/or steps
                     if (typeof d.tools !== "undefined") {

@@ -1033,7 +1033,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                     //By doing that we make sure that tool nodes have variable information
                     //This is by far not optimal neither nice!
                     data['variables_jstree'].forEach(function(variables_jstree_item) {
-                        if (variables_jstree_item.data.type == 'variable') {
+                        if (variables_jstree_item.type == 'variable') { // if (variables_jstree_item.data.type == 'variable') {
                             //We need to find the tool object of this variable
                             for (var i=0; i<data['dependencies_jstree'].length; i++) {
                                 if (data['dependencies_jstree'][i].id == variables_jstree_item.parent) {
