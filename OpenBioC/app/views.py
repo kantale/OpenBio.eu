@@ -42,6 +42,7 @@ g = {
     'SEARCH_TOOL_TREE_ID': '1',
     'DEPENDENCY_TOOL_TREE_ID': '2',
     'VARIABLES_TOOL_TREE_ID': '3',
+    'SEARCH_WORKFLOW_TREE_ID': '4',
     'format_time_string' : '%a, %d %b %Y %H:%M:%S', # RFC 2822 Internet email standard. https://docs.python.org/2/library/time.html#time.strftime   # '%Y-%m-%d, %H:%M:%S'
 }
 
@@ -276,13 +277,29 @@ def tool_to_json(tool):
         'edit': tool.edit,
     }
 
+def workflow_to_json(workflow):
+    if not workflow:
+        return None
+
+    return {
+        'name': workflow.name,
+        'edit': workflow.edit,
+    }
+
+
 def tool_text_jstree(tool):
     '''
-    The JS tree text
+    The JS tree tool text
     The id should have 4 fields.
     '''
     return '/'.join(map(str, [tool.name, tool.version, tool.edit]))
 
+
+def workflow_text_jstree(workflow):
+    '''
+    The JS tree workflow text
+    '''
+    return '/'.join(map(str, [workflow.name, workflow.edit]))
 
 def tool_id_jstree(tool, id_):
     '''
@@ -292,6 +309,12 @@ def tool_id_jstree(tool, id_):
     #return tool_text_jstree(tool) + '/' + str(id_) 
     return simplejson.dumps([tool.name, tool.version, str(tool.edit), str(id_)])
 
+def workflow_id_jstree(workflow, id_):
+    '''
+    The JS Tree workflow id
+    Return a JSON string so thaty it can have many fields
+    '''
+    return simplejson.dumps([workflow.name, str(workflow.edit), str(id_)])
 
 def tool_variable_text_jstree(variable):
     '''
@@ -702,22 +725,22 @@ def workflows_search_2(request, **kwargs):
 
     # Build JS TREE structure
 
-    '''
-    tools_search_jstree = []
+    
+    workflows_search_jstree = []
     for x in results:
         to_add = {
-            'data': {'name': x.name, 'version': x.version, 'edit': x.edit},
-            'text': tool_text_jstree(x),
-            'id': tool_id_jstree(x, g['SEARCH_TOOL_TREE_ID']),
-            'parent': tool_id_jstree(x.forked_from, g['SEARCH_TOOL_TREE_ID']) if x.forked_from else '#',
+            'data': {'name': x.name, 'edit': x.edit},
+            'text': workflow_text_jstree(x),
+            'id': workflow_id_jstree(x, g['SEARCH_WORKFLOW_TREE_ID']),
+            'parent': workflow_id_jstree(x.forked_from, g['SEARCH_WORKFLOW_TREE_ID']) if x.forked_from else '#',
             'state': { 'opened': True},
         }
-        tools_search_jstree.append(to_add)
-    '''
+        workflows_search_jstree.append(to_add)
+        
 
     ret = {
         'workflows_search_tools_number' : results.count(),
-        #'tools_search_jstree' : tools_search_jstree,
+        'workflows_search_jstree' : workflows_search_jstree,
     }
 
     return success(ret)
@@ -909,6 +932,105 @@ def tools_add(request, **kwargs):
 
     return success(ret)
 
+@has_data
+def workflows_add(request, **kwargs):
+    if request.user.is_anonymous: # Server should always check..
+        return fail('Please login to create new tools')
+
+
+    workflows_search_name = kwargs.get('workflows_search_name', '')
+    if not workflows_search_name.strip():
+        return fail('Invalid tool name')
+
+    workflow_info_forked_from = kwargs['workflow_info_forked_from'] # If it does not exist, it should raise an Exception
+
+    workflow_changes = kwargs['workflow_changes']
+    if workflow_info_forked_from:
+        if not workflow_changes:
+            return fail('Edit Summary cannot be empty')
+        workflow_forked_from = Workflow.objects.get(name=workflow_info_forked_from['name'], edit=workflow_info_forked_from['edit'])
+    else:
+        workflow_forked_from = None
+        workflow_changes = None
+
+
+    workflow_website = kwargs.get('workflow_website', '')
+    workflow_description = kwargs.get('workflow_description', '')
+    if not workflow_description.strip():
+        return fail('Description cannot be empty')
+
+    workflow = kwargs.get('workflow_json', '')
+    if not workflow:
+        return fail ('worflows json object if empty') # This should never happen!
+
+    if not workflow['elements']:
+        return fail('workflow graph cannot be empty')
+
+    #Get the maximum version. FIXME DUPLIXATE CODE
+    workflow_all = Workflow.objects.filter(name=workflows_search_name)
+    if not workflow_all.exists():
+        next_edit = 1
+    else:
+        max_edit = workflow_all.aggregate(Max('edit'))
+        next_edit = max_edit['edit__max'] + 1
+
+
+    new_workflow = Workflow(
+        obc_user=OBC_user.objects.get(user=request.user), 
+        name = workflows_search_name,
+        edit = next_edit,
+        website = workflow_website,
+        description = workflow_description,
+
+        # FIXME !! SERIOUS!
+        # This is redundand. We do json.loads and the json.dumps.
+        # On the other hand, how else can we check if elements are not empty? (perhaps on the backend..)
+        workflow = simplejson.dumps(workflow),
+        forked_from = workflow_forked_from,
+        changes = workflow_changes,
+
+    )
+
+    #Save it
+    new_workflow.save()
+
+    # Get all tools that are used in this workflow
+    tool_nodes = [x for x in workflow['elements']['nodes'] if x['data']['type'] == 'tool']
+    tools = [Tool.objects.get(name=x['data']['name'], version=x['data']['version'], edit=x['data']['edit']) for x in tool_nodes]
+    if tools:
+        new_workflow.tools.add(*tools)
+        new_workflow.save()
+
+
+    ret = {
+        'edit': next_edit,
+        'created_at': datetime_to_str(new_workflow.created_at)
+    }
+
+    return success(ret)
+
+@has_data
+def workflows_search_3(request, **kwargs):
+    '''
+    This is triggered when there is a key-change on the workflow-search pane
+    See also:  tools_search_3
+    '''
+
+    workflow_name = kwargs['workflow_name']
+    workflow_edit = kwargs['workflow_edit']
+
+    workflow = Workflow.objects.get(name = workflow_name, edit=workflow_edit)
+
+    ret = {
+        'username': workflow.obc_user.user.username,
+        'website': workflow.website,
+        'description': workflow.description,
+        'created_at': datetime_to_str(workflow.created_at),
+        'forked_from': workflow_to_json(workflow.forked_from),
+        'workflow' : simplejson.loads(workflow.workflow),
+    }
+
+    return success(ret)
 
 ### VIEWS END ######
 

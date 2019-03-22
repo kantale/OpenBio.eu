@@ -42,6 +42,12 @@ wget https://ajax.googleapis.com/ajax/libs/angularjs/1.7.2/angular.js
 ### Angular Sanitize 1.7.2
 wget https://github.com/angular/bower-angular-sanitize/archive/v1.7.2.tar.gz
 
+### select2 ATTENTION THIS IS A VERY OLD RELEASE 4 Nov 2013 !!!
+wget -O "select2_3.4.5.tar.gz" https://github.com/select2/select2/archive/3.4.5.tar.gz
+
+### selectize js ATTENTION! VERY OLD!! (25 Nov 2013) https://github.com/selectize/selectize.js/releases?after=v0.11.0
+wget -O "selectizejs-0.8.5.tar.gz" https://github.com/selectize/selectize.js/archive/v0.8.5.tar.gz
+
 ### Angular UI select
 wget https://github.com/angular-ui/ui-select/archive/v0.19.8.tar.gz
 
@@ -85,6 +91,9 @@ tar cvf send.tar angular.js angular.min.js d3.v4.min.js jquery-3.3.1.js jquery-3
 
 ### Materialize v1.0.0
 wget https://github.com/Dogfalo/materialize/releases/download/1.0.0/materialize-v1.0.0.zip 
+
+### https://github.com/google/material-design-icons
+wget -O "material-design-icons-v3.0.1_tar.gz" https://github.com/google/material-design-icons/archive/3.0.1.tar.gz
 
 ### Animate 3.7.0
 wget https://daneden.github.io/animate.css/

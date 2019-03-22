@@ -134,7 +134,7 @@
                     </div>
 
 
-                    <!-- Tree list -->
+                    <!-- Tree list
                     <div class="row">
                         <p>-----------------------------</p>
                         <p>-----------------------------</p>
@@ -142,6 +142,19 @@
                         <p>-----------------------------</p>
                         <p>-----------------------------</p>
                     </div>
+                    -->
+
+                    <div class="row left-align">
+                        <div class="col">
+                            <div js-tree="workflows_search_jstree_config" should-apply="tools_search_jstree_config_apply()"
+                                ng-model="workflows_search_jstree_model" tree="tools_search_jstree"
+                                tree-events="select_node:workflows_search_jstree_select_node"></div>
+                        </div>
+                    </div>
+
+
+
+
                 </div>
             </li>
             <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
