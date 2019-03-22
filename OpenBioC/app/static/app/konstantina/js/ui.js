@@ -1174,7 +1174,7 @@ window.onload = function () {
 
             });
 
-            // show tooltip
+            /* show tooltip */
             cy.on('mouseover', 'node', function (event) {
 
                 nodeId = this._private.data.id
@@ -1182,7 +1182,6 @@ window.onload = function () {
 
 
                 //tippy
-
                 var makeTippy = function (node, text) {
                     return tippy(node.popperRef(), {
                         content: function () {
@@ -1195,6 +1194,8 @@ window.onload = function () {
                         placement: 'right',
                         hideOnClick: false,
                         multiple: true,
+						//followCursor: true,
+						//theme: 'light', 
                         sticky: true
                     });
                 };
