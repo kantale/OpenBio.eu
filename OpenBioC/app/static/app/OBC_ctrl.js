@@ -37,7 +37,17 @@ angular.module('OBC_app').filter('tool_label', function() {
             return '';
         }
 
-        return tool.name + '/' + tool.version +'/' + tool.edit;
+        return tool.name + '/' + tool.version + '/' + tool.edit;
+    }
+});
+
+angular.module('OBC_app').filter('workflow_label', function() {
+    return function(workflow) {
+        if (workflow === null) {
+            return '';
+        }
+
+        return workflow.name + '/' + workflow.edit;
     }
 });
 
@@ -78,6 +88,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tools_var_jstree_id_show = true;
 
         $scope.workflows_info_editable = false;
+        $scope.workflow_website = '';
+        $scope.workflow_description = '';
+        $scope.workflow_info_forked_from = null; // From which workflow was this workflow forked from?
+        $scope.workflows_info_error_message = '';
         $scope.workflows_step_name = '';
         $scope.workflows_step_description = '';
         $scope.worfklows_step_ace_init = '# Insert the BASH commands for this step\n\n';
@@ -482,7 +496,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             },
             function(data) {
                 $scope.workflows_search_tools_number = data['workflows_search_tools_number'];
-                //angular.copy(data['tools_search_jstree'], $scope.tools_search_jstree_model);  // UNCOMMENT ME !!!!!
+                angular.copy(data['workflows_search_jstree'], $scope.workflows_search_jstree_model);  
 
             },
             function(data) {
@@ -497,6 +511,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     /*
     * Search SPECIFIC tool. Update UI
+    * See also workflows_search_3
     */ 
     $scope.tools_search_3 = function(item) {
         $scope.ajax(
@@ -612,7 +627,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 return;
             }
             $scope.workflows_search_warning = 'Edit value should be empty to create new Workflows';
-            $scope.workflows_search_2(); // UNCOMMENT ME!!!!!!!!
+            $scope.workflows_search_2(); 
             return; 
         }
 
@@ -643,6 +658,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //$scope.show_workflows_info = false; // TODO. THIS SHOULDN'T BE HERE
 
         $scope.tools_info_editable = true;
+        $scope.tool_info_created_at = null;
         $scope.tools_info_forked_from = null;
         $scope.tools_info_name = $scope.tools_search_name;
         $scope.tools_info_version = $scope.tools_search_version;
@@ -719,9 +735,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         $scope.workflows_step_name = '';
         $scope.workflows_step_description = '';
-        $scope.workflows_info_name = $scope.workflows_search_name;
+        $scope.workflow_info_name = $scope.workflows_search_name;
         $scope.workflows_info_username = $scope.username;
         $scope.workflows_info_editable = true;
+        $scope.workflow_info_created_at = null;
+        $scope.workflow_info_forked_from = null;
 
         //Update Step Editor Tab completion 
         $scope.workflow_update_tab_completion_info_to_step();
@@ -770,6 +788,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     /*
     * Navbar --> Tools/data --> Appropriate input --> "Create New" button --> Pressed --> Filled input --> Save (button) --> Pressed
+    * See also: workflows_create_save_pressed 
     */
     $scope.tool_create_save_pressed = function() {
 
@@ -1004,6 +1023,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                     console.log('variables_jstree:');
                     console.log(data['variables_jstree']);
 
+                    if (!$scope.workflows_info_editable) {
+                        generateToast('You cannot edit this workflow. You can fork it, or create a new one.', 'red lighten-2 black-text', 'stay on');
+                        return;
+                    }
+
 
                     //Add the variable information to the tool nodes. 
                     //By doing that we make sure that tool nodes have variable information
@@ -1096,7 +1120,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             }
             //plugins : ['types','checkbox']
             //plugins : []
-        };
+    };
 
     /*
     * Should the changes on the model be reflected on the tree? 
@@ -1125,6 +1149,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     /*
     * An item in tool tree on the search panel is selected
+    * Defined in: tree-events="select_node:tools_search_jstree_select_node" 
+    * See also: workflows_search_jstree_select_node 
     */
     $scope.tools_search_jstree_select_node = function(e, data) {
         //console.log(data.node.data.name);
@@ -1346,6 +1372,143 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     //JSTREE END
 
     // WORKFLOWS 
+
+    //JSTREE workflows_search
+    $scope.workflows_search_jstree_config = {
+            core : {
+                multiple : false,
+                animation: true,
+                error : function(error) {
+                    $log.error('treeCtrl: error from js tree - ' + angular.toJson(error));
+                },
+                check_callback : function(operation, node, node_parent, node_position, more) { //https://stackoverflow.com/a/23486435/5626738
+
+                    console.log('First Tree Operation:', operation);
+
+                    if (operation === "move_node") {
+                        return false;
+                    }
+                    else if (operation === 'copy_node') {
+                        return false;
+                    }
+
+                    return true;
+                },
+                worker : true
+            },
+//            types : {
+//                default : {
+//                    icon : 'fa fa-flash'
+//                },
+//                star : {
+//                    icon : 'fa fa-star'
+//                },
+//                cloud : {
+//                    icon : 'fa fa-cloud'
+//                }
+//            },
+            version : 1,
+            plugins : ['dnd', 'types'],
+            types : {
+                default : {
+                    icon : 'fa fa-sitemap' //
+                }
+            },
+            dnd: {
+                is_draggable : function(node) {
+                    return true;
+                }
+            }
+            //plugins : ['types','checkbox']
+            //plugins : []
+    };
+
+    $scope.workflows_search_jstree_model_init = [];
+
+    $scope.workflows_search_jstree_model = [];
+    angular.copy($scope.workflows_search_jstree_model_init, $scope.workflows_search_jstree_model);
+
+    /*
+    * An item in workflow tree on the search panel is selected
+    * Defined in: tree-events="select_node:workflows_search_jstree_select_node" 
+    * See also: tools_search_jstree_select_node
+    */
+    $scope.workflows_search_jstree_select_node = function(e, data) {
+        //console.log('Workflow search tree clicked node data:');
+        //console.log(data);
+
+        $scope.workflows_search_show_item(data.node.data);
+    };
+
+
+    /*
+    * Show a WORKFLOW on UI
+    * See also tools_search_show_item
+    */
+    $scope.workflows_search_show_item = function(item) {
+        //$scope.show_tools_info = true;
+        //$scope.show_workflows_info = false;
+        //$scope.tools_info_editable = false;
+        //$scope.tools_search_3(item);
+        //M.updateTextFields(); // The text inputs in Materialize needs to be updated after change.
+
+        //console.log('WORFKLOW ITEM IN workflows_search_show_item:');
+        //console.log(item);
+
+        //FIX: Do this according to tools_search_show_item
+        window.cancelToolDataBtn_click();
+        window.createWorkflowBtn_click();
+        $scope.workflows_info_editable = false;
+        $scope.workflows_search_3(item);
+        M.updateTextFields();
+    };
+
+    /*
+    * Get the details from the backend of a particular workflow and update the UI
+    * See also: tools_search_3
+    */ 
+    $scope.workflows_search_3 = function(item) {
+        $scope.ajax(
+            'workflows_search_3/',
+            {
+                workflow_name: item.name,
+                workflow_edit: item.edit,
+            },
+            function(data) {
+                $scope.workflows_info_username = data['username'];
+                $scope.workflow_info_name = item.name;
+                $scope.workflow_info_edit = item.edit;
+                $scope.workflow_info_created_at = data['created_at'];
+                $scope.workflow_website = data['website'];
+                $scope.workflow_description = data['description'];
+                $scope.workflow_info_forked_from = data['forked_from'];
+
+                //Load the graph. TODO: WHAT HAPPENS WHEN WE CLICK TO NODE? IT IS NOT REGISTERED
+                cy.json(data['workflow']);
+                cy.resize();
+
+                //Make step editor readonly
+                workflow_step_editor.setReadOnly(true);
+
+                //Load the input/output variables
+                // $scope.workflow_input_outputs . [{name: '', description: '', out:true}];
+                $scope.workflow_input_outputs = [];
+                if (cy.$('node[type="input"] , node[type="output"]').length) {
+                    cy.$('node[type="input"] , node[type="output"]').forEach(function(variable){
+                        var data = variable.data();
+                        $scope.workflow_input_outputs.push({name: data.name, description: data.description, out: data.type === 'output'});
+                    });
+                }
+            },
+            function(data) {
+                generateToast(data['error_message'], 'red lighten-2 black-text', 'stay on');
+            },
+            function(statusText) {
+                generateToast(statusText, 'red lighten-2 black-text', 'stay on');
+            },
+        );
+    };
+
     /*
     * Navbar --> Tools/Data --> pressed
     */
@@ -1659,6 +1822,66 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             window.buildTree(nodes_to_add); // FIXME. SEE A46016A6E393 
             $scope.workflow_update_tab_completion_info_to_step();
         }
+    };
+
+    /*
+    * Workflows --> Save button --> pressed 
+    * See also: tool_create_save_pressed 
+    */
+    $scope.workflows_create_save_pressed = function() {
+        $scope.ajax(
+            'workflows_add/',
+            {
+                workflows_search_name: $scope.workflow_info_name,
+                workflow_info_forked_from : $scope.workflow_info_forked_from,
+
+                workflow_website : $scope.workflow_website,
+                workflow_description : $scope.workflow_description,
+                workflow_changes: $scope.workflow_changes,
+                workflow_json : cy.json()
+            },
+            function(data) {
+                $scope.workflow_info_created_at = data['created_at'];
+                $scope.workflow_info_edit = data['edit'];
+                $scope.workflows_info_editable = false;
+                workflow_step_editor.setReadOnly(true);
+
+                generateToast('Workflow successfully saved', 'green lighten-2 black-text', 'stay on');
+
+
+            },
+            function(data) {
+                $scope.workflows_info_error_message = data['error_message'];
+                generateToast($scope.workflows_info_error_message, 'red lighten-2 black-text', 'stay on');
+
+            },
+            function(statusText) {
+                $scope.workflows_info_error_message = statusText;
+                generateToast($scope.workflows_info_error_message, 'red lighten-2 black-text', 'stay on');
+            }
+        );
+    };
+
+    /*
+    * Workflows --> Fork Icon --> Pressed
+    */
+    $scope.workflows_info_fork_pressed = function() {
+        if (!$scope.username) {
+            //It will never reach here. FORK is disabled in UI if user is not logged in.
+            generateToast("Login to create new Workflows", 'red lighten-2 black-text', 'stay on');
+            return;
+        }
+
+        $scope.workflows_info_editable = true;
+        generateToast("Workflows successfully forked. Press Save after completing your edits", 'green lighten-2 black-text', 'stay on'); 
+
+         $scope.workflow_info_forked_from = {
+            'name': $scope.workflow_info_name,  
+            'edit': $scope.workflow_info_edit
+        }
+        $scope.workflow_changes = '';
+        workflow_step_editor.setReadOnly(false);
+
     };
 
     // WORKFLOWS END 

@@ -205,16 +205,16 @@
             <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
                 <p>
                     <h5>
-                        <span ng-bind="workflows_info_name"></span><span ng-show="!workflows_info_editable">/<span
-                                ng-bind="workflows_info_edit"></span></span>
+                        <span ng-bind="workflow_info_name"></span><span ng-show="!workflows_info_editable">/<span
+                                ng-bind="workflow_info_edit"></span></span>
                     </h5>
                     <small class="form-text text-muted">
                         <span ng-bind="workflows_info_username"></span>
                         <span ng-show="!workflows_info_editable">, created at <span
-                                ng-bind="tool_info_created_at"></span></span>
-                        <span ng-show="tools_info_forked_from">, forked from <a href
-                                ng-click="tools_search_show_item(tools_info_forked_from)"><span
-                                    ng-bind="tools_info_forked_from | tool_label"></span></a></span>
+                                ng-bind="workflow_info_created_at"></span></span>
+                        <span ng-show="workflow_info_forked_from">, forked from <a href
+                                ng-click="workflows_search_show_item(workflow_info_forked_from)"><span
+                                    ng-bind="workflow_info_forked_from | workflow_label"></span></a></span>
                     </small>
                 </p>
                 <!-- Buttons -->
@@ -234,7 +234,7 @@
                         ng-show="workflows_info_editable"><i class="material-icons">save</i></a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fork" ng-click="workflows_info_fork_pressed()" ng-show="!workflows_info_editable"
-                        ng-class="{'disabled': !username}"><i class="material-icons">device_hub</i></a>
+                        ng-class="{'disabled': !username}"><i class="material-icons">call_split</i></a>
                 </div>
             </div>
 
@@ -251,13 +251,17 @@
                         <div class="row">
                             <form class="col s12">
                                 <div class="input-field">
-                                    <input id="workflowsGeneralWebsite" type="text" class="validate">
+                                    <input id="workflowsGeneralWebsite" type="text" class="validate" ng-model="workflow_website" ng-disabled="!workflows_info_editable">
                                     <label for="workflowsGeneralWebsite">Website</label>
                                 </div>
                                 <div class="input-field">
                                     <textarea id="workflowsGeneralDescription"
-                                        class="validate materialize-textarea"></textarea>
+                                        class="validate materialize-textarea" ng-model="workflow_description" ng-disabled="!workflows_info_editable"></textarea>
                                     <label for="workflowsGeneralDescription">Description</label>
+                                </div>
+                                <div class="input-field" ng-show="workflow_info_forked_from">
+                                    <textarea id="workflowsGeneralEditSummary" class="validate materialize-textarea" ng-model="workflow_changes" ng-disabled="!workflows_info_editable"></textarea>
+                                    <label for="workflowsGeneralEditSummary">Edit Summary</label>
                                 </div>
                                 <div class="input-field chips left-align"></div>
                             </form>
@@ -303,7 +307,7 @@
                                 </div>
                                 <div class="input-field col s12">
                                     <input id="editWorkflowName" type="text" class="validate"
-                                        ng-model="workflows_step_name">
+                                        ng-model="workflows_step_name" ng-disabled="!workflows_info_editable">
                                     <label for="editWorkflowName">Name</label>
                                 </div>
                                 <div id="workflow_step_editor"></div>
@@ -317,9 +321,9 @@
                                 <div class="row col s12">
                                     <div class="right-align">
                                         <a class="waves-effect waves-light btn" style="margin:2px">Cancel</a>
-                                        <a class="waves-effect waves-light btn" style="margin:2px">Delete</a>
+                                        <a class="waves-effect waves-light btn" style="margin:2px" ng-show="workflows_info_editable">Delete</a>
                                         <a class="waves-effect waves-light btn" style="margin:2px"
-                                            ng-click="workflow_step_add()">Add</a>
+                                            ng-click="workflow_step_add()" ng-show="workflows_info_editable">Add</a>
                                     </div>
                                 </div>
                             </form>
@@ -346,12 +350,12 @@
                                     </thead>
                                     <tbody>
                                         <tr ng-repeat="x in workflow_input_outputs">
-                                            <td><input type="text" placeholder="Name" ng-model="x.name"></td>
-                                            <td><input type="text" placeholder="Description" ng-model="x.description"></td>
+                                            <td><input type="text" placeholder="Name" ng-model="x.name" ng-disabled="!workflows_info_editable"></td>
+                                            <td><input type="text" placeholder="Description" ng-model="x.description" ng-disabled="!workflows_info_editable"></td>
                                             <td class="switch">
                                                 <label>
                                                     IN
-                                                    <input type="checkbox" ng-model="x.out" style="display:none">
+                                                    <input type="checkbox" ng-model="x.out" style="display:none" ng-disabled="!workflows_info_editable">
                                                     <span class="lever"></span>
                                                     OUT
                                                 </label>
@@ -400,7 +404,7 @@
                                 </table>
                             </div>
                             <div class="right-align">
-                                <a class="waves-effect waves-light btn" style="margin:2px" ng-click="workflow_step_input_output_update_pressed()">Update</a>
+                                <a class="waves-effect waves-light btn" style="margin:2px" ng-click="workflow_step_input_output_update_pressed()" ng-show="workflows_info_editable">Update</a>
                             </div>
                         </div>
                     </div>
