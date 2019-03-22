@@ -1885,6 +1885,22 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     };
 
+    /*
+    * worfklows --> info (right panel) --> button "Clear" --> Pressed
+    */
+    $scope.workflow_info_clear_pressed = function() {
+        window.clear();
+    };
+
+    /*
+    * worfklows --> info (right panel) --> button "FIT" --> Pressed
+    */
+    $scope.workflow_info_fit_pressed = function() {
+        window.fit();
+    };
+
+
+
     // WORKFLOWS END 
 
 
