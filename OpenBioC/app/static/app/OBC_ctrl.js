@@ -1486,6 +1486,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 //Load the graph. TODO: WHAT HAPPENS WHEN WE CLICK TO NODE? IT IS NOT REGISTERED
                 cy.json(data['workflow']);
                 cy.resize();
+                window.cy_setup_events();
 
                 //Make step editor readonly
                 workflow_step_editor.setReadOnly(true);
