@@ -83,7 +83,7 @@ python manage.py runserver 0.0.0.0:8200
 
 ## How to Run:
 Run these commands whenever you want to run/test your changes. I assume you have followed the instruction of how to install. 
-Also you change change the port (8200) to anything you like.
+Also you can change the port (8200) to anything you like.
 
 
 ```

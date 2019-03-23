@@ -90,6 +90,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.workflows_info_editable = false;
         $scope.workflow_website = '';
         $scope.workflow_description = '';
+        $scope.workflow_changes = '';
         $scope.workflow_info_forked_from = null; // From which workflow was this workflow forked from?
         $scope.workflows_info_error_message = '';
         $scope.workflows_step_name = '';
