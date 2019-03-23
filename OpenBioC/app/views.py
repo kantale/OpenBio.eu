@@ -2,7 +2,7 @@
 # Django imports
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-
+from django.conf import settings # Access to project settings
 from django.contrib.auth.models import User
 
 from django.contrib.auth import authenticate
@@ -32,13 +32,19 @@ import re
 import uuid
 #import datetime # Use timezone.now()
 
+import logging # https://docs.djangoproject.com/en/2.1/topics/logging/
+
 # Installed packages imports 
 import simplejson
 
 __version__ = '0.0.4rc'
 
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
+
 #GLOBAL CONSTANTS
 g = {
+    'DEFAULT_DEBUG_PORT': 8200,
     'SEARCH_TOOL_TREE_ID': '1',
     'DEPENDENCY_TOOL_TREE_ID': '2',
     'VARIABLES_TOOL_TREE_ID': '3',
@@ -450,6 +456,15 @@ def index(request):
         else:
             context['general_alert_message'] = password_reset_check_message
 	
+    # Show warning when running in default Django port
+    port = int(request.META['SERVER_PORT'])
+    if settings.DEBUG:
+        # Running with DEBUG True
+        if port == 8000:
+            logger.warning('WARNING: YOU ARE RUNNING IN DEFAULT DJANGO PORT (8000)')
+        if port != g['DEFAULT_DEBUG_PORT']:
+            logger.warning(f'WARNING: You are not runining on port {g["DEFAULT_DEBUG_PORT"]}')
+
     return render(request, 'app/index.html', context)
 
 @has_data
