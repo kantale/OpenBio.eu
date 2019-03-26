@@ -903,9 +903,12 @@ window.onload = function () {
                 //TOOLS 
                 if (d.type === "tool") {
       
-                    d.id = JSON.parse(d.id).join('__');
-					/*remove special characters*/
-					d.id = d.id.replace(/\./g,'');
+                    //If d.id is a JSON string parse it. d.id might come either from jstree (needs parsing) or cytoscape (does not need parsing)
+                    if (d.id.indexOf('[')>-1) {
+                        d.id = JSON.parse(d.id).join('__');
+                        /*remove special characters*/
+                        d.id = d.id.replace(/\./g,'');
+                    }
 
                     if ("parent" in d) {
                         d.dep_id = d.parent;
@@ -913,9 +916,11 @@ window.onload = function () {
                     }
 
                     if (d.dep_id != "#") {
-                        d.dep_id = JSON.parse(d.dep_id).join('__');
-						/*remove special characters*/
-						d.dep_id = d.dep_id.replace(/\./g,'');
+                        if (d.dep_id.indexOf('[')>-1) { // Parse it if this is JSON. 
+                            d.dep_id = JSON.parse(d.dep_id).join('__');
+                            /*remove special characters*/
+                            d.dep_id = d.dep_id.replace(/\./g,'');
+                        }
 
                         //var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'no', variables: d.variables } };
                         var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'no', dep_id: d.dep_id, variables: d.variables } };
