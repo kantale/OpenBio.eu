@@ -90,6 +90,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.workflows_info_editable = false;
         $scope.workflow_website = '';
         $scope.workflow_description = '';
+        $scope.workflow_changes = '';
         $scope.workflow_info_forked_from = null; // From which workflow was this workflow forked from?
         $scope.workflows_info_error_message = '';
         $scope.workflows_step_name = '';
@@ -733,13 +734,24 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //Open Workflows accordion
         window.createWorkflowBtn_click();
 
-        $scope.workflows_step_name = '';
-        $scope.workflows_step_description = '';
         $scope.workflow_info_name = $scope.workflows_search_name;
         $scope.workflows_info_username = $scope.username;
         $scope.workflows_info_editable = true;
         $scope.workflow_info_created_at = null;
         $scope.workflow_info_forked_from = null;
+        $scope.workflow_website = '';
+        $scope.workflow_description = '';
+
+        //Clear graph
+        $scope.workflow_info_clear_pressed();
+
+        //Clear STEP
+        $scope.workflows_step_name = '';
+        $scope.workflows_step_description = '';
+        workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1);
+
+        //Clear input/output variables
+        $scope.workflow_input_outputs = [{name: '', description: '', out:true}];
 
         //Update Step Editor Tab completion 
         $scope.workflow_update_tab_completion_info_to_step();
@@ -1500,6 +1512,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                         $scope.workflow_input_outputs.push({name: data.name, description: data.description, out: data.type === 'output'});
                     });
                 }
+                // $scope.workflow_input_outputs should never be empty. FIXME: Build an initializer function
+                if (! $scope.workflow_input_outputs.length) {
+                    $scope.workflow_input_outputs = [{name: '', description: '', out:true}];
+                }
             },
             function(data) {
                 generateToast(data['error_message'], 'red lighten-2 black-text', 'stay on');
@@ -1804,6 +1820,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * Workflows --> Input/Outputs --> (Alter Input / Output variables) --> Update button --> pressed
     */
     $scope.workflow_step_input_output_update_pressed = function() {
+
         var nodes_to_add = [];
 
         $scope.workflow_input_outputs.forEach(function(input_output){
@@ -1876,7 +1893,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.workflows_info_editable = true;
         generateToast("Workflows successfully forked. Press Save after completing your edits", 'green lighten-2 black-text', 'stay on'); 
 
-         $scope.workflow_info_forked_from = {
+        $scope.workflow_info_forked_from = {
             'name': $scope.workflow_info_name,  
             'edit': $scope.workflow_info_edit
         }
@@ -1886,7 +1903,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
-    * Calleds from ui.js, when a user drags a worklfow in current workflow
+    * Called from ui.js, when a user drags a worklfow in current workflow
     * workflow = {'name': ... , 'edit': '...'}
     */
     $scope.workflow_add_workflow = function(workflow) {
