@@ -1026,10 +1026,13 @@ window.onload = function () {
 						this.successors().targets().forEach(function (element) {
 							console.log("HERE");
 								//check if node has flag(open)								
-								if(typeof element['_private'].data.flag ==='undefined' || element['_private'].data.flag !=='open')
+								if(typeof element['_private'].data.flag ==='undefined' || element['_private'].data.flag !=='open'){
+									console.log(" FLAG ? :");
+									console.log(element['_private'].data);
+							
 									element.style("display", "none");
-								//if (typeof openIds === 'undefined' || !openIds.includes(element['_private'].data.id))
-								//    element.style("display", "none");
+								}
+								
 							});
                     }
                 }
@@ -1214,26 +1217,23 @@ window.onload = function () {
 
             // parse incoming data and transform to cytoscape format
             var treeData = parseWorkflow(myworkflow);
-
+			var openId;
             //concat all data
             if (typeof currentElements.nodes !== 'undefined') {
-
+				
                 /* check if new node exists in current data */
 				 treeData.nodes.forEach(function(element) {
 					 currentElements.nodes.forEach(function(celement){
 						if(element.data.id===celement.data.id){
-							console.log("THERE");
-							cy.$('#'+celement.data.id).data('flag', 'open');
-							console.log(cy.$('#'+celement.data.id));
-							
+		    				openId=celement.data.id;						
 						}
 					 });      
 				});
 
-			console.log(currentElements.nodes);
 			
                 var allNodes = [], allEdges = [];
                 allNodes = currentElements.nodes.concat(treeData.nodes);
+				
                 if (typeof currentElements.edges !== 'undefined' && typeof treeData.edges !== 'undefined') {
                     allEdges = currentElements.edges.concat(treeData.edges);
                 }
@@ -1250,6 +1250,9 @@ window.onload = function () {
 				
             }
 
+			
+			
+			
 
             // this is needed because cy.add() causes multiple instances of layout
             initializeTree();
@@ -1264,7 +1267,9 @@ window.onload = function () {
 
             });
 
-
+			//Add open flag for nodes that should always stay open (these are the nodes that belong to more than one tool)
+			cy.$('#'+openId).data('flag', 'open');
+			
             // close all successors of root node		
             cy.json().elements.nodes.forEach(function (node) {
 				
@@ -1273,7 +1278,9 @@ window.onload = function () {
 
             });
 
+			console.log("start setup events");
             window.cy_setup_events();
+			console.log("stop setup events");
         }
 
 
