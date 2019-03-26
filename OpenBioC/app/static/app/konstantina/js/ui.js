@@ -879,7 +879,7 @@ window.onload = function () {
         **/
         //var cy;
 
-        openIds = [];
+        //openIds = [];
 
         /**
         parse data from openbioc to meet the cytoscape.js requirements
@@ -1017,11 +1017,15 @@ window.onload = function () {
                     if (this.successors().targets().style("display") == "none") {
                         this.connectedEdges().targets().style("display", "element");
                     } else {
-                        //hide the children nodes and edges recursively
-                        this.successors().targets().forEach(function (element) {
-                            if (typeof openIds === 'undefined' || !openIds.includes(element['_private'].data.id))
-                                element.style("display", "none");
-                        });
+                        //hide the children nodes and edges recursively  
+						this.successors().targets().forEach(function (element) {
+							console.log("HERE");
+								//check if node has flag(open)								
+								if(typeof element['_private'].data.flag ==='undefined' || element['_private'].data.flag !=='open')
+									element.style("display", "none");
+								//if (typeof openIds === 'undefined' || !openIds.includes(element['_private'].data.id))
+								//    element.style("display", "none");
+							});
                     }
                 }
 
@@ -1201,7 +1205,7 @@ window.onload = function () {
             //function buildTree(myworkflow) {
 
             // get existing data if any
-            var currentElements = cy.json().elements;
+            currentElements = cy.json().elements;
 
             // parse incoming data and transform to cytoscape format
             var treeData = parseWorkflow(myworkflow);
@@ -1212,12 +1216,17 @@ window.onload = function () {
                 /* check if new node exists in current data */
 				 treeData.nodes.forEach(function(element) {
 					 currentElements.nodes.forEach(function(celement){
-						if(element.data.id===celement.data.id)
-						  openIds.push(element.data.id);
+						if(element.data.id===celement.data.id){
+							console.log("THERE");
+							cy.$('#'+celement.data.id).data('flag', 'open');
+							console.log(cy.$('#'+celement.data.id));
+							
+						}
 					 });      
 				});
 
-
+			console.log(currentElements.nodes);
+			
                 var allNodes = [], allEdges = [];
                 allNodes = currentElements.nodes.concat(treeData.nodes);
                 if (typeof currentElements.edges !== 'undefined' && typeof treeData.edges !== 'undefined') {
@@ -1233,7 +1242,7 @@ window.onload = function () {
                     nodes: allNodes,
                     edges: allEdges
                 };
-
+				
             }
 
 
@@ -1323,7 +1332,7 @@ window.onload = function () {
         window.clear = function () {
             //cy.destroy();
             cy.remove('edge, node');
-            openIds = [];
+            //openIds = [];
         }
 
 
