@@ -222,7 +222,7 @@
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fit" ng-click="workflow_info_fit_pressed()">Fit</a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
-                        data-tooltip="Clear" ng-click="workflow_info_clear_pressed()">Clear</a>
+                        data-tooltip="Clear" ng-click="workflow_info_clear_pressed()" ng-disabled="!workflows_info_editable">Clear</a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Add Step" ng-click="workflow_info_add_step_clicked()">Add Step</a>
                     <a id="expandAllBtn2" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
