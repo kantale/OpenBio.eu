@@ -1085,7 +1085,6 @@ window.onload = function () {
 
         function initializeTree() {
 
-
             cy = cytoscape({
                 container: document.getElementById('cywf'), // container to render in
                 elements: [],
@@ -1146,7 +1145,7 @@ window.onload = function () {
                             //"width": 15
                         }
                     },
-					/*
+					
 					{
                         selector: 'node[type="workflow"]',
                         "style": {
@@ -1157,7 +1156,16 @@ window.onload = function () {
                             //"height": 15,
                             //"width": 15
                         }
-                    },*/
+                    },
+
+                    {
+                        //Do not show the root workflow 
+                        selector: 'node[type="workflow"][id="root"]',
+                        "style": {
+                            "display": "none"
+                        }
+                    },
+
 
                     {
                         selector: 'edge',
@@ -1307,7 +1315,17 @@ window.onload = function () {
         window.clear = function () {
             //cy.destroy();
             cy.remove('edge, node');
-            //openIds = [];
+
+             cy.json({
+                elements: {
+                    nodes: [{data: {id: "root", label: "_", type: "workflow"}}]
+                }
+            });
+
+            cy.resize();
+            cy.reset();
+            cy.center();
+
         }
 
 
