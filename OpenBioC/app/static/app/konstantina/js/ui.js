@@ -896,8 +896,9 @@ window.onload = function () {
                 if (d.type === 'input' || d.type === 'output') {
                     var myNode = {data: {id: d.name, label: d.name, name: d.name, type: d.type, description: d.description}};
                     myNodes.push(myNode);
+                    //Connect with root workflow
+                    myEdges.push({data: {source: "root", target: d.name, id: "root" + d.name}});
                 }
-				
 				
 
                 //TOOLS 
@@ -933,6 +934,7 @@ window.onload = function () {
                         //var myNode = { data: { id: d.id, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'yes', variables: d.variables } };
                         var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'yes', dep_id: d.dep_id, variables: d.variables } };
                         myNodes.push(myNode);
+                        myEdges.push({data: {source: "root", target: d.id, id: "root" + d.id}});
                     }
 
                 }
@@ -951,6 +953,8 @@ window.onload = function () {
                     //jstree uses d.name, cytoscape uses d.label and we also need an id...
                     var myNode = { data: { id: d.name, name:d.name, label: d.name, type: d.type, bash: d.bash, tools:d.tools, steps:d.steps, inputs:d.inputs, outputs:d.outputs } };
                     myNodes.push(myNode);
+                    //Connect with root workflow
+                    myEdges.push({data: {source:"root", target: d.name, id:"root" + d.name}});
                     //create edges to tools and/or steps
                     if (typeof d.tools !== "undefined") {
                         //replace special characters
