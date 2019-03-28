@@ -928,12 +928,20 @@ window.onload = function () {
                         myNodes.push(myNode);
                         var myEdge = { data: { 'id': d.dep_id + d.id, 'weight': 1, 'source': d.dep_id, 'target': d.id } };
                         myEdges.push(myEdge);
+						
                     } else {
                         //var myNode = { data: { id: d.id, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'yes', variables: d.variables } };
                         var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'yes', dep_id: d.dep_id, variables: d.variables } };
                         myNodes.push(myNode);
                     }
 
+                }
+				
+				 //WORKFLOWS
+				 if (d.type === "workflow") {
+					//TODO add root feature (different than tools): wfroot:yes
+					
+					
                 }
 
 
@@ -982,13 +990,7 @@ window.onload = function () {
                     }
                 }
 
-                //WORKFLOWS
-                if (d.type === "workflow") {
-
-					//TODO SHOW ?
-
-
-                }
+               
 
             });
 
@@ -1024,12 +1026,8 @@ window.onload = function () {
                     } else {
                         //hide the children nodes and edges recursively  
 						this.successors().targets().forEach(function (element) {
-							console.log("HERE");
 								//check if node has flag(open)								
 								if(typeof element['_private'].data.flag ==='undefined' || element['_private'].data.flag !=='open'){
-									console.log(" FLAG ? :");
-									console.log(element['_private'].data);
-							
 									element.style("display", "none");
 								}
 								
@@ -1041,10 +1039,13 @@ window.onload = function () {
 
             /* show tooltip */
             cy.on('mouseover', 'node', function (event) {
+                  
 
                 nodeId = this._private.data.id
                 myNode = cy.getElementById(nodeId);
 
+               console.log("SHOW TOOLTIP : ");
+               console.log(nodeId);  
 
                 //tippy
                 var makeTippy = function (node, text) {
@@ -1073,7 +1074,11 @@ window.onload = function () {
 
             // hide tooltip
             cy.on('mouseout', 'node', function (event) {
-                myTippy.hide();
+               console.log("HIDE TOOLTIP");
+               console.log(this._private.data.id);
+
+                myTippy.destroy();    
+                //myTippy.hide();
             });
 
         }
@@ -1141,6 +1146,18 @@ window.onload = function () {
                             //"width": 15
                         }
                     },
+					/*
+					{
+                        selector: 'node[type="workflow"]',
+                        "style": {
+                            'shape': 'diamond',
+							//'border-width' : '3',
+							//'border-color' : '#E53935',
+                            'background-color': '#AFB4AE',
+                            //"height": 15,
+                            //"width": 15
+                        }
+                    },*/
 
                     {
                         selector: 'edge',
@@ -1217,7 +1234,8 @@ window.onload = function () {
 
             // parse incoming data and transform to cytoscape format
             var treeData = parseWorkflow(myworkflow);
-			var openId;
+		  var openId;
+            
             //concat all data
             if (typeof currentElements.nodes !== 'undefined') {
 				
@@ -1267,80 +1285,25 @@ window.onload = function () {
 
             });
 
-			//Add open flag for nodes that should always stay open (these are the nodes that belong to more than one tool)
-			cy.$('#'+openId).data('flag', 'open');
+		  
+            //Add open flag for nodes that should always stay open (these are the nodes that belong to more than one tool)
+		  cy.$('#'+openId).data('flag', 'open');
 			
-            // close all successors of root node		
+            // close all successors of root node or workflow node	
             cy.json().elements.nodes.forEach(function (node) {
 				
-                if (typeof node.data.root !== 'undefined' && node.data.root === 'yes')
+                if (typeof node.data.root !== 'undefined' && node.data.root === 'yes') //TODO check for "wfroot:yes"
                     cy.$("#" + node.data.id).successors().targets().style("display", "none");
 
             });
 
 			console.log("start setup events");
-            window.cy_setup_events();
+               window.cy_setup_events();
 			console.log("stop setup events");
         }
 
 
-        window.store = function () {
-            //myObjects = [], myObject = '';
-            json = cy.json();
-			return json;
-            // create workflow object to store
-            /*node  format
-            
-            data:
-               edit: 1
-               id: "tool6112"
-               label: "tool6/1/1"
-               name: "tool6"
-               root: "yes"
-               type: "tool"
-               version: "1"
-           	
-            */
-
-            /*edge  format*/
-
-			/*
-            json.elements.nodes.forEach(function (d) {
-
-                json.elements.edges.forEach(function (f) {
-                    if (d.data.root === 'no') {
-
-                        if (d.data.id === f.data.target)
-                            myObject = { data: { name: d.data.name, version: d.data.version, edit: d.data.edit }, id: d.data.id, parent: f.data.source, type: d.data.type, text: d.data.label };
-
-                    } else {
-                        myObject = { data: { name: d.data.name, version: d.data.version, edit: d.data.edit }, id: d.data.id, parent: '#', type: d.data.type, text: d.data.label };
-
-                    }
-                });
-
-                myObjects.push(myObject);
-
-            });
-
-            return myObjects;
-			*/
-
-            /*
-          STORED WORKFLOWS FORMAT
-            [{ 
-          data: {name: "tool6", version: "1", edit: 1, type: "tool"}
-          id: "tool6112"
-          parent: "#"
-          text: "tool6/1/1"
-          type: "tool"
-            },...
-            ]
-            
-           */
-
-        }
-
+      
         window.clear = function () {
             //cy.destroy();
             cy.remove('edge, node');
