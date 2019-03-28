@@ -956,6 +956,72 @@ def tools_add(request, **kwargs):
 
     return success(ret)
 
+def create_workflow_edge_id(source_id, target_id):
+    '''
+    ATTENTION!!!!
+
+    This should be in accordance with the javascript code: File: ui.js
+
+
+        /*
+        * Create a "unique" id for an edge 
+        */
+        function create_workflow_edge_id(source_id, target_id) {
+            return source_id + '..' + target_id;
+        }
+
+    '''
+    return source_id + '..' + target_id
+
+def create_workflow_id(workflow):
+    '''
+    ATTENTION!!
+    This should be in accordnace with the javascript code: File: ui.js
+        /*
+        * Creates a "unique" id from a workflow
+        */
+        function create_workflow_id(workflow) {
+            return workflow.name + '__' + workflow.edit; //It is ok if this is wf1__null
+        }
+    '''
+    return workflow['name'] + '__' + str(workflow['edit'])
+
+
+def set_edit_to_cytoscape_json(cy, edit):
+    '''
+    Set the edit number of the workflow to all nodes/edges
+    '''
+
+    # Get the root workflow node
+    new_worfklow_node = [x for x in cy['elements']['nodes'] if x['data']['type']=='workflow' and not x['data']['edit']]
+    assert len(new_worfklow_node) == 1
+    name = new_worfklow_node[0]['data']['name']
+
+    # Set the edit value
+    new_worfklow_node[0]['data']['edit'] = edit
+
+    belongto = {
+        'name': name,
+        'edit': edit,
+    }
+    belongto_id = create_workflow_id(belongto)
+
+    for node in cy['elements']['nodes']:
+        if not node['data']['belongto'] is None:
+            if not node['data']['belongto']['edit']:
+                node['data']['belongto'] = belongto
+
+    if 'edges' in cy['elements']:
+        for edge in cy['elements']['edges']:
+            if '__null' in edge['data']['source']:
+                edge['data']['source'] = belongto_id
+            if '__null' in edge['data']['target']:
+                edge['data']['target'] = belongto_id
+            if '_null' in edge['data']['id']:
+                edge['data']['id'] = create_workflow_edge_id(edge['data']['source'], edge['data']['target'])
+
+
+
 @has_data
 def workflows_add(request, **kwargs):
     if request.user.is_anonymous: # Server should always check..
@@ -992,10 +1058,10 @@ def workflows_add(request, **kwargs):
 
     # Client sents the root workflow node.
     # When we save we make root False so that it is easier to import it later 
-    workflow_root_node = [x for x in workflow['elements']['nodes'] if x['data']['type']=='workflow' and x['data']['root']]
-    if len(workflow_root_node) != 1:
-        return fail('Error 28342')
-    workflow_root_node[0]['data']['root'] = False
+    #workflow_root_node = [x for x in workflow['elements']['nodes'] if x['data']['type']=='workflow' and x['data']['root']]
+    #if len(workflow_root_node) != 1:
+    #    return fail('Error 28342')
+    #workflow_root_node[0]['data']['root'] = False
 
 
     #Get the maximum version. FIXME DUPLIXATE CODE
@@ -1006,6 +1072,8 @@ def workflows_add(request, **kwargs):
         max_edit = workflow_all.aggregate(Max('edit'))
         next_edit = max_edit['edit__max'] + 1
 
+    #Change the edit value in the cytoscape json object
+    set_edit_to_cytoscape_json(workflow, next_edit)
 
     new_workflow = Workflow(
         obc_user=OBC_user.objects.get(user=request.user), 

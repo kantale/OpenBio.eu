@@ -1061,15 +1061,17 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                         }
                     });
                     //Make sure that all dependencies_jstree nodes have a variables field
+                    //Also make sure that all ependencies_jstree nodes have a belongto fields
                     for (var i=0; i<data['dependencies_jstree'].length; i++) {
                         if (typeof data['dependencies_jstree'][i].variables !== 'undefined') {
                         }
                         else {
                             data['dependencies_jstree'][i].variables = [];
                         }
+                        data['dependencies_jstree'][i].belongto = null;
                     }
 
-                    window.buildTree(data['dependencies_jstree']); //FIXME SEE A46016A6E393 
+                    window.buildTree(data['dependencies_jstree'], {name: $scope.workflow_info_name, edit: null}); //FIXME SEE A46016A6E393 
                     $scope.workflow_update_tab_completion_info_to_step(); 
 
 
@@ -1792,11 +1794,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             steps: steps,
             tools: tools,
             inputs: input_output.inputs,
-            outputs: input_output.outputs
+            outputs: input_output.outputs,
+            belongto: null
         }];
 
         //Always when updating the graph, update also tab completion data for step editor! FIXME!! (bundle these things together!) A46016A6E393
-        window.buildTree(step_node);
+        window.buildTree(step_node, {name: $scope.workflow_info_name, edit: null});
         $scope.workflow_update_tab_completion_info_to_step();
 
 
@@ -1828,7 +1831,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 nodes_to_add.push({
                     name: input_output.name,
                     description: input_output.description,
-                    type: input_output.out ? 'output' : 'input'
+                    type: input_output.out ? 'output' : 'input',
+                    belongto: null
                 })
             }
         });
@@ -1837,7 +1841,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //console.log(nodes_to_add);
 
         if (nodes_to_add.length) {
-            window.buildTree(nodes_to_add); // FIXME. SEE A46016A6E393 
+            window.buildTree(nodes_to_add, {name: $scope.workflow_info_name, edit: null}); // FIXME. SEE A46016A6E393 
             $scope.workflow_update_tab_completion_info_to_step();
         }
     };
@@ -1909,8 +1913,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * workflow = {'name': ... , 'edit': '...'}
     */
     $scope.workflow_add_workflow = function(workflow) {
-        //console.log('WORKFLOW TO BE ADDED:');
-        //console.log(workflow);
+        console.log('WORKFLOW TO BE ADDED:');
+        console.log(workflow);
 
         //Fetch info of this workflow
         $scope.ajax(
@@ -1922,10 +1926,23 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             function(data) {
                 workflow_cytoscape = data['workflow'];
                 
-                //Create the nodes that will be added 
+                //Create a single worfklow node
+                //var workflow_node_to_add;
+                //workflow_cytoscape.elements.nodes.forEach(function(node) {
+                //    if (node.data.type=='workflow' && node.data.root) {
+                //        workflow_node_to_add = {
+                //            name: node.data.name,
+                //            edit: node.data.edit,
+                //            type: 'workflow'
+                //        };
+                //    }
+                //});
+
+                //the information regarding edges exists on the nodes. 
+                //We do not have to pass the complete worfklow, or edger information.
                 var nodes_to_add = []
                 workflow_cytoscape.elements.nodes.forEach(function(node){ nodes_to_add.push(node.data) });
-                window.buildTree(nodes_to_add);  
+                window.buildTree(nodes_to_add, {name: $scope.workflow_info_name, edit: null});  
             },
             function(data) {
                 generateToast("ERROR 81711", 'red lighten-2 black-text', 'stay on');

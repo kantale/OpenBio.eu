@@ -796,7 +796,7 @@ window.onload = function () {
                 }
             }
         }
-        else if (this_id_array[2] == '4') { // this is an item from workflows_search_tree. The id is the 3rd element
+        else if (this_id_array[2] == '4') { // this is an item from workflows_search_tree droped on the cytoscape window. The id is the 3rd element
             if (target.closest('#cywf').length && (!workflow_step_editor.getReadOnly())) {
 
                 var workflow = {
@@ -881,12 +881,48 @@ window.onload = function () {
 
         //openIds = [];
 
-        /**
-        parse data from openbioc to meet the cytoscape.js requirements
-        **/
-        function parseWorkflow(incomingData) {
+        /*
+        * Creates a "unique" id from a workflow
+        * ATTENTION! This should be in accordance with the python function create_workflow_id in views.py
+        */
+        function create_workflow_id(workflow) {
+            return workflow.name + '__' + workflow.edit; //It is ok if this is wf1__null
+        }
 
-            var root_workflow_id = cy.$("node[type='workflow'][root]").data().id;
+        /*
+        * Create a suitable worfklow name
+        */
+        function create_workflow_label(workflow) {
+            if (workflow.edit) {
+                return workflow.name + '/' + workflow.edit;
+            }
+            return workflow.name;
+        }
+
+        /*
+        * Create a "unique" id for an edge 
+        * ATTENTION! This should be in accordance with the python function create_workflow_edge_id in views.py
+        */
+        function create_workflow_edge_id(source_id, target_id) {
+            return source_id + '..' + target_id;
+        }
+
+        /*
+        * parse data from openbioc to meet the cytoscape.js requirements
+        * Create cytoscape nodes and edges
+        * incomingData: List of nodes to add
+        * belongto: the workflow to be added to
+        */
+        function parseWorkflow(incomingData, belongto) {
+            console.log('parseWorkflow incomingData:');
+            console.log(incomingData);
+
+            console.log('belongto:');
+            console.log(belongto);
+
+
+            var root_workflow_id = create_workflow_id(belongto);
+
 
             var myNodes = [], myEdges = [];
 
@@ -895,10 +931,10 @@ window.onload = function () {
 
                 //INPUTS/OUTPUTS
                 if (d.type === 'input' || d.type === 'output') {
-                    var myNode = {data: {id: d.name, label: d.name, name: d.name, type: d.type, description: d.description}};
+                    var myNode = {data: {id: d.name, label: d.name, name: d.name, type: d.type, description: d.description, belongto: d.belongto ? d.belongto : belongto}};
                     myNodes.push(myNode);
                     //Connect with root workflow
-                    myEdges.push({data: {source: root_workflow_id, target: d.name, id: "root" + d.name}});
+                    myEdges.push({data: {source: root_workflow_id, target: d.name, id: create_workflow_edge_id(root_workflow_id, d.name)}});
                 }
 				
 
@@ -925,17 +961,17 @@ window.onload = function () {
                         }
 
                         //var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'no', variables: d.variables } };
-                        var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'no', dep_id: d.dep_id, variables: d.variables } };
+                        var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'no', dep_id: d.dep_id, variables: d.variables, belongto: d.belongto ? d.belongto : belongto } };
 
                         myNodes.push(myNode);
-                        var myEdge = { data: { 'id': d.dep_id + d.id, 'weight': 1, 'source': d.dep_id, 'target': d.id } };
+                        var myEdge = { data: { id: create_workflow_edge_id(d.dep_id, d.id), weight: 1, source: d.dep_id, target: d.id } };
                         myEdges.push(myEdge);
 						
                     } else {
                         //var myNode = { data: { id: d.id, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'yes', variables: d.variables } };
-                        var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'yes', dep_id: d.dep_id, variables: d.variables } };
+                        var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'yes', dep_id: d.dep_id, variables: d.variables, belongto: d.belongto ? d.belongto : belongto } };
                         myNodes.push(myNode);
-                        myEdges.push({data: {source: root_workflow_id, target: d.id, id: "root" + d.id}});
+                        myEdges.push({data: {source: root_workflow_id, target: d.id, id: create_workflow_edge_id(root_workflow_id, d.id)}});
                     }
 
                 }
@@ -943,9 +979,11 @@ window.onload = function () {
 				 //WORKFLOWS
 				 if (d.type === "workflow") {
 					//TODO add root feature (different than tools): wfroot:yes
-					
-				   var myNode = { data: { id: d.id, text:d.text, label: d.text, root: 'yes'} };
-                        myNodes.push(myNode);
+				    
+                    var this_workflow_id = create_workflow_id(d);
+                    var myNode = { data: { id: this_workflow_id, name: d.name, edit: d.edit, label: create_workflow_label(d), type: 'workflow', belongto: d.belongto ? d.belongto : belongto} };
+                    myNodes.push(myNode);
+                    myEdges.push({data: {source: root_workflow_id, target: this_workflow_id, id:create_workflow_edge_id(root_workflow_id, this_workflow_id)}});
                 }
 
 
@@ -953,10 +991,10 @@ window.onload = function () {
                 if (d.type === "step") {
                     //Why this redundancy?
                     //jstree uses d.name, cytoscape uses d.label and we also need an id...
-                    var myNode = { data: { id: d.name, name:d.name, label: d.name, type: d.type, bash: d.bash, tools:d.tools, steps:d.steps, inputs:d.inputs, outputs:d.outputs } };
+                    var myNode = { data: { id: d.name, name:d.name, label: d.name, type: d.type, bash: d.bash, tools:d.tools, steps:d.steps, inputs:d.inputs, outputs:d.outputs, belongto: d.belongto ? d.belongto : belongto } };
                     myNodes.push(myNode);
                     //Connect with root workflow
-                    myEdges.push({data: {source:root_workflow_id, target: d.name, id:"root" + d.name}});
+                    myEdges.push({data: {source:root_workflow_id, target: d.name, id:create_workflow_edge_id(root_workflow_id, d.name) }});
                     //create edges to tools and/or steps
                     if (typeof d.tools !== "undefined") {
                         //replace special characters
@@ -964,7 +1002,7 @@ window.onload = function () {
                         d.tools.forEach(function (element) {
                             //element = element.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
 
-                            var myEdge = { data: { 'id': d.name + element, 'weight': 1, 'source': d.name, 'target': element } };
+                            var myEdge = { data: { 'id': create_workflow_edge_id(d.name, element)  , 'weight': 1, 'source': d.name, 'target': element } };
                             myEdges.push(myEdge);
 
                         });
@@ -972,7 +1010,7 @@ window.onload = function () {
 
                     if (typeof d.steps !== "undefined") {
                         d.steps.forEach(function (element) {
-                            var myEdge = { data: { 'id': d.name + element, 'weight': 1, 'source': d.name, 'target': element } };
+                            var myEdge = { data: { 'id': create_workflow_edge_id(d.name, element), 'weight': 1, 'source': d.name, 'target': element } };
                             myEdges.push(myEdge);
 
                         });
@@ -981,7 +1019,7 @@ window.onload = function () {
 					
 					 if (typeof d.inputs !== "undefined") {
                         d.inputs.forEach(function (element) {
-                            var myEdge = { data: { 'id': element+d.name, 'weight': 1, 'source': element, 'target': d.name } };
+                            var myEdge = { data: { 'id': create_workflow_edge_id(element, d.name), 'weight': 1, 'source': element, 'target': d.name } };
                             myEdges.push(myEdge);
 
                         });
@@ -989,7 +1027,7 @@ window.onload = function () {
 					
 					if (typeof d.outputs !== "undefined") {
                         d.outputs.forEach(function (element) {
-                            var myEdge = { data: { 'id': d.name + element, 'weight': 1, 'source': d.name, 'target': element } };
+                            var myEdge = { data: { 'id': create_workflow_edge_id(d.name, element), 'weight': 1, 'source': d.name, 'target': element } };
                             myEdges.push(myEdge);
 
                         });
@@ -1165,13 +1203,13 @@ window.onload = function () {
                             //"width": 15
                         }
                     },
-                    {
+                    //{
                         //Do not show the root workflow 
-                        selector: 'node[type="workflow"][root]',
-                        "style": {
-                            "display": "none"
-                        }
-                    },
+                        //selector: 'node[type="workflow"][root]',
+                        //"style": {
+                        //    "display": "none"
+                        //}
+                    //},
                     {
                         selector: 'edge',
                         "style": {
@@ -1237,9 +1275,14 @@ window.onload = function () {
         initializeTree();
 
 
-        //add new data to the graph
-        //activate the collapse-expand option
-        window.buildTree = function (myworkflow) {
+        /* 
+        * add new data to the graph
+        * activate the collapse-expand option
+        * This function is getting called from angular
+        * myworkflow: list of nodes to add
+        * belongto: The worfklow node. myworkflow data will be added to belongto
+        */
+        window.buildTree = function (myworkflow, belongto) {
             //function buildTree(myworkflow) {
 
             // get existing data if any
@@ -1249,8 +1292,8 @@ window.onload = function () {
             console.log(currentElements);
 
             // parse incoming data and transform to cytoscape format
-            var treeData = parseWorkflow(myworkflow);
-		  var openId;
+            var treeData = parseWorkflow(myworkflow, belongto);
+            var openId;
             
             //concat all data
             if (typeof currentElements.nodes !== 'undefined') {
@@ -1283,14 +1326,8 @@ window.onload = function () {
                 };
 
                 console.log('treedata');
-                console.log(treeData);
-
-				
+                console.log(treeData);	
             }
-
-			
-			
-			
 
             // this is needed because cy.add() causes multiple instances of layout
             initializeTree();
@@ -1307,7 +1344,7 @@ window.onload = function () {
 
 		  
             //Add open flag for nodes that should always stay open (these are the nodes that belong to more than one tool)
-		  cy.$('#'+openId).data('flag', 'open');
+            cy.$('#'+openId).data('flag', 'open');
 			
             // close all successors of root node or workflow node	
             cy.json().elements.nodes.forEach(function (node) {
@@ -1333,7 +1370,7 @@ window.onload = function () {
 
              cy.json({
                 elements: {
-                    nodes: [{data: {id: name, label: name, type: "workflow", root:true}}]
+                    nodes: [{data: {id: create_workflow_id({name:name, edit: null}), label: name, name:name, edit: null, type: "workflow", belongto:null}}]
                 }
             });
 
