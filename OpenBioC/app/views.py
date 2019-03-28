@@ -985,10 +985,13 @@ def workflows_add(request, **kwargs):
 
     workflow = kwargs.get('workflow_json', '')
     if not workflow:
-        return fail ('worflows json object if empty') # This should never happen!
+        return fail ('worflows json object is empty') # This should never happen!
 
     if not workflow['elements']:
         return fail('workflow graph cannot be empty')
+
+    print (workfow['elements'])
+    a=1/0
 
     #Get the maximum version. FIXME DUPLIXATE CODE
     workflow_all = Workflow.objects.filter(name=workflows_search_name)

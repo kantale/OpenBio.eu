@@ -886,6 +886,7 @@ window.onload = function () {
         **/
         function parseWorkflow(incomingData) {
 
+            var root_workflow_id = cy.$("node[type='workflow'][root]").data().id;
 
             var myNodes = [], myEdges = [];
 
@@ -897,7 +898,7 @@ window.onload = function () {
                     var myNode = {data: {id: d.name, label: d.name, name: d.name, type: d.type, description: d.description}};
                     myNodes.push(myNode);
                     //Connect with root workflow
-                    myEdges.push({data: {source: "root", target: d.name, id: "root" + d.name}});
+                    myEdges.push({data: {source: root_workflow_id, target: d.name, id: "root" + d.name}});
                 }
 				
 
@@ -934,7 +935,7 @@ window.onload = function () {
                         //var myNode = { data: { id: d.id, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'yes', variables: d.variables } };
                         var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'yes', dep_id: d.dep_id, variables: d.variables } };
                         myNodes.push(myNode);
-                        myEdges.push({data: {source: "root", target: d.id, id: "root" + d.id}});
+                        myEdges.push({data: {source: root_workflow_id, target: d.id, id: "root" + d.id}});
                     }
 
                 }
@@ -955,7 +956,7 @@ window.onload = function () {
                     var myNode = { data: { id: d.name, name:d.name, label: d.name, type: d.type, bash: d.bash, tools:d.tools, steps:d.steps, inputs:d.inputs, outputs:d.outputs } };
                     myNodes.push(myNode);
                     //Connect with root workflow
-                    myEdges.push({data: {source:"root", target: d.name, id:"root" + d.name}});
+                    myEdges.push({data: {source:root_workflow_id, target: d.name, id:"root" + d.name}});
                     //create edges to tools and/or steps
                     if (typeof d.tools !== "undefined") {
                         //replace special characters
@@ -1166,7 +1167,7 @@ window.onload = function () {
                     },
                     {
                         //Do not show the root workflow 
-                        selector: 'node[type="workflow"][id="root"]',
+                        selector: 'node[type="workflow"][root]',
                         "style": {
                             "display": "none"
                         }
@@ -1322,14 +1323,17 @@ window.onload = function () {
         }
 
 
-      
-        window.clear = function () {
+        /*
+        * Deletes all elements
+        * Adds a root workflow node
+        */
+        window.clear = function (name) {
             //cy.destroy();
             cy.remove('edge, node');
 
              cy.json({
                 elements: {
-                    nodes: [{data: {id: "root", label: "_", type: "workflow"}}]
+                    nodes: [{data: {id: name, label: name, type: "workflow", root:true}}]
                 }
             });
 
@@ -1748,8 +1752,10 @@ window.onload = function () {
         }
         window.initTree();
 
-        //clear function
-        window.clear = function () {
+        /*
+        * Clear the 
+        */
+        window.clear = function (name) {
 
             mynodes = [], mylinks = [], children = [], tmp_children = [];
             window.treeData = [];

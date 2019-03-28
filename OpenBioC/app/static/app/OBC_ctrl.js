@@ -1847,6 +1847,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * See also: tool_create_save_pressed 
     */
     $scope.workflows_create_save_pressed = function() {
+
+
         $scope.ajax(
             'workflows_add/',
             {
@@ -1938,7 +1940,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * worfklows --> info (right panel) --> button "Clear" --> Pressed
     */
     $scope.workflow_info_clear_pressed = function() {
-        window.clear();
+        window.clear($scope.workflow_info_name);
     };
 
     /*
