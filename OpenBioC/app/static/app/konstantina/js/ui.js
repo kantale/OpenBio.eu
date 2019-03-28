@@ -908,7 +908,7 @@ window.onload = function () {
                     if (d.id.indexOf('[')>-1) {
                         d.id = JSON.parse(d.id).join('__');
                         /*remove special characters*/
-                        d.id = d.id.replace(/\./g,'');
+                        //d.id = d.id.replace(/\./g,''); // CYTOSCAPE ALLOWS . IN IDS
                     }
 
                     if ("parent" in d) {
@@ -920,7 +920,7 @@ window.onload = function () {
                         if (d.dep_id.indexOf('[')>-1) { // Parse it if this is JSON. 
                             d.dep_id = JSON.parse(d.dep_id).join('__');
                             /*remove special characters*/
-                            d.dep_id = d.dep_id.replace(/\./g,'');
+                           // d.dep_id = d.dep_id.replace(/\./g,''); //CYTOSCAPE ALLOWS . IN IDS
                         }
 
                         //var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'no', variables: d.variables } };
@@ -943,7 +943,8 @@ window.onload = function () {
 				 if (d.type === "workflow") {
 					//TODO add root feature (different than tools): wfroot:yes
 					
-					
+				   var myNode = { data: { id: d.id, text:d.text, label: d.text, root: 'yes'} };
+                        myNodes.push(myNode);
                 }
 
 
@@ -1091,7 +1092,9 @@ window.onload = function () {
 
             cy = cytoscape({
                 container: document.getElementById('cywf'), // container to render in
-                elements: [],
+                //elements:[],
+
+                elements: {nodes:[{data: {id: 'a', type: 'workflow', label: 'hahaha', text: 'lala' }}]},
 
                 //elements: [ // list of graph elements to start with
                 //      { // node a
@@ -1154,14 +1157,13 @@ window.onload = function () {
                         selector: 'node[type="workflow"]',
                         "style": {
                             'shape': 'diamond',
-							//'border-width' : '3',
-							//'border-color' : '#E53935',
+							'border-width' : '3',
+							'border-color' : '#E53935',
                             'background-color': '#AFB4AE',
                             //"height": 15,
                             //"width": 15
                         }
                     },
-
                     {
                         //Do not show the root workflow 
                         selector: 'node[type="workflow"][id="root"]',
@@ -1169,8 +1171,6 @@ window.onload = function () {
                             "display": "none"
                         }
                     },
-
-
                     {
                         selector: 'edge',
                         "style": {
@@ -1244,6 +1244,9 @@ window.onload = function () {
             // get existing data if any
             currentElements = cy.json().elements;
 
+            console.log('currentElements');
+            console.log(currentElements);
+
             // parse incoming data and transform to cytoscape format
             var treeData = parseWorkflow(myworkflow);
 		  var openId;
@@ -1277,6 +1280,10 @@ window.onload = function () {
                     nodes: allNodes,
                     edges: allEdges
                 };
+
+                console.log('treedata');
+                console.log(treeData);
+
 				
             }
 
