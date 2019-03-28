@@ -990,8 +990,13 @@ def workflows_add(request, **kwargs):
     if not workflow['elements']:
         return fail('workflow graph cannot be empty')
 
-    print (workfow['elements'])
-    a=1/0
+    # Client sents the root workflow node.
+    # When we save we make root False so that it is easier to import it later 
+    workflow_root_node = [x for x in workflow['elements']['nodes'] if x['data']['type']=='workflow' and x['data']['root']]
+    if len(workflow_root_node) != 1:
+        return fail('Error 28342')
+    workflow_root_node[0]['data']['root'] = False
+
 
     #Get the maximum version. FIXME DUPLIXATE CODE
     workflow_all = Workflow.objects.filter(name=workflows_search_name)
