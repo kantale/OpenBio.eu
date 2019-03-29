@@ -1910,6 +1910,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.workflow_changes = '';
         workflow_step_editor.setReadOnly(false);
 
+        //After fork, we should change the IDs 
+        //cy.$('node[type="workflow"][name="' + $scope.workflow_info_name + '"][edit=' + $scope.workflow_info_edit + ']').data('edit', null);
     };
 
     /*
@@ -1952,7 +1954,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 generateToast("ERROR 81711", 'red lighten-2 black-text', 'stay on');
             },
             function(statusText) {
-                generateToast("ERROR 81761", 'red lighten-2 black-text', 'stay on');
+                generateToast(statusText, 'red lighten-2 black-text', 'stay on');
             }
         );
     };

@@ -1019,9 +1019,9 @@ def set_edit_to_cytoscape_json(cy, edit):
     if 'edges' in cy['elements']:
         for edge in cy['elements']['edges']:
             if '__null' in edge['data']['source']:
-                edge['data']['source'] = belongto_id
+                edge['data']['source'] = edge['data']['source'].replace('__null', '__' + str(edit))
             if '__null' in edge['data']['target']:
-                edge['data']['target'] = belongto_id
+                edge['data']['target'] = edge['data']['target'].replace('__null', '__' + str(edit))
             if '_null' in edge['data']['id']:
                 edge['data']['id'] = create_workflow_edge_id(edge['data']['source'], edge['data']['target'])
 
@@ -1077,8 +1077,12 @@ def workflows_add(request, **kwargs):
         max_edit = workflow_all.aggregate(Max('edit'))
         next_edit = max_edit['edit__max'] + 1
 
+    #print (simplejson.dumps(workflow, indent=4))
+    print ('=====')
     #Change the edit value in the cytoscape json object
     set_edit_to_cytoscape_json(workflow, next_edit)
+
+    print (simplejson.dumps(workflow, indent=4))
 
     new_workflow = Workflow(
         obc_user=OBC_user.objects.get(user=request.user), 
