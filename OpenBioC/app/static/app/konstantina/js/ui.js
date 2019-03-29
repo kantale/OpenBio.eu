@@ -1029,6 +1029,7 @@ window.onload = function () {
 
                     if (typeof d.steps !== "undefined") {
                         d.steps.forEach(function (element) {
+							
                             var myEdge = { data: { 'id': create_workflow_edge_id(this_step_id, element), 'weight': 1, 'source': this_step_id, 'target': element } };
                             myEdges.push(myEdge);
 
@@ -1070,6 +1071,43 @@ window.onload = function () {
 
 
         }
+		
+		
+		/*
+		* This function closes the successors of a workflow and/or tool except the input/output
+		* Should be use every time a tool or workflow is dr&dropped in the workflow editor
+		* and everytime a tool or workflow is clicked in the right menu
+		*/
+		window.cy_close_successors = function(){
+			
+			// close all successors of root node or workflow node	: except inputs and outputs or other wfs
+            cy.json().elements.nodes.forEach(function (node) {
+				
+				//close the successors of a (previous saved) workflow  except the inouts/outputs
+				if(node.data.type==="workflow"  &&  node.data.edit!=="null"){
+					cy.$("#" + node.data.id).successors().targets().forEach(function (element) {
+				
+						if(element['_private'].data.type ==='input' || element['_private'].data.type ==='output' || element['_private'].data.type ==='workflow' ){
+								element.style("display", "element");
+						}else{					
+							element.style("display", "none");
+						}
+								
+					});
+					
+					//cy.$("#" + node.data.id).successors().targets().style("display", "none");
+				}
+				
+				if(node.data.type==="tool" && typeof node.data.root !== 'undefined' && node.data.root === 'yes')
+					 cy.$("#" + node.data.id).successors().targets().style("display", "none");
+				
+               // if (typeof node.data.root !== 'undefined' && node.data.root === 'yes') //TODO check for "wfroot:yes"
+               //    cy.$("#" + node.data.id).successors().targets().style("display", "none");
+
+            });
+			
+			
+		}
 
         /*
         * After importing a graph or adding new nodes, we need to register cytoscape events.
@@ -1361,16 +1399,11 @@ window.onload = function () {
             //Add open flag for nodes that should always stay open (these are the nodes that belong to more than one tool)
             cy.$('#'+openId).data('flag', 'open');
 			
-            // close all successors of root node or workflow node	
-            cy.json().elements.nodes.forEach(function (node) {
-				
-                if (typeof node.data.root !== 'undefined' && node.data.root === 'yes') //TODO check for "wfroot:yes"
-                    cy.$("#" + node.data.id).successors().targets().style("display", "none");
-
-            });
+			
+            
 
 			console.log("start setup events");
-               window.cy_setup_events();
+            window.cy_setup_events();
 			console.log("stop setup events");
         }
 
@@ -1395,12 +1428,27 @@ window.onload = function () {
 
         }
 
-
+		/*
+		* Fits workflow's content in center
+		*/
         window.fit = function () {
             cy.reset();
             cy.center();
 
         }
+		
+		/*
+		* Re-run the layout of cytoscape
+		*/
+		window.redraw = function(){
+			
+		   cy.layout({// Call layout
+                    name: 'breadthfirst',
+                    directed: true,
+                    padding: 2
+                }).run();	
+			
+		}
     }
 
 

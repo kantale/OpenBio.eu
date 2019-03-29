@@ -1671,6 +1671,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 results.forEach(function(result) {
                     var step_name = result.match(/call\(([\w]+)\)/)[1];
 
+					
                     //Is there a node with type step and name step_name ?
                     if (cy.$("node[type='step'][label='" + step_name + "']").length) {
                         //Add it only if it not already there
@@ -1911,7 +1912,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         workflow_step_editor.setReadOnly(false);
 
         //After fork, we should change the IDs 
+	
         //cy.$('node[type="workflow"][name="' + $scope.workflow_info_name + '"][edit=' + $scope.workflow_info_edit + ']').data('edit', null);
+		
     };
 
     /*
@@ -1949,6 +1952,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 var nodes_to_add = []
                 workflow_cytoscape.elements.nodes.forEach(function(node){ nodes_to_add.push(node.data) });
                 window.buildTree(nodes_to_add, {name: $scope.workflow_info_name, edit: null});  
+				
+				//TODO  check if it is correct (added by Galateia)
+				window.cy_close_successors();
             },
             function(data) {
                 generateToast("ERROR 81711", 'red lighten-2 black-text', 'stay on');
