@@ -908,6 +908,8 @@ def tools_add(request, **kwargs):
 
     #Dependencies
     tool_dependencies = kwargs['tool_dependencies']
+    #print ('tool_dependencies:')
+    #print (tool_dependencies)
     tool_dependencies_objects = [Tool.objects.get(name=t['name'], version=t['version'], edit=int(t['edit'])) for t in tool_dependencies]
 
     #Variables
@@ -1010,6 +1012,9 @@ def set_edit_to_cytoscape_json(cy, edit):
         if not node['data']['belongto'] is None:
             if not node['data']['belongto']['edit']:
                 node['data']['belongto'] = belongto
+
+        if '__null'  in node['data']['id']:
+            node['data']['id'] = node['data']['id'].replace('__null', '__' + str(edit))
 
     if 'edges' in cy['elements']:
         for edge in cy['elements']['edges']:

@@ -929,12 +929,16 @@ window.onload = function () {
             /*initialize my data object*/
             incomingData.forEach(function (d) {
 
+                var this_node_wf_belong_to = d.belongto ? d.belongto : belongto; // In which worfklow does this node belong to? 
+                var this_node_wf_belong_to_id = create_workflow_id(this_node_wf_belong_to);
+
+
                 //INPUTS/OUTPUTS
                 if (d.type === 'input' || d.type === 'output') {
                     var myNode = {data: {id: d.name, label: d.name, name: d.name, type: d.type, description: d.description, belongto: d.belongto ? d.belongto : belongto}};
                     myNodes.push(myNode);
-                    //Connect with root workflow
-                    myEdges.push({data: {source: root_workflow_id, target: d.name, id: create_workflow_edge_id(root_workflow_id, d.name)}});
+                    //Connect with belongto workflow
+                    myEdges.push({data: {source: this_node_wf_belong_to_id, target: d.name, id: create_workflow_edge_id(this_node_wf_belong_to_id, d.name)}});
                 }
 				
 
@@ -971,7 +975,7 @@ window.onload = function () {
                         //var myNode = { data: { id: d.id, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'yes', variables: d.variables } };
                         var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'yes', dep_id: d.dep_id, variables: d.variables, belongto: d.belongto ? d.belongto : belongto } };
                         myNodes.push(myNode);
-                        myEdges.push({data: {source: root_workflow_id, target: d.id, id: create_workflow_edge_id(root_workflow_id, d.id)}});
+                        myEdges.push({data: {source: this_node_wf_belong_to_id, target: d.id, id: create_workflow_edge_id(this_node_wf_belong_to_id, d.id)}});
                     }
 
                 }
@@ -981,9 +985,10 @@ window.onload = function () {
 					//TODO add root feature (different than tools): wfroot:yes
 				    
                     var this_workflow_id = create_workflow_id(d);
-                    var myNode = { data: { id: this_workflow_id, name: d.name, edit: d.edit, label: create_workflow_label(d), type: 'workflow', belongto: d.belongto ? d.belongto : belongto} };
+
+                    var myNode = { data: { id: this_workflow_id, name: d.name, edit: d.edit, label: create_workflow_label(d), type: 'workflow', belongto: this_node_wf_belong_to} };
                     myNodes.push(myNode);
-                    myEdges.push({data: {source: root_workflow_id, target: this_workflow_id, id:create_workflow_edge_id(root_workflow_id, this_workflow_id)}});
+                    myEdges.push({data: {source: this_node_wf_belong_to_id, target: this_workflow_id, id:create_workflow_edge_id(this_node_wf_belong_to_id, this_workflow_id)}});
                 }
 
 
@@ -993,8 +998,10 @@ window.onload = function () {
                     //jstree uses d.name, cytoscape uses d.label and we also need an id...
                     var myNode = { data: { id: d.name, name:d.name, label: d.name, type: d.type, bash: d.bash, tools:d.tools, steps:d.steps, inputs:d.inputs, outputs:d.outputs, belongto: d.belongto ? d.belongto : belongto } };
                     myNodes.push(myNode);
-                    //Connect with root workflow
-                    myEdges.push({data: {source:root_workflow_id, target: d.name, id:create_workflow_edge_id(root_workflow_id, d.name) }});
+                    
+                    //Connect with belong workflow
+                    myEdges.push({data: {source:this_node_wf_belong_to_id, target: d.name, id:create_workflow_edge_id(this_node_wf_belong_to_id, d.name) }});
+                    
                     //create edges to tools and/or steps
                     if (typeof d.tools !== "undefined") {
                         //replace special characters
@@ -1131,9 +1138,7 @@ window.onload = function () {
 
             cy = cytoscape({
                 container: document.getElementById('cywf'), // container to render in
-                //elements:[],
-
-                elements: {nodes:[{data: {id: 'a', type: 'workflow', label: 'hahaha', text: 'lala' }}]},
+                elements:[],
 
                 //elements: [ // list of graph elements to start with
                 //      { // node a
@@ -1203,13 +1208,13 @@ window.onload = function () {
                             //"width": 15
                         }
                     },
-                    //{
-                        //Do not show the root workflow 
-                        //selector: 'node[type="workflow"][root]',
-                        //"style": {
-                        //    "display": "none"
-                        //}
-                    //},
+//                    {
+//                        //Do not show the root workflow 
+//                        selector: 'node[type="workflow"][!belongto]',
+//                        "style": {
+//                            "display": "none"
+//                        }
+//                    },
                     {
                         selector: 'edge',
                         "style": {
