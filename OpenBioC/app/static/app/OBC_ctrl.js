@@ -749,6 +749,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.workflows_step_name = '';
         $scope.workflows_step_description = '';
         workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1);
+        workflow_step_editor.setReadOnly(false); 
 
         //Clear input/output variables
         $scope.workflow_input_outputs = [{name: '', description: '', out:true}];
@@ -804,12 +805,15 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */
     $scope.tool_create_save_pressed = function() {
 
+        console.log("$scope.tools_dep_jstree_model:");
+        console.log($scope.tools_dep_jstree_model);
+
         //Get the dependencies
         var tool_dependencies = [];
         for (var i=0; i<$scope.tools_dep_jstree_model.length; i++) {
             //Add only the roots of the tree
             if ($scope.tools_dep_jstree_model[i].parent === '#') {
-                tool_dependencies.push($scope.tools_dep_jstree_model[i].data);
+                tool_dependencies.push($scope.tools_dep_jstree_model[i]); //Although we only need name, version, edit, we pass the complete object 
             }
         }
 
