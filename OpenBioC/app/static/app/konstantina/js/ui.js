@@ -890,6 +890,13 @@ window.onload = function () {
         }
 
         /*
+        * Create a step ID. This contains: name of step, name of workflow, edit of workflow
+        */
+        function create_step_id(step, workflow) {
+            return step.name + '__' + workflow.name + '__' + workflow.edit;
+        }
+
+        /*
         * Create a suitable worfklow name
         */
         function create_workflow_label(workflow) {
@@ -935,7 +942,7 @@ window.onload = function () {
 
                 //INPUTS/OUTPUTS
                 if (d.type === 'input' || d.type === 'output') {
-                    var myNode = {data: {id: d.name, label: d.name, name: d.name, type: d.type, description: d.description, belongto: d.belongto ? d.belongto : belongto}};
+                    var myNode = {data: {id: d.name, label: d.name, name: d.name, type: d.type, description: d.description, belongto: this_node_wf_belong_to}};
                     myNodes.push(myNode);
                     //Connect with belongto workflow
                     myEdges.push({data: {source: this_node_wf_belong_to_id, target: d.name, id: create_workflow_edge_id(this_node_wf_belong_to_id, d.name)}});
@@ -965,7 +972,7 @@ window.onload = function () {
                         }
 
                         //var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'no', variables: d.variables } };
-                        var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'no', dep_id: d.dep_id, variables: d.variables, belongto: d.belongto ? d.belongto : belongto } };
+                        var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'no', dep_id: d.dep_id, variables: d.variables, belongto: this_node_wf_belong_to } };
 
                         myNodes.push(myNode);
                         var myEdge = { data: { id: create_workflow_edge_id(d.dep_id, d.id), weight: 1, source: d.dep_id, target: d.id } };
@@ -973,7 +980,7 @@ window.onload = function () {
 						
                     } else {
                         //var myNode = { data: { id: d.id, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'yes', variables: d.variables } };
-                        var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'yes', dep_id: d.dep_id, variables: d.variables, belongto: d.belongto ? d.belongto : belongto } };
+                        var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'yes', dep_id: d.dep_id, variables: d.variables, belongto: this_node_wf_belong_to } };
                         myNodes.push(myNode);
                         myEdges.push({data: {source: this_node_wf_belong_to_id, target: d.id, id: create_workflow_edge_id(this_node_wf_belong_to_id, d.id)}});
                     }
@@ -996,11 +1003,12 @@ window.onload = function () {
                 if (d.type === "step") {
                     //Why this redundancy?
                     //jstree uses d.name, cytoscape uses d.label and we also need an id...
-                    var myNode = { data: { id: d.name, name:d.name, label: d.name, type: d.type, bash: d.bash, tools:d.tools, steps:d.steps, inputs:d.inputs, outputs:d.outputs, belongto: d.belongto ? d.belongto : belongto } };
+                    var this_step_id = create_step_id(d, this_node_wf_belong_to);
+                    var myNode = { data: { id: this_step_id, name:d.name, label: d.name, type: d.type, bash: d.bash, tools:d.tools, steps:d.steps, inputs:d.inputs, outputs:d.outputs, belongto: this_node_wf_belong_to } };
                     myNodes.push(myNode);
                     
                     //Connect with belong workflow
-                    myEdges.push({data: {source:this_node_wf_belong_to_id, target: d.name, id:create_workflow_edge_id(this_node_wf_belong_to_id, d.name) }});
+                    myEdges.push({data: {source:this_node_wf_belong_to_id, target: this_step_id, id:create_workflow_edge_id(this_node_wf_belong_to_id, this_step_id) }});
                     
                     //create edges to tools and/or steps
                     if (typeof d.tools !== "undefined") {
@@ -1009,7 +1017,7 @@ window.onload = function () {
                         d.tools.forEach(function (element) {
                             //element = element.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
 
-                            var myEdge = { data: { 'id': create_workflow_edge_id(d.name, element)  , 'weight': 1, 'source': d.name, 'target': element } };
+                            var myEdge = { data: { 'id': create_workflow_edge_id(this_step_id, element)  , 'weight': 1, 'source': this_step_id, 'target': element } };
                             myEdges.push(myEdge);
 
                         });
@@ -1017,7 +1025,7 @@ window.onload = function () {
 
                     if (typeof d.steps !== "undefined") {
                         d.steps.forEach(function (element) {
-                            var myEdge = { data: { 'id': create_workflow_edge_id(d.name, element), 'weight': 1, 'source': d.name, 'target': element } };
+                            var myEdge = { data: { 'id': create_workflow_edge_id(this_step_id, element), 'weight': 1, 'source': this_step_id, 'target': element } };
                             myEdges.push(myEdge);
 
                         });
@@ -1026,7 +1034,7 @@ window.onload = function () {
 					
 					 if (typeof d.inputs !== "undefined") {
                         d.inputs.forEach(function (element) {
-                            var myEdge = { data: { 'id': create_workflow_edge_id(element, d.name), 'weight': 1, 'source': element, 'target': d.name } };
+                            var myEdge = { data: { 'id': create_workflow_edge_id(element, this_step_id), 'weight': 1, 'source': element, 'target': this_step_id } };
                             myEdges.push(myEdge);
 
                         });
@@ -1034,14 +1042,12 @@ window.onload = function () {
 					
 					if (typeof d.outputs !== "undefined") {
                         d.outputs.forEach(function (element) {
-                            var myEdge = { data: { 'id': create_workflow_edge_id(d.name, element), 'weight': 1, 'source': d.name, 'target': element } };
+                            var myEdge = { data: { 'id': create_workflow_edge_id(this_step_id, element), 'weight': 1, 'source': this_step_id, 'target': element } };
                             myEdges.push(myEdge);
 
                         });
                     }
                 }
-
-               
 
             });
 
