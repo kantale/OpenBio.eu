@@ -768,7 +768,6 @@ window.onload = function () {
 
                 //console.log('Right stop');
                 //console.log(tool);
-
                 angular.element($('#angular_div')).scope().$apply(function () {
                     angular.element($('#angular_div')).scope().tool_get_dependencies(tool, 1); // 1 = drag from search jstree to dependencies jstree
                 });
