@@ -893,7 +893,14 @@ window.onload = function () {
         * Create a step ID. This contains: name of step, name of workflow, edit of workflow
         */
         function create_step_id(step, workflow) {
-            return step.name + '__' + workflow.name + '__' + workflow.edit;
+            return step.name + '__' + create_workflow_id(workflow);
+        }
+
+        /*
+        * Create a unique input/output variable ID. This contains the input/output name, name workflow and edit of worfkflow
+        */
+        function create_input_output_id(input_output, workflow) {
+            return input_output.name + '__' + create_workflow_id(workflow);
         }
 
         /*
@@ -927,10 +934,6 @@ window.onload = function () {
             console.log('belongto:');
             console.log(belongto);
 
-
-            var root_workflow_id = create_workflow_id(belongto);
-
-
             var myNodes = [], myEdges = [];
 
             /*initialize my data object*/
@@ -942,10 +945,12 @@ window.onload = function () {
 
                 //INPUTS/OUTPUTS
                 if (d.type === 'input' || d.type === 'output') {
-                    var myNode = {data: {id: d.name, label: d.name, name: d.name, type: d.type, description: d.description, belongto: this_node_wf_belong_to}};
+                    var this_input_output_id = create_input_output_id(d, this_node_wf_belong_to);
+
+                    var myNode = {data: {id: this_input_output_id, label: d.name, name: d.name, type: d.type, description: d.description, belongto: this_node_wf_belong_to}};
                     myNodes.push(myNode);
                     //Connect with belongto workflow
-                    myEdges.push({data: {source: this_node_wf_belong_to_id, target: d.name, id: create_workflow_edge_id(this_node_wf_belong_to_id, d.name)}});
+                    myEdges.push({data: {source: this_node_wf_belong_to_id, target: this_input_output_id, id: create_workflow_edge_id(this_node_wf_belong_to_id, this_input_output_id)}});
                 }
 				
 
