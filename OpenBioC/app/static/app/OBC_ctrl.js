@@ -1568,9 +1568,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 });
             }
             else if (this_data.type=='step') {
+
+                var this_node_belong_to_show_edit = this_data.belongto.edit ? this_data.belongto.edit : 'root'; //The workflow edit to show on tab completion
+                var this_node_belong_to_value_edit = this_data.belongto.edit ? this_data.belongto.edit : 'null'; // The workflow edit as a variable on tab completion
+
                 completion_info.push({
-                    caption: 'call(' + this_data.label + ')',
-                    value: 'call(' + this_data.label + ')',
+                    caption: 'call(' + this_data.label + '/' + this_data.belongto.name + '/' + this_node_belong_to_show_edit + ')',
+                    value: 'call(' + this_data.label + '__' + this_data.belongto.name + '__' + this_node_belong_to_value_edit + ')',
                     meta: 'STEP'
                 });
             }
@@ -1669,13 +1673,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             var results = line.match(/((^call)|([\s]+call))\([\w]+\)/g); // Matches: "call(a)" , "  call(a)", "ABC call(a)", "ABC   call(a)"
             if (results) {
                 results.forEach(function(result) {
-                    var step_name = result.match(/call\(([\w]+)\)/)[1];
+                    var step_id = result.match(/call\(([\w]+)\)/)[1];
 
                     //Is there a node with type step and name step_name ?
-                    if (cy.$("node[type='step'][label='" + step_name + "']").length) {
+                    if (cy.$("node[type='step'][id='" + step_id + "']").length) {
                         //Add it only if it not already there
-                        if (!steps.includes(step_name)) {
-                            steps.push(step_name);
+                        if (!steps.includes(step_id)) {
+                            steps.push(step_id);
                         }
                     } 
                 });
