@@ -1558,6 +1558,15 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         cy.$('node').forEach(function(node) {
             var this_data = node.data();
+
+            //If this_data.belongto is null then this is the root workflow. Not a tool/step/input/output.
+            if (!this_data.belongto) {
+                return;
+            }
+
+            var this_node_belong_to_show_edit = this_data.belongto.edit ? this_data.belongto.edit : 'root'; //The workflow edit to show on tab completion
+            var this_node_belong_to_value_edit = this_data.belongto.edit ? this_data.belongto.edit : 'null'; // The workflow edit as a variable on tab completion
+
             if (this_data.type=='tool') {
                 this_data.variables.forEach(function(variable) {
                     completion_info.push({
@@ -1568,16 +1577,17 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 });
             }
             else if (this_data.type=='step') {
+
                 completion_info.push({
-                    caption: 'call(' + this_data.label + ')',
-                    value: 'call(' + this_data.label + ')',
+                    caption: 'call(' + this_data.label + '/' + this_data.belongto.name + '/' + this_node_belong_to_show_edit + ')',
+                    value: 'call(' + this_data.label + '__' + this_data.belongto.name + '__' + this_node_belong_to_value_edit + ')',
                     meta: 'STEP'
                 });
             }
             else if (this_data.type=='input' || this_data.type=='output') {
                 completion_info.push({
-                    caption: this_data.type + '/' + this_data.name,
-                    value: '$(' + this_data.type + '__' + this_data.name + ')',
+                    caption: this_data.type + '/' + this_data.name + '/' + this_data.belongto.name + '/' + this_node_belong_to_show_edit,
+                    value: '$(' + this_data.type + '__' + this_data.name + '__' + this_data.belongto.name + '__' + this_node_belong_to_value_edit + ')',
                     meta: this_data.description
                 });
             }
@@ -1669,14 +1679,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             var results = line.match(/((^call)|([\s]+call))\([\w]+\)/g); // Matches: "call(a)" , "  call(a)", "ABC call(a)", "ABC   call(a)"
             if (results) {
                 results.forEach(function(result) {
-                    var step_name = result.match(/call\(([\w]+)\)/)[1];
+                    var step_id = result.match(/call\(([\w]+)\)/)[1];
 
-					
-                    //Is there a node with type step and name step_name ?
-                    if (cy.$("node[type='step'][label='" + step_name + "']").length) {
-                        //Add it only if it not already there
-                        if (!steps.includes(step_name)) {
-                            steps.push(step_name);
+                    //Is there a node with type step and id step_id ?
+                    if (cy.$("node[type='step'][id='" + step_id + "']").length) {
+                        //Add it only if it is not already there
+                        if (!steps.includes(step_id)) {
+                            steps.push(step_id);
                         }
                     } 
                 });
