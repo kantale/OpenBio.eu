@@ -11,6 +11,9 @@ curl -d "param1=value1&param2=value2" -X POST http://0.0.0.0:8080/post
 ### Send JSON data in file: test_1.json via POST:
 curl --header "Content-Type: application/json" --request POST -d @test_1.json http://0.0.0.0:8080/post 
 
+BASIC TERMINOLOGY:
+CONTROLLER: aiohttp, or flask, django server listening for actions
+WORKER: checks if there is any pending job/request and handles it.
 '''
 
 if __name__ != '__main__':
@@ -86,6 +89,12 @@ async def post_handler(request):
     message_queue = request.app['message_queue']
     action = data['action']
     if action == 'validate':
+        '''
+        data = {
+            'action': 'validate',
+            'bash' : 'mplah'
+        }
+        '''
         if not 'bash' in data:
             return fail('key: "bash" not present')
         bash = data['bash']
@@ -130,20 +139,6 @@ async def post_handler(request):
     #return web.Response(text="Hello from post")
 
 
-def thr(message_queue):
-    # we need to create a new loop for the thread, and set it as the 'default'
-    # loop that will be returned by calls to asyncio.get_event_loop() from this
-    # thread.
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
-    init_web_app(message_queue)
-
-    loop.run_in_executor(None, init_web_app)
-    #loop.run_until_complete(init_web_app(message_queue))
-    #asyncio.ensure_future(init_web_app(message_queue))
-#    loop.run_forever()
-    loop.close()
 
 def init_web_app(message_queue, ):
 
@@ -178,18 +173,6 @@ def init_web_app(message_queue, ):
     #return handler
 
 
-def create_server_for_web_app(handler):
-    '''
-    How to run an aiohttp server in a thread?
-    https://stackoverflow.com/questions/51610074/how-to-run-an-aiohttp-server-in-a-thread
-    '''
-
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    #server = loop.create_server(handler, host='127.0.0.1', port=8089)
-    server = loop.create_server(handler, host='0.0.0.0', port=8080)
-    loop.run_until_complete(server)
-    loop.run_forever()
 
 
 def worker(message_queue, w_id):
