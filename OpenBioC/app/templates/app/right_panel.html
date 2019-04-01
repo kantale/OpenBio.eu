@@ -270,10 +270,6 @@
                     </div>
                 </li>
             </ul>
-
-
-
-
             <!-- --------------------------------------------------------------------------------------- -->
             <!-- ------------------------------------ Graph -------------------------------------------- -->
             <!-- --------------------------------------------------------------------------------------- -->
@@ -378,29 +374,6 @@
                                                         class="material-icons">remove</i></a>
                                             </td>
                                         </tr>
-                                        <!-- <tr ng-repeat="x in tool_variables">
-                                                <td><input type="text" placeholder="name" ng-model="x.name"
-                                                        ng-disabled="!tools_info_editable"></td>
-                                                <td><input type="text" placeholder="value" ng-model="x.value"
-                                                        ng-disabled="!tools_info_editable"></td>
-                                                <td><input type="text" placeholder="description" ng-model="x.description"
-                                                        ng-disabled="!tools_info_editable"></td>
-                                                <td>
-                                                    <a class="waves-effect waves-light btn-small tooltipped green darken-1"
-                                                        style="padding-left: 7px; padding-right:7px" data-position="bottom"
-                                                        data-tooltip="Add new variable" ng-click="tools_info_add_variable()"
-                                                        ng-if="$last && x.name && x.value && x.description && tools_info_editable"><i
-                                                            class="material-icons">add</i></a>
-                                                </td>
-                                                <td>
-                                                    <a class="waves-effect waves-light btn-small tooltipped red darken-1"
-                                                        style="padding-left: 7px; padding-right:7px" data-position="bottom"
-                                                        data-tooltip="Remove variable"
-                                                        ng-click="tools_info_remove_variable($index)"
-                                                        ng-if="(!$first) && tools_info_editable"><i
-                                                            class="material-icons">remove</i></a>
-                                                </td>
-                                            </tr> -->
                                     </tbody>
                                 </table>
                             </div>
@@ -411,6 +384,92 @@
                     </div>
                 </li>
             </ul>
+        </div>
+        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+        <!-- ---------------------------------------------- References Right Panel ------------------------------------------------------------------- -->
+        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+        <div class="faster" id="referencesRightPanel" style="display: none;">
+            <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
+                <p>
+                    <h5>
+                        <!-- <span ng-bind="tools_info_name"></span>/<span ng-bind="tools_info_version"></span><span
+                            ng-show="!tools_info_editable">/<span ng-bind="tools_info_edit"></span></span> -->
+                        <span>Name</span>/<span>Version</span><span>/<span>Edit</span></span>
+                    </h5>
+                    <small class="form-text text-muted">
+                        <!-- <span ng-bind="tool_info_username"></span>
+                        <span ng-show="!tools_info_editable">, created at <span
+                                ng-bind="tool_info_created_at"></span></span>
+                        <span ng-show="tools_info_forked_from">, forked from <a href
+                                ng-click="tools_search_show_item(tools_info_forked_from)"><span
+                                    ng-bind="tools_info_forked_from | tool_label"></span></a></span>
+                        <span>USED IN 86 WFs</span> -->
+                        <span>Username</span>
+                        <span>, created at <span>Tue, 12 Feb 2019 10:23:29</span></span>
+                        <span>USED IN 86 WFs</span>
+                    </small>
+                </p>
+                <!-- Buttons -->
+                <div class="row right-align">
+                    <a id="expandAllBtn3" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
+                        data-position="bottom" data-tooltip="Expand All"><i class="material-icons">unfold_more</i></a>
+                    <a id="collapseAllBtn3" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
+                        data-position="bottom" data-tooltip="Collapse All"><i class="material-icons">unfold_less</i></a>
+                    <!-- <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
+                        data-tooltip="Save" ng-click="tool_create_save_pressed()" ng-show="tools_info_editable"><i
+                            class="material-icons">save</i></a> -->
+                    <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
+                        data-tooltip="Save"><i
+                            class="material-icons">save</i></a>
+                </div>
+            </div>
+
+            <ul id="referencesRightPanelAccordion" class="collapsible expandable popout faster">
+                <!-- --------------------------------------------------------------------------------------- -->
+                <!-- ------------------------------------ General ------------------------------------------ -->
+                <!-- --------------------------------------------------------------------------------------- -->
+                <li id="referencesGeneral">
+                    <div class="collapsible-header">
+                        <i class="material-icons arrow">keyboard_arrow_right</i>
+                        <i class="material-icons">info</i>
+                        General
+                    </div>
+                    <div class="collapsible-body">
+                        <div class="row">
+                            <form class="col s12">
+                                <div class="input-field">
+                                    <textarea id="referencesGeneralDescription" class="validate materialize-textarea"></textarea>
+                                    <label for="referencesGeneralDescription">Description</label>
+                                </div>
+                                <div class="input-field">
+                                    <input id="referencesGeneralDOI" type="text" class="validate">
+                                    <label for="referencesGeneralDOI">DOI</label>
+                                </div>
+                                <div class="input-field" style="margin-bottom: 0px;">
+                                    <textarea id="referencesGeneralBIBTEX" class="validate materialize-textarea"></textarea>
+                                    <label for="referencesGeneralBIBTEX">BIBTEX</label>
+                                </div>
+                                <div class="right-align">
+                                    <a class="waves-effect waves-light btn-small">Generate</a>
+                                </div>
+                                <div>
+                                    <h5>Formatted References</h5>
+                                    <p>
+                                        Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry
+                                        richardson
+                                        ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food
+                                        truck
+                                        quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a
+                                        bird
+                                        on
+                                    </p>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+
         </div>
     </div>
 </div>
