@@ -90,14 +90,17 @@ window.onload = function () {
                 accordion: false,
                 // Callback function called before collapsible is opened
                 onOpenStart: function (event) {
-                    // Workflows right panel collapsible
-                    //                    if (event.id == 'workflows') {
-                    //                        if (document.getElementById('workflowsRightPanel').style.display == 'none') {
-                    //                            document.getElementById('workflowsRightPanel').style.display = 'block';
-                    //                            $('#workflowsRightPanel').animateCss('slideInDown', function () {
-                    //                            });
-                    //                        }
-                    //                    }
+                    // ----------------------------------------------------------------------------------------------
+                    // ---------------------------------------- DELETE START ----------------------------------------
+                    // ----------------------------------------------------------------------------------------------
+                    if(event.id == 'references'){
+                        document.getElementById('referencesRightPanel').style.display = 'block';
+                    }
+                    // ----------------------------------------------------------------------------------------------
+                    // ---------------------------------------- DELETE END ------------------------------------------
+                    // ----------------------------------------------------------------------------------------------
+
+
                     // Disabled collapsible
                     if (!event.classList.contains('disabled')) {
                         event.getElementsByClassName('arrow')[0].innerHTML = 'keyboard_arrow_down';
@@ -118,19 +121,20 @@ window.onload = function () {
                 },
                 // Callback function called before collapsible is closed
                 onCloseStart: function (event) {
-                    // // Workflows right panel collapsible
-                    // if (event.id == 'workflows') {
-                    //     if (document.getElementById('workflowsRightPanel').style.display == 'block') {
-                    //         $('#workflowsRightPanel').animateCss('slideOutUp', function () {
-                    //             document.getElementById('workflowsRightPanel').style.display = 'none';
-                    //             // disableEditWorkflow(); // This disables the edit workflow window
-                    //         });
-                    //     }
-                    // }
                     // Disabled collapsible
                     if (!event.classList.contains('disabled')) {
                         event.getElementsByClassName('arrow')[0].innerHTML = 'keyboard_arrow_right';
                     }
+
+                    // ----------------------------------------------------------------------------------------------
+                    // ---------------------------------------- DELETE START ----------------------------------------
+                    // ----------------------------------------------------------------------------------------------
+                    if(event.id == 'references'){
+                        document.getElementById('referencesRightPanel').style.display = 'none';
+                    }
+                    // ----------------------------------------------------------------------------------------------
+                    // ---------------------------------------- DELETE END ------------------------------------------
+                    // ---------------------------------------------------------------------------------------------- 
                 },
                 // Callback function called after collapsible is closed
                 onCloseEnd: function (event) {
