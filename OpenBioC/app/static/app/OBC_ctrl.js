@@ -1823,6 +1823,22 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
+    * Called by ui.js
+    * Clicked a step node on cytioscape graph
+    */
+    $scope.workflop_step_node_clicked = function(step) {
+
+        //console.log('CLICKED STEP NDOE:');
+        //console.log(step);
+
+        $scope.workflows_step_name = step.name;
+        workflow_step_editor.setValue(step.bash, -1);
+
+        //Open STEP accordion
+        window.openEditWorkflowBtn_click();
+    };
+
+    /*
     * Worfklows --> Input/Outpus --> Add variable button ('+') --> Pressed 
     */
     $scope.workflow_step_add_input_output = function() {
