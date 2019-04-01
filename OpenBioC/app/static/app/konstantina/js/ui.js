@@ -1133,6 +1133,13 @@ window.onload = function () {
 							});
                     }
                 }
+                if (this['_private'].data.type == "step") { // Click at a step node
+                    //Call angular function
+                    var this_data = this['_private'].data;
+                    angular.element($('#angular_div')).scope().$apply(function () {
+                        angular.element($('#angular_div')).scope().workflop_step_node_clicked(this_data); 
+                    });
+                }
 
             });
 
