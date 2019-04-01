@@ -50,6 +50,8 @@ window.onload = function () {
         $(".dropdown-trigger").dropdown();
         // --------------------------------------- Tooltip initialization ------------------------------------------------
         $('.tooltipped').tooltip();
+        // ---------------------------------------- Select initialization ------------------------------------------------
+        $('select').formSelect();
 
         // ---------------------------------------- Chips initialization -------------------------------------------------
         $('.chips').chips({
