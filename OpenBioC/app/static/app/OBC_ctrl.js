@@ -1816,7 +1816,41 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         window.buildTree(step_node, {name: $scope.workflow_info_name, edit: null});
         $scope.workflow_update_tab_completion_info_to_step();
 
+        //Empty STEP fields
+        $scope.workflows_step_name = '';
+        workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1);
 
+    };
+
+    /*
+    * workflows -> Step -> Delete step
+    */ 
+    $scope.workflow_step_delete = function() {
+        //console.log('DELETE STEP');
+        var this_step_id = $scope.workflows_step_name + '__' + $scope.workflow_info_name + '__null';
+        //console.log('STEP ID TO DELETE:')
+        //console.log(this_step_id);
+        
+        //We do not have to check if this node exists. cytoscape is ok with this.
+        cy.$('node[id="' + this_step_id + '"]').remove();
+    
+    };
+
+    /*
+    * Called by ui.js
+    * Clicked a step node on cytioscape graph
+    */
+    $scope.workflop_step_node_clicked = function(step) {
+
+        //console.log('CLICKED STEP NDOE:');
+        //console.log(step);
+
+        $scope.workflows_step_name = step.name;
+        $('#editWorkflowNameLabel').addClass('active');
+        workflow_step_editor.setValue(step.bash, -1);
+
+        //Open STEP accordion
+        window.openEditWorkflowBtn_click();
     };
 
     /*
