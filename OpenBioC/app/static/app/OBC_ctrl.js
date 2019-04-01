@@ -1823,6 +1823,20 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
+    * workflows -> Step -> Delete step
+    */ 
+    $scope.workflow_step_delete = function() {
+        //console.log('DELETE STEP');
+        var this_step_id = $scope.workflows_step_name + '__' + $scope.workflow_info_name + '__null';
+        //console.log('STEP ID TO DELETE:')
+        //console.log(this_step_id);
+        
+        //We do not have to check if this node exists. cytoscape is ok with this.
+        cy.$('node[id="' + this_step_id + '"]').remove();
+    
+    };
+
+    /*
     * Called by ui.js
     * Clicked a step node on cytioscape graph
     */
