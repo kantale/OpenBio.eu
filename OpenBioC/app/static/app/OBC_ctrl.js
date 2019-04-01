@@ -1846,6 +1846,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //console.log(step);
 
         $scope.workflows_step_name = step.name;
+        $('#editWorkflowNameLabel').addClass('active');
         workflow_step_editor.setValue(step.bash, -1);
 
         //Open STEP accordion

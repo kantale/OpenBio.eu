@@ -83,7 +83,7 @@ window.onload = function () {
         });
 
         // ---------------------------------------------- Accordion ------------------------------------------------------
-        var collapsibles = document.getElementsByClassName('collapsible expandable');
+        var collapsibles = document.getElementsByClassName('collapsible');
         for (var i = 0; i < collapsibles.length; i++) {
             var elem = collapsibles[i];
             var instance = M.Collapsible.init(elem, {
@@ -101,11 +101,13 @@ window.onload = function () {
                     // Disabled collapsible
                     if (!event.classList.contains('disabled')) {
                         event.getElementsByClassName('arrow')[0].innerHTML = 'keyboard_arrow_down';
-                        updateTextFieldsCustom();
                     }
                 },
                 // Callback function called after collapsible is opened
                 onOpenEnd: function (event) {
+                    //Update all inputs and text areas so that labels are above.
+                    updateTextFieldsCustom();
+
                     // Disabled collapsible
                     if (event.classList.contains('disabled')) {
                         event.classList.remove('active');
@@ -574,6 +576,7 @@ window.onload = function () {
     }
 
     // -------------------------------------- Update text inputs and textareas ---------------------------------------
+    //To permanently remove label animation with JQuery: $('#editWorkflowNameLabel').addClass('active')
     function updateTextFieldsCustom() {
         M.updateTextFields();
         var textareas = document.getElementsByClassName('materialize-textarea');
