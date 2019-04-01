@@ -1816,6 +1816,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         window.buildTree(step_node, {name: $scope.workflow_info_name, edit: null});
         $scope.workflow_update_tab_completion_info_to_step();
 
+        //Empty STEP fields
+        $scope.workflows_step_name = '';
+        workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1);
 
     };
 
