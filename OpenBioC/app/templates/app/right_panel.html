@@ -20,6 +20,7 @@
                         <span ng-show="tools_info_forked_from">, forked from <a href
                                 ng-click="tools_search_show_item(tools_info_forked_from)"><span
                                     ng-bind="tools_info_forked_from | tool_label"></span></a></span>
+                        <span>USED IN 86 WFs</span>
                     </small>
                 </p>
                 <!-- Buttons -->
@@ -321,7 +322,7 @@
                                 <div class="row col s12">
                                     <div class="right-align">
                                         <a class="waves-effect waves-light btn" style="margin:2px">Cancel</a>
-                                        <a class="waves-effect waves-light btn" style="margin:2px" ng-show="workflows_info_editable">Delete</a>
+                                        <a class="waves-effect waves-light btn" style="margin:2px" ng-show="workflows_info_editable" ng-click="workflow_step_delete()">Delete</a>
                                         <a class="waves-effect waves-light btn" style="margin:2px"
                                             ng-click="workflow_step_add()" ng-show="workflows_info_editable">Add</a>
                                     </div>

@@ -1016,6 +1016,26 @@ def set_edit_to_cytoscape_json(cy, edit):
         if '__null'  in node['data']['id']:
             node['data']['id'] = node['data']['id'].replace('__null', '__' + str(edit))
 
+        # Set to step-->Step
+        if 'steps' in node['data']:
+            for step_i, _ in enumerate(node['data']['steps']):
+                if '__null' in node['data']['steps'][step_i]:
+                    node['data']['steps'][step_i] = node['data']['steps'][step_i].replace('__null', '__' + str(edit))
+
+        # Set to step-->inputs
+        if 'inputs' in node['data']:
+            for input_i, _ in enumerate(node['data']['inputs']):
+                if '__null' in node['data']['inputs'][input_i]:
+                    node['data']['inputs'][input_i] = node['data']['inputs'][input_i].replace('__null', '__' + str(edit))
+
+        # Set to step->outputs
+        if 'outputs' in node['data']:
+            for output_i, _ in enumerate(node['data']['outputs']):
+                if '__null' in node['data']['outputs'][output_i]:
+                    node['data']['outputs'][output_i] = node['data']['outputs'][output_i].replace('__null', '__' + str(edit))
+
+
+
     if 'edges' in cy['elements']:
         for edge in cy['elements']['edges']:
             if '__null' in edge['data']['source']:
