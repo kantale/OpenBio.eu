@@ -52,9 +52,26 @@ window.onload = function () {
         $('.tooltipped').tooltip();
         // ---------------------------------------- Select initialization ------------------------------------------------
         $('select').formSelect();
+        // ------------------------------------- Collapsible initialization ----------------------------------------------
+        $('.collapsible').collapsible();
+        // -------------------------------------- Datepicker initialization ----------------------------------------------
+        $('.datepicker').datepicker();
 
         // ---------------------------------------- Chips initialization -------------------------------------------------
-        $('.chips').chips({
+        $('#generalChips').chips({
+            placeholder: 'Enter keywords',
+            secondaryPlaceholder: '+ keyword',
+            autocompleteOptions: {
+                data: {
+                    'Apple': null,
+                    'Microsoft': null,
+                    'Google': null
+                },
+                limit: Infinity,
+                minLength: 1
+            }
+        });
+        $('#searchChips').chips({
             placeholder: 'Enter keywords',
             secondaryPlaceholder: '+ keyword',
             autocompleteOptions: {
@@ -85,7 +102,7 @@ window.onload = function () {
         });
 
         // ---------------------------------------------- Accordion ------------------------------------------------------
-        var collapsibles = document.getElementsByClassName('collapsible');
+        var collapsibles = document.getElementsByClassName('collapsible expandable');
         for (var i = 0; i < collapsibles.length; i++) {
             var elem = collapsibles[i];
             var instance = M.Collapsible.init(elem, {
@@ -151,6 +168,24 @@ window.onload = function () {
             });
         }
 
+        
+        
+        function closeCollapsible(){
+            elem = $('#collapsible')
+            var instance = M.Collapsible.getInstance(elem); 
+            instance.close(0);
+            document.getElementById('searchFilters').removeEventListener('click', closeCollapsible);
+            document.getElementById('searchFilters').addEventListener('click', openCollapsible);
+        }
+        function openCollapsible(){
+            elem = $('#collapsible')
+            var instance = M.Collapsible.getInstance(elem); 
+            instance.open(0);
+            document.getElementById('searchFilters').removeEventListener('click', openCollapsible);
+            document.getElementById('searchFilters').addEventListener('click', closeCollapsible);
+        }
+        document.getElementById('searchFilters').addEventListener('click', openCollapsible);
+        
         // ------------------------------------ Initializations for profile page -----------------------------------------
         $('#profilePublicInfo').val(
             'Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck.');
