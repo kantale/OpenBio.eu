@@ -30,6 +30,7 @@ import random
 import asyncio
 import logging
 import threading
+import subprocess
 
 from queue import Queue as Thread_queue #  
 
@@ -41,6 +42,25 @@ logging.getLogger('aiohttp').setLevel(logging.DEBUG)
 logging.getLogger('aiohttp').addHandler(logging.StreamHandler(sys.stderr))
 
 lodger = {}
+
+
+
+# Execution function return the errorcode and the output
+def execution(this_id,bash):
+	# I make a file and add the bashscript on it
+	with open("bashscript.sh", "w+") as bashscript:
+		bashscript.write(bash)
+	#I use the id to give a name in the image
+	#print(f'the {this_id} start the build ......')
+	cmd = f'docker build -t openbioc/{this_id} .'
+	process = subprocess.Popen(
+		cmd,
+		stdout=subprocess.PIPE, 
+		shell= True)
+	(stdout,stderr) = process.communicate()
+	print(stdout.decode())
+	print(f'[{cmd!r} exited with {process.returncode}]')
+	#return process_status,stdout
 
 def get_uuid():
     '''
@@ -101,7 +121,7 @@ async def post_handler(request):
         if not 'bash' in data:
             return fail('key: "bash" not present')
         bash = data['bash']
-
+        print(bash)
         new_id = get_uuid()
         message = {
             'action': 'validate',
@@ -182,7 +202,7 @@ def worker(message_queue, w_id):
     '''
     w_id: worker id
     '''
-
+    
     print (f'Worker: {w_id} starting..')
 
     while True:
@@ -194,7 +214,8 @@ def worker(message_queue, w_id):
 
             this_id = task['id']
             print (f'WORKER: {w_id}. RECEIVED: {this_id}')
-
+            # the executions start and the images are called such as unique id from post
+            execution(this_id,task['bash'])
             lodger[this_id]['status'] = 'submitted'
             time.sleep(random.randint(1,5))
             lodger[this_id]['status'] = 'done'
