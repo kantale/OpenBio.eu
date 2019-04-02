@@ -115,6 +115,9 @@ window.onload = function () {
                     if ((event.id == 'workflowRightPanelGeneral') || (event.id == 'workflowRightPanelStep')) {
                         cy.resize();
                     }
+                    if (event.id == 'workflowRightPanelStep') {
+                        
+                    }
                 },
                 // Callback function called before collapsible is closed
                 onCloseStart: function (event) {
