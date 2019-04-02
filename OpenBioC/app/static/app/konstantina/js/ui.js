@@ -909,6 +909,12 @@ window.onload = function () {
             return input_output.name + '__' + create_workflow_id(workflow);
         }
 
+        /*
+        * Helper for Step Input Output (SIO)
+        */
+        function create_SIO_id(SIO, workflow) {
+            return SIO.name + '__' + create_workflow_id(workflow);
+        }
 
         /*
         * Create a suitable worfklow name
@@ -926,6 +932,39 @@ window.onload = function () {
         */
         function create_workflow_edge_id(source_id, target_id) {
             return source_id + '..' + target_id;
+        }
+
+        /*
+        * Get the source_id from the edge id
+        */
+        function get_source_id_from_edge_id(edge_id) {
+            return edge_id.split('..')[0];
+        }
+
+        /*
+        * Get the target_id from the edge id
+        */
+        function get_target_id_from_target_id(edge_id) {
+            return edge_id.split('..')[1];
+        }
+
+        /*
+        * Get the workflow id if this is a SIP node. 
+        * sio: Step Input Output
+        */
+        function get_workflow_id_from_SIO_id(sio_id) {
+            var sio_id_splitted = sio_id.split('__');
+            if (sio_id_splitted.length != 3) {
+                return null;
+            }
+            return create_workflow_id({name: sio_id_splitted[1], edit: sio_id_splitted[2]});
+        }
+
+        /*
+        * Get the name of a SIO (Step Input Output)
+        */
+        function get_SIO_name_from_SIO_id(sio_id) {
+            return sio_id.split('__')[0]
         }
 
         /*
@@ -1430,7 +1469,8 @@ window.onload = function () {
 		window.forkWorkflow = function(){
 			
 			var currentElements = cy.json().elements;
-			var current_root_edit, current_root, new_root, current_root_belong; 
+            var old_root_id, old_root_name, old_root_edit, old_root_belong;
+            var new_root, new_root_id;
 			
 			console.log("**********currentElements***********");
 			console.log(currentElements);
@@ -1438,56 +1478,92 @@ window.onload = function () {
 		
 		
 			// Find the root workflow and change edit to null
-			currentElements.nodes.forEach(function(celement){
-				if(celement.data.belongto===null){
+			currentElements.nodes.forEach(function(node){
+				if(node.data.belongto===null){
 					
 					// Finds the root workflow					
-					current_root = celement.data.id;		
-					current_root_name = celement.data.name;
-					current_root_edit = celement.data.edit;
-					current_root_belong = {name: current_root_name, edit: current_root_edit};
+					old_root_id = node.data.id;		
+					old_root_name = node.data.name;
+					old_root_edit = node.data.edit;
+					old_root_belong = {name: old_root_name, edit: old_root_edit};
 					
-					// Update edit and id
-					new_root = celement.data.name+'__null';
-					celement.data.id=new_root;
-					celement.data.edit=null;
+					// Updated id
+                    new_root = {name: node.data.name, edit: null};
+                    new_root_id = create_workflow_id(new_root);
+					node.data.id=new_root_id;
+                    // Update edit. edit = null
+					node.data.edit=null;
 					
 				}
 				
 			});
 			
-			console.log("*************current_root_belong**************");
-			console.log(current_root_belong);
+			console.log("*************old_root_belong**************");
+			console.log(old_root_belong);
 			
 		
 			// Change belongto for the nodes that have root workflow as source
-			currentElements.nodes.forEach(function(celement){
-					if(JSON.stringify(celement.data.belongto) === JSON.stringify(current_root_belong)){
-						celement.data.belongto={name: current_root_name, edit: null};
-							if(celement.data.type==='step')
-							celement.data.id=celement.data.id.substr(0, celement.data.id.lastIndexOf('__'))+'__null'; 
+			currentElements.nodes.forEach(function(node){
+
+                    //Root node belongto is null
+                    if (!node.data.belongto) {
+                        return;
+                    }
+
+                    //Unfortunately: 
+                    // JSON.stringify({a:'a', b:'b'}) === JSON.stringify({a:'a', b:'b'}) --> True
+                    // JSON.stringify({a:'a', b:'b'}) === JSON.stringify({b:'b', a:'a'}) --> False
+                    // there isn't any stragihtforward way of comparing key-pair objects in javascript...
+                    // https://stackoverflow.com/questions/1068834/object-comparison-in-javascript 
+                    // Making sure that the order is correct
+                    var node_root_belong_ordered = {name: node.data.belongto.name, edit: node.data.belongto.edit};
+					if(JSON.stringify(node_root_belong_ordered) === JSON.stringify(old_root_belong)){
+						node.data.belongto = {name: old_root_name, edit: null};
+                        if (['step', 'input', 'output'].indexOf(node.data.type)>=0) {
+                            node.data.id = create_step_id(node.data, new_root);
+                            //node.data.id = node.data.id.substr(0, node.data.id.lastIndexOf('__'))+'__null';
+                        } 
 					}
 				}
 			);
 			
 			
-			// change steps id that contains root workflow
-			currentElements.edges.forEach(function(celement){
+			// change all edges that connect to root.  
+			currentElements.edges.forEach(function(edge){
 				
+                /* EDGE SOURCES */
+
 				//find edges that have as source the root workflow
-				if(celement.data.source===current_root)
-					celement.data.source = new_root;
+				if(edge.data.source===old_root_id) {
+					edge.data.source = new_root_id;
+                }
 				
-				if(celement.data.source.endsWith(current_root))
-					celement.data.source = celement.data.source.substr(0, celement.data.source.lastIndexOf(current_root))+new_root; 
+                //Find edges that have the root_workflow in their source
+                else if (get_workflow_id_from_SIO_id(edge.data.source) === old_root_id) {
+                    edge.data.source = create_SIO_id({name: get_SIO_name_from_SIO_id(edge.data.source)}, new_root);
+                }
+
+				//if(edge.data.source.endsWith(old_root))
+				//	edge.data.source = edge.data.source.substr(0, edge.data.source.lastIndexOf(old_root))+new_root; 
 				
-					
-				if(celement.data.target.endsWith(current_root))	//check for steps that ends with current_root
-					celement.data.target = celement.data.target.substr(0, celement.data.target.lastIndexOf(current_root))+new_root; 
-					
-				celement.data.id=celement.data.source+'..'+celement.data.target;
-		
-					
+                /* EDGE TARGETS */
+
+                if (edge.data.target == old_root_id) {
+                    edge.data.target = new_root_id;
+                }
+
+                //Find edges that have the root_workflow in their target
+                else if (get_workflow_id_from_SIO_id(edge.data.target) === old_root_id) {
+                    edge.data.target = create_SIO_id({name: get_SIO_name_from_SIO_id(edge.data.target)}, new_root);
+                }
+
+
+				//if(edge.data.target.endsWith(old_root))	//check for steps that ends with old_root
+				//	edge.data.target = edge.data.target.substr(0, edge.data.target.lastIndexOf(old_root))+new_root; 
+				//
+
+                //Change the id of the edge
+                edge.data.id = create_workflow_edge_id(edge.data.source, edge.data.target);		
 			});
 			
 			
