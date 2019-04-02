@@ -756,6 +756,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         //Update Step Editor Tab completion 
         $scope.workflow_update_tab_completion_info_to_step();
+
+        //By default we Add a step.
+        $scope.workflow_step_add_update_label = 'Add';
     };
 
     /*
@@ -1861,7 +1864,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     /*
     * Called by ui.js
-    * Clicked a step node on cytioscape graph
+    * Clicked a step node on cytoscape graph
     */
     $scope.workflop_step_node_clicked = function(step) {
 
@@ -1881,6 +1884,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         //Open STEP accordion
         window.openEditWorkflowBtn_click();
+        $timeout(function(){M.updateTextFields()}, 10); // FIXME We need to make sure that M.updateTextFields() is run AFTER openEditWorkflowBtn_click()
+        
     };
 
     /*
