@@ -1631,6 +1631,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */
     $scope.workflow_info_add_step_clicked = function() {
 
+        $scope.workflow_step_add_update_label = 'Add'; 
+
         //Update tab completion info to step ace editor
         $scope.workflow_update_tab_completion_info_to_step();
 
@@ -1638,7 +1640,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         window.openEditWorkflowBtn_click();
 
         $scope.workflows_step_name = ''; //Clear STEP name
-        workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1); //Add default comment 
+        workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1); //Add default content
     };
 
     /*
@@ -1779,13 +1781,28 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
-    * workflows --> Step --> Button: Add Step --> Clicked 
+    * workflows --> Step --> Button: Add/Update --> Clicked
+    * We either ADD the step or UPDATE the step 
     */
     $scope.workflow_step_add = function() {
 
         if (!$scope.tools_name_regexp.test($scope.workflows_step_name)) {
             $scope.workflow_step_error_message = 'Invalid step name';
             return;
+        }
+
+        //Is this an UPDATE or an ADD?
+        if ($scope.workflow_step_add_update_label == 'Update') {
+            // If this is an update then delete the previous node
+            cy.$('node[id="' +  $scope.workflow_step_previous_step.id + '"]').remove();
+        }
+        else if ($scope.workflow_step_add_update_label == 'Add') {
+            // If this is an add then check if we are adding a step with a name that already exists.
+            var this_step_id = window.create_step_id({name: $scope.workflows_step_name}, {name: $scope.workflow_info_name, edit: null});
+            if (cy.$('node[id="' +  this_step_id + '"]').length) {
+                generateToast('There is already a step with this name', 'red lighten-2 black-text', 'stay on');
+                return;
+            }
         }
 
         $scope.workflow_step_error_message = '';
@@ -1823,7 +1840,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
-    * workflows -> Step -> Delete step
+    * workflows -> Step -> Delete step clicked.
     */ 
     $scope.workflow_step_delete = function() {
         //console.log('DELETE STEP');
@@ -1844,6 +1861,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         //console.log('CLICKED STEP NDOE:');
         //console.log(step);
+
+        //When a node is clicked then we "update" the node, we do not add it.
+        $scope.workflow_step_add_update_label = 'Update'; 
+
+        //One update might be the change of the node name. We allow this,
+        //but we need to keep track of the "previous" name so that we delete the right node.
+        $scope.workflow_step_previous_step = step;
 
         $scope.workflows_step_name = step.name;
         $('#editWorkflowNameLabel').addClass('active');
@@ -1919,8 +1943,6 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 workflow_step_editor.setReadOnly(true);
 
                 generateToast('Workflow successfully saved', 'green lighten-2 black-text', 'stay on');
-
-
             },
             function(data) {
                 $scope.workflows_info_error_message = data['error_message'];

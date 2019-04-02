@@ -897,6 +897,7 @@ window.onload = function () {
         function create_step_id(step, workflow) {
             return step.name + '__' + create_workflow_id(workflow);
         }
+        window.create_step_id = create_step_id; // Ugliness. FIXME! We need to make these functions visible everywhere without polluting the namespace
 
         /*
         * Create a unique input/output variable ID. This contains the input/output name, name workflow and edit of worfkflow
@@ -904,6 +905,7 @@ window.onload = function () {
         function create_input_output_id(input_output, workflow) {
             return input_output.name + '__' + create_workflow_id(workflow);
         }
+
 
         /*
         * Create a suitable worfklow name
