@@ -1851,6 +1851,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         
         //We do not have to check if this node exists. cytoscape is ok with this.
         cy.$('node[id="' + this_step_id + '"]').remove();
+
+        //Empty the step editor
+        $scope.workflows_step_name = '';
+        workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1);
+        $scope.workflow_step_add_update_label = 'Add';
     
     };
 
