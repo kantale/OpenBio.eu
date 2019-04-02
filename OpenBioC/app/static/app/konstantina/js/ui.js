@@ -1426,49 +1426,62 @@ window.onload = function () {
 			
 			var currentElements = cy.json().elements;
 			var current_root_edit, current_root, new_root, current_root_belong; 
+			
+			console.log("**********currentElements***********");
+			console.log(currentElements);
+			console.log("**********************************");
+		
 		
 			// Find the root workflow and change edit to null
 			currentElements.nodes.forEach(function(celement){
-				if(celement.data.belongto===null){               // Finds the root workflow
+				if(celement.data.belongto===null){
+					
+					// Finds the root workflow					
 					current_root = celement.data.id;		
 					current_root_name = celement.data.name;
 					current_root_edit = celement.data.edit;
-					
 					current_root_belong = {name: current_root_name, edit: current_root_edit};
-					//update edit and id
+					
+					// Update edit and id
 					new_root = celement.data.name+'__null';
 					celement.data.id=new_root;
 					celement.data.edit=null;
+					
 				}
 				
 			});
+			
+			console.log("*************current_root_belong**************");
+			console.log(current_root_belong);
+			
 		
-			// change belongto for the nodes that have root workflow as source
+			// Change belongto for the nodes that have root workflow as source
 			currentElements.nodes.forEach(function(celement){
-					if(JSON.stringify(celement.data.belongto) === JSON.stringify(current_root_belong) )
+					if(JSON.stringify(celement.data.belongto) === JSON.stringify(current_root_belong)){
 						celement.data.belongto={name: current_root_name, edit: null};
-					if(celement.data.type==='step')
-						celement.data.id=celement.data.id.substr(0, celement.data.id.lastIndexOf('__'))+'__null'; 
+							if(celement.data.type==='step')
+							celement.data.id=celement.data.id.substr(0, celement.data.id.lastIndexOf('__'))+'__null'; 
+					}
 				}
 			);
 			
 			
 			// change steps id that contains root workflow
 			currentElements.edges.forEach(function(celement){
-				//find tools that have as source the root workflow
+				
+				//find edges that have as source the root workflow
 				if(celement.data.source===current_root)
 					celement.data.source = new_root;
 				
 				if(celement.data.source.endsWith(current_root))
 					celement.data.source = celement.data.source.substr(0, celement.data.source.lastIndexOf(current_root))+new_root; 
-
+				
 					
-				if(celement.data.target.endsWith(current_root))	//ends with current_root
+				if(celement.data.target.endsWith(current_root))	//check for steps that ends with current_root
 					celement.data.target = celement.data.target.substr(0, celement.data.target.lastIndexOf(current_root))+new_root; 
-
 					
-				celement.data.id=new_root+'..'+celement.data.target;
-					
+				celement.data.id=celement.data.source+'..'+celement.data.target;
+		
 					
 			});
 			
@@ -1478,7 +1491,7 @@ window.onload = function () {
             initializeTree();
 
 			
-            cy.json({ elements: currentElements });   // Add uodated data
+            cy.json({ elements: currentElements });   // Add updated data
             cy.ready(function () {          		 // Wait for nodes to be added  
                 cy.layout({                   		// Call layout
                     name: 'breadthfirst',
@@ -1528,6 +1541,7 @@ window.onload = function () {
         }
 		
 		/*
+		* Redraw the graph so that initial  
 		* Re-run the layout of cytoscape
 		*/
 		window.redraw = function(){
