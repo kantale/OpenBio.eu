@@ -1844,7 +1844,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */ 
     $scope.workflow_step_delete = function() {
         //console.log('DELETE STEP');
-        var this_step_id = $scope.workflows_step_name + '__' + $scope.workflow_info_name + '__null';
+        var this_step_id = window.create_step_id($scope.workflow_step_previous_step, $scope.workflow_step_previous_step.belongto);
+
         //console.log('STEP ID TO DELETE:')
         //console.log(this_step_id);
         
