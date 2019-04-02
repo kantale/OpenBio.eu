@@ -1016,6 +1016,10 @@ def set_edit_to_cytoscape_json(cy, edit):
         if '__null'  in node['data']['id']:
             node['data']['id'] = node['data']['id'].replace('__null', '__' + str(edit))
 
+        #Change the bash
+        if 'bash' in node['data']:
+            node['data']['bash'] = node['data']['bash'].replace('__null', '__' + str(edit))
+
         # Set to step-->Step
         if 'steps' in node['data']:
             for step_i, _ in enumerate(node['data']['steps']):
@@ -1033,7 +1037,6 @@ def set_edit_to_cytoscape_json(cy, edit):
             for output_i, _ in enumerate(node['data']['outputs']):
                 if '__null' in node['data']['outputs'][output_i]:
                     node['data']['outputs'][output_i] = node['data']['outputs'][output_i].replace('__null', '__' + str(edit))
-
 
 
     if 'edges' in cy['elements']:
