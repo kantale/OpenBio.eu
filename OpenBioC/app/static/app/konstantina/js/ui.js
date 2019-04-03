@@ -50,9 +50,28 @@ window.onload = function () {
         $(".dropdown-trigger").dropdown();
         // --------------------------------------- Tooltip initialization ------------------------------------------------
         $('.tooltipped').tooltip();
+        // ---------------------------------------- Select initialization ------------------------------------------------
+        $('select').formSelect();
+        // ------------------------------------- Collapsible initialization ----------------------------------------------
+        $('.collapsible').collapsible();
+        // -------------------------------------- Datepicker initialization ----------------------------------------------
+        $('.datepicker').datepicker();
 
         // ---------------------------------------- Chips initialization -------------------------------------------------
-        $('.chips').chips({
+        $('#generalChips').chips({
+            placeholder: 'Enter keywords',
+            secondaryPlaceholder: '+ keyword',
+            autocompleteOptions: {
+                data: {
+                    'Apple': null,
+                    'Microsoft': null,
+                    'Google': null
+                },
+                limit: Infinity,
+                minLength: 1
+            }
+        });
+        $('#searchChips').chips({
             placeholder: 'Enter keywords',
             secondaryPlaceholder: '+ keyword',
             autocompleteOptions: {
@@ -90,22 +109,27 @@ window.onload = function () {
                 accordion: false,
                 // Callback function called before collapsible is opened
                 onOpenStart: function (event) {
-                    // Workflows right panel collapsible
-                    //                    if (event.id == 'workflows') {
-                    //                        if (document.getElementById('workflowsRightPanel').style.display == 'none') {
-                    //                            document.getElementById('workflowsRightPanel').style.display = 'block';
-                    //                            $('#workflowsRightPanel').animateCss('slideInDown', function () {
-                    //                            });
-                    //                        }
-                    //                    }
+                    // ----------------------------------------------------------------------------------------------
+                    // ---------------------------------------- DELETE START ----------------------------------------
+                    // ----------------------------------------------------------------------------------------------
+                    if(event.id == 'references'){
+                        document.getElementById('referencesRightPanel').style.display = 'block';
+                    }
+                    // ----------------------------------------------------------------------------------------------
+                    // ---------------------------------------- DELETE END ------------------------------------------
+                    // ----------------------------------------------------------------------------------------------
+
+
                     // Disabled collapsible
                     if (!event.classList.contains('disabled')) {
                         event.getElementsByClassName('arrow')[0].innerHTML = 'keyboard_arrow_down';
-                        updateTextFieldsCustom();
                     }
                 },
                 // Callback function called after collapsible is opened
                 onOpenEnd: function (event) {
+                    //Update all inputs and text areas so that labels are above.
+                    updateTextFieldsCustom();
+
                     // Disabled collapsible
                     if (event.classList.contains('disabled')) {
                         event.classList.remove('active');
@@ -113,22 +137,26 @@ window.onload = function () {
                     if ((event.id == 'workflowRightPanelGeneral') || (event.id == 'workflowRightPanelStep')) {
                         cy.resize();
                     }
+                    if (event.id == 'workflowRightPanelStep') {
+                        
+                    }
                 },
                 // Callback function called before collapsible is closed
                 onCloseStart: function (event) {
-                    // // Workflows right panel collapsible
-                    // if (event.id == 'workflows') {
-                    //     if (document.getElementById('workflowsRightPanel').style.display == 'block') {
-                    //         $('#workflowsRightPanel').animateCss('slideOutUp', function () {
-                    //             document.getElementById('workflowsRightPanel').style.display = 'none';
-                    //             // disableEditWorkflow(); // This disables the edit workflow window
-                    //         });
-                    //     }
-                    // }
                     // Disabled collapsible
                     if (!event.classList.contains('disabled')) {
                         event.getElementsByClassName('arrow')[0].innerHTML = 'keyboard_arrow_right';
                     }
+
+                    // ----------------------------------------------------------------------------------------------
+                    // ---------------------------------------- DELETE START ----------------------------------------
+                    // ----------------------------------------------------------------------------------------------
+                    if(event.id == 'references'){
+                        document.getElementById('referencesRightPanel').style.display = 'none';
+                    }
+                    // ----------------------------------------------------------------------------------------------
+                    // ---------------------------------------- DELETE END ------------------------------------------
+                    // ---------------------------------------------------------------------------------------------- 
                 },
                 // Callback function called after collapsible is closed
                 onCloseEnd: function (event) {
@@ -140,6 +168,24 @@ window.onload = function () {
             });
         }
 
+        
+        
+        function closeCollapsible(){
+            elem = $('#collapsible')
+            var instance = M.Collapsible.getInstance(elem); 
+            instance.close(0);
+            document.getElementById('searchFilters').removeEventListener('click', closeCollapsible);
+            document.getElementById('searchFilters').addEventListener('click', openCollapsible);
+        }
+        function openCollapsible(){
+            elem = $('#collapsible')
+            var instance = M.Collapsible.getInstance(elem); 
+            instance.open(0);
+            document.getElementById('searchFilters').removeEventListener('click', openCollapsible);
+            document.getElementById('searchFilters').addEventListener('click', closeCollapsible);
+        }
+        document.getElementById('searchFilters').addEventListener('click', openCollapsible);
+        
         // ------------------------------------ Initializations for profile page -----------------------------------------
         $('#profilePublicInfo').val(
             'Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck.');
@@ -574,6 +620,7 @@ window.onload = function () {
     }
 
     // -------------------------------------- Update text inputs and textareas ---------------------------------------
+    //To permanently remove label animation with JQuery: $('#editWorkflowNameLabel').addClass('active')
     function updateTextFieldsCustom() {
         M.updateTextFields();
         var textareas = document.getElementsByClassName('materialize-textarea');
@@ -889,17 +936,39 @@ window.onload = function () {
         }
 
         /*
+        * Get the edit of this wotkflow id
+        */
+        function get_edit_from_workflow_id(workflow_id) {
+            return workflow_id.split('__')[1];
+        }
+
+        /*
+        * Check if this workflow_id is root
+        */
+        function is_workflow_root_from_workflow_id(workflow_id) {
+            return get_edit_from_workflow_id(workflow_id) == 'null';
+        }
+
+        /*
         * Create a step ID. This contains: name of step, name of workflow, edit of workflow
         */
         function create_step_id(step, workflow) {
             return step.name + '__' + create_workflow_id(workflow);
         }
+        window.create_step_id = create_step_id; // Ugliness. FIXME! We need to make these functions visible everywhere without polluting the namespace
 
         /*
         * Create a unique input/output variable ID. This contains the input/output name, name workflow and edit of worfkflow
         */
         function create_input_output_id(input_output, workflow) {
             return input_output.name + '__' + create_workflow_id(workflow);
+        }
+
+        /*
+        * Helper for Step Input Output (SIO)
+        */
+        function create_SIO_id(SIO, workflow) {
+            return SIO.name + '__' + create_workflow_id(workflow);
         }
 
         /*
@@ -919,6 +988,62 @@ window.onload = function () {
         function create_workflow_edge_id(source_id, target_id) {
             return source_id + '..' + target_id;
         }
+
+        /*
+        * Get the source_id from the edge id
+        */
+        function get_source_id_from_edge_id(edge_id) {
+            return edge_id.split('..')[0];
+        }
+
+        /*
+        * Get the target_id from the edge id
+        */
+        function get_target_id_from_target_id(edge_id) {
+            return edge_id.split('..')[1];
+        }
+
+        /*
+        * Get the workflow id if this is a SIP node. 
+        * sio: Step Input Output
+        */
+        function get_workflow_id_from_SIO_id(sio_id) {
+            var sio_id_splitted = sio_id.split('__');
+            if (sio_id_splitted.length != 3) {
+                return null;
+            }
+            return create_workflow_id({name: sio_id_splitted[1], edit: sio_id_splitted[2]});
+        }
+
+        /*
+        * Check if this SIO id. Belongs to a root workflow
+        */
+        function is_workflow_root_from_SIO_id(sio_id) {
+            return is_workflow_root_from_workflow_id(get_workflow_id_from_SIO_id(sio_id));
+        }
+        window.is_workflow_root_from_SIO_id = is_workflow_root_from_SIO_id;
+
+        /*
+        * Get the name of a SIO (Step Input Output)
+        */
+        function get_SIO_name_from_SIO_id(sio_id) {
+            return sio_id.split('__')[0]
+        }
+
+		/*
+        * Replace the id of a SIO (in lists of a node: steps[], inputs[], outputs[])
+        */
+		function replace_SIO_id(array, old_root_id, new_root){
+			array.forEach(function(sio_id){
+				if (get_workflow_id_from_SIO_id(sio_id) === old_root_id){
+					var index = array.indexOf(sio_id);
+					sio_id=create_SIO_id({name: get_SIO_name_from_SIO_id(sio_id)}, new_root);
+					array[index] = sio_id;
+				}
+			});
+			
+			return array;
+		}
 
         /*
         * parse data from openbioc to meet the cytoscape.js requirements
@@ -1309,15 +1434,22 @@ window.onload = function () {
                     {
                         content: 'Delete',
                         select: function (ele) {
-                            var j = cy.$('#' + ele.id());
-                            
-							/* remove node successors*/
-							j.successors().targets().forEach(function (element) {
-									cy.remove(element);
-								
-							})
-							/*remove node*/
-							cy.remove(j);
+
+                            //Ideally the deletion logic should be placed here.
+                            //Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
+                            angular.element($('#angular_div')).scope().$apply(function () {
+                                angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id()); 
+                            });
+ 
+//                           var j = cy.$('#' + ele.id());
+//                           
+//							/* remove node successors*/
+//							j.successors().targets().forEach(function (element) {
+//									cy.remove(element);
+//								
+//							})
+//							/*remove node*/
+//							cy.remove(j);
 
                         }
                     }
@@ -1413,6 +1545,158 @@ window.onload = function () {
             window.cy_setup_events();
 			console.log("stop setup events");
         }
+		
+		
+		/**
+		** This function updates the workflow so that the can be forked: root edit changes to null
+		**
+		**/
+		window.forkWorkflow = function(){
+			
+			var currentElements = cy.json().elements;
+            var old_root_id, old_root_name, old_root_edit, old_root_belong;
+            var new_root, new_root_id;
+		
+			// Find the root workflow and change edit to null
+			currentElements.nodes.forEach(function(node){
+				if(node.data.belongto===null){
+					
+					// Finds the root workflow					
+					old_root_id = node.data.id;		
+					old_root_name = node.data.name;
+					old_root_edit = node.data.edit;
+					old_root_belong = {name: old_root_name, edit: old_root_edit};
+					
+					// Updated id
+                    new_root = {name: node.data.name, edit: null};
+                    new_root_id = create_workflow_id(new_root);
+					node.data.id=new_root_id;
+                    // Update edit. edit = null
+					node.data.edit=null;
+					
+				}
+				
+			});
+			
+			console.log("*************old_root_belong**************");
+			console.log(old_root_belong);
+			
+		
+			// Change belongto for the nodes that have root workflow as source
+			currentElements.nodes.forEach(function(node){
+
+                    //Root node belongto is null
+                    if (!node.data.belongto) {
+                        return;
+                    }
+
+                    //Unfortunately: 
+                    // JSON.stringify({a:'a', b:'b'}) === JSON.stringify({a:'a', b:'b'}) --> True
+                    // JSON.stringify({a:'a', b:'b'}) === JSON.stringify({b:'b', a:'a'}) --> False
+                    // there isn't any stragihtforward way of comparing key-pair objects in javascript...
+                    // https://stackoverflow.com/questions/1068834/object-comparison-in-javascript 
+                    // Making sure that the order is correct
+                    var node_root_belong_ordered = {name: node.data.belongto.name, edit: node.data.belongto.edit};
+					if(JSON.stringify(node_root_belong_ordered) === JSON.stringify(old_root_belong)){
+						node.data.belongto = {name: old_root_name, edit: null};
+                        if (['step', 'input', 'output'].indexOf(node.data.type)>=0) {
+                            node.data.id = create_step_id(node.data, new_root);
+                            //node.data.id = node.data.id.substr(0, node.data.id.lastIndexOf('__'))+'__null';
+                        } 
+					}
+					
+					/** List os steps, inputs, outputs should also be updated if they contain references to root wf. **/
+					
+					// List of steps.			
+					if(typeof node.data.steps != 'undefined' && node.data.steps.length > 0 ){
+							replace_SIO_id(node.data.steps, old_root_id, new_root);
+					}
+					
+					// List of inputs.
+					if(typeof node.data.inputs != 'undefined' && node.data.inputs.length > 0 ){
+							replace_SIO_id(node.data.inputs, old_root_id, new_root);
+					}
+
+					// List of outputs.
+					if(typeof node.data.outputs != 'undefined' && node.data.outputs.length > 0 ){
+							replace_SIO_id(node.data.outputs, old_root_id, new_root);
+					}
+
+					/* bash field of node should also be update if it contains call to  step, input, output */
+						if(typeof node.data.bash != 'undefined'){ 
+							var bash_commands = node.data.bash.split(" ");
+								//replace_SIO_id(bash_commands, old_root_id, new_root);
+								node.data.bash = replace_SIO_id(bash_commands, old_root_id, new_root).join();
+						}
+						
+					}
+				
+				
+			);
+			
+			
+			// change all edges that connect to root.  
+			currentElements.edges.forEach(function(edge){
+				
+                /* EDGE SOURCES */
+
+				//find edges that have as source the root workflow
+				if(edge.data.source===old_root_id) {
+					edge.data.source = new_root_id;
+                }
+				
+                //Find edges that have the root_workflow in their source
+                else if (get_workflow_id_from_SIO_id(edge.data.source) === old_root_id) {
+                    edge.data.source = create_SIO_id({name: get_SIO_name_from_SIO_id(edge.data.source)}, new_root);
+                }
+
+				//if(edge.data.source.endsWith(old_root))
+				//	edge.data.source = edge.data.source.substr(0, edge.data.source.lastIndexOf(old_root))+new_root; 
+				
+                /* EDGE TARGETS */
+
+                if (edge.data.target == old_root_id) {
+                    edge.data.target = new_root_id;
+                }
+
+                //Find edges that have the root_workflow in their target
+                else if (get_workflow_id_from_SIO_id(edge.data.target) === old_root_id) {
+                    edge.data.target = create_SIO_id({name: get_SIO_name_from_SIO_id(edge.data.target)}, new_root);
+                }
+
+
+				//if(edge.data.target.endsWith(old_root))	//check for steps that ends with old_root
+				//	edge.data.target = edge.data.target.substr(0, edge.data.target.lastIndexOf(old_root))+new_root; 
+				//
+
+                //Change the id of the edge
+                edge.data.id = create_workflow_edge_id(edge.data.source, edge.data.target);		
+				
+			});
+			
+			
+			/** re run layout **/
+			// this initialization is needed because cy.add() causes multiple instances of layout
+            initializeTree();
+
+            cy.json({ elements: currentElements });   // Add updated data
+            cy.ready(function () {          		 // Wait for nodes to be added  
+                cy.layout({                   		// Call layout
+                    name: 'breadthfirst',
+                    directed: true,
+                    padding: 2
+                }).run();
+
+            });
+
+		  
+            //Add open flag for nodes that should always stay open (these are the nodes that belong to more than one tool) : TODO FIX THAT, NOT WORKING LIKE THAT
+            //cy.$('#'+openId).data('flag', 'open');		
+			
+            window.cy_setup_events();
+				
+			
+		}
 
 
         /*
@@ -1445,6 +1729,7 @@ window.onload = function () {
         }
 		
 		/*
+		* Redraw the graph so that initial  
 		* Re-run the layout of cytoscape
 		*/
 		window.redraw = function(){

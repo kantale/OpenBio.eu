@@ -166,6 +166,21 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
+    *
+    */
+    $scope.toast = function(message, type) {
+        if (type == 'error') {
+            generateToast(message, 'red lighten-2 black-text', 'stay on');
+        }
+        else if (type == 'success') {
+            generateToast(message, 'green lighten-2 black-text', 'stay on');
+        }
+        else {
+            console.warn('Error: 8133 Unknown toast type:' + type);
+        }
+    };
+
+    /*
     * Navbar --> Home --> clicked 
     */
     $scope.navbar_home_clicked = function() {
@@ -756,6 +771,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         //Update Step Editor Tab completion 
         $scope.workflow_update_tab_completion_info_to_step();
+
+        //By default we Add a step.
+        $scope.workflow_step_add_update_label = 'Add';
     };
 
     /*
@@ -837,7 +855,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             },
             function(data) {
                 $scope.tools_info_success_message = 'Tool/Data successfully saved';
-                generateToast($scope.tools_info_success_message, 'green lighten-2 black-text', 'stay on');
+                $scope.toast($scope.tools_info_success_message, 'success');
                 $scope.tools_info_editable = false;
                 $scope.tool_info_created_at = data['created_at'];
                 $scope.tools_info_edit = data['edit'];
@@ -845,12 +863,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             },
             function(data) {
                 $scope.tools_info_error_message = data['error_message'];
-                generateToast($scope.tools_info_error_message, 'red lighten-2 black-text', 'stay on');
-
+                $scope.toast($scope.tools_info_error_message, 'error');
             },
             function(statusText) {
                 $scope.tools_info_error_message = statusText;
-                generateToast($scope.tools_info_error_message, 'red lighten-2 black-text', 'stay on');
+                $scope.toast($scope.tools_info_error_message, 'error')
             }
         );
     };
@@ -879,7 +896,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tools_info_editable = true;
         $scope.tools_info_error_message = '';
         $scope.tools_info_success_message = "Tool successfully forked. Press Save after completing your edits";
-        generateToast($scope.tools_info_success_message, 'green lighten-2 black-text', 'stay on'); 
+        $scope.toast($scope.tools_info_success_message, 'success');
 
         $scope.tools_info_forked_from = {
             'name': $scope.tools_info_name, 
@@ -1040,7 +1057,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                     console.log(data['variables_jstree']);
 
                     if (!$scope.workflows_info_editable) {
-                        generateToast('You cannot edit this workflow. You can fork it, or create a new one.', 'red lighten-2 black-text', 'stay on');
+                        $scope.toast('You cannot edit this workflow. You can fork it, or create a new one.', 'error');
                         return;
                     }
 
@@ -1524,10 +1541,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 }
             },
             function(data) {
-                generateToast(data['error_message'], 'red lighten-2 black-text', 'stay on');
+                $scope.toast(data['error_message'], 'error');
             },
             function(statusText) {
-                generateToast(statusText, 'red lighten-2 black-text', 'stay on');
+                $scope.toast(statusText, 'error');
             },
         );
     };
@@ -1631,6 +1648,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */
     $scope.workflow_info_add_step_clicked = function() {
 
+        $scope.workflow_step_add_update_label = 'Add'; 
+
         //Update tab completion info to step ace editor
         $scope.workflow_update_tab_completion_info_to_step();
 
@@ -1638,7 +1657,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         window.openEditWorkflowBtn_click();
 
         $scope.workflows_step_name = ''; //Clear STEP name
-        workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1); //Add default comment 
+        workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1); //Add default content
     };
 
     /*
@@ -1779,13 +1798,28 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
-    * workflows --> Step --> Button: Add Step --> Clicked 
+    * workflows --> Step --> Button: Add/Update --> Clicked
+    * We either ADD the step or UPDATE the step 
     */
     $scope.workflow_step_add = function() {
 
         if (!$scope.tools_name_regexp.test($scope.workflows_step_name)) {
             $scope.workflow_step_error_message = 'Invalid step name';
             return;
+        }
+
+        //Is this an UPDATE or an ADD?
+        if ($scope.workflow_step_add_update_label == 'Update') {
+            // If this is an update then delete the previous node
+            cy.$('node[id="' +  $scope.workflow_step_previous_step.id + '"]').remove();
+        }
+        else if ($scope.workflow_step_add_update_label == 'Add') {
+            // If this is an add then check if we are adding a step with a name that already exists.
+            var this_step_id = window.create_step_id({name: $scope.workflows_step_name}, {name: $scope.workflow_info_name, edit: null});
+            if (cy.$('node[id="' +  this_step_id + '"]').length) {
+                $scope.toast('There is already a step with this name', 'error');
+                return;
+            }
         }
 
         $scope.workflow_step_error_message = '';
@@ -1823,33 +1857,108 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
-    * workflows -> Step -> Delete step
+    * workflows -> Step -> Delete step clicked.
     */ 
     $scope.workflow_step_delete = function() {
         //console.log('DELETE STEP');
-        var this_step_id = $scope.workflows_step_name + '__' + $scope.workflow_info_name + '__null';
+        var this_step_id = window.create_step_id($scope.workflow_step_previous_step, $scope.workflow_step_previous_step.belongto);
+
         //console.log('STEP ID TO DELETE:')
         //console.log(this_step_id);
         
         //We do not have to check if this node exists. cytoscape is ok with this.
         cy.$('node[id="' + this_step_id + '"]').remove();
+
+        //Empty the step editor
+        $scope.workflows_step_name = '';
+        workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1);
+        $scope.workflow_step_add_update_label = 'Add';
     
     };
 
     /*
+    * Called from UI.js . Right Click a node in cytoscape --> delete
+    */
+    $scope.workflow_cytoscape_delete_node = function(node_id) {
+
+        /* Remove thre successors of a node*/
+        function remove_successors(node) {
+            node.successors().targets().forEach(function (element) {
+                cy.remove(element);                  
+            });
+
+        }
+
+        var node = cy.$('node[id="' + node_id + '"]');
+        var data = node.data();
+        if (data.type == 'step'){
+            node.remove();
+        }
+        else if (data.type=='tool') {
+
+            //Is there any tool that is dependent from this tool?
+            if (node.incomers('node[type="tool"]').length) {
+                $scope.toast('Cannot remove this tool. Other tools are dependent on this.', 'error');
+            }
+            else {
+                //Remove successors as well 
+                remove_successors(node);
+                node.remove();
+            }
+        }
+        else if (data.type=='input' || data.type=='output') {
+            //Check if this is belongs to root WF
+            if (window.is_workflow_root_from_SIO_id(node.id())) {
+                
+                //Locate the index 
+                var index = -1;
+                for (var i=0; i<$scope.workflow_input_outputs.length; i++) {
+                    if ($scope.workflow_input_outputs[i].name == data.name && $scope.workflow_input_outputs[i].out == (data.type=='output')) {
+                        index = i;
+                        break;
+                    }
+                }
+                //Remove it
+                if (index>=0) {
+                    $scope.workflow_step_remove_input_output(index);
+                    node.remove();
+                }
+                else {
+                    console.warn('Error 8161'); // This should never happen
+                }
+            }
+            else {
+               // If this does not belong to the root node, delete it.
+               node.remove();
+            }
+        }
+
+    };
+
+    /*
     * Called by ui.js
-    * Clicked a step node on cytioscape graph
+    * Clicked a step node on cytoscape graph
     */
     $scope.workflop_step_node_clicked = function(step) {
 
         //console.log('CLICKED STEP NDOE:');
         //console.log(step);
 
+        //When a node is clicked then we "update" the node, we do not add it.
+        $scope.workflow_step_add_update_label = 'Update'; 
+
+        //One update might be the change of the node name. We allow this,
+        //but we need to keep track of the "previous" name so that we delete the right node.
+        $scope.workflow_step_previous_step = step;
+
         $scope.workflows_step_name = step.name;
+        $('#editWorkflowNameLabel').addClass('active');
         workflow_step_editor.setValue(step.bash, -1);
 
         //Open STEP accordion
         window.openEditWorkflowBtn_click();
+        $timeout(function(){M.updateTextFields()}, 10); // FIXME We need to make sure that M.updateTextFields() is run AFTER openEditWorkflowBtn_click()
+        
     };
 
     /*
@@ -1917,18 +2026,15 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.workflows_info_editable = false;
                 workflow_step_editor.setReadOnly(true);
 
-                generateToast('Workflow successfully saved', 'green lighten-2 black-text', 'stay on');
-
-
+                $scope.toast('Workflow successfully saved', 'success');
             },
             function(data) {
                 $scope.workflows_info_error_message = data['error_message'];
-                generateToast($scope.workflows_info_error_message, 'red lighten-2 black-text', 'stay on');
-
+                $scope.toast($scope.workflows_info_error_message, 'error');
             },
             function(statusText) {
                 $scope.workflows_info_error_message = statusText;
-                generateToast($scope.workflows_info_error_message, 'red lighten-2 black-text', 'stay on');
+                $scope.toast($scope.workflows_info_error_message, 'error');
             }
         );
     };
@@ -1939,12 +2045,15 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     $scope.workflows_info_fork_pressed = function() {
         if (!$scope.username) {
             //It will never reach here. FORK is disabled in UI if user is not logged in.
-            generateToast("Login to create new Workflows", 'red lighten-2 black-text', 'stay on');
+            $scope.toast("Login to create new Workflows", 'error');
             return;
         }
 
+        //After fork, we should change the IDs 
+        window.forkWorkflow();
+
         $scope.workflows_info_editable = true;
-        generateToast("Workflows successfully forked. Press Save after completing your edits", 'green lighten-2 black-text', 'stay on'); 
+        $scope.toast("Workflows successfully forked. Press Save after completing your edits", 'success');
 
         $scope.workflow_info_forked_from = {
             'name': $scope.workflow_info_name,  
@@ -1953,10 +2062,6 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.workflow_changes = '';
         workflow_step_editor.setReadOnly(false);
 
-        //After fork, we should change the IDs 
-	
-        //cy.$('node[type="workflow"][name="' + $scope.workflow_info_name + '"][edit=' + $scope.workflow_info_edit + ']').data('edit', null);
-		
     };
 
     /*
@@ -1999,10 +2104,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 				window.cy_close_successors();
             },
             function(data) {
-                generateToast("ERROR 81711", 'red lighten-2 black-text', 'stay on');
+                $scope.toast("ERROR 81711", "error");
             },
             function(statusText) {
-                generateToast(statusText, 'red lighten-2 black-text', 'stay on');
+                $scope.toast(statusText, 'error');
             }
         );
     };
