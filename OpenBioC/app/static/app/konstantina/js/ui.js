@@ -1244,7 +1244,7 @@ window.onload = function () {
                 //connectedEdges: next level
                 //successors: next levels recursively
 
-                if (this['_private'].data.type !== "step") { //steps should never collapse
+                if (this['_private'].data.type !== "step" && this['_private'].data.type !== "input" && this['_private'].data.type !== "output") { //steps should never collapse
                     if (this.successors().targets().style("display") == "none") {
                         this.connectedEdges().targets().style("display", "element");
                     } else {
