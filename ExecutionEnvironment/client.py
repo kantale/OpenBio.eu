@@ -39,7 +39,7 @@ def r_1():
 	print (data)
 	return data['id']
 
-def r_2(this_id):
+def r_query(this_id):
 	r = requests.post(URL,  data=json.dumps(json_2(this_id)), headers=headers)
 
 	if not r.ok:
@@ -47,6 +47,18 @@ def r_2(this_id):
 
 	data =  r.json()
 	return data
+
+def check_response(r):
+	if not r.ok:
+		r.raise_for_status()
+
+	data =  r.json()
+	return data
+
+
+def r_json_submit(js):
+	r = requests.post(URL,  data=json.dumps(js), headers=headers)
+	return check_response(r)
 
 def test_1():
 	# Send 50 validate
@@ -58,7 +70,21 @@ def test_1():
 	time.sleep(4)
 	resp = [r_2(id_) for id_ in ids]
 
-try:
-	test_1()
-except KeyboardInterrupt:
-	pass
+def test_2():
+	print ('Submitting..')
+	data = r_json_submit(json_1())
+	print (data)
+	time.sleep(10)
+	print ('Quering...')
+	data = r_query(data['id'])
+	print (data)
+
+
+
+if __name__ == '__main__':
+#	try:
+#		test_1()
+#	except KeyboardInterrupt:
+#		pass
+
+	test_2()	
