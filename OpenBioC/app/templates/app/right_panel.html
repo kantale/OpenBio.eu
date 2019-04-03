@@ -66,7 +66,7 @@
                                         ng-model="tool_changes" ng-disabled="!tools_info_editable"></textarea>
                                     <label for="generalEditSummary">Edit Summary</label>
                                 </div>
-                                <div class="input-field chips left-align"></div>
+                                <div id="generalChips" class="input-field chips left-align"></div>
                             </form>
                         </div>
                     </div>
@@ -128,6 +128,23 @@
                             <div class="left-align" id="tools_var_jstree_id" js-tree="tools_var_jstree_config"
                                 should-apply="tools_search_jstree_config_apply()" ng-model="tools_var_jstree_model"
                                 tree="tools_var_jstree" ng-show="tools_var_jstree_id_show"></div>
+                        </div>
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <select multiple>
+                                    <!-- <option value="" disabled selected>Choose OS</option> -->
+                                    <optgroup label="Ubuntu">
+                                        <option value="Ubuntu_14_04">14.04</option>
+                                        <option value="Ubuntu_16_04">16.04</option>
+                                    </optgroup>
+                                    <optgroup label="Debian">
+                                        <option value="Debian_7">7 (Wheezy)</option>
+                                        <option value="Debian_8">8 (Jessie)</option>
+                                        <option value="Debian_9">9 (Stretch)</option>
+                                    </optgroup>
+                                </select>
+                                <label>Select Operating System</label>
+                            </div>
                         </div>
                         <!-- Installation -->
                         <div class="row">
@@ -196,6 +213,59 @@
                         </div>
                     </div>
                 </li>
+                <li id="toolsDataStatistics">
+                    <div class="collapsible-header">
+                        <i class="material-icons arrow">keyboard_arrow_right</i>
+                        <i class="material-icons">poll</i>
+                        Statistics
+                    </div>
+                    <div class="collapsible-body">
+                        <div class="row">
+                            Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry
+                            richardson
+                            ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food
+                            truck
+                            quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a
+                            bird
+                            on
+                            it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim
+                            keffiyeh
+                            helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
+                            Ad
+                            vegan
+                            excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw
+                            denim
+                            aesthetic synth nesciunt you probably haven't heard of them accusamus labore
+                            sustainable VHS.
+                            <table class="highlight centered">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Item Name</th>
+                                        <th>Item Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Alvin</td>
+                                        <td>Eclair</td>
+                                        <td>$0.87</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Alan</td>
+                                        <td>Jellybean</td>
+                                        <td>$3.76</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Jonathan</td>
+                                        <td>Lollipop</td>
+                                        <td>$7.00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </li>
             </ul>
 
         </div>
@@ -223,7 +293,8 @@
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fit" ng-click="workflow_info_fit_pressed()">Fit</a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
-                        data-tooltip="Clear" ng-click="workflow_info_clear_pressed()" ng-disabled="!workflows_info_editable">Clear</a>
+                        data-tooltip="Clear" ng-click="workflow_info_clear_pressed()"
+                        ng-disabled="!workflows_info_editable">Clear</a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Add Step" ng-click="workflow_info_add_step_clicked()">Add Step</a>
                     <a id="expandAllBtn2" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
@@ -252,16 +323,19 @@
                         <div class="row">
                             <form class="col s12">
                                 <div class="input-field">
-                                    <input id="workflowsGeneralWebsite" type="text" class="validate" ng-model="workflow_website" ng-disabled="!workflows_info_editable">
+                                    <input id="workflowsGeneralWebsite" type="text" class="validate"
+                                        ng-model="workflow_website" ng-disabled="!workflows_info_editable">
                                     <label for="workflowsGeneralWebsite">Website</label>
                                 </div>
                                 <div class="input-field">
-                                    <textarea id="workflowsGeneralDescription"
-                                        class="validate materialize-textarea" ng-model="workflow_description" ng-disabled="!workflows_info_editable"></textarea>
+                                    <textarea id="workflowsGeneralDescription" class="validate materialize-textarea"
+                                        ng-model="workflow_description"
+                                        ng-disabled="!workflows_info_editable"></textarea>
                                     <label for="workflowsGeneralDescription">Description</label>
                                 </div>
                                 <div class="input-field" ng-show="workflow_info_forked_from">
-                                    <textarea id="workflowsGeneralEditSummary" class="validate materialize-textarea" ng-model="workflow_changes" ng-disabled="!workflows_info_editable"></textarea>
+                                    <textarea id="workflowsGeneralEditSummary" class="validate materialize-textarea"
+                                        ng-model="workflow_changes" ng-disabled="!workflows_info_editable"></textarea>
                                     <label for="workflowsGeneralEditSummary">Edit Summary</label>
                                 </div>
                                 <div class="input-field chips left-align"></div>
@@ -270,10 +344,6 @@
                     </div>
                 </li>
             </ul>
-
-
-
-
             <!-- --------------------------------------------------------------------------------------- -->
             <!-- ------------------------------------ Graph -------------------------------------------- -->
             <!-- --------------------------------------------------------------------------------------- -->
@@ -322,9 +392,12 @@
                                 <div class="row col s12">
                                     <div class="right-align">
                                         <a class="waves-effect waves-light btn" style="margin:2px">Cancel</a>
-                                        <a class="waves-effect waves-light btn" style="margin:2px" ng-show="workflows_info_editable" ng-click="workflow_step_delete()">Delete</a>
                                         <a class="waves-effect waves-light btn" style="margin:2px"
-                                            ng-click="workflow_step_add()" ng-show="workflows_info_editable"><span ng-bind="workflow_step_add_update_label"></span></a>
+                                            ng-show="workflows_info_editable"
+                                            ng-click="workflow_step_delete()">Delete</a>
+                                        <a class="waves-effect waves-light btn" style="margin:2px"
+                                            ng-click="workflow_step_add()" ng-show="workflows_info_editable"><span
+                                                ng-bind="workflow_step_add_update_label"></span></a>
                                     </div>
                                 </div>
                             </form>
@@ -351,12 +424,15 @@
                                     </thead>
                                     <tbody>
                                         <tr ng-repeat="x in workflow_input_outputs">
-                                            <td><input type="text" placeholder="Name" ng-model="x.name" ng-disabled="!workflows_info_editable"></td>
-                                            <td><input type="text" placeholder="Description" ng-model="x.description" ng-disabled="!workflows_info_editable"></td>
+                                            <td><input type="text" placeholder="Name" ng-model="x.name"
+                                                    ng-disabled="!workflows_info_editable"></td>
+                                            <td><input type="text" placeholder="Description" ng-model="x.description"
+                                                    ng-disabled="!workflows_info_editable"></td>
                                             <td class="switch">
                                                 <label>
                                                     IN
-                                                    <input type="checkbox" ng-model="x.out" style="display:none" ng-disabled="!workflows_info_editable">
+                                                    <input type="checkbox" ng-model="x.out" style="display:none"
+                                                        ng-disabled="!workflows_info_editable">
                                                     <span class="lever"></span>
                                                     OUT
                                                 </label>
@@ -364,7 +440,7 @@
                                             <td>
                                                 <a class="waves-effect waves-light btn-small tooltipped green darken-1"
                                                     style="padding-left: 7px; padding-right:7px" data-position="bottom"
-                                                    data-tooltip="Add new variable" 
+                                                    data-tooltip="Add new variable"
                                                     ng-if="$last && x.name && x.description && workflows_info_editable"
                                                     ng-click="workflow_step_add_input_output()"><i
                                                         class="material-icons">add</i></a>
@@ -378,39 +454,215 @@
                                                         class="material-icons">remove</i></a>
                                             </td>
                                         </tr>
-                                        <!-- <tr ng-repeat="x in tool_variables">
-                                                <td><input type="text" placeholder="name" ng-model="x.name"
-                                                        ng-disabled="!tools_info_editable"></td>
-                                                <td><input type="text" placeholder="value" ng-model="x.value"
-                                                        ng-disabled="!tools_info_editable"></td>
-                                                <td><input type="text" placeholder="description" ng-model="x.description"
-                                                        ng-disabled="!tools_info_editable"></td>
-                                                <td>
-                                                    <a class="waves-effect waves-light btn-small tooltipped green darken-1"
-                                                        style="padding-left: 7px; padding-right:7px" data-position="bottom"
-                                                        data-tooltip="Add new variable" ng-click="tools_info_add_variable()"
-                                                        ng-if="$last && x.name && x.value && x.description && tools_info_editable"><i
-                                                            class="material-icons">add</i></a>
-                                                </td>
-                                                <td>
-                                                    <a class="waves-effect waves-light btn-small tooltipped red darken-1"
-                                                        style="padding-left: 7px; padding-right:7px" data-position="bottom"
-                                                        data-tooltip="Remove variable"
-                                                        ng-click="tools_info_remove_variable($index)"
-                                                        ng-if="(!$first) && tools_info_editable"><i
-                                                            class="material-icons">remove</i></a>
-                                                </td>
-                                            </tr> -->
                                     </tbody>
                                 </table>
                             </div>
                             <div class="right-align">
-                                <a class="waves-effect waves-light btn" style="margin:2px" ng-click="workflow_step_input_output_update_pressed()" ng-show="workflows_info_editable">Update</a>
+                                <a class="waves-effect waves-light btn" style="margin:2px"
+                                    ng-click="workflow_step_input_output_update_pressed()"
+                                    ng-show="workflows_info_editable">Update</a>
                             </div>
                         </div>
                     </div>
                 </li>
+                <li id="workflowStatistics">
+                    <div class="collapsible-header">
+                        <i class="material-icons arrow">keyboard_arrow_right</i>
+                        <i class="material-icons">poll</i>
+                        Statistics
+                    </div>
+                    <div class="collapsible-body">
+                        <div class="row">
+                            Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry
+                            richardson
+                            ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food
+                            truck
+                            quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a
+                            bird
+                            on
+                            it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim
+                            keffiyeh
+                            helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
+                            Ad
+                            vegan
+                            excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw
+                            denim
+                            aesthetic synth nesciunt you probably haven't heard of them accusamus labore
+                            sustainable VHS.
+                            <table class="highlight centered">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Item Name</th>
+                                        <th>Item Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Alvin</td>
+                                        <td>Eclair</td>
+                                        <td>$0.87</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Alan</td>
+                                        <td>Jellybean</td>
+                                        <td>$3.76</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Jonathan</td>
+                                        <td>Lollipop</td>
+                                        <td>$7.00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </li>
             </ul>
+        </div>
+        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+        <!-- ---------------------------------------------- References Right Panel ------------------------------------------------------------------- -->
+        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+        <div class="faster" id="referencesRightPanel" style="display: none;">
+            <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
+                <p>
+                    <h5>
+                        <!-- <span ng-bind="tools_info_name"></span>/<span ng-bind="tools_info_version"></span><span
+                            ng-show="!tools_info_editable">/<span ng-bind="tools_info_edit"></span></span> -->
+                        <span>Name</span>/<span>Version</span><span>/<span>Edit</span></span>
+                    </h5>
+                    <small class="form-text text-muted">
+                        <!-- <span ng-bind="tool_info_username"></span>
+                        <span ng-show="!tools_info_editable">, created at <span
+                                ng-bind="tool_info_created_at"></span></span>
+                        <span ng-show="tools_info_forked_from">, forked from <a href
+                                ng-click="tools_search_show_item(tools_info_forked_from)"><span
+                                    ng-bind="tools_info_forked_from | tool_label"></span></a></span>
+                        <span>USED IN 86 WFs</span> -->
+                        <span>Username</span>
+                        <span>, created at <span>Tue, 12 Feb 2019 10:23:29</span></span>
+                        <span>USED IN 86 WFs</span>
+                    </small>
+                </p>
+                <!-- Buttons -->
+                <div class="row right-align">
+                    <a id="expandAllBtn3" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
+                        data-position="bottom" data-tooltip="Expand All"><i class="material-icons">unfold_more</i></a>
+                    <a id="collapseAllBtn3" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
+                        data-position="bottom" data-tooltip="Collapse All"><i class="material-icons">unfold_less</i></a>
+                    <!-- <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
+                        data-tooltip="Save" ng-click="tool_create_save_pressed()" ng-show="tools_info_editable"><i
+                            class="material-icons">save</i></a> -->
+                    <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
+                        data-tooltip="Save"><i class="material-icons">save</i></a>
+                </div>
+            </div>
+
+            <ul id="referencesRightPanelAccordion" class="collapsible expandable popout faster">
+                <!-- --------------------------------------------------------------------------------------- -->
+                <!-- ------------------------------------ General ------------------------------------------ -->
+                <!-- --------------------------------------------------------------------------------------- -->
+                <li id="referencesGeneral">
+                    <div class="collapsible-header">
+                        <i class="material-icons arrow">keyboard_arrow_right</i>
+                        <i class="material-icons">info</i>
+                        General
+                    </div>
+                    <div class="collapsible-body">
+                        <div class="row">
+                            <form class="col s12">
+                                <div class="input-field">
+                                    <textarea id="referencesGeneralDescription"
+                                        class="validate materialize-textarea"></textarea>
+                                    <label for="referencesGeneralDescription">Description</label>
+                                </div>
+                                <div class="input-field">
+                                    <input id="referencesGeneralURL" type="text" class="validate">
+                                    <label for="referencesGeneralURL">URL</label>
+                                </div>
+                                <div class="input-field">
+                                    <input id="referencesGeneralDOI" type="text" class="validate">
+                                    <label for="referencesGeneralDOI">DOI</label>
+                                </div>
+                                <div class="input-field" style="margin-bottom: 0px;">
+                                    <textarea id="referencesGeneralBIBTEX"
+                                        class="validate materialize-textarea"></textarea>
+                                    <label for="referencesGeneralBIBTEX">BIBTEX</label>
+                                </div>
+                                <div class="right-align">
+                                    <a class="waves-effect waves-light btn-small">Generate</a>
+                                </div>
+                                <div>
+                                    <h5>Formatted References</h5>
+                                    <p>
+                                        Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry
+                                        richardson
+                                        ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food
+                                        truck
+                                        quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a
+                                        bird
+                                        on
+                                    </p>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </li>
+                <li id="referencesStatistics">
+                    <div class="collapsible-header">
+                        <i class="material-icons arrow">keyboard_arrow_right</i>
+                        <i class="material-icons">poll</i>
+                        Statistics
+                    </div>
+                    <div class="collapsible-body">
+                        <div class="row">
+                            Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry
+                            richardson
+                            ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food
+                            truck
+                            quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a
+                            bird
+                            on
+                            it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim
+                            keffiyeh
+                            helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
+                            Ad
+                            vegan
+                            excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw
+                            denim
+                            aesthetic synth nesciunt you probably haven't heard of them accusamus labore
+                            sustainable VHS.
+                            <table class="highlight centered">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Item Name</th>
+                                        <th>Item Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Alvin</td>
+                                        <td>Eclair</td>
+                                        <td>$0.87</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Alan</td>
+                                        <td>Jellybean</td>
+                                        <td>$3.76</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Jonathan</td>
+                                        <td>Lollipop</td>
+                                        <td>$7.00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+
         </div>
     </div>
 </div>
