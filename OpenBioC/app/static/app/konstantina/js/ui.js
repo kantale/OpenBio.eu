@@ -1007,6 +1007,21 @@ window.onload = function () {
         function get_SIO_name_from_SIO_id(sio_id) {
             return sio_id.split('__')[0]
         }
+		
+		/*
+        * Replace the id of a SIO (in lists of a node: steps[], inputs[], outputs[])
+        */
+		function replace_SIO_id(array, old_root_id, new_root){
+			array.forEach(function(sio_id){
+				if (get_workflow_id_from_SIO_id(sio_id) === old_root_id){
+					var index = array.indexOf(sio_id);
+					sio_id=create_SIO_id({name: get_SIO_name_from_SIO_id(sio_id)}, new_root);
+					array[index] = sio_id;
+				}
+			});
+			
+			return array;
+		}
 
         /*
         * parse data from openbioc to meet the cytoscape.js requirements
@@ -1512,11 +1527,6 @@ window.onload = function () {
 			var currentElements = cy.json().elements;
             var old_root_id, old_root_name, old_root_edit, old_root_belong;
             var new_root, new_root_id;
-			
-			console.log("**********currentElements***********");
-			console.log(currentElements);
-			console.log("**********************************");
-		
 		
 			// Find the root workflow and change edit to null
 			currentElements.nodes.forEach(function(node){
@@ -1565,7 +1575,34 @@ window.onload = function () {
                             //node.data.id = node.data.id.substr(0, node.data.id.lastIndexOf('__'))+'__null';
                         } 
 					}
-				}
+					
+					/** List os steps, inputs, outputs should also be updated if they contain references to root wf. **/
+					
+					// List of steps.			
+					if(typeof node.data.steps != 'undefined' && node.data.steps.length > 0 ){
+							replace_SIO_id(node.data.steps, old_root_id, new_root);
+					}
+					
+					// List of inputs.
+					if(typeof node.data.inputs != 'undefined' && node.data.inputs.length > 0 ){
+							replace_SIO_id(node.data.inputs, old_root_id, new_root);
+					}
+
+					// List of outputs.
+					if(typeof node.data.outputs != 'undefined' && node.data.outputs.length > 0 ){
+							replace_SIO_id(node.data.outputs, old_root_id, new_root);
+					}
+
+					/* bash field of node should also be update if it contains call to  step, input, output */
+						if(typeof node.data.bash != 'undefined'){ 
+							var bash_commands = node.data.bash.split(" ");
+								//replace_SIO_id(bash_commands, old_root_id, new_root);
+								node.data.bash = replace_SIO_id(bash_commands, old_root_id, new_root).join();
+						}
+						
+					}
+				
+				
 			);
 			
 			
@@ -1605,6 +1642,7 @@ window.onload = function () {
 
                 //Change the id of the edge
                 edge.data.id = create_workflow_edge_id(edge.data.source, edge.data.target);		
+				
 			});
 			
 			
@@ -1612,7 +1650,6 @@ window.onload = function () {
 			// this initialization is needed because cy.add() causes multiple instances of layout
             initializeTree();
 
-			
             cy.json({ elements: currentElements });   // Add updated data
             cy.ready(function () {          		 // Wait for nodes to be added  
                 cy.layout({                   		// Call layout
