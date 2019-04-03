@@ -19,9 +19,8 @@ wget http://zzz.bwh.harvard.edu/plink/dist/plink-1.07-x86_64.zip
 unzip plink-1.07-x86_64.zip
 
 cd plink-1.07-x86_64
-
-./plink --noweb --file test
-#./plink --noweb
+#./plink --noweb --file test
+./plink --noweb
 		"""
 	}
 
@@ -51,7 +50,7 @@ def r_2(this_id):
 
 def test_1():
 	# Send 50 validate
-	ids = [r_1() for x in range(10)]
+	ids = [r_1() for x in range(2)]
 
 	resp = [r_2(id_) for id_ in ids]
 
