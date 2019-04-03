@@ -50,9 +50,28 @@ window.onload = function () {
         $(".dropdown-trigger").dropdown();
         // --------------------------------------- Tooltip initialization ------------------------------------------------
         $('.tooltipped').tooltip();
+        // ---------------------------------------- Select initialization ------------------------------------------------
+        $('select').formSelect();
+        // ------------------------------------- Collapsible initialization ----------------------------------------------
+        $('.collapsible').collapsible();
+        // -------------------------------------- Datepicker initialization ----------------------------------------------
+        $('.datepicker').datepicker();
 
         // ---------------------------------------- Chips initialization -------------------------------------------------
-        $('.chips').chips({
+        $('#generalChips').chips({
+            placeholder: 'Enter keywords',
+            secondaryPlaceholder: '+ keyword',
+            autocompleteOptions: {
+                data: {
+                    'Apple': null,
+                    'Microsoft': null,
+                    'Google': null
+                },
+                limit: Infinity,
+                minLength: 1
+            }
+        });
+        $('#searchChips').chips({
             placeholder: 'Enter keywords',
             secondaryPlaceholder: '+ keyword',
             autocompleteOptions: {
@@ -83,21 +102,24 @@ window.onload = function () {
         });
 
         // ---------------------------------------------- Accordion ------------------------------------------------------
-        var collapsibles = document.getElementsByClassName('collapsible');
+        var collapsibles = document.getElementsByClassName('collapsible expandable');
         for (var i = 0; i < collapsibles.length; i++) {
             var elem = collapsibles[i];
             var instance = M.Collapsible.init(elem, {
                 accordion: false,
                 // Callback function called before collapsible is opened
                 onOpenStart: function (event) {
-                    // Workflows right panel collapsible
-                    //                    if (event.id == 'workflows') {
-                    //                        if (document.getElementById('workflowsRightPanel').style.display == 'none') {
-                    //                            document.getElementById('workflowsRightPanel').style.display = 'block';
-                    //                            $('#workflowsRightPanel').animateCss('slideInDown', function () {
-                    //                            });
-                    //                        }
-                    //                    }
+                    // ----------------------------------------------------------------------------------------------
+                    // ---------------------------------------- DELETE START ----------------------------------------
+                    // ----------------------------------------------------------------------------------------------
+                    if(event.id == 'references'){
+                        document.getElementById('referencesRightPanel').style.display = 'block';
+                    }
+                    // ----------------------------------------------------------------------------------------------
+                    // ---------------------------------------- DELETE END ------------------------------------------
+                    // ----------------------------------------------------------------------------------------------
+
+
                     // Disabled collapsible
                     if (!event.classList.contains('disabled')) {
                         event.getElementsByClassName('arrow')[0].innerHTML = 'keyboard_arrow_down';
@@ -121,19 +143,20 @@ window.onload = function () {
                 },
                 // Callback function called before collapsible is closed
                 onCloseStart: function (event) {
-                    // // Workflows right panel collapsible
-                    // if (event.id == 'workflows') {
-                    //     if (document.getElementById('workflowsRightPanel').style.display == 'block') {
-                    //         $('#workflowsRightPanel').animateCss('slideOutUp', function () {
-                    //             document.getElementById('workflowsRightPanel').style.display = 'none';
-                    //             // disableEditWorkflow(); // This disables the edit workflow window
-                    //         });
-                    //     }
-                    // }
                     // Disabled collapsible
                     if (!event.classList.contains('disabled')) {
                         event.getElementsByClassName('arrow')[0].innerHTML = 'keyboard_arrow_right';
                     }
+
+                    // ----------------------------------------------------------------------------------------------
+                    // ---------------------------------------- DELETE START ----------------------------------------
+                    // ----------------------------------------------------------------------------------------------
+                    if(event.id == 'references'){
+                        document.getElementById('referencesRightPanel').style.display = 'none';
+                    }
+                    // ----------------------------------------------------------------------------------------------
+                    // ---------------------------------------- DELETE END ------------------------------------------
+                    // ---------------------------------------------------------------------------------------------- 
                 },
                 // Callback function called after collapsible is closed
                 onCloseEnd: function (event) {
@@ -145,6 +168,24 @@ window.onload = function () {
             });
         }
 
+        
+        
+        function closeCollapsible(){
+            elem = $('#collapsible')
+            var instance = M.Collapsible.getInstance(elem); 
+            instance.close(0);
+            document.getElementById('searchFilters').removeEventListener('click', closeCollapsible);
+            document.getElementById('searchFilters').addEventListener('click', openCollapsible);
+        }
+        function openCollapsible(){
+            elem = $('#collapsible')
+            var instance = M.Collapsible.getInstance(elem); 
+            instance.open(0);
+            document.getElementById('searchFilters').removeEventListener('click', openCollapsible);
+            document.getElementById('searchFilters').addEventListener('click', closeCollapsible);
+        }
+        document.getElementById('searchFilters').addEventListener('click', openCollapsible);
+        
         // ------------------------------------ Initializations for profile page -----------------------------------------
         $('#profilePublicInfo').val(
             'Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck.');
@@ -895,6 +936,20 @@ window.onload = function () {
         }
 
         /*
+        * Get the edit of this wotkflow id
+        */
+        function get_edit_from_workflow_id(workflow_id) {
+            return workflow_id.split('__')[1];
+        }
+
+        /*
+        * Check if this workflow_id is root
+        */
+        function is_workflow_root_from_workflow_id(workflow_id) {
+            return get_edit_from_workflow_id(workflow_id) == 'null';
+        }
+
+        /*
         * Create a step ID. This contains: name of step, name of workflow, edit of workflow
         */
         function create_step_id(step, workflow) {
@@ -961,12 +1016,20 @@ window.onload = function () {
         }
 
         /*
+        * Check if this SIO id. Belongs to a root workflow
+        */
+        function is_workflow_root_from_SIO_id(sio_id) {
+            return is_workflow_root_from_workflow_id(get_workflow_id_from_SIO_id(sio_id));
+        }
+        window.is_workflow_root_from_SIO_id = is_workflow_root_from_SIO_id;
+
+        /*
         * Get the name of a SIO (Step Input Output)
         */
         function get_SIO_name_from_SIO_id(sio_id) {
             return sio_id.split('__')[0]
         }
-		
+
 		/*
         * Replace the id of a SIO (in lists of a node: steps[], inputs[], outputs[])
         */
@@ -1371,15 +1434,22 @@ window.onload = function () {
                     {
                         content: 'Delete',
                         select: function (ele) {
-                            var j = cy.$('#' + ele.id());
-                            
-							/* remove node successors*/
-							j.successors().targets().forEach(function (element) {
-									cy.remove(element);
-								
-							})
-							/*remove node*/
-							cy.remove(j);
+
+                            //Ideally the deletion logic should be placed here.
+                            //Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
+                            angular.element($('#angular_div')).scope().$apply(function () {
+                                angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id()); 
+                            });
+ 
+//                           var j = cy.$('#' + ele.id());
+//                           
+//							/* remove node successors*/
+//							j.successors().targets().forEach(function (element) {
+//									cy.remove(element);
+//								
+//							})
+//							/*remove node*/
+//							cy.remove(j);
 
                         }
                     }
