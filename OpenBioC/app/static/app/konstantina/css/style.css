@@ -1,9 +1,3 @@
-
-
-
-
-
-
 /* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
 
 /* ----------------------------------------------------------------------------- Splitter --------------------------------------------------------------------------------------- */
@@ -63,6 +57,18 @@ nav {
 
 /* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
 
+/* ---------------------------------------------------------------------- Search Filters Collapsible ---------------------------------------------------------------------------- */
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+#searchFiltersCollapsible {
+    border: none;
+    padding-top: 0px;
+    padding-bottom: 0px;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
 /* ------------------------------------------------------------------------- Disabled Collapsible ------------------------------------------------------------------------------- */
 
 /* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
@@ -85,23 +91,21 @@ nav {
 
 /* Instead of <script src="/static/app/jquery-3.3.1.min.js"></script> (see also #23) */
 
-    @font-face {
+@font-face {
     font-family: 'Material Icons';
     font-style: normal;
     font-weight: 400;
-    src: url(/static/app/material-design-icons-3.0.1/iconfont/MaterialIcons-Regular.eot); /* For IE6-8 */
-    src: local('Material Icons'),
-         local('MaterialIcons-Regular'),
-         url(/static/app/material-design-icons-3.0.1/iconfont/MaterialIcons-Regular.woff2) format('woff2'),
-         url(/static/app/material-design-icons-3.0.1/iconfont/MaterialIcons-Regular.woff) format('woff'),
-         url(/static/app/material-design-icons-3.0.1/iconfont/MaterialIcons-Regular.ttf) format('truetype');
-    }
-    
-    .material-icons {
+    src: url(/static/app/material-design-icons-3.0.1/iconfont/MaterialIcons-Regular.eot);
+    /* For IE6-8 */
+    src: local('Material Icons'), local('MaterialIcons-Regular'), url(/static/app/material-design-icons-3.0.1/iconfont/MaterialIcons-Regular.woff2) format('woff2'), url(/static/app/material-design-icons-3.0.1/iconfont/MaterialIcons-Regular.woff) format('woff'), url(/static/app/material-design-icons-3.0.1/iconfont/MaterialIcons-Regular.ttf) format('truetype');
+}
+
+.material-icons {
     font-family: 'Material Icons';
     font-weight: normal;
     font-style: normal;
-    font-size: 24px;  /* Preferred icon size */
+    font-size: 24px;
+    /* Preferred icon size */
     display: inline-block;
     line-height: 1;
     text-transform: none;
@@ -109,22 +113,17 @@ nav {
     word-wrap: normal;
     white-space: nowrap;
     direction: ltr;
-    
     /* Support for all WebKit browsers. */
     -webkit-font-smoothing: antialiased;
     /* Support for Safari and Chrome. */
     text-rendering: optimizeLegibility;
-    
     /* Support for Firefox. */
     -moz-osx-font-smoothing: grayscale;
-    
     /* Support for IE. */
     font-feature-settings: 'liga';
-    }
+}
 
-/* END OF #23 resolve */ 
-
-
+/* END OF #23 resolve */
 
 .material-icons.md-18 {
     font-size: 18px;
@@ -274,8 +273,8 @@ nav {
     border-left: 2px solid #ee6e73
 }
 
-
 /* Switch colors */
+
 .switch label .lever {
     background-color: #84c7c1;
 }
