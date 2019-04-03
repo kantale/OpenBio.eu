@@ -971,7 +971,6 @@ window.onload = function () {
         * Replace the id of a SIO (in lists of a node: steps[], inputs[], outputs[])
         */
 		function replace_SIO_id(array, old_root_id, new_root){
-			//if(typeof node.data.steps != 'undefined' && node.data.steps.length > 0 ){
 			array.forEach(function(sio_id){
 				if (get_workflow_id_from_SIO_id(sio_id) === old_root_id){
 					var index = array.indexOf(sio_id);
@@ -979,8 +978,8 @@ window.onload = function () {
 					array[index] = sio_id;
 				}
 			});
-					//}
 			
+			return array;
 		}
 
         /*
@@ -1551,11 +1550,16 @@ window.onload = function () {
 					// List of outputs.
 					if(typeof node.data.outputs != 'undefined' && node.data.outputs.length > 0 ){
 							replace_SIO_id(node.data.outputs, old_root_id, new_root);
-					}						
-					
-					
-					
-				}
+					}
+
+					/* bash field of node should also be update if it contains call to  step, input, output */
+						if(typeof node.data.bash != 'undefined'){ 
+							var bash_commands = node.data.bash.split(" ");
+								//replace_SIO_id(bash_commands, old_root_id, new_root);
+								node.data.bash = replace_SIO_id(bash_commands, old_root_id, new_root).join();
+						}
+						
+					}
 				
 				
 			);
