@@ -936,6 +936,20 @@ window.onload = function () {
         }
 
         /*
+        * Get the edit of this wotkflow id
+        */
+        function get_edit_from_workflow_id(workflow_id) {
+            return workflow_id.split('__')[1];
+        }
+
+        /*
+        * Check if this workflow_id is root
+        */
+        function is_workflow_root_from_workflow_id(workflow_id) {
+            return get_edit_from_workflow_id(workflow_id) == 'null';
+        }
+
+        /*
         * Create a step ID. This contains: name of step, name of workflow, edit of workflow
         */
         function create_step_id(step, workflow) {
@@ -1002,12 +1016,20 @@ window.onload = function () {
         }
 
         /*
+        * Check if this SIO id. Belongs to a root workflow
+        */
+        function is_workflow_root_from_SIO_id(sio_id) {
+            return is_workflow_root_from_workflow_id(get_workflow_id_from_SIO_id(sio_id));
+        }
+        window.is_workflow_root_from_SIO_id = is_workflow_root_from_SIO_id;
+
+        /*
         * Get the name of a SIO (Step Input Output)
         */
         function get_SIO_name_from_SIO_id(sio_id) {
             return sio_id.split('__')[0]
         }
-		
+
 		/*
         * Replace the id of a SIO (in lists of a node: steps[], inputs[], outputs[])
         */
@@ -1412,15 +1434,22 @@ window.onload = function () {
                     {
                         content: 'Delete',
                         select: function (ele) {
-                            var j = cy.$('#' + ele.id());
-                            
-							/* remove node successors*/
-							j.successors().targets().forEach(function (element) {
-									cy.remove(element);
-								
-							})
-							/*remove node*/
-							cy.remove(j);
+
+                            //Ideally the deletion logic should be placed here.
+                            //Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
+                            angular.element($('#angular_div')).scope().$apply(function () {
+                                angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id()); 
+                            });
+ 
+//                           var j = cy.$('#' + ele.id());
+//                           
+//							/* remove node successors*/
+//							j.successors().targets().forEach(function (element) {
+//									cy.remove(element);
+//								
+//							})
+//							/*remove node*/
+//							cy.remove(j);
 
                         }
                     }
