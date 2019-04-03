@@ -166,6 +166,21 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
+    *
+    */
+    $scope.toast = function(message, type) {
+        if (type == 'error') {
+            generateToast(message, 'red lighten-2 black-text', 'stay on');
+        }
+        else if (type == 'success') {
+            generateToast(message, 'green lighten-2 black-text', 'stay on');
+        }
+        else {
+            console.warn('Error: 8133 Unknown toast type:' + type);
+        }
+    };
+
+    /*
     * Navbar --> Home --> clicked 
     */
     $scope.navbar_home_clicked = function() {
@@ -840,7 +855,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             },
             function(data) {
                 $scope.tools_info_success_message = 'Tool/Data successfully saved';
-                generateToast($scope.tools_info_success_message, 'green lighten-2 black-text', 'stay on');
+                $scope.toast($scope.tools_info_success_message, 'success');
                 $scope.tools_info_editable = false;
                 $scope.tool_info_created_at = data['created_at'];
                 $scope.tools_info_edit = data['edit'];
@@ -848,12 +863,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             },
             function(data) {
                 $scope.tools_info_error_message = data['error_message'];
-                generateToast($scope.tools_info_error_message, 'red lighten-2 black-text', 'stay on');
-
+                $scope.toast($scope.tools_info_error_message, 'error');
             },
             function(statusText) {
                 $scope.tools_info_error_message = statusText;
-                generateToast($scope.tools_info_error_message, 'red lighten-2 black-text', 'stay on');
+                $scope.toast($scope.tools_info_error_message, 'error')
             }
         );
     };
@@ -882,7 +896,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tools_info_editable = true;
         $scope.tools_info_error_message = '';
         $scope.tools_info_success_message = "Tool successfully forked. Press Save after completing your edits";
-        generateToast($scope.tools_info_success_message, 'green lighten-2 black-text', 'stay on'); 
+        $scope.toast($scope.tools_info_success_message, 'success');
 
         $scope.tools_info_forked_from = {
             'name': $scope.tools_info_name, 
@@ -1043,7 +1057,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                     console.log(data['variables_jstree']);
 
                     if (!$scope.workflows_info_editable) {
-                        generateToast('You cannot edit this workflow. You can fork it, or create a new one.', 'red lighten-2 black-text', 'stay on');
+                        $scope.toast('You cannot edit this workflow. You can fork it, or create a new one.', 'error');
                         return;
                     }
 
@@ -1527,10 +1541,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 }
             },
             function(data) {
-                generateToast(data['error_message'], 'red lighten-2 black-text', 'stay on');
+                $scope.toast(data['error_message'], 'error');
             },
             function(statusText) {
-                generateToast(statusText, 'red lighten-2 black-text', 'stay on');
+                $scope.toast(statusText, 'error');
             },
         );
     };
@@ -1803,7 +1817,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             // If this is an add then check if we are adding a step with a name that already exists.
             var this_step_id = window.create_step_id({name: $scope.workflows_step_name}, {name: $scope.workflow_info_name, edit: null});
             if (cy.$('node[id="' +  this_step_id + '"]').length) {
-                generateToast('There is already a step with this name', 'red lighten-2 black-text', 'stay on');
+                $scope.toast('There is already a step with this name', 'error');
                 return;
             }
         }
@@ -1953,16 +1967,15 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.workflows_info_editable = false;
                 workflow_step_editor.setReadOnly(true);
 
-                generateToast('Workflow successfully saved', 'green lighten-2 black-text', 'stay on');
+                $scope.toast('Workflow successfully saved', 'success');
             },
             function(data) {
                 $scope.workflows_info_error_message = data['error_message'];
-                generateToast($scope.workflows_info_error_message, 'red lighten-2 black-text', 'stay on');
-
+                $scope.toast($scope.workflows_info_error_message, 'error');
             },
             function(statusText) {
                 $scope.workflows_info_error_message = statusText;
-                generateToast($scope.workflows_info_error_message, 'red lighten-2 black-text', 'stay on');
+                $scope.toast($scope.workflows_info_error_message, 'error');
             }
         );
     };
@@ -1973,7 +1986,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     $scope.workflows_info_fork_pressed = function() {
         if (!$scope.username) {
             //It will never reach here. FORK is disabled in UI if user is not logged in.
-            generateToast("Login to create new Workflows", 'red lighten-2 black-text', 'stay on');
+            $scope.toast("Login to create new Workflows", 'error');
             return;
         }
 
@@ -1981,7 +1994,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         window.forkWorkflow();
 
         $scope.workflows_info_editable = true;
-        generateToast("Workflows successfully forked. Press Save after completing your edits", 'green lighten-2 black-text', 'stay on'); 
+        $scope.toast("Workflows successfully forked. Press Save after completing your edits", 'success');
 
         $scope.workflow_info_forked_from = {
             'name': $scope.workflow_info_name,  
@@ -2032,10 +2045,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 				window.cy_close_successors();
             },
             function(data) {
-                generateToast("ERROR 81711", 'red lighten-2 black-text', 'stay on');
+                $scope.toast("ERROR 81711", "error");
             },
             function(statusText) {
-                generateToast(statusText, 'red lighten-2 black-text', 'stay on');
+                $scope.toast(statusText, 'error');
             }
         );
     };
