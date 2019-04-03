@@ -1877,6 +1877,65 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
+    * Called from UI.js . Right Click a node in cytoscape --> delete
+    */
+    $scope.workflow_cytoscape_delete_node = function(node_id) {
+
+        /* Remove thre successors of a node*/
+        function remove_successors(node) {
+            node.successors().targets().forEach(function (element) {
+                cy.remove(element);                  
+            });
+
+        }
+
+        var node = cy.$('node[id="' + node_id + '"]');
+        var data = node.data();
+        if (data.type == 'step'){
+            node.remove();
+        }
+        else if (data.type=='tool') {
+
+            //Is there any tool that is dependent from this tool?
+            if (node.incomers('node[type="tool"]').length) {
+                $scope.toast('Cannot remove this tool. Other tools are dependent on this.', 'error');
+            }
+            else {
+                //Remove successors as well 
+                remove_successors(node);
+                node.remove();
+            }
+        }
+        else if (data.type=='input' || data.type=='output') {
+            //Check if this is belongs to root WF
+            if (window.is_workflow_root_from_SIO_id(node.id())) {
+                
+                //Locate the index 
+                var index = -1;
+                for (var i=0; i<$scope.workflow_input_outputs.length; i++) {
+                    if ($scope.workflow_input_outputs[i].name == data.name && $scope.workflow_input_outputs[i].out == (data.type=='output')) {
+                        index = i;
+                        break;
+                    }
+                }
+                //Remove it
+                if (index>=0) {
+                    $scope.workflow_step_remove_input_output(index);
+                    node.remove();
+                }
+                else {
+                    console.warn('Error 8161'); // This should never happen
+                }
+            }
+            else {
+               // If this does not belong to the root node, delete it.
+               node.remove();
+            }
+        }
+
+    };
+
+    /*
     * Called by ui.js
     * Clicked a step node on cytoscape graph
     */
