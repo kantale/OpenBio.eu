@@ -30,6 +30,7 @@ import random
 import asyncio
 import logging
 import threading
+import subprocess
 
 from queue import Queue as Thread_queue #  
 
@@ -41,6 +42,36 @@ logging.getLogger('aiohttp').setLevel(logging.DEBUG)
 logging.getLogger('aiohttp').addHandler(logging.StreamHandler(sys.stderr))
 
 lodger = {}
+
+
+
+# Execution function return the errorcode and the output
+
+def execution(this_id,bash,flag):
+    # SHOW UNTAGGED IMAGES (DANGLING) docker images --filter "dangling=true"
+    '''
+        this_id : take the id which we create from request and use it to save the image with this id
+        bash : the bash commands from request 
+        flag : is boolean if True will make the build else will remove the failed images from docker
+    '''
+    if (flag == True) :
+        cmd = f'docker build --no-cache -t openbioc/{this_id} .'
+    else:
+        cmd = f'docker rmi -f $(docker images -f "dangling=true" -q)'
+	# I make a file and add the bashscript on it
+    with open("bashscript.sh", "w+") as bashscript:
+        bashscript.write(bash)
+	#I use the id to give a name in the image
+	#print(f'the {this_id} start the build ......') 
+
+    process = subprocess.Popen(
+		cmd,
+		stdout=subprocess.PIPE, 
+		shell= True)
+    (stdout,stderr) = process.communicate()
+	#print(stdout.decode())
+    print(f'[{cmd!r} exited with {process.returncode}]')
+    return process.returncode
 
 def get_uuid():
     '''
@@ -101,7 +132,7 @@ async def post_handler(request):
         if not 'bash' in data:
             return fail('key: "bash" not present')
         bash = data['bash']
-
+        #print(bash)
         new_id = get_uuid()
         message = {
             'action': 'validate',
@@ -182,7 +213,7 @@ def worker(message_queue, w_id):
     '''
     w_id: worker id
     '''
-
+    
     print (f'Worker: {w_id} starting..')
 
     while True:
@@ -194,10 +225,19 @@ def worker(message_queue, w_id):
 
             this_id = task['id']
             print (f'WORKER: {w_id}. RECEIVED: {this_id}')
-
+            # the executions start and the images are called such as unique id from post
+            errcode = execution(this_id,task['bash'],True)
             lodger[this_id]['status'] = 'submitted'
             time.sleep(random.randint(1,5))
-            lodger[this_id]['status'] = 'done'
+            # errcode = 0 means success
+            # errcode =! something goes wrong
+            if errcode == 0 :
+                lodger[this_id]['status'] = 'done'
+            else :
+                lodger[this_id]['status'] = 'failed'
+                execution(this_id,'mpah',False)
+
+            #print(lodger)
             print (f'WORKER: {w_id}. DONE: {this_id}')
 
 
@@ -231,7 +271,7 @@ if __name__ == '__main__':
     message_queue = Thread_queue()
 #    worker_thread = threading.Thread(target=worker, args=(message_queue, 55),)
 #    worker_thread.start()
-    setup_worker_threads(message_queue, 5)
+    setup_worker_threads(message_queue, 10)
 
 
     init_web_app(message_queue)
