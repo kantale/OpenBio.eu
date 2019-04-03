@@ -5,7 +5,8 @@
         <p>All changes will be lost. Are you sure you want to continue?</p>
     </div>
     <div class="modal-footer">
-        <a href class="waves-effect waves-red btn-flat" ng-click="tools_search_jstree_modal_editable(false)">No</a> <!-- modal-close -->
+        <a href class="waves-effect waves-red btn-flat" ng-click="tools_search_jstree_modal_editable(false)">No</a>
+        <!-- modal-close -->
         <a href class="waves-effect waves-green btn-flat" ng-click="tools_search_jstree_modal_editable(true)">Yes</a>
     </div>
 </div>
@@ -24,13 +25,53 @@
         <!-- --------------------------------------------------------------------------------------- -->
         <div class="row">
             <form class="col s12">
-                <div class="input-field col s12">
+                <div class="input-field col s12" style="margin-bottom:0px">
                     <i class="material-icons prefix">search</i>
                     <input id="leftPanelSearch" type="text" class="validate">
                     <label for="leftPanelSearch">Search</label>
                 </div>
+                <div class="right-align">
+                    <a id="searchFilters" class="teal-text text-lighten-2 btn-flat"><i
+                            class="material-icons">arrow_drop_down</i>search filters</a>
+                </div>
+                <ul id="collapsible" class="collapsible hidden" style="border:none; box-shadow: none; margin-top:0px">
+                    <li>
+                        <div class="collapsible-header hide" style="padding:0px;"></div>
+                        <div id="searchFiltersCollapsible" class="collapsible-body">
+                            <form class="col s12">
+                                <div class="row">
+                                    <div class="input-field col s12 m4 grid-s12-m4-l4">
+                                        <input id="searchName" type="text">
+                                        <label for="searchName">Name</label>
+                                    </div>
+                                    <div class="input-field col s12 m4 grid-s12-m4-l4">
+                                        <input id="searchContainTool" type="text">
+                                        <label for="searchContainTool">Contain Tool</label>
+                                    </div>
+                                    <div class="input-field col s12 m4 grid-s12-m4-l4">
+                                        <input id="searchCreatedBy" type="text">
+                                        <label for="searchCreatedBy">Created By</label>
+                                    </div>
+                                    <div class="input-field col s12 m6 grid-s12-m6-l6">
+                                        <input id="searchDateStart" type="text" class="datepicker">
+                                        <label for="searchDateStart">Created from</label>
+                                    </div>
+                                    <div class="input-field col s12 m6 grid-s12-m6-l6">
+                                        <input id="searchDateEnd" type="text" class="datepicker">
+                                        <label for="searchDateEnd">Created to</label>
+                                    </div>
+                                    <div class="input-field col s12 m12 grid-s12-m12-l12">
+                                        <div id="searchChips" class="input-field chips left-align" style="margin:0px"></div>
+                                        
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </li>
+                </ul>
             </form>
         </div>
+
         <ul class="collapsible expandable popout">
             <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
             <!-- ------------------------------------------------ Tools / Data Left Panel ------------------------------------------------------------------------ -->
@@ -70,8 +111,11 @@
                             ng-show="(!tools_search_warning) && tools_search_name && tools_search_version"
                         -->
                         <a href id="createToolDataBtn" class="waves-effect waves-light btn"
-                            ng-click="tools_search_create_new_pressed()" ng-show="(!tools_info_editable) && (!tools_search_warning)">create</a>
-                        <a href id="cancelToolDataBtn" class="waves-effect waves-light btn" ng-show="tools_info_editable" ng-click="tools_search_raise_edit_are_you_sure_modal('TOOLS_CANCEL_BUTTON')">cancel</a>
+                            ng-click="tools_search_create_new_pressed()"
+                            ng-show="(!tools_info_editable) && (!tools_search_warning)">create</a>
+                        <a href id="cancelToolDataBtn" class="waves-effect waves-light btn"
+                            ng-show="tools_info_editable"
+                            ng-click="tools_search_raise_edit_are_you_sure_modal('TOOLS_CANCEL_BUTTON')">cancel</a>
                     </div>
                     <div class="row col s12" ng-show="tools_search_warning">
                         <div class="card-panel orange lighten-1 center-align" style="padding:10px">
@@ -105,7 +149,8 @@
                 <div class="collapsible-header">
                     <i class="material-icons arrow">keyboard_arrow_right</i>
                     <i class="material-icons">device_hub</i>
-                    Workflows<span class="new badge" data-badge-caption="found" ng-bind="workflows_search_tools_number"></span>
+                    Workflows<span class="new badge" data-badge-caption="found"
+                        ng-bind="workflows_search_tools_number"></span>
                 </div>
                 <div class="collapsible-body">
                     <div class="row">
@@ -113,18 +158,25 @@
                         <form class="col s12">
                             <div class="row">
                                 <div class="input-field col s12 m6 grid-s12-m6-l6">
-                                    <input id="workflowsName" type="text" class="validate" ng-model="workflows_search_name" ng-change="workflows_search_input_changed()">
+                                    <input id="workflowsName" type="text" class="validate"
+                                        ng-model="workflows_search_name" ng-change="workflows_search_input_changed()">
                                     <label for="workflowsName">Name</label>
                                 </div>
                                 <div class="input-field col s12 m6 grid-s12-m6-l6">
-                                    <input id="workflowsEdit" type="text" class="validate" ng-model="workflows_search_edit" ng-change="workflows_search_input_changed()">
+                                    <input id="workflowsEdit" type="text" class="validate"
+                                        ng-model="workflows_search_edit" ng-change="workflows_search_input_changed()">
                                     <label for="workflowsEdit">Edit</label>
                                 </div>
                             </div>
                         </form>
                         <!-- Create / Cancel buttons in Workflows -->
-                        <a href id="enableEditWorkflowBtn" class="waves-effect waves-light btn" ng-click="workflows_search_create_new_pressed()" ng-show="(!workflows_info_editable) && (!workflows_search_warning)">Create</a>
-                        <a href id="disableEditWorkflowBtn" class="waves-effect waves-light btn" ng-show="workflows_info_editable" ng-click="tools_search_raise_edit_are_you_sure_modal('WORKFLOWS_CANCEL_BUTTON')">Cancel</a> <!-- TOOLS!!! FIXME -->
+                        <a href id="enableEditWorkflowBtn" class="waves-effect waves-light btn"
+                            ng-click="workflows_search_create_new_pressed()"
+                            ng-show="(!workflows_info_editable) && (!workflows_search_warning)">Create</a>
+                        <a href id="disableEditWorkflowBtn" class="waves-effect waves-light btn"
+                            ng-show="workflows_info_editable"
+                            ng-click="tools_search_raise_edit_are_you_sure_modal('WORKFLOWS_CANCEL_BUTTON')">Cancel</a>
+                        <!-- TOOLS!!! FIXME -->
                     </div>
 
                     <div class="row col s12" ng-show="workflows_search_warning">
@@ -146,7 +198,8 @@
 
                     <div class="row left-align">
                         <div class="col">
-                            <div js-tree="workflows_search_jstree_config" should-apply="tools_search_jstree_config_apply()"
+                            <div js-tree="workflows_search_jstree_config"
+                                should-apply="tools_search_jstree_config_apply()"
                                 ng-model="workflows_search_jstree_model" tree="tools_search_jstree"
                                 tree-events="select_node:workflows_search_jstree_select_node"></div>
                         </div>

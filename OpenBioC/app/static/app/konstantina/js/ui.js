@@ -50,9 +50,28 @@ window.onload = function () {
         $(".dropdown-trigger").dropdown();
         // --------------------------------------- Tooltip initialization ------------------------------------------------
         $('.tooltipped').tooltip();
+        // ---------------------------------------- Select initialization ------------------------------------------------
+        $('select').formSelect();
+        // ------------------------------------- Collapsible initialization ----------------------------------------------
+        $('.collapsible').collapsible();
+        // -------------------------------------- Datepicker initialization ----------------------------------------------
+        $('.datepicker').datepicker();
 
         // ---------------------------------------- Chips initialization -------------------------------------------------
-        $('.chips').chips({
+        $('#generalChips').chips({
+            placeholder: 'Enter keywords',
+            secondaryPlaceholder: '+ keyword',
+            autocompleteOptions: {
+                data: {
+                    'Apple': null,
+                    'Microsoft': null,
+                    'Google': null
+                },
+                limit: Infinity,
+                minLength: 1
+            }
+        });
+        $('#searchChips').chips({
             placeholder: 'Enter keywords',
             secondaryPlaceholder: '+ keyword',
             autocompleteOptions: {
@@ -83,21 +102,24 @@ window.onload = function () {
         });
 
         // ---------------------------------------------- Accordion ------------------------------------------------------
-        var collapsibles = document.getElementsByClassName('collapsible');
+        var collapsibles = document.getElementsByClassName('collapsible expandable');
         for (var i = 0; i < collapsibles.length; i++) {
             var elem = collapsibles[i];
             var instance = M.Collapsible.init(elem, {
                 accordion: false,
                 // Callback function called before collapsible is opened
                 onOpenStart: function (event) {
-                    // Workflows right panel collapsible
-                    //                    if (event.id == 'workflows') {
-                    //                        if (document.getElementById('workflowsRightPanel').style.display == 'none') {
-                    //                            document.getElementById('workflowsRightPanel').style.display = 'block';
-                    //                            $('#workflowsRightPanel').animateCss('slideInDown', function () {
-                    //                            });
-                    //                        }
-                    //                    }
+                    // ----------------------------------------------------------------------------------------------
+                    // ---------------------------------------- DELETE START ----------------------------------------
+                    // ----------------------------------------------------------------------------------------------
+                    if(event.id == 'references'){
+                        document.getElementById('referencesRightPanel').style.display = 'block';
+                    }
+                    // ----------------------------------------------------------------------------------------------
+                    // ---------------------------------------- DELETE END ------------------------------------------
+                    // ----------------------------------------------------------------------------------------------
+
+
                     // Disabled collapsible
                     if (!event.classList.contains('disabled')) {
                         event.getElementsByClassName('arrow')[0].innerHTML = 'keyboard_arrow_down';
@@ -121,19 +143,20 @@ window.onload = function () {
                 },
                 // Callback function called before collapsible is closed
                 onCloseStart: function (event) {
-                    // // Workflows right panel collapsible
-                    // if (event.id == 'workflows') {
-                    //     if (document.getElementById('workflowsRightPanel').style.display == 'block') {
-                    //         $('#workflowsRightPanel').animateCss('slideOutUp', function () {
-                    //             document.getElementById('workflowsRightPanel').style.display = 'none';
-                    //             // disableEditWorkflow(); // This disables the edit workflow window
-                    //         });
-                    //     }
-                    // }
                     // Disabled collapsible
                     if (!event.classList.contains('disabled')) {
                         event.getElementsByClassName('arrow')[0].innerHTML = 'keyboard_arrow_right';
                     }
+
+                    // ----------------------------------------------------------------------------------------------
+                    // ---------------------------------------- DELETE START ----------------------------------------
+                    // ----------------------------------------------------------------------------------------------
+                    if(event.id == 'references'){
+                        document.getElementById('referencesRightPanel').style.display = 'none';
+                    }
+                    // ----------------------------------------------------------------------------------------------
+                    // ---------------------------------------- DELETE END ------------------------------------------
+                    // ---------------------------------------------------------------------------------------------- 
                 },
                 // Callback function called after collapsible is closed
                 onCloseEnd: function (event) {
@@ -145,6 +168,24 @@ window.onload = function () {
             });
         }
 
+        
+        
+        function closeCollapsible(){
+            elem = $('#collapsible')
+            var instance = M.Collapsible.getInstance(elem); 
+            instance.close(0);
+            document.getElementById('searchFilters').removeEventListener('click', closeCollapsible);
+            document.getElementById('searchFilters').addEventListener('click', openCollapsible);
+        }
+        function openCollapsible(){
+            elem = $('#collapsible')
+            var instance = M.Collapsible.getInstance(elem); 
+            instance.open(0);
+            document.getElementById('searchFilters').removeEventListener('click', openCollapsible);
+            document.getElementById('searchFilters').addEventListener('click', closeCollapsible);
+        }
+        document.getElementById('searchFilters').addEventListener('click', openCollapsible);
+        
         // ------------------------------------ Initializations for profile page -----------------------------------------
         $('#profilePublicInfo').val(
             'Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck.');
