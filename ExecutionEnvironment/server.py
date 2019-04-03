@@ -47,6 +47,52 @@ lodger = {}
 
 # Execution function return the errorcode and the output
 
+
+
+def execute_shell(command):
+    '''
+    Executes a command in shell
+    '''
+    process = subprocess.Popen(
+        command,
+        stdout=subprocess.PIPE, 
+        stderr=subprocess.PIPE, 
+        shell= True)
+
+    (stdout,stderr) = process.communicate()
+    #print(stdout.decode())
+    print(f'[{cmd!r} exited with {process.returncode}]')
+    return {
+        'stdout' : stdout,
+        'stderr' : stderr,
+        'errcode' : process.returncode,
+    }
+
+
+def docker_build_cmd(this_id):
+    '''
+    '''
+    return f'docker build --no-cache -t openbioc/{this_id} .'
+
+def docker_remove_failed_builds_cmd():
+    '''
+    '''
+    return f'docker rmi -f $(docker images -f "dangling=true" -q)'
+
+
+def bash_script_filename(this_id):
+    '''
+    '''
+    return f'bashscript_{this_id}.sh'
+
+def execute_docker_build(this_id, bash):
+    # I make a file and add the bashscript on it
+    with open("bashscript.sh", "w+") as bashscript:
+        bashscript.write(bash)
+
+
+
+
 def execution(this_id,bash,flag):
     # SHOW UNTAGGED IMAGES (DANGLING) docker images --filter "dangling=true"
     '''
@@ -54,24 +100,13 @@ def execution(this_id,bash,flag):
         bash : the bash commands from request 
         flag : is boolean if True will make the build else will remove the failed images from docker
     '''
-    if (flag == True) :
+    if flag:
         cmd = f'docker build --no-cache -t openbioc/{this_id} .'
     else:
         cmd = f'docker rmi -f $(docker images -f "dangling=true" -q)'
-	# I make a file and add the bashscript on it
-    with open("bashscript.sh", "w+") as bashscript:
-        bashscript.write(bash)
 	#I use the id to give a name in the image
 	#print(f'the {this_id} start the build ......') 
 
-    process = subprocess.Popen(
-		cmd,
-		stdout=subprocess.PIPE, 
-		shell= True)
-    (stdout,stderr) = process.communicate()
-	#print(stdout.decode())
-    print(f'[{cmd!r} exited with {process.returncode}]')
-    return process.returncode
 
 def get_uuid():
     '''
