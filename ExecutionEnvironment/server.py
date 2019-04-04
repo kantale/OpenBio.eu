@@ -261,19 +261,19 @@ async def post_handler(request):
 
     # Create JSON response 
     # https://docs.aiohttp.org/en/stable/web_quickstart.html#json-response
-    responce_data = {
+    response_data = {
         'some': 'data',
         'success': success,
         'error': error,
     }
-    return web.json_response(responce_data)
+    return web.json_response(response_data)
 
     # Create TEXT response:
     #return web.Response(text="Hello from post")
 
 
 
-def init_web_app(message_queue, ):
+def init_web_app(message_queue, port=8080):
 
     '''
     create an Application instance and register the request handler on a particular HTTP method and path:
@@ -292,7 +292,7 @@ def init_web_app(message_queue, ):
     ])
     
     #After that, run the application by run_app() call:
-    web.run_app(app)
+    web.run_app(app, port=port)
 
     #runner = web.AppRunner(app)
     #return runner
@@ -374,14 +374,38 @@ def setup_worker_threads(message_queue, n):
     for thread in threads:
         thread.start()
 
+import socket, errno
+
+def check_if_port_is_used(port):
+
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    used = False
+
+    try:
+        s.bind(("0.0.0.0", port))
+    except socket.error as e:
+        used = True
+        if e.errno == errno.EADDRINUSE:
+            print(f"Port {port} is already in use")
+        else:
+            # something else raised the socket.error exception
+            print(e)
+    finally:
+        s.close()
+
+    return used
+
 if __name__ == '__main__':
     message_queue = Thread_queue()
 #    worker_thread = threading.Thread(target=worker, args=(message_queue, 55),)
 #    worker_thread.start()
     setup_worker_threads(message_queue, 2)
 
-
-    init_web_app(message_queue)
+    if check_if_port_is_used(8080):
+        print ('Running on port 8081')
+        init_web_app(message_queue, port=8081)
+    else:
+        init_web_app(message_queue, port=8080)
 
 
 
