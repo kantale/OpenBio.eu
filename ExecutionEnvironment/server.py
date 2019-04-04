@@ -248,7 +248,7 @@ async def post_handler(request):
         if not 'id' in data:
             return fail('key: "id" not present')
         this_id = data['id']
-        if not this_id in lodger:
+        if not str(this_id) in lodger:
             return fail(f'id: "{this_id}" was not found')
 
         return success(lodger[this_id])
