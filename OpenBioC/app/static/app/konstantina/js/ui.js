@@ -1244,7 +1244,7 @@ window.onload = function () {
                 //connectedEdges: next level
                 //successors: next levels recursively
 
-                if (this['_private'].data.type !== "step") { //steps should never collapse
+                if (this['_private'].data.type !== "step" && this['_private'].data.type !== "input" && this['_private'].data.type !== "output") { //steps should never collapse
                     if (this.successors().targets().style("display") == "none") {
                         this.connectedEdges().targets().style("display", "element");
                     } else {
@@ -1623,11 +1623,20 @@ window.onload = function () {
 					}
 
 					/* bash field of node should also be update if it contains call to  step, input, output */
+						new_bash_commands=[];
 						if(typeof node.data.bash != 'undefined'){ 
-							var bash_commands = node.data.bash.split(" ");
-								//replace_SIO_id(bash_commands, old_root_id, new_root);
-								node.data.bash = replace_SIO_id(bash_commands, old_root_id, new_root).join();
+							var bash_commands = node.data.bash.split("\n");
+								bash_commands.forEach(function(command){		
+									if(command.includes(old_root_id)){
+										command = command.replace(old_root_id,  old_root_id.split('__')[0]+'__null');
+									}
+								
+								new_bash_commands.push(command);
+								});
+								
 						}
+						
+						node.data.bash = new_bash_commands.join('\n');
 						
 					}
 				
