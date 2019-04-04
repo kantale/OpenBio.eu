@@ -16,7 +16,7 @@ CONTROLLER: aiohttp, or flask, django server listening for actions
 WORKER: checks if there is any pending job/request and handles it.
 SUBMITTER: client.py . Submits jobs to CONTROLLER and queries the CONTROLLER regarding the progress of these jobs
 
-test edit
+test editasdasd
 '''
 
 if __name__ != '__main__':
@@ -63,7 +63,7 @@ dockerfile_content_template = '''
 
 #Using CMD
 
-FROM ubuntu:latest
+FROM {ostype}
 
 RUN  apt-get update \
   && apt-get install unzip \ 
@@ -132,15 +132,16 @@ def create_Dockerfile_filename(this_id):
 
     return os.path.join(execution_directory, f'{this_id}.Dockerfile')
 
-def create_Dockerfile_content(bashscript_path,bashscript_filename):
+def create_Dockerfile_content(ostype, bashscript_path,bashscript_filename):
     return dockerfile_content_template.format(
+        ostype= ostype,
         bashscript_path = bashscript_path,
         bashscript_filename=bashscript_filename
         )
 
 
 
-def execute_docker_build(this_id, bash):
+def execute_docker_build(this_id, ostype, bash):
     '''
     make a file and add the bashscript on it
     '''
@@ -154,7 +155,7 @@ def execute_docker_build(this_id, bash):
 
     # Save Dockerfile
     with open(Dockerfile_filename, 'w') as Dockerfile_f:
-        Dockerfile_f.write(create_Dockerfile_content(bash_script_path,bash_script_filename))
+        Dockerfile_f.write(create_Dockerfile_content(ostype, bash_script_path,bash_script_filename))
 
     print (f'Created bash file: {bash_script_filename}')
     print (f'Created Dockerfile: {Dockerfile_filename}')
@@ -227,11 +228,15 @@ async def post_handler(request):
         if not 'bash' in data:
             return fail('key: "bash" not present')
         bash = data['bash']
+        if not 'ostype' in data:
+            return fail('key: "ostype" not present')
+        ostype = data['ostype']
         #print(bash)
         new_id = get_uuid()
         message = {
             'action': 'validate',
             'status': 'pending',
+            'ostype': ostype,
             'bash': bash,
             'id': new_id,
         }
@@ -243,7 +248,6 @@ async def post_handler(request):
         if not 'id' in data:
             return fail('key: "id" not present')
         this_id = data['id']
-
         if not this_id in lodger:
             return fail(f'id: "{this_id}" was not found')
 
@@ -320,12 +324,13 @@ def worker(message_queue, w_id):
 
             this_id = task['id']
             bash = task['bash']
+            ostype = task['ostype']
 
             print (f'WORKER: {w_id}. RECEIVED: {this_id}')
             # the executions start and the images are called such as unique id from post
 
             lodger[this_id]['status'] = 'submitted'
-            result = execute_docker_build(this_id, bash)
+            result = execute_docker_build(this_id,ostype, bash)
 
             
             #time.sleep(random.randint(1,5))

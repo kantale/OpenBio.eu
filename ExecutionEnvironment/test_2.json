@@ -1,6 +1,7 @@
 
 {
 	"action": "validate",
+	"ostype": "test",
 	"bash": "test"
 }
 

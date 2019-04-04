@@ -11,6 +11,7 @@ headers={ "Content-Type" : "application/json", "Accept" : "application/json"}
 def json_1():
 	return {
 		"action": "validate",
+		"ostype": "ubuntu:latest",
 		"bash": """
 #!/bin/bash
 set -e
