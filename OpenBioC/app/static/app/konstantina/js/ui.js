@@ -927,19 +927,156 @@ window.onload = function () {
 
         //openIds = [];
 
+        // TODO : Change NAMES NAMESPACE UI
+        window.OBCUI = {
+            sep: '__',
+            call_re: new RegExp('((^call)|([\s]+call))\([\w]+\)', 'g' ), // Matches: "call(a)" , "  call(a)", "ABC call(a)", "ABC   call(a)"
+            call_re_id: new RegExp('call\(([\w]+)\)'), // 
+            call_replace: function (step) {return new RegExp('call[\s]*\([\s]*' + step + '[\s]*\)', 'g')}
+        };
+
+        /*
+        *  Changes all step names in a bash script
+        *  t: text
+        *  f: function to apply for a step_id
+        */
+        window.OBCUI.edit_steps_from_bash_scripts = function(t, f) {
+            var new_t = t;
+
+            window.OBCUI.get_steps_from_bash_script(t).forEach(step) {
+                new_t = new_t.replace(window.OBCUI.call_replace(step), f(step));
+            }
+            return new_t;
+        };
+
+        /*
+        * Return a list of steps that are called in this bash script
+        */
+        window.OBCUI.get_steps_from_bash_script = function(t) {
+            var steps = [];
+
+            //Remove bash comments
+            var no_comments = $scope.remove_bash_comments(t);
+
+            var splitted = no_comments.split('\n');
+            splitted.forEach(function(line) {
+                var results = line.match(window.OBCUI.call_re); 
+                if (results) {
+                    results.forEach(function(result) {
+                        var step_id = result.match(window.OBCUI.call_re_id)[1];
+
+                        //Is there a node with type step and id step_id ?
+                        if (cy.$("node[type='step'][id='" + step_id + "']").length) {
+                            //Add it only if it is not already there
+                            if (!steps.includes(step_id)) {
+                                steps.push(step_id);
+                            }
+                        } 
+                    });
+                }
+            });
+
+            return steps;
+
+        };
+
+        /*
+        * Return a list of input output variables from the bash script 
+        */         
+        window.OBCUI.get_input_outputs_from_bash_script = function(t) {
+
+            //Remove bash comments. DUPLICATE FIXME
+            var no_comments = window.OBCUI.remove_bash_comments(t);
+            var inputs = [];
+            var outputs = [];
+
+            var splitted = no_comments.split('\n');
+            splitted.forEach(function(line) {
+                var results = line.match(/\$\((input|output)__[a-zA-Z0-9][\w]*\)/g); // [^_\w] Does not work??? 
+                if (results) {
+                    results.forEach(function(result){
+                        var splitted = result.match(/\$\((input|output)__([\w]+)\)/);
+                        var input_output = splitted[1];
+                        var variable_name = splitted[2];
+                        //Does this variable exist in cytoscape?
+                        if (cy.$("node[type='" + input_output + "'][id='" + variable_name + "']").length) {
+                            //It exists
+                            //Add them in their relevant list only if they are not already there
+                            if (input_output == "input") {
+                                if (!inputs.includes(variable_name)) {
+                                    inputs.push(variable_name);
+                                }
+                            }
+                            else if (input_output == "output") {
+                                if (!outputs.includes(variable_name)) {
+                                    outputs.push(variable_name);
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+
+            return {inputs: inputs, outputs: outputs};
+
+        };
+
+        /*
+        * Return a list of tools whose variables are used in this bash script
+        */
+        window.OBCUI.get_tools_from_bash_script = function(t) {
+            var tools = [];
+
+            //Remove bash comments
+            var no_comments = window.OBCUI.remove_bash_comments(t);
+
+            var splitted = no_comments.split('\n');
+            splitted.forEach(function(line){
+               var results =  line.match(/\$\([\w]+__[\w\.]+__[\d]+__[\w]+\)/g);
+               if (results) {
+                   results.forEach(function(result){
+                        var splitted_ids = result.match(/\$\(([\w]+__[\w\.]+__[\d]+)__([\w]+)\)/);
+                        var tool_id = splitted_ids[1] + '__2';
+                        var variable_id = splitted_ids[2];
+                        //Does this tool_id exist?
+                        var cy_tool_node = cy.$("node[type='tool'][id='" + tool_id + "']");
+                        if (cy_tool_node.length) {
+                            //IT EXISTS!
+
+                            //Does this tool has a variable with name: variable_id ?
+                            var tool_tool_variables = cy_tool_node.data().variables;
+                            tool_tool_variables.forEach(function(variable){
+                                if (variable.name == variable_id) {
+                                    //Add it if it not already there
+                                    if (!tools.includes(tool_id)) {
+                                        tools.push(tool_id);
+                                    }
+                                }
+                            });
+
+                        }
+
+                   });
+                }
+            });
+
+            return tools;
+        }
+
+
         /*
         * Creates a "unique" id from a workflow
         * ATTENTION! This should be in accordance with the python function create_workflow_id in views.py
         */
         function create_workflow_id(workflow) {
-            return workflow.name + '__' + workflow.edit; //It is ok if this is wf1__null
+            return workflow.name + window.OBCUI.sep + workflow.edit; //It is ok if this is wf1__null
         }
 
         /*
         * Get the edit of this wotkflow id
         */
         function get_edit_from_workflow_id(workflow_id) {
-            return workflow_id.split('__')[1];
+            return workflow_id.split(window.OIBCUI.sep)[1];
         }
 
         /*
@@ -953,7 +1090,7 @@ window.onload = function () {
         * Create a step ID. This contains: name of step, name of workflow, edit of workflow
         */
         function create_step_id(step, workflow) {
-            return step.name + '__' + create_workflow_id(workflow);
+            return step.name + window.OIBCUI.sep + create_workflow_id(workflow);
         }
         window.create_step_id = create_step_id; // Ugliness. FIXME! We need to make these functions visible everywhere without polluting the namespace
 
@@ -961,14 +1098,14 @@ window.onload = function () {
         * Create a unique input/output variable ID. This contains the input/output name, name workflow and edit of worfkflow
         */
         function create_input_output_id(input_output, workflow) {
-            return input_output.name + '__' + create_workflow_id(workflow);
+            return input_output.name + window.OIBCUI.sep + create_workflow_id(workflow);
         }
 
         /*
         * Helper for Step Input Output (SIO)
         */
         function create_SIO_id(SIO, workflow) {
-            return SIO.name + '__' + create_workflow_id(workflow);
+            return SIO.name + window.OIBCUI.sep + create_workflow_id(workflow);
         }
 
         /*
@@ -1008,7 +1145,7 @@ window.onload = function () {
         * sio: Step Input Output
         */
         function get_workflow_id_from_SIO_id(sio_id) {
-            var sio_id_splitted = sio_id.split('__');
+            var sio_id_splitted = sio_id.split(window.OIBCUI.sep);
             if (sio_id_splitted.length != 3) {
                 return null;
             }
@@ -1027,13 +1164,14 @@ window.onload = function () {
         * Get the name of a SIO (Step Input Output)
         */
         function get_SIO_name_from_SIO_id(sio_id) {
-            return sio_id.split('__')[0]
+            return sio_id.split(window.OIBCUI.sep)[0]
         }
 
 		/*
-        * Replace the id of a SIO (in lists of a node: steps[], inputs[], outputs[])
+        * Replace the ids of a list of SIO (in lists of a node: steps[], inputs[], outputs[])
+        * old_root_id : Change only SIOs that have as a workflow: old_root_id
         */
-		function replace_SIO_id(array, old_root_id, new_root){
+		function replace_worfklow_id_of_list_of_SIO_id(array, old_root_id, new_root){
 			array.forEach(function(sio_id){
 				if (get_workflow_id_from_SIO_id(sio_id) === old_root_id){
 					var index = array.indexOf(sio_id);
@@ -1044,6 +1182,29 @@ window.onload = function () {
 			
 			return array;
 		}
+
+        /*
+        * Remove commends from text
+        * Everything that starts with '#'
+        */
+        window.UI_remove_bash_comments = function(t) {
+            var no_comments = [];
+            var t_splitted = t.split('\n');
+
+            t_splitted.forEach(function(line){
+                //Check if this line is a comment
+                if (line.match(/^[\s]*#/)) {
+                    //This is a comment. Ignore it
+                }
+                else {
+                    //This is not a comment
+                    no_comments.push(line);
+                }
+            });
+
+            return no_comments.join('\n');
+
+        };
 
         /*
         * parse data from openbioc to meet the cytoscape.js requirements
@@ -1083,7 +1244,7 @@ window.onload = function () {
       
                     //If d.id is a JSON string parse it. d.id might come either from jstree (needs parsing) or cytoscape (does not need parsing)
                     if (d.id.indexOf('[')>-1) {
-                        d.id = JSON.parse(d.id).join('__');
+                        d.id = JSON.parse(d.id).join(window.OIBCUI.sep);
                         /*remove special characters*/
                         //d.id = d.id.replace(/\./g,''); // CYTOSCAPE ALLOWS . IN IDS
                     }
@@ -1095,7 +1256,7 @@ window.onload = function () {
 
                     if (d.dep_id != "#") {
                         if (d.dep_id.indexOf('[')>-1) { // Parse it if this is JSON. 
-                            d.dep_id = JSON.parse(d.dep_id).join('__');
+                            d.dep_id = JSON.parse(d.dep_id).join(window.OIBCUI.sep);
                             /*remove special characters*/
                            // d.dep_id = d.dep_id.replace(/\./g,''); //CYTOSCAPE ALLOWS . IN IDS
                         }
@@ -1243,6 +1404,7 @@ window.onload = function () {
                 //connectedEdges: next level
                 //successors: next levels recursively
 
+                // inputs and outpus never collapse
                 if (this['_private'].data.type !== "step" && this['_private'].data.type !== "input" && this['_private'].data.type !== "output") { //steps should never collapse
                     if (this.successors().targets().style("display") == "none") {
                         this.connectedEdges().targets().style("display", "element");
@@ -1602,7 +1764,7 @@ window.onload = function () {
 						node.data.belongto = {name: old_root_name, edit: null};
                         if (['step', 'input', 'output'].indexOf(node.data.type)>=0) {
                             node.data.id = create_step_id(node.data, new_root);
-                            //node.data.id = node.data.id.substr(0, node.data.id.lastIndexOf('__'))+'__null';
+                            //node.data.id = node.data.id.substr(0, node.data.id.lastIndexOf(window.OIBCUI.sep))+'__null';
                         } 
 					}
 					
@@ -1610,36 +1772,39 @@ window.onload = function () {
 					
 					// List of steps.			
 					if(typeof node.data.steps != 'undefined' && node.data.steps.length > 0 ){
-							replace_SIO_id(node.data.steps, old_root_id, new_root);
+							replace_worfklow_id_of_list_of_SIO_id(node.data.steps, old_root_id, new_root);
 					}
 					
 					// List of inputs.
 					if(typeof node.data.inputs != 'undefined' && node.data.inputs.length > 0 ){
-							replace_SIO_id(node.data.inputs, old_root_id, new_root);
+							replace_worfklow_id_of_list_of_SIO_id(node.data.inputs, old_root_id, new_root);
 					}
 
 					// List of outputs.
 					if(typeof node.data.outputs != 'undefined' && node.data.outputs.length > 0 ){
-							replace_SIO_id(node.data.outputs, old_root_id, new_root);
+							replace_worfklow_id_of_list_of_SIO_id(node.data.outputs, old_root_id, new_root);
 					}
 
-					/* bash field of node should also be update if it contains call to  step, input, output */
-						new_bash_commands=[];
-						if(typeof node.data.bash != 'undefined'){ 
-							var bash_commands = node.data.bash.split("\n");
-								bash_commands.forEach(function(command){		
-									if(command.includes(old_root_id)){
-										command = command.replace(old_root_id,  old_root_id.split('__')[0]+'__null');
-									}
-								
-								new_bash_commands.push(command);
-								});
-								
-						}
-						
-						node.data.bash = new_bash_commands.join('\n');
-						
+					/* bash field of node should also be updated if it contains call to step, input, output */
+					
+					if(typeof node.data.bash != 'undefined'){  // TODO: 'bash' in node.bash CODING STYLE
+
+                        function change_step_id(old_step_id, new_step_id) {
+                            if (get_workflow_id_from_SIO_id(old_step_id) == old_root_id) {
+                                return create_SIO_id({name: get_SIO_name_from_SIO_id(old_step_id)}, new_root);
+                            }
+                            else {
+                                return old_step_id;
+                            }
+                        }
+
+                        window.OBCUI.edit_steps_from_bash_scripts(node.data.bash, change_step_id);
+
 					}
+					
+					
+						
+				}
 				
 				
 			);
