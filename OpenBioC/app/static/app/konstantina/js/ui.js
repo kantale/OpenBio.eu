@@ -943,9 +943,9 @@ window.onload = function () {
         window.OBCUI.edit_steps_from_bash_scripts = function(t, f) {
             var new_t = t;
 
-            window.OBCUI.get_steps_from_bash_script(t).forEach(step) {
+            window.OBCUI.get_steps_from_bash_script(t).forEach(function(step) {
                 new_t = new_t.replace(window.OBCUI.call_replace(step), f(step));
-            }
+            });
             return new_t;
         };
 
