@@ -1661,143 +1661,6 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
-    * Remove commends from text
-    # Everything that starts with '#'
-    */
-    $scope.remove_bash_comments = function(t) {
-        
-        var no_comments = [];
-        var t_splitted = t.split('\n');
-
-        t_splitted.forEach(function(line){
-            //Check if this line is a comment
-            if (line.match(/^[\s]*#/)) {
-                //This is a comment. Ignore it
-            }
-            else {
-                //This is not a comment
-                no_comments.push(line);
-            }
-        });
-
-        return no_comments.join('\n');
-    };
-
-    /*
-    * Return a list of steps that are called in this bash script
-    */
-    $scope.get_steps_from_bash_script = function(t) {
-
-        var steps = [];
-
-        //Remove bash comments
-        var no_comments = $scope.remove_bash_comments(t);
-
-        var splitted = no_comments.split('\n');
-        splitted.forEach(function(line) {
-            var results = line.match(/((^call)|([\s]+call))\([\w]+\)/g); // Matches: "call(a)" , "  call(a)", "ABC call(a)", "ABC   call(a)"
-            if (results) {
-                results.forEach(function(result) {
-                    var step_id = result.match(/call\(([\w]+)\)/)[1];
-
-                    //Is there a node with type step and id step_id ?
-                    if (cy.$("node[type='step'][id='" + step_id + "']").length) {
-                        //Add it only if it is not already there
-                        if (!steps.includes(step_id)) {
-                            steps.push(step_id);
-                        }
-                    } 
-                });
-            }
-        });
-
-        return steps;
-    };
-
-    /*
-    * Return a list of input output variables from the bash script 
-    */ 
-    $scope.get_input_outputs_from_bash_script = function(t) {
-
-        //Remove bash comments. DUPLICATE FIXME
-        var no_comments = $scope.remove_bash_comments(t);
-        var inputs = [];
-        var outputs = [];
-
-        var splitted = no_comments.split('\n');
-        splitted.forEach(function(line) {
-            var results = line.match(/\$\((input|output)__[a-zA-Z0-9][\w]*\)/g); // [^_\w] Does not work??? 
-            if (results) {
-                results.forEach(function(result){
-                    var splitted = result.match(/\$\((input|output)__([\w]+)\)/);
-                    var input_output = splitted[1];
-                    var variable_name = splitted[2];
-                    //Does this variable exist in cytoscape?
-                    if (cy.$("node[type='" + input_output + "'][id='" + variable_name + "']").length) {
-                        //It exists
-                        //Add them in their relevant list only if they are not already there
-                        if (input_output == "input") {
-                            if (!inputs.includes(variable_name)) {
-                                inputs.push(variable_name);
-                            }
-                        }
-                        else if (input_output == "output") {
-                            if (!outputs.includes(variable_name)) {
-                                outputs.push(variable_name);
-                            }
-                        }
-                    }
-                });
-            }
-        });
-
-        return {inputs: inputs, outputs: outputs};
-
-    };
-
-    /*
-    * Return a list of tools whose variables are used in this bash script
-    */
-    $scope.get_tools_from_bash_script = function(t) {
-        var tools = [];
-
-        //Remove bash comments
-        var no_comments = $scope.remove_bash_comments(t);
-
-        var splitted = no_comments.split('\n');
-        splitted.forEach(function(line){
-           var results =  line.match(/\$\([\w]+__[\w\.]+__[\d]+__[\w]+\)/g);
-           if (results) {
-               results.forEach(function(result){
-                    var splitted_ids = result.match(/\$\(([\w]+__[\w\.]+__[\d]+)__([\w]+)\)/);
-                    var tool_id = splitted_ids[1] + '__2';
-                    var variable_id = splitted_ids[2];
-                    //Does this tool_id exist?
-                    var cy_tool_node = cy.$("node[type='tool'][id='" + tool_id + "']");
-                    if (cy_tool_node.length) {
-                        //IT EXISTS!
-
-                        //Does this tool has a variable with name: variable_id ?
-                        var tool_tool_variables = cy_tool_node.data().variables;
-                        tool_tool_variables.forEach(function(variable){
-                            if (variable.name == variable_id) {
-                                //Add it if it not already there
-                                if (!tools.includes(tool_id)) {
-                                    tools.push(tool_id);
-                                }
-                            }
-                        });
-
-                    }
-
-               });
-            }
-        });
-
-        return tools;
-    };
-
-    /*
     * workflows --> Step --> Button: Add/Update --> Clicked
     * We either ADD the step or UPDATE the step 
     */
@@ -1825,9 +1688,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.workflow_step_error_message = '';
 
         var bash_commands = workflow_step_editor.getValue(); //BASH Commands
-        var steps = $scope.get_steps_from_bash_script(bash_commands); //STEPS
-        var tools = $scope.get_tools_from_bash_script(bash_commands); //TOOLS
-        var input_output = $scope.get_input_outputs_from_bash_script(bash_commands); // INPUT/OUTPUTS
+        var steps = window.OBCUI.get_steps_from_bash_script(bash_commands); //STEPS
+        var tools = window.OBCUI.get_tools_from_bash_script(bash_commands); //TOOLS
+        var input_output = window.OBCUI.get_input_outputs_from_bash_script(bash_commands); // INPUT/OUTPUTS
         //console.log('STEPS:');
         //console.log(steps);
 
