@@ -22,6 +22,7 @@ test edit
 if __name__ != '__main__':
     raise Exception('Do not import this file')
 
+import os
 import sys
 import json
 import time
@@ -30,6 +31,7 @@ import random
 import asyncio
 import logging
 import threading
+import subprocess
 
 from queue import Queue as Thread_queue #  
 
@@ -41,6 +43,129 @@ logging.getLogger('aiohttp').setLevel(logging.DEBUG)
 logging.getLogger('aiohttp').addHandler(logging.StreamHandler(sys.stderr))
 
 lodger = {}
+
+dockerfile_content_template = '''
+#Using ENTRYPOINT
+
+# FROM ubuntu:latest
+
+# RUN  apt-get update \
+#  && apt-get install unzip \ 
+#  && apt-get install -y wget
+
+# ADD bashscript.sh /root/ 
+
+# RUN chmod +x /root/bashscript.sh  
+
+# ENTRYPOINT ["/root/bashscript.sh"]
+
+
+
+#Using CMD
+
+FROM ubuntu:latest
+
+RUN  apt-get update \
+  && apt-get install unzip \ 
+  && apt-get install -y wget
+
+ADD {bashscript_filename} /root/ 
+
+
+RUN cd /root; chmod +x {bashscript_filename} ; /bin/bash {bashscript_filename}
+'''
+
+execution_directory = 'executions'
+
+def execute_shell(command, dummy = False):
+    '''
+    Executes a command in shell
+    dummy: Do nothing. Return a success-like message
+    '''
+
+    if dummy:
+        return {
+            'stdout' : 'DUMMY STDOUT',
+            'stderr' : 'DUMMY STDERR',
+            'errcode' : 0,
+        }
+
+    process = subprocess.Popen(
+        command,
+        stdout=subprocess.PIPE, 
+        stderr=subprocess.PIPE, 
+        shell= True)
+
+    (stdout,stderr) = process.communicate()
+    #print(stdout.decode())
+    print(f'[{cmd!r} exited with {process.returncode}]')
+    return {
+        'stdout' : stdout,
+        'stderr' : stderr,
+        'errcode' : process.returncode,
+    }
+
+
+def docker_build_cmd(this_id, Dockerfile_filename):
+    '''
+    https://docs.docker.com/engine/reference/commandline/build/
+
+    --file , -f         Name of the Dockerfile (Default is ‘PATH/Dockerfile’)
+    '''
+    return f'docker build --no-cache -t openbioc/{this_id} -f {Dockerfile_filename}'
+
+def docker_remove_failed_builds_cmd():
+    '''
+    '''
+    return f'docker rmi -f $(docker images -f "dangling=true" -q)'
+
+
+def create_bash_script_filename(this_id):
+    '''
+    '''
+    return os.path.join(execution_directory, f'bashscript_{this_id}.sh')
+
+
+def create_Dockerfile_filename(this_id):
+    '''
+    '''
+
+    return os.path.join(execution_directory, f'Dockerfile_{this_id}')
+
+def create_Dockerfile_content(bashscript_filename):
+    return dockerfile_content_template.format(
+        bashscript_filename=bashscript_filename
+        )
+
+
+
+def execute_docker_build(this_id, bash):
+    '''
+    make a file and add the bashscript on it
+    '''
+
+    bash_script_filename = create_bash_script_filename(this_id)
+    Dockerfile_filename = create_Dockerfile_filename(this_id)
+
+    # Save bash_script 
+    with open(bash_script_filename, 'w') as bash_script_f:
+        bash_script_f.write(bash)
+
+    # Save Dockerfile
+    with open(Dockerfile_filename, 'w') as Dockerfile_f:
+        Dockerfile_f.write(create_Dockerfile_content(bash_script_filename))
+
+    print (f'Created bash file: {bash_script_filename}')
+    print (f'Created Dockerfile: {Dockerfile_filename}')
+
+
+    command = docker_build_cmd(this_id, Dockerfile_filename)
+    print (f'Executing command: {command}')
+
+    return execute_shell(command, dummy=True)
+
+
+
 
 def get_uuid():
     '''
@@ -101,7 +226,7 @@ async def post_handler(request):
         if not 'bash' in data:
             return fail('key: "bash" not present')
         bash = data['bash']
-
+        #print(bash)
         new_id = get_uuid()
         message = {
             'action': 'validate',
@@ -182,7 +307,7 @@ def worker(message_queue, w_id):
     '''
     w_id: worker id
     '''
-
+    
     print (f'Worker: {w_id} starting..')
 
     while True:
@@ -193,11 +318,27 @@ def worker(message_queue, w_id):
             task = message_queue.get()
 
             this_id = task['id']
+            bash = task['bash']
+
             print (f'WORKER: {w_id}. RECEIVED: {this_id}')
+            # the executions start and the images are called such as unique id from post
 
             lodger[this_id]['status'] = 'submitted'
-            time.sleep(random.randint(1,5))
-            lodger[this_id]['status'] = 'done'
+            result = execute_docker_build(this_id, bash)
+
+            
+            #time.sleep(random.randint(1,5))
+            time.sleep(1)
+            
+            # errcode = 0 means success
+            # errcode =! something goes wrong
+            if result['errcode'] == 0:
+                lodger[this_id]['status'] = 'done'
+            else :
+                lodger[this_id]['status'] = 'failed'
+                #execution(this_id,'mpah',False)
+
+            #print(lodger)
             print (f'WORKER: {w_id}. DONE: {this_id}')
 
 
@@ -231,7 +372,7 @@ if __name__ == '__main__':
     message_queue = Thread_queue()
 #    worker_thread = threading.Thread(target=worker, args=(message_queue, 55),)
 #    worker_thread.start()
-    setup_worker_threads(message_queue, 5)
+    setup_worker_threads(message_queue, 10)
 
 
     init_web_app(message_queue)
