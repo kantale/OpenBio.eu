@@ -1223,11 +1223,10 @@ window.onload = function () {
 					//cy.$("#" + node.data.id).successors().targets().style("display", "none");
 				}
 				
-				if(node.data.type==="tool" && typeof node.data.root !== 'undefined' && node.data.root === 'yes')
-					 cy.$("#" + node.data.id).successors().targets().style("display", "none");
 				
-               // if (typeof node.data.root !== 'undefined' && node.data.root === 'yes') //TODO check for "wfroot:yes"
-               //    cy.$("#" + node.data.id).successors().targets().style("display", "none");
+				//if(node.data.type==="tool" && typeof node.data.root !== 'undefined' && node.data.root === 'yes')
+					// cy.$("#" + node.data.id).successors().targets().style("display", "none");
+	
 
             });
 			
@@ -1537,13 +1536,15 @@ window.onload = function () {
 		  
             //Add open flag for nodes that should always stay open (these are the nodes that belong to more than one tool)
             cy.$('#'+openId).data('flag', 'open');
-			
-			
-            
 
-			console.log("start setup events");
             window.cy_setup_events();
-			console.log("stop setup events");
+			//window.cy_close_successors();
+			
+			
+			//if(node.data.type==="tool" && typeof node.data.root !== 'undefined' && node.data.root === 'yes')
+					// cy.$("#" + node.data.id).successors().targets().style("display", "none");
+			
+			
         }
 		
 		
@@ -1703,6 +1704,7 @@ window.onload = function () {
             //cy.$('#'+openId).data('flag', 'open');		
 			
             window.cy_setup_events();
+			
 				
 			
 		}
