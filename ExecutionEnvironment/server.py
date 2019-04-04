@@ -63,13 +63,13 @@ dockerfile_content_template = '''
 
 #Using CMD
 
-FROM ubuntu:latest
+FROM {ostype}
 
 RUN  apt-get update \
   && apt-get install unzip \ 
   && apt-get install -y wget
 
-ADD {bashscript_filename} /root/ 
+ADD {bash_script_path} /root/ 
 
 
 RUN cd /root; chmod +x {bashscript_filename} ; /bin/bash {bashscript_filename}
@@ -77,18 +77,11 @@ RUN cd /root; chmod +x {bashscript_filename} ; /bin/bash {bashscript_filename}
 
 execution_directory = 'executions'
 
-def execute_shell(command, dummy = False):
+def execute_shell(command):
     '''
     Executes a command in shell
     dummy: Do nothing. Return a success-like message
     '''
-
-    if dummy:
-        return {
-            'stdout' : 'DUMMY STDOUT',
-            'stderr' : 'DUMMY STDERR',
-            'errcode' : 0,
-        }
 
     process = subprocess.Popen(
         command,
@@ -98,7 +91,7 @@ def execute_shell(command, dummy = False):
 
     (stdout,stderr) = process.communicate()
     #print(stdout.decode())
-    print(f'[{cmd!r} exited with {process.returncode}]')
+    print(f'[{command!r} exited with {process.returncode}]')
     return {
         'stdout' : stdout,
         'stderr' : stderr,
@@ -112,7 +105,7 @@ def docker_build_cmd(this_id, Dockerfile_filename):
 
     --file , -f         Name of the Dockerfile (Default is ‘PATH/Dockerfile’)
     '''
-    return f'docker build --no-cache -t openbioc/{this_id} -f {Dockerfile_filename}'
+    return f'docker build --no-cache -t openbioc/{this_id} -f {Dockerfile_filename} .'
 
 def docker_remove_failed_builds_cmd():
     '''
@@ -123,38 +116,40 @@ def docker_remove_failed_builds_cmd():
 def create_bash_script_filename(this_id):
     '''
     '''
-    return os.path.join(execution_directory, f'bashscript_{this_id}.sh')
+    return f'bashscript_{this_id}.sh', os.path.join(execution_directory, f'bashscript_{this_id}.sh')
 
 
 def create_Dockerfile_filename(this_id):
     '''
     '''
 
-    return os.path.join(execution_directory, f'Dockerfile_{this_id}')
+    return os.path.join(execution_directory, f'{this_id}.Dockerfile')
 
-def create_Dockerfile_content(bashscript_filename):
+def create_Dockerfile_content(ostype,bashscript_filename,bash_script_path):
     return dockerfile_content_template.format(
+        ostype = ostype,
+        bash_script_path = bash_script_path,
         bashscript_filename=bashscript_filename
         )
 
 
 
-def execute_docker_build(this_id, bash):
+def execute_docker_build(this_id,ostype, bash):
     '''
     make a file and add the bashscript on it
     '''
 
-    bash_script_filename = create_bash_script_filename(this_id)
+    bash_script_filename, bash_script_path = create_bash_script_filename(this_id)
     Dockerfile_filename = create_Dockerfile_filename(this_id)
 
     # Save bash_script 
-    with open(bash_script_filename, 'w') as bash_script_f:
+    with open(bash_script_path, 'w') as bash_script_f:
         bash_script_f.write(bash)
 
     # Save Dockerfile
     with open(Dockerfile_filename, 'w') as Dockerfile_f:
-        Dockerfile_f.write(create_Dockerfile_content(bash_script_filename))
-
+        Dockerfile_f.write(create_Dockerfile_content(ostype,bash_script_filename,bash_script_path))
+    #print (f'Using OS : {ostype}')
     print (f'Created bash file: {bash_script_filename}')
     print (f'Created Dockerfile: {Dockerfile_filename}')
 
@@ -162,7 +157,7 @@ def execute_docker_build(this_id, bash):
     command = docker_build_cmd(this_id, Dockerfile_filename)
     print (f'Executing command: {command}')
 
-    return execute_shell(command, dummy=True)
+    return execute_shell(command)
 
 
 
@@ -213,7 +208,7 @@ async def post_handler(request):
 
     if not 'action' in data:
         return fail('key: "action" not present')
-
+    print(data)
     message_queue = request.app['message_queue']
     action = data['action']
     if action == 'validate':
@@ -226,11 +221,16 @@ async def post_handler(request):
         if not 'bash' in data:
             return fail('key: "bash" not present')
         bash = data['bash']
+
+        if not 'ostype' in data:
+            return fail('key: "ostype" not present')
+        ostype = data['ostype']
         #print(bash)
         new_id = get_uuid()
         message = {
             'action': 'validate',
             'status': 'pending',
+            'ostype': ostype,
             'bash': bash,
             'id': new_id,
         }
@@ -316,15 +316,16 @@ def worker(message_queue, w_id):
             pass
         else:
             task = message_queue.get()
-
+            print(task)
             this_id = task['id']
             bash = task['bash']
+            ostype = task['ostype']
 
             print (f'WORKER: {w_id}. RECEIVED: {this_id}')
             # the executions start and the images are called such as unique id from post
 
             lodger[this_id]['status'] = 'submitted'
-            result = execute_docker_build(this_id, bash)
+            result = execute_docker_build(this_id,ostype, bash)
 
             
             #time.sleep(random.randint(1,5))
@@ -372,7 +373,7 @@ if __name__ == '__main__':
     message_queue = Thread_queue()
 #    worker_thread = threading.Thread(target=worker, args=(message_queue, 55),)
 #    worker_thread.start()
-    setup_worker_threads(message_queue, 10)
+    setup_worker_threads(message_queue, 2)
 
 
     init_web_app(message_queue)
