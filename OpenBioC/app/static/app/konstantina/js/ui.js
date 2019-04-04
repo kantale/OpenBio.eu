@@ -934,19 +934,45 @@ window.onload = function () {
             call_re_id: new RegExp('call\(([\w]+)\)'), // 
             call_replace: function (step) {return new RegExp('call[\s]*\([\s]*' + step + '[\s]*\)', 'g')}
         };
+		
+		
+		//TODO : CHECK function change_step_id(old_step_id, new_step_id) {
+						window.change_step_id = function(old_step_id, old_root_id, new_root){	
+                            if (get_workflow_id_from_SIO_id(old_step_id) == old_root_id) {
+                                return create_SIO_id({name: get_SIO_name_from_SIO_id(old_step_id)}, new_root);
+                            }
+                            else {
+                                return old_step_id;
+                            }
+                        };
+		
 
         /*
         *  Changes all step names in a bash script
         *  t: text
         *  f: function to apply for a step_id
         */
-        window.OBCUI.edit_steps_from_bash_scripts = function(t, f) {
+        window.OBCUI.edit_steps_from_bash_scripts = function(t, old_root_id, new_root) {
+			console.log("inside edit : ");		
             var new_t = t;
 
+			console.log(window.OBCUI.get_steps_from_bash_script(t));	
             window.OBCUI.get_steps_from_bash_script(t).forEach(function(step) {
-                new_t = new_t.replace(window.OBCUI.call_replace(step), f(step));
+				console.log("step : ");
+				console.log(step);
+				
+                //new_t = new_t.replace(window.OBCUI.call_replace(step), f(step));
+				new_step = window.change_step_id(step, old_root_id, new_root);
+				console.log("new_step : ");
+				console.log(new_step);
+				new_t = new_t.replace(window.OBCUI.call_replace(step), new_step);
+				console.log(new_t);
             });
+			
+			console.log("edits steps result : ");
+			console.log(new_t);
             return new_t;
+			
         };
 
         /*
@@ -956,15 +982,23 @@ window.onload = function () {
             var steps = [];
 
             //Remove bash comments
-            var no_comments = $scope.remove_bash_comments(t);
+            var no_comments = window.UI_remove_bash_comments(t);
 
             var splitted = no_comments.split('\n');
             splitted.forEach(function(line) {
+				console.log("line : ");
+				console.log(line);
+	
                 var results = line.match(window.OBCUI.call_re); 
+				console.log("results : ");
+				console.log(results);
+	
                 if (results) {
                     results.forEach(function(result) {
+						
                         var step_id = result.match(window.OBCUI.call_re_id)[1];
-
+						console.log("matched step id : ");
+						console.log(step_id);
                         //Is there a node with type step and id step_id ?
                         if (cy.$("node[type='step'][id='" + step_id + "']").length) {
                             //Add it only if it is not already there
@@ -972,6 +1006,7 @@ window.onload = function () {
                                 steps.push(step_id);
                             }
                         } 
+						
                     });
                 }
             });
@@ -1076,7 +1111,8 @@ window.onload = function () {
         * Get the edit of this wotkflow id
         */
         function get_edit_from_workflow_id(workflow_id) {
-            return workflow_id.split(window.OIBCUI.sep)[1];
+             return workflow_id.split(window.OBCUI.sep)[1];  
+            //return workflow_id.split(window.OBCUI.sep)[1];
         }
 
         /*
@@ -1090,7 +1126,7 @@ window.onload = function () {
         * Create a step ID. This contains: name of step, name of workflow, edit of workflow
         */
         function create_step_id(step, workflow) {
-            return step.name + window.OIBCUI.sep + create_workflow_id(workflow);
+            return step.name + window.OBCUI.sep + create_workflow_id(workflow);
         }
         window.create_step_id = create_step_id; // Ugliness. FIXME! We need to make these functions visible everywhere without polluting the namespace
 
@@ -1098,14 +1134,14 @@ window.onload = function () {
         * Create a unique input/output variable ID. This contains the input/output name, name workflow and edit of worfkflow
         */
         function create_input_output_id(input_output, workflow) {
-            return input_output.name + window.OIBCUI.sep + create_workflow_id(workflow);
+            return input_output.name + window.OBCUI.sep + create_workflow_id(workflow);
         }
 
         /*
         * Helper for Step Input Output (SIO)
         */
         function create_SIO_id(SIO, workflow) {
-            return SIO.name + window.OIBCUI.sep + create_workflow_id(workflow);
+            return SIO.name + window.OBCUI.sep + create_workflow_id(workflow);
         }
 
         /*
@@ -1145,7 +1181,7 @@ window.onload = function () {
         * sio: Step Input Output
         */
         function get_workflow_id_from_SIO_id(sio_id) {
-            var sio_id_splitted = sio_id.split(window.OIBCUI.sep);
+            var sio_id_splitted = sio_id.split(window.OBCUI.sep);
             if (sio_id_splitted.length != 3) {
                 return null;
             }
@@ -1164,7 +1200,7 @@ window.onload = function () {
         * Get the name of a SIO (Step Input Output)
         */
         function get_SIO_name_from_SIO_id(sio_id) {
-            return sio_id.split(window.OIBCUI.sep)[0]
+            return sio_id.split(window.OBCUI.sep)[0]
         }
 
 		/*
@@ -1244,7 +1280,7 @@ window.onload = function () {
       
                     //If d.id is a JSON string parse it. d.id might come either from jstree (needs parsing) or cytoscape (does not need parsing)
                     if (d.id.indexOf('[')>-1) {
-                        d.id = JSON.parse(d.id).join(window.OIBCUI.sep);
+                        d.id = JSON.parse(d.id).join(window.OBCUI.sep);
                         /*remove special characters*/
                         //d.id = d.id.replace(/\./g,''); // CYTOSCAPE ALLOWS . IN IDS
                     }
@@ -1256,7 +1292,7 @@ window.onload = function () {
 
                     if (d.dep_id != "#") {
                         if (d.dep_id.indexOf('[')>-1) { // Parse it if this is JSON. 
-                            d.dep_id = JSON.parse(d.dep_id).join(window.OIBCUI.sep);
+                            d.dep_id = JSON.parse(d.dep_id).join(window.OBCUI.sep);
                             /*remove special characters*/
                            // d.dep_id = d.dep_id.replace(/\./g,''); //CYTOSCAPE ALLOWS . IN IDS
                         }
@@ -1764,7 +1800,7 @@ window.onload = function () {
 						node.data.belongto = {name: old_root_name, edit: null};
                         if (['step', 'input', 'output'].indexOf(node.data.type)>=0) {
                             node.data.id = create_step_id(node.data, new_root);
-                            //node.data.id = node.data.id.substr(0, node.data.id.lastIndexOf(window.OIBCUI.sep))+'__null';
+                            //node.data.id = node.data.id.substr(0, node.data.id.lastIndexOf(window.OBCUI.sep))+'__null';
                         } 
 					}
 					
@@ -1789,7 +1825,10 @@ window.onload = function () {
 					
 					if(typeof node.data.bash != 'undefined'){  // TODO: 'bash' in node.bash CODING STYLE
 
-                        function change_step_id(old_step_id, new_step_id) {
+										
+                        //function change_step_id(old_step_id, new_step_id) {
+							/*
+						function change_step_id(old_step_id, old_root_id, new_root){	
                             if (get_workflow_id_from_SIO_id(old_step_id) == old_root_id) {
                                 return create_SIO_id({name: get_SIO_name_from_SIO_id(old_step_id)}, new_root);
                             }
@@ -1797,8 +1836,10 @@ window.onload = function () {
                                 return old_step_id;
                             }
                         }
-
-                        window.OBCUI.edit_steps_from_bash_scripts(node.data.bash, change_step_id);
+							
+						*/
+                       // window.OBCUI.edit_steps_from_bash_scripts(node.data.bash, change_step_id);
+						window.OBCUI.edit_steps_from_bash_scripts(node.data.bash, old_root_id, new_root);
 
 					}
 					
