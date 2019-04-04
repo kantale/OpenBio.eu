@@ -215,7 +215,7 @@ async def post_handler(request):
 
     if not 'action' in data:
         return fail('key: "action" not present')
-
+    print(data)
     message_queue = request.app['message_queue']
     action = data['action']
     if action == 'validate':
@@ -321,7 +321,7 @@ def worker(message_queue, w_id):
             pass
         else:
             task = message_queue.get()
-
+            print(task)
             this_id = task['id']
             bash = task['bash']
             ostype = task['ostype']
