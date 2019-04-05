@@ -1030,7 +1030,7 @@ window.onload = function () {
                 var results = line.match(window.OBCUI.io_re);  
                 if (results) {
                     results.forEach(function(result){
-                        var splitted = result.match(); // AAAAAAA
+                        var splitted = result.match(window.OBCUI.io_re_id); // AAAAAAA
                         var input_output = splitted[1];
                         var variable_name = splitted[2];
                         //Does this variable exist in cytoscape?
@@ -1052,7 +1052,10 @@ window.onload = function () {
                 }
             });
 
-            return {inputs: inputs, outputs: outputs};
+            
+			
+			return inputs.concat(outputs);
+			//return {: inputs, outputs: outputs};
 
         };
 
