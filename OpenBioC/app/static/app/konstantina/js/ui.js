@@ -1399,7 +1399,7 @@ window.onload = function () {
 		
 		
 		/*
-		* This function closes the successors of a workflow and/or tool except the input/output
+		* This function closes the successors of a workflow except the input/output
 		* Should be use every time a tool or workflow is dr&dropped in the workflow editor
 		* and everytime a tool or workflow is clicked in the right menu
 		*/
@@ -1739,14 +1739,10 @@ window.onload = function () {
             cy.$('#'+openId).data('flag', 'open');
 
             window.cy_setup_events();
-			//window.cy_close_successors();
+			//close successors of tool
+			cy.$('node[type="tool"][root="yes"]').successors().targets().style("display", "none");;
 			
-			
-			//if(node.data.type==="tool" && typeof node.data.root !== 'undefined' && node.data.root === 'yes')
-					// cy.$("#" + node.data.id).successors().targets().style("display", "none");
-			
-			
-        }
+		}
 		
 		
 		/**
