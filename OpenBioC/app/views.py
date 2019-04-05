@@ -37,6 +37,8 @@ import logging # https://docs.djangoproject.com/en/2.1/topics/logging/
 # Installed packages imports 
 import simplejson
 
+from collections import Counter
+
 __version__ = '0.0.4rc'
 
 # Get an instance of a logger
@@ -915,6 +917,11 @@ def tools_add(request, **kwargs):
     #Variables
     tool_variables = kwargs['tool_variables']
     tool_variables = [x for x in tool_variables if x['name'] and x['value'] and x['description']] # Filter out empty fields
+
+    # Check that variables do not have the same name
+    for variable_name, variable_name_counter in Counter([x['name'] for x in tool_variables]).items():
+        if variable_name_counter>1:
+            return fail('Two variables cannot have the same name!')
 
     #Create new tool
     new_tool = Tool(
