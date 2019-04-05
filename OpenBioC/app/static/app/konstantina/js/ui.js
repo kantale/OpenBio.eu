@@ -930,8 +930,11 @@ window.onload = function () {
         // TODO : Change NAMES NAMESPACE UI
         window.OBCUI = {
             sep: '__',
-            call_re: new RegExp('((^call)|([\s]+call))\([\w]+\)', 'g' ), // Matches: "call(a)" , "  call(a)", "ABC call(a)", "ABC   call(a)"
-            call_re_id: new RegExp('call\(([\w]+)\)'), // 
+			call_re: new RegExp('(^call)\(\.*\)', 'g'), 
+            //call_re: new RegExp('((^call)|([\s]+call))\([\w]+\)', 'g' ), // Matches: "call(a)" , "  call(a)", "ABC call(a)", "ABC   call(a)"
+            
+			call_re_id: new RegExp('call\(\.*\)'),
+			//call_re_id: new RegExp('call\(([\w]+)\)'), // 
             call_replace: function (step) {return new RegExp('call[\s]*\([\s]*' + step + '[\s]*\)', 'g')}
         };
 		
@@ -961,8 +964,8 @@ window.onload = function () {
 				console.log("step : ");
 				console.log(step);
 				
-                //new_t = new_t.replace(window.OBCUI.call_replace(step), f(step));
-				new_step = window.change_step_id(step, old_root_id, new_root);
+                new_t = new_t.replace(window.OBCUI.call_replace(step), f(step));
+				//new_step = window.change_step_id(step, old_root_id, new_root);
 				console.log("new_step : ");
 				console.log(new_step);
 				new_t = new_t.replace(window.OBCUI.call_replace(step), new_step);
@@ -1826,9 +1829,9 @@ window.onload = function () {
 					if(typeof node.data.bash != 'undefined'){  // TODO: 'bash' in node.bash CODING STYLE
 
 										
-                        //function change_step_id(old_step_id, new_step_id) {
-							/*
-						function change_step_id(old_step_id, old_root_id, new_root){	
+                        function change_step_id(old_step_id, new_step_id) {
+							
+						//function change_step_id(old_step_id, old_root_id, new_root){	
                             if (get_workflow_id_from_SIO_id(old_step_id) == old_root_id) {
                                 return create_SIO_id({name: get_SIO_name_from_SIO_id(old_step_id)}, new_root);
                             }
@@ -1837,9 +1840,9 @@ window.onload = function () {
                             }
                         }
 							
-						*/
-                       // window.OBCUI.edit_steps_from_bash_scripts(node.data.bash, change_step_id);
-						window.OBCUI.edit_steps_from_bash_scripts(node.data.bash, old_root_id, new_root);
+						
+                         window.OBCUI.edit_steps_from_bash_scripts(node.data.bash, change_step_id);
+						//window.OBCUI.edit_steps_from_bash_scripts(node.data.bash, old_root_id, new_root);
 
 					}
 					
