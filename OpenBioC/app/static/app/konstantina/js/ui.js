@@ -930,23 +930,37 @@ window.onload = function () {
         // TODO : Change NAMES NAMESPACE UI
         window.OBCUI = {
             sep: '__',
-            call_re: new RegExp('((^call)|([\s]+call))\([\w]+\)', 'g' ), // Matches: "call(a)" , "  call(a)", "ABC call(a)", "ABC   call(a)"
-            call_re_id: new RegExp('call\(([\w]+)\)'), // 
-            call_replace: function (step) {return new RegExp('call[\s]*\([\s]*' + step + '[\s]*\)', 'g')}
+            call_re: new RegExp('((^call)|([\\s]+call))\\([\\w]+\\)', 'g' ), // Matches: "call(a)" , "  call(a)", "ABC call(a)", "ABC   call(a)"
+            call_re_id: new RegExp('call\\(([\\w]+)\\)'), // 
+            call_replace: function(bash, old_id, new_id){return bash.replace(new RegExp('(call[\\s]*\\([\\s]*)' + old_id + '([\\s]*\\))', 'g'), '$1' + new_id + '$2');},
+
+
+
+            io_re : new RegExp('\\$\\((input|output)__[a-zA-Z0-9][\\w]*\\)', 'g'), // [^_\w] Does not work???
+            io_re_id: new RegExp('\\$\\((input|output)__([\\w]+)\\)'), // TODO: ADD  WHITE SPACEDS JUST LIKE calls
+            io_replace: function(bash, old_id, new_id) {return bash.replace(new RegExp('(\\$\\((input|output)__)' + old_id + '(\\))'), '$1' + new_id + '$3');}
         };
+				
 
         /*
-        *  Changes all step names in a bash script
-        *  t: text
-        *  f: function to apply for a step_id
+        * bash: the bash text
+        * apply_to_element_fun: Function to apply to each element found (SIO)
+        * find_elements_fun: Function to return all IDs
+        * replace_fun: Function that gets an old id
         */
-        window.OBCUI.edit_steps_from_bash_scripts = function(t, f) {
-            var new_t = t;
+        window.OBCUI.edit_bash = function(bash, apply_to_element_fun, find_elements_fun, replace_fun) {
+            var new_bash = bash;
+            find_elements_fun(bash).forEach(function(element) {
+                console.log('GAMATO: element');
+                console.log(element);
+                console.log('GAMATO: To be replaced with:');
+                console.log(apply_to_element_fun(element));
 
-            window.OBCUI.get_steps_from_bash_script(t).forEach(function(step) {
-                new_t = new_t.replace(window.OBCUI.call_replace(step), f(step));
+                new_bash = replace_fun(new_bash, element, apply_to_element_fun(element));
+                console.log('GAMATO: Whole bash replaced:');
+                console.log(new_bash);
             });
-            return new_t;
+            return new_bash;
         };
 
         /*
@@ -956,15 +970,35 @@ window.onload = function () {
             var steps = [];
 
             //Remove bash comments
-            var no_comments = $scope.remove_bash_comments(t);
+            var no_comments = window.OBCUI.remove_bash_comments(t);
+
+            console.log('NO COMMENTS BASH SCRIPT:');
+            console.log('-->' +  no_comments + '<--');
 
             var splitted = no_comments.split('\n');
+
             splitted.forEach(function(line) {
+				//console.log("line : ");
+				//console.log(line);
+	
+                //If this is an empty-ish string, return
+                if (!$.trim(line).length) {
+                    return;
+                }
+
                 var results = line.match(window.OBCUI.call_re); 
+				console.log("PROCESSING line: " + line);
+                console.log("FOUND THE FOLLOWING CALLS:");
+				console.log(results);
+	
                 if (results) {
                     results.forEach(function(result) {
-                        var step_id = result.match(window.OBCUI.call_re_id)[1];
+						
+                        console.log('PROCESSING THE FOLLOOWING CALL: -->' + result + '<--');
 
+                        var step_id = result.match(window.OBCUI.call_re_id)[1];
+						console.log("matched step id : ");
+						console.log(step_id);
                         //Is there a node with type step and id step_id ?
                         if (cy.$("node[type='step'][id='" + step_id + "']").length) {
                             //Add it only if it is not already there
@@ -972,6 +1006,7 @@ window.onload = function () {
                                 steps.push(step_id);
                             }
                         } 
+						
                     });
                 }
             });
@@ -992,10 +1027,10 @@ window.onload = function () {
 
             var splitted = no_comments.split('\n');
             splitted.forEach(function(line) {
-                var results = line.match(/\$\((input|output)__[a-zA-Z0-9][\w]*\)/g); // [^_\w] Does not work??? 
+                var results = line.match(window.OBCUI.io_re);  
                 if (results) {
                     results.forEach(function(result){
-                        var splitted = result.match(/\$\((input|output)__([\w]+)\)/);
+                        var splitted = result.match(window.OBCUI.io_re_id); // AAAAAAA
                         var input_output = splitted[1];
                         var variable_name = splitted[2];
                         //Does this variable exist in cytoscape?
@@ -1016,8 +1051,8 @@ window.onload = function () {
                     });
                 }
             });
-
-            return {inputs: inputs, outputs: outputs};
+			
+			return {inputs: inputs, outputs: outputs};
 
         };
 
@@ -1076,7 +1111,8 @@ window.onload = function () {
         * Get the edit of this wotkflow id
         */
         function get_edit_from_workflow_id(workflow_id) {
-            return workflow_id.split(window.OIBCUI.sep)[1];
+             return workflow_id.split(window.OBCUI.sep)[1];  
+            //return workflow_id.split(window.OBCUI.sep)[1];
         }
 
         /*
@@ -1090,7 +1126,7 @@ window.onload = function () {
         * Create a step ID. This contains: name of step, name of workflow, edit of workflow
         */
         function create_step_id(step, workflow) {
-            return step.name + window.OIBCUI.sep + create_workflow_id(workflow);
+            return step.name + window.OBCUI.sep + create_workflow_id(workflow);
         }
         window.create_step_id = create_step_id; // Ugliness. FIXME! We need to make these functions visible everywhere without polluting the namespace
 
@@ -1098,14 +1134,14 @@ window.onload = function () {
         * Create a unique input/output variable ID. This contains the input/output name, name workflow and edit of worfkflow
         */
         function create_input_output_id(input_output, workflow) {
-            return input_output.name + window.OIBCUI.sep + create_workflow_id(workflow);
+            return input_output.name + window.OBCUI.sep + create_workflow_id(workflow);
         }
 
         /*
         * Helper for Step Input Output (SIO)
         */
         function create_SIO_id(SIO, workflow) {
-            return SIO.name + window.OIBCUI.sep + create_workflow_id(workflow);
+            return SIO.name + window.OBCUI.sep + create_workflow_id(workflow);
         }
 
         /*
@@ -1145,7 +1181,7 @@ window.onload = function () {
         * sio: Step Input Output
         */
         function get_workflow_id_from_SIO_id(sio_id) {
-            var sio_id_splitted = sio_id.split(window.OIBCUI.sep);
+            var sio_id_splitted = sio_id.split(window.OBCUI.sep);
             if (sio_id_splitted.length != 3) {
                 return null;
             }
@@ -1164,7 +1200,7 @@ window.onload = function () {
         * Get the name of a SIO (Step Input Output)
         */
         function get_SIO_name_from_SIO_id(sio_id) {
-            return sio_id.split(window.OIBCUI.sep)[0]
+            return sio_id.split(window.OBCUI.sep)[0]
         }
 
 		/*
@@ -1187,7 +1223,7 @@ window.onload = function () {
         * Remove commends from text
         * Everything that starts with '#'
         */
-        window.UI_remove_bash_comments = function(t) {
+        window.OBCUI.remove_bash_comments = function(t) {
             var no_comments = [];
             var t_splitted = t.split('\n');
 
@@ -1198,7 +1234,10 @@ window.onload = function () {
                 }
                 else {
                     //This is not a comment
-                    no_comments.push(line);
+                    //Add it only if it is not empty
+                    if ($.trim(line).length) {
+                        no_comments.push(line);
+                    }
                 }
             });
 
@@ -1244,7 +1283,7 @@ window.onload = function () {
       
                     //If d.id is a JSON string parse it. d.id might come either from jstree (needs parsing) or cytoscape (does not need parsing)
                     if (d.id.indexOf('[')>-1) {
-                        d.id = JSON.parse(d.id).join(window.OIBCUI.sep);
+                        d.id = JSON.parse(d.id).join(window.OBCUI.sep);
                         /*remove special characters*/
                         //d.id = d.id.replace(/\./g,''); // CYTOSCAPE ALLOWS . IN IDS
                     }
@@ -1256,7 +1295,7 @@ window.onload = function () {
 
                     if (d.dep_id != "#") {
                         if (d.dep_id.indexOf('[')>-1) { // Parse it if this is JSON. 
-                            d.dep_id = JSON.parse(d.dep_id).join(window.OIBCUI.sep);
+                            d.dep_id = JSON.parse(d.dep_id).join(window.OBCUI.sep);
                             /*remove special characters*/
                            // d.dep_id = d.dep_id.replace(/\./g,''); //CYTOSCAPE ALLOWS . IN IDS
                         }
@@ -1764,7 +1803,7 @@ window.onload = function () {
 						node.data.belongto = {name: old_root_name, edit: null};
                         if (['step', 'input', 'output'].indexOf(node.data.type)>=0) {
                             node.data.id = create_step_id(node.data, new_root);
-                            //node.data.id = node.data.id.substr(0, node.data.id.lastIndexOf(window.OIBCUI.sep))+'__null';
+                            //node.data.id = node.data.id.substr(0, node.data.id.lastIndexOf(window.OBCUI.sep))+'__null';
                         } 
 					}
 					
@@ -1789,7 +1828,8 @@ window.onload = function () {
 					
 					if(typeof node.data.bash != 'undefined'){  // TODO: 'bash' in node.bash CODING STYLE
 
-                        function change_step_id(old_step_id, new_step_id) {
+						// Change the step id
+                        function change_SIO_id(old_step_id, new_step_id) {
                             if (get_workflow_id_from_SIO_id(old_step_id) == old_root_id) {
                                 return create_SIO_id({name: get_SIO_name_from_SIO_id(old_step_id)}, new_root);
                             }
@@ -1797,8 +1837,26 @@ window.onload = function () {
                                 return old_step_id;
                             }
                         }
+							
 
-                        window.OBCUI.edit_steps_from_bash_scripts(node.data.bash, change_step_id);
+                        console.log('OLD BASH:');
+                        console.log(node.data.bash);
+
+                        //Change step ids
+                        node.data.bash = window.OBCUI.edit_bash(node.data.bash, change_SIO_id, window.OBCUI.get_steps_from_bash_script, window.OBCUI.call_replace);
+
+                        //Change input/output ids
+                        node.data.bash = window.OBCUI.edit_bash(node.data.bash, change_SIO_id, 
+                            function (t) {
+                                var ret = window.OBCUI.get_input_outputs_from_bash_script(t);
+                                return ret.inputs.concat(ret.outputs);
+                            }, 
+                        window.OBCUI.io_replace);
+
+                        console.log('NEW BASH:')
+                        console.log(node.data.bash);
+
+						//window.OBCUI.edit_steps_from_bash_scripts(node.data.bash, old_root_id, new_root);
 
 					}
 					

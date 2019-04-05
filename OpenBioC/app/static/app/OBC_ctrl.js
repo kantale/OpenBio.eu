@@ -936,6 +936,17 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */
     $scope.tools_info_add_variable = function() {
         // $('.tooltipped').tooltip('close');
+
+        //Check for double names
+        var names = {};
+        for (var i=0; i<$scope.tool_variables.length; i++) {
+            if ($scope.tool_variables[i].name in names) {
+                $scope.toast('There is alreay a variable with this name', 'error');
+                return;
+            }
+            names[$scope.tool_variables[i].name] = null;
+        }
+
         $scope.tool_variables.push({name:'', value: '', description: ''});  
     };
 
@@ -1744,7 +1755,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */
     $scope.workflow_cytoscape_delete_node = function(node_id) {
 
-        /* Remove thre successors of a node*/
+        //Cannot edit a saved worfklow
+        if (!$scope.workflows_info_editable) {
+            $scope.toast('Cannot edit a saved workflow. Fork it to make edits.', 'error');
+            return;
+        }
+
+        /* Remove the successors of a node */
         function remove_successors(node) {
             node.successors().targets().forEach(function (element) {
                 cy.remove(element);                  
@@ -1795,6 +1812,15 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                node.remove();
             }
         }
+        else if (data.type == 'workflow') {
+            if (!data.belongto) {
+                $scope.toast('Cannot remove the root workflow', 'error');
+            }
+            else {
+                remove_successors(node);
+                node.remove();
+            }
+        }
 
     };
 
@@ -1836,6 +1862,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */
     $scope.workflow_step_remove_input_output = function(index) {
         $scope.workflow_input_outputs.splice(index, 1);
+        //workflow_input_outputs should never be empty
+        if (!$scope.workflow_input_outputs.length) {
+            $scope.workflow_step_add_input_output();
+        }
     };
 
     /*
@@ -1925,6 +1955,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.workflow_changes = '';
         workflow_step_editor.setReadOnly(false);
 
+        //Update Step Editor Tab completion 
+        $scope.workflow_update_tab_completion_info_to_step();
     };
 
     /*
