@@ -1051,11 +1051,8 @@ window.onload = function () {
                     });
                 }
             });
-
-            
 			
-			return inputs.concat(outputs);
-			//return {: inputs, outputs: outputs};
+			return {inputs: inputs, outputs: outputs};
 
         };
 
@@ -1845,10 +1842,16 @@ window.onload = function () {
                         console.log('OLD BASH:');
                         console.log(node.data.bash);
 
-                        //node.data.bash = window.OBCUI.edit_steps_from_bash_scripts(node.data.bash, change_step_id);
-                        // window.OBCUI.edit_bash = function(bash, apply_to_element_fun, find_elements_fun, replace_fun) 
+                        //Change step ids
                         node.data.bash = window.OBCUI.edit_bash(node.data.bash, change_SIO_id, window.OBCUI.get_steps_from_bash_script, window.OBCUI.call_replace);
-                        node.data.bash = window.OBCUI.edit_bash(node.data.bash, change_SIO_id, window.OBCUI.get_input_outputs_from_bash_script, window.OBCUI.io_replace);
+
+                        //Change input/output ids
+                        node.data.bash = window.OBCUI.edit_bash(node.data.bash, change_SIO_id, 
+                            function (t) {
+                                var ret = window.OBCUI.get_input_outputs_from_bash_script(t);
+                                return ret.inputs.concat(ret.outputs);
+                            }, 
+                        window.OBCUI.io_replace);
 
                         console.log('NEW BASH:')
                         console.log(node.data.bash);
