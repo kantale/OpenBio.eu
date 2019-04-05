@@ -930,52 +930,37 @@ window.onload = function () {
         // TODO : Change NAMES NAMESPACE UI
         window.OBCUI = {
             sep: '__',
-			call_re: new RegExp('(^call)\(\.*\)', 'g'), 
-            //call_re: new RegExp('((^call)|([\s]+call))\([\w]+\)', 'g' ), // Matches: "call(a)" , "  call(a)", "ABC call(a)", "ABC   call(a)"
-            
-			call_re_id: new RegExp('call\(\.*\)'),
-			//call_re_id: new RegExp('call\(([\w]+)\)'), // 
-            call_replace: function (step) {return new RegExp('call[\s]*\([\s]*' + step + '[\s]*\)', 'g')}
+            call_re: new RegExp('((^call)|([\\s]+call))\\([\\w]+\\)', 'g' ), // Matches: "call(a)" , "  call(a)", "ABC call(a)", "ABC   call(a)"
+            call_re_id: new RegExp('call\\(([\\w]+)\\)'), // 
+            call_replace: function(bash, old_id, new_id){return bash.replace(new RegExp('(call[\\s]*\\([\\s]*)' + old_id + '([\\s]*\\))', 'g'), '$1' + new_id + '$2');},
+
+
+
+            io_re : new RegExp('\\$\\((input|output)__[a-zA-Z0-9][\\w]*\\)', 'g'), // [^_\w] Does not work???
+            io_re_id: new RegExp('\\$\\((input|output)__([\\w]+)\\)'), // TODO: ADD  WHITE SPACEDS JUST LIKE calls
+            io_replace: function(bash, old_id, new_id) {return bash.replace(new RegExp('(\\$\\((input|output)__)' + old_id + '(\\))'), '$1' + new_id + '$3');}
         };
-		
-		
-		//TODO : CHECK function change_step_id(old_step_id, new_step_id) {
-						window.change_step_id = function(old_step_id, old_root_id, new_root){	
-                            if (get_workflow_id_from_SIO_id(old_step_id) == old_root_id) {
-                                return create_SIO_id({name: get_SIO_name_from_SIO_id(old_step_id)}, new_root);
-                            }
-                            else {
-                                return old_step_id;
-                            }
-                        };
-		
+				
 
         /*
-        *  Changes all step names in a bash script
-        *  t: text
-        *  f: function to apply for a step_id
+        * bash: the bash text
+        * apply_to_element_fun: Function to apply to each element found (SIO)
+        * find_elements_fun: Function to return all IDs
+        * replace_fun: Function that gets an old id
         */
-        window.OBCUI.edit_steps_from_bash_scripts = function(t, old_root_id, new_root) {
-			console.log("inside edit : ");		
-            var new_t = t;
+        window.OBCUI.edit_bash = function(bash, apply_to_element_fun, find_elements_fun, replace_fun) {
+            var new_bash = bash;
+            find_elements_fun(bash).forEach(function(element) {
+                console.log('GAMATO: element');
+                console.log(element);
+                console.log('GAMATO: To be replaced with:');
+                console.log(apply_to_element_fun(element));
 
-			console.log(window.OBCUI.get_steps_from_bash_script(t));	
-            window.OBCUI.get_steps_from_bash_script(t).forEach(function(step) {
-				console.log("step : ");
-				console.log(step);
-				
-                new_t = new_t.replace(window.OBCUI.call_replace(step), f(step));
-				//new_step = window.change_step_id(step, old_root_id, new_root);
-				console.log("new_step : ");
-				console.log(new_step);
-				new_t = new_t.replace(window.OBCUI.call_replace(step), new_step);
-				console.log(new_t);
+                new_bash = replace_fun(new_bash, element, apply_to_element_fun(element));
+                console.log('GAMATO: Whole bash replaced:');
+                console.log(new_bash);
             });
-			
-			console.log("edits steps result : ");
-			console.log(new_t);
-            return new_t;
-			
+            return new_bash;
         };
 
         /*
@@ -985,20 +970,32 @@ window.onload = function () {
             var steps = [];
 
             //Remove bash comments
-            var no_comments = window.UI_remove_bash_comments(t);
+            var no_comments = window.OBCUI.remove_bash_comments(t);
+
+            console.log('NO COMMENTS BASH SCRIPT:');
+            console.log('-->' +  no_comments + '<--');
 
             var splitted = no_comments.split('\n');
+
             splitted.forEach(function(line) {
-				console.log("line : ");
-				console.log(line);
+				//console.log("line : ");
+				//console.log(line);
 	
+                //If this is an empty-ish string, return
+                if (!$.trim(line).length) {
+                    return;
+                }
+
                 var results = line.match(window.OBCUI.call_re); 
-				console.log("results : ");
+				console.log("PROCESSING line: " + line);
+                console.log("FOUND THE FOLLOWING CALLS:");
 				console.log(results);
 	
                 if (results) {
                     results.forEach(function(result) {
 						
+                        console.log('PROCESSING THE FOLLOOWING CALL: -->' + result + '<--');
+
                         var step_id = result.match(window.OBCUI.call_re_id)[1];
 						console.log("matched step id : ");
 						console.log(step_id);
@@ -1030,10 +1027,10 @@ window.onload = function () {
 
             var splitted = no_comments.split('\n');
             splitted.forEach(function(line) {
-                var results = line.match(/\$\((input|output)__[a-zA-Z0-9][\w]*\)/g); // [^_\w] Does not work??? 
+                var results = line.match(window.OBCUI.io_re);  
                 if (results) {
                     results.forEach(function(result){
-                        var splitted = result.match(/\$\((input|output)__([\w]+)\)/);
+                        var splitted = result.match(); // AAAAAAA
                         var input_output = splitted[1];
                         var variable_name = splitted[2];
                         //Does this variable exist in cytoscape?
@@ -1226,7 +1223,7 @@ window.onload = function () {
         * Remove commends from text
         * Everything that starts with '#'
         */
-        window.UI_remove_bash_comments = function(t) {
+        window.OBCUI.remove_bash_comments = function(t) {
             var no_comments = [];
             var t_splitted = t.split('\n');
 
@@ -1237,7 +1234,10 @@ window.onload = function () {
                 }
                 else {
                     //This is not a comment
-                    no_comments.push(line);
+                    //Add it only if it is not empty
+                    if ($.trim(line).length) {
+                        no_comments.push(line);
+                    }
                 }
             });
 
@@ -1828,10 +1828,8 @@ window.onload = function () {
 					
 					if(typeof node.data.bash != 'undefined'){  // TODO: 'bash' in node.bash CODING STYLE
 
-										
-                        function change_step_id(old_step_id, new_step_id) {
-							
-						//function change_step_id(old_step_id, old_root_id, new_root){	
+						// Change the step id
+                        function change_SIO_id(old_step_id, new_step_id) {
                             if (get_workflow_id_from_SIO_id(old_step_id) == old_root_id) {
                                 return create_SIO_id({name: get_SIO_name_from_SIO_id(old_step_id)}, new_root);
                             }
@@ -1840,8 +1838,18 @@ window.onload = function () {
                             }
                         }
 							
-						
-                         window.OBCUI.edit_steps_from_bash_scripts(node.data.bash, change_step_id);
+
+                        console.log('OLD BASH:');
+                        console.log(node.data.bash);
+
+                        //node.data.bash = window.OBCUI.edit_steps_from_bash_scripts(node.data.bash, change_step_id);
+                        // window.OBCUI.edit_bash = function(bash, apply_to_element_fun, find_elements_fun, replace_fun) 
+                        node.data.bash = window.OBCUI.edit_bash(node.data.bash, change_SIO_id, window.OBCUI.get_steps_from_bash_script, window.OBCUI.call_replace);
+                        node.data.bash = window.OBCUI.edit_bash(node.data.bash, change_SIO_id, window.OBCUI.get_input_outputs_from_bash_script, window.OBCUI.io_replace);
+
+                        console.log('NEW BASH:')
+                        console.log(node.data.bash);
+
 						//window.OBCUI.edit_steps_from_bash_scripts(node.data.bash, old_root_id, new_root);
 
 					}
