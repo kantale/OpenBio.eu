@@ -1925,6 +1925,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.workflow_changes = '';
         workflow_step_editor.setReadOnly(false);
 
+        //Update Step Editor Tab completion 
+        $scope.workflow_update_tab_completion_info_to_step();
     };
 
     /*
