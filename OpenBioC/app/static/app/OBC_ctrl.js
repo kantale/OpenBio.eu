@@ -936,6 +936,17 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */
     $scope.tools_info_add_variable = function() {
         // $('.tooltipped').tooltip('close');
+
+        //Check for double names
+        var names = {};
+        for (var i=0; i<$scope.tool_variables.length; i++) {
+            if ($scope.tool_variables[i].name in names) {
+                $scope.toast('There is alreay a variable with this name', 'error');
+                return;
+            }
+            names[$scope.tool_variables[i].name] = null;
+        }
+
         $scope.tool_variables.push({name:'', value: '', description: ''});  
     };
 
