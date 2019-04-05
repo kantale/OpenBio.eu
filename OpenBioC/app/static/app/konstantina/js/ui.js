@@ -1467,19 +1467,12 @@ window.onload = function () {
                 }
 
             });
-
-            /* show tooltip */
-            cy.on('mouseover', 'node', function (event) {
-                  
-
-                nodeId = this._private.data.id
-                myNode = cy.getElementById(nodeId);
-
-               console.log("SHOW TOOLTIP : ");
-               console.log(nodeId);  
-
-                //tippy
-                var makeTippy = function (node, text) {
+			
+			
+			 /** Function for creating tooltip and their content. **/
+			   
+                makeTippy = function (node, text) {
+				
                     return tippy(node.popperRef(), {
                         content: function () {
                             var div = document.createElement('div');
@@ -1496,21 +1489,34 @@ window.onload = function () {
                         sticky: true
                     });
                 };
-
+			
+			
+			 /* show tooltip */
+            var mytippys=[]; // arry for keeping instances of tooltips, neede for destroying all instances on mouse out
+			cy.on('mouseover', 'node', function (event) {
+ 
+				nodeId = this._private.data.id
+                myNode = cy.getElementById(nodeId);
                 myTippy = makeTippy(myNode, nodeId);
+				mytippys.push(myTippy);
                 myTippy.show();
 
 
             });
 
-            // hide tooltip
+            /* hide tooltip */
             cy.on('mouseout', 'node', function (event) {
-               console.log("HIDE TOOLTIP");
-               console.log(this._private.data.id);
-
-                myTippy.destroy();    
-                //myTippy.hide();
+				// destroy all instances
+				mytippys.forEach(function (mytippy) {
+					mytippy.destroy(mytippy.popper);
+				});
+				
+				 //myTippy.destroy();
+			     //myTippy.hide();
+				
             });
+
+           
 
         }
 
@@ -1615,7 +1621,6 @@ window.onload = function () {
                     directed: true,
                     padding: 2
                 }
-
 
 
             });
@@ -1758,7 +1763,7 @@ window.onload = function () {
 			// Find the root workflow and change edit to null
 			currentElements.nodes.forEach(function(node){
 				if(node.data.belongto===null){
-					
+						
 					// Finds the root workflow					
 					old_root_id = node.data.id;		
 					old_root_name = node.data.name;
