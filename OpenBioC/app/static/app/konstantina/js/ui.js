@@ -1469,30 +1469,31 @@ window.onload = function () {
             });
 			
 			
-			 /** Function for creating tooltip and their content. **/
-			   
-                makeTippy = function (node, text) {
+			/* 
+            * Function for creating tooltip and their content.
+            */
+            var makeTippy = function (node, text) {
 				
-                    return tippy(node.popperRef(), {
-                        content: function () {
-                            var div = document.createElement('div');
-                            div.innerHTML = text;
-                            return div;
-                        },
-                        trigger: 'manual',
-                        arrow: true,
-                        placement: 'right',
-                        hideOnClick: false,
-                        multiple: true,
-                        //followCursor: true,
-                        //theme: 'light', 
-                        sticky: true
-                    });
-                };
+                return tippy(node.popperRef(), {
+                    content: function () {
+                        var div = document.createElement('div');
+                        div.innerHTML = text;
+                        return div;
+                    },
+                    trigger: 'manual',
+                    arrow: true,
+                    placement: 'right',
+                    hideOnClick: false,
+                    multiple: true,
+                    //followCursor: true,
+                    //theme: 'light', 
+                    sticky: true
+                });
+            };
 			
 			
 			 /* show tooltip */
-            var mytippys=[]; // arry for keeping instances of tooltips, neede for destroying all instances on mouse out
+            var mytippys=[]; // arry for keeping instances of tooltips, needed for destroying all instances on mouse out
 			cy.on('mouseover', 'node', function (event) {
  
 				nodeId = this._private.data.id
@@ -1515,11 +1516,11 @@ window.onload = function () {
 			     //myTippy.hide();
 				
             });
-
-           
-
         }
 
+        /*
+        * Initialize cytoscape graph
+        */
         function initializeTree() {
 
             cy = cytoscape({
