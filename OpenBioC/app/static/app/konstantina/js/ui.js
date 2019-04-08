@@ -1473,7 +1473,8 @@ window.onload = function () {
             * Function for creating tooltip and their content.
             */
             var makeTippy = function (node, text) {
-				
+				console.log("node here : ");
+				console.log(node);
                 return tippy(node.popperRef(), {
                     content: function () {
                         var div = document.createElement('div');
@@ -1937,8 +1938,178 @@ window.onload = function () {
         /*
         * Called from angular $scope.workflow_info_run_pressed
         */
-        window.OBCUI.runWorkflow = function() {
-            alert('IMPLEMENT ME!!');
+        window.OBCUI.runWorkflow = function() {			
+		
+			// get graph data	
+			cy_run = cytoscape({
+                container: document.getElementById('cywf'), // container to render in
+                elements:[],
+                style: [ // the stylesheet for the graph
+                    {
+                        selector: 'node',
+                        "style": {
+                            "shape": "round-rectangle",
+							"background-color": "#AFB4AE",
+                            //"label": "data(id)",
+                             "label": "data(label)",
+                            //"height": 15,
+                            //"width": 15
+                        }
+                    },
+                    {
+                        selector: 'node[type="step"]',
+                        "style": {
+                            'shape': 'ellipse',
+							'background-color': '#007167',
+                            //'background-color': '#E8E406',
+                            //"height": 15,
+                            //"width": 15
+                        }
+                    },
+                    {
+                        selector: 'node[type="input"]',
+                        "style": {
+                            'shape': 'round-rectangle',
+							'border-width' : '3',
+							'border-color' : '#43A047',
+                            'background-color': '#AFB4AE',
+                            //"height": 15,
+                            //"width": 15
+                        }
+                    },
+                    {
+                        selector: 'node[type="output"]',
+                        "style": {
+                            'shape': 'round-rectangle',
+							'border-width' : '3',
+							'border-color' : '#E53935',
+                            'background-color': '#AFB4AE',
+                            //"height": 15,
+                            //"width": 15
+                        }
+                    },
+					
+					{
+                        selector: 'node[type="workflow"]',
+                        "style": {
+                            'shape': 'diamond',
+							'border-width' : '3',
+							'border-color' : '#E53935',
+                            'background-color': '#AFB4AE',
+                            //"height": 15,
+                            //"width": 15
+                        }
+                    },
+//                    {
+//                        //Do not show the root workflow 
+//                        selector: 'node[type="workflow"][!belongto]',
+//                        "style": {
+//                            "display": "none"
+//                        }
+//                    },
+                    {
+                        selector: 'edge',
+                        "style": {
+                            'curve-style': 'bezier',
+                            'target-arrow-shape': 'triangle',
+                            'width': 2,
+                            'line-color': '#ddd',
+                            'target-arrow-color': '#ddd'
+                        }
+                    }
+                ],
+
+                //zoom: 1,
+                pan: { x: 0, y: 0 },
+
+                layout: {
+                    name: 'breadthfirst',
+                    directed: true,
+                    padding: 2
+                }
+
+
+            });
+
+            //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.
+            document.querySelector('canvas[data-id="layer2-node"]').style.position = null;
+
+			
+            cy_run.json({ elements: cy.json().elements});  // Add new data
+				cy_run.ready(function () {                     // Wait for nodes to be added  
+					cy_run.layout({                            // Call layout
+						name: 'breadthfirst',
+						directed: true,
+						padding: 2
+					}).run();
+
+				});
+			
+			//add text-editor-tooltip in each input/output
+			
+			/* 
+            * Function for creating tooltip and their content.
+            */
+            var makeTippy = function (node, text) {
+
+			console.log(text);
+				return tippy(node.popperRef(), {
+                    content: function () {
+                        var div = document.createElement('input');
+						div.setAttribute('type', 'text');
+						//div.input.type = "text";
+                        div.innerHTML = text;
+                        return div;
+                    },
+                    trigger: 'manual',
+                    arrow: true,
+                    placement: 'bottom',
+                    hideOnClick: false,
+                    multiple: true,
+                    //followCursor: true,
+                    //theme: 'light', 
+                    sticky: true
+                });
+            };
+			
+			
+			/* show tooltip */
+            var mytippys=[]; // array for keeping instances of tooltips, needed for destroying all instances on mouse out
+			//cy.on('mouseover', 'node', function (event) {
+ 
+				// destroy all instances
+				mytippys.forEach(function (mytippy) {
+					mytippy.destroy(mytippy.popper);
+				});	
+ 
+ 
+				//nodeId = this._private.data.id;
+				cy.nodes().forEach(function(node){
+					if(node._private.data.type==='input' || node._private.data.type==='output' ){
+						myTippy = makeTippy(node, node.data.id);
+						mytippys.push(myTippy);
+						myTippy.show();
+					}
+				});
+				
+            //});
+
+            /* hide tooltip */
+			/*
+            cy.on('mouseout', 'node', function (event) {
+				// destroy all instances
+				mytippys.forEach(function (mytippy) {
+					mytippy.destroy(mytippy.popper);
+				});
+				
+				 //myTippy.destroy();
+			     //myTippy.hide();
+				
+            });
+			*/
+			
+			
+			
         };
 
 
