@@ -1934,6 +1934,13 @@ window.onload = function () {
 			
 		}
 
+        /*
+        * Called from angular $scope.workflow_info_run_pressed
+        */
+        window.OBCUI.runWorkflow = function() {
+            alert('IMPLEMENT ME!!');
+        };
+
 
         /*
         * Deletes all elements

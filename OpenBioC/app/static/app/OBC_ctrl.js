@@ -2021,6 +2021,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         window.fit();
     };
 
+    /*
+    * worfklows --> info (right panel) --> button "Run" --> Pressed
+    */
+    $scope.workflow_info_run_pressed = function() {
+        window.OBCUI.runWorkflow();
+    };
 
 
     // WORKFLOWS END 
