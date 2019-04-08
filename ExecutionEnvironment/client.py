@@ -73,11 +73,11 @@ def r_json_submit(js):
 
 def test_2():
 	print ('Submitting..')
-	data = [r_json_submit(json_1()) for x in range(1)]
+	data = r_json_submit(json_1())
 	print (data)
 	time.sleep(30)
 	print ('Quering...')
-	data = [r_query(data[i]) for i in range(1)]
+	data = r_query(data['id'])
 	print (data)
 
 
