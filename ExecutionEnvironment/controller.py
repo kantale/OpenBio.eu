@@ -16,7 +16,11 @@ CONTROLLER: aiohttp, or flask, django server listening for actions
 WORKER: checks if there is any pending job/request and handles it.
 SUBMITTER: client.py . Submits jobs to CONTROLLER and queries the CONTROLLER regarding the progress of these jobs
 
-test editasdasd
+# RUN docker os non-root 
+https://askubuntu.com/questions/477551/how-can-i-use-docker-without-sudo
+sudo groupadd docker 
+sudo usermod -aG docker kantale 
+sudo systemctl restart docker 
 '''
 
 if __name__ != '__main__':
@@ -36,6 +40,7 @@ import subprocess
 from queue import Queue as Thread_queue #  
 
 from aiohttp import web
+import aiohttp_cors
 #from threading import Thread
 
 # https://stackoverflow.com/questions/47163807/concurrency-with-aiohttp-server?rq=1
@@ -291,6 +296,17 @@ def init_web_app(message_queue, port=8080):
 
     app = web.Application()
 
+    # `aiohttp_cors.setup` returns `aiohttp_cors.CorsConfig` instance.
+    # The `cors` instance will store CORS configuration for the
+    # application.
+    cors = aiohttp_cors.setup(app, defaults={
+    "*": aiohttp_cors.ResourceOptions( # TODO: CHANGE "*" To server IP
+            allow_credentials=True,
+            expose_headers=('access-control-allow-origin','content-type','x-csrftoken'),
+            allow_headers=('access-control-allow-origin','content-type','x-csrftoken'),
+        )
+    })
+
     # Web Applications can have context 
     # https://stackoverflow.com/questions/40616145/shared-state-with-aiohttp-web-server 
     app['message_queue'] = message_queue
@@ -299,6 +315,25 @@ def init_web_app(message_queue, port=8080):
         web.get('/', hello),
         web.post('/post', post_handler),
     ])
+
+    for route in list(app.router.routes()):
+        cors.add(route)
+
+    #resource = cors.add(app.router.add_resource("/post"))
+    #cors.add(route)
+#    route = cors.add(
+#    resource.add_route("POST", post_handler), {
+#        # "http://client.example.org" 
+#        "*": aiohttp_cors.ResourceOptions(
+#            allow_credentials=True,
+#            expose_headers='*',
+#            allow_headers='*',
+#            #expose_headers=("Access-Control-Allow-Origin",),
+#            #allow_headers=("Access-Control-Allow-Origin", "Content-Type: application/json"),
+#            max_age=3600,
+#        )
+#        }
+#    )
     
     #After that, run the application by run_app() call:
     web.run_app(app, port=port)
@@ -340,6 +375,8 @@ def worker(message_queue, w_id):
 
             lodger[this_id]['status'] = 'submitted'
             result = execute_docker_build(this_id,ostype, bash)
+            print ('RESULT FROM execute_docker_build:')
+            print (result)
 
             
             #time.sleep(random.randint(1,5))
@@ -349,9 +386,14 @@ def worker(message_queue, w_id):
             # errcode =! something goes wrong
             if result['errcode'] == 0:
                 lodger[this_id]['status'] = 'done'
-            else :
+            else:
                 lodger[this_id]['status'] = 'failed'
                 #execution(this_id,'mpah',False)
+
+            lodger[this_id]['stdout'] = result['stdout'].decode()
+            lodger[this_id]['stderr'] = result['stderr'].decode()
+            lodger[this_id]['errcode'] = result['errcode']
+
 
             #print(lodger)
             print (f'WORKER: {w_id}. DONE: {this_id}')
