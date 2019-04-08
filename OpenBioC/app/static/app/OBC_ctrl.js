@@ -921,6 +921,31 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */
     $scope.tool_info_validate_pressed = function() {
         $scope.tool_info_validation_message = 'Not yet implemented';
+
+        var installation_bash = tool_installation_editor.getValue();
+        var validation_bash = tool_validation_editor.getValue();
+
+        console.log('INSTALLATION BASH:');
+        console.log(installation_bash);
+        console.log('VALIDATION BASH:');
+        console.log(validation_bash);
+
+        $scope.ajax(
+            'http://139.91.190.79:8080/post',
+            {
+                action: 'validate'                
+            },
+            function (data) {
+                $scope.toast('WTF 1', 'success');
+            },
+            function (data) {
+                console.log(data);
+                $scope.toast('WTF 2', 'success');
+            },
+            function (statusText) {
+                $scope.toast('WTF: ' + statusText, 'success');
+            }
+        );
     };
 
     /*
