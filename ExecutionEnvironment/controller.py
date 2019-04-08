@@ -95,15 +95,24 @@ def execute_shell(command):
         stdout=subprocess.PIPE, 
         stderr=subprocess.PIPE, 
         shell= True)
+    # Read every line in stdout and print in controller
+    '''
+    https://stackoverflow.com/questions/803265/getting-realtime-output-using-subprocess
+    '''
 
+    for line in iter(process.stdout.readline, b''):
+        print(line)
+
+    
     (stdout,stderr) = process.communicate()
-    #print(stdout.decode())
+
     print(f'[{command!r} exited with {process.returncode}]')
     return {
         'stdout' : stdout,
         'stderr' : stderr,
         'errcode' : process.returncode,
     }
+
 
 
 def docker_build_cmd(this_id, Dockerfile_filename):
