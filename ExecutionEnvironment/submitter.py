@@ -79,6 +79,8 @@ def test_2():
     time.sleep(4)
     print ('Quering...')
     data = r_query(data['id'])
+    print ('DATA RECEIVED:')
+    print (data)
     while True :
         if (data['status'] == 'done' or data['status'] == 'failed'):
             break

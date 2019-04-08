@@ -1,7 +1,10 @@
 
 ### Install aiohttp 
+Install aiohttp\_cors: https://github.com/aio-libs/aiohttp-cors
+
 ```
 conda install aiohttp
+pip install aiohttp_cors
 ```
 
 ### Install requests
