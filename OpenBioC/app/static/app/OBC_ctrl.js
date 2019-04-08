@@ -929,11 +929,14 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         console.log(installation_bash);
         console.log('VALIDATION BASH:');
         console.log(validation_bash);
-
+        a = installation_bash + ' \n ' + validation_bash
+        console.log(a);
         $scope.ajax(
-            'http://139.91.190.79:8080/post',
+            'http://0.0.0.0:8080/post',
             {
-                action: 'validate'                
+                action: 'validate',
+                bash : a,
+                ostype : 'ubuntu:latest'
             },
             function (data) {
                 $scope.toast('WTF 1', 'success');

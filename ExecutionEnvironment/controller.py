@@ -430,6 +430,7 @@ import socket, errno
 def check_if_port_is_used(port):
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     used = False
 
     try:
