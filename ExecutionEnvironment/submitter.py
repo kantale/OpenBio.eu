@@ -72,13 +72,21 @@ def r_json_submit(js):
 # 	resp = [r_query(id_) for id_ in ids]
 
 def test_2():
-	print ('Submitting..')
-	data = [r_json_submit(json_1()) for x in range(1)]
-	print (data)
-	time.sleep(30)
-	print ('Quering...')
-	data = [r_query(data[i]) for i in range(1)]
-	print (data)
+    print ('Submitting..')
+    data = r_json_submit(json_1())
+    print (data)
+
+    time.sleep(4)
+    print ('Quering...')
+    data = r_query(data['id'])
+    print ('DATA RECEIVED:')
+    print (data)
+    while True :
+        if (data['status'] == 'done' or data['status'] == 'failed'):
+            break
+        time.sleep(10)
+        data = r_query(data['id'])
+        print (data)
 
 
 
