@@ -2050,15 +2050,26 @@ window.onload = function () {
 			/* 
             * Function for creating tooltip and their content.
             */
+					
+							
+		
             var makeTippy = function (node, text) {
 
-			console.log(text);
-				return tippy(node.popperRef(), {
+			return tippy(node.popperRef(), {
                     content: function () {
-                        var div = document.createElement('input');
-						div.setAttribute('type', 'text');
-						//div.input.type = "text";
-                        div.innerHTML = text;
+                        var div = document.createElement('div');
+                        div.innerHTML = '<form name="input" >' +
+											'For :	'+ node._private.data.name+'<br>'+
+											'Value :<br>'+
+											'<input type="text" name="value"><br>'	+						
+											'<input type="submit" value="Submit" />' +
+											'</form>';
+						div.style.width = "100px";
+						div.style.height = "120px";
+						//div.style.background = "black";
+						div.style.color = "white";
+						div.style.position= "relative";
+						div.style.zIndex = "3500";					
                         return div;
                     },
                     trigger: 'manual',
@@ -2066,14 +2077,15 @@ window.onload = function () {
                     placement: 'bottom',
                     hideOnClick: false,
                     multiple: true,
-                    //followCursor: true,
-                    //theme: 'light', 
+                    followCursor: true,
+                    theme: 'run', 
                     sticky: true
                 });
             };
 			
 			
 			/* show tooltip */
+			
             var mytippys=[]; // array for keeping instances of tooltips, needed for destroying all instances on mouse out
 			//cy.on('mouseover', 'node', function (event) {
  
@@ -2091,6 +2103,8 @@ window.onload = function () {
 						myTippy.show();
 					}
 				});
+				
+				
 				
             //});
 
