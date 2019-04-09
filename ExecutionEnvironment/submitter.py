@@ -5,7 +5,7 @@ import requests
 import subprocess
 import asyncio
 
-URL = 'http://0.0.0.0:8080/post'
+URL = 'http://0.0.0.0:8080/'
 headers={ "Content-Type" : "application/json", "Accept" : "application/json"}
 
 def json_1():
