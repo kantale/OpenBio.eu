@@ -1175,5 +1175,18 @@ def workflows_search_3(request, **kwargs):
 
     return success(ret)
 
+### END OF WORKFLOWS ###
+@has_data
+def callback(request, **kwargs):
+    '''
+    '''
+    print ('AAA')
+    return success({'t':3});
+
+
+
+### CALLBACK ###
+### END OF CALL BACK ###
+
 ### VIEWS END ######
 

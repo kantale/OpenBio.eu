@@ -917,6 +917,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
+    *  Create the bash script that we will submit to the controller for validation
+    */
+    $scope.create_bash_script_for_validation = function(installation_bash, validation_bash) {
+        return installation_bash + '\n' + validation_bash;
+    };
+
+    /*
     * Navbar --> tools/data --> Aprioprate input (search) --> Create New (tool, pressed) --> Installation (tab, pressed) --> Validate (pressed)
     */
     $scope.tool_info_validate_pressed = function() {
@@ -925,25 +932,27 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         var installation_bash = tool_installation_editor.getValue();
         var validation_bash = tool_validation_editor.getValue();
 
-        console.log('INSTALLATION BASH:');
-        console.log(installation_bash);
-        console.log('VALIDATION BASH:');
-        console.log(validation_bash);
+        //console.log('INSTALLATION BASH:');
+        //console.log(installation_bash);
+        //console.log('VALIDATION BASH:');
+        //console.log(validation_bash);
 
         $scope.ajax(
             'http://139.91.190.79:8080/post',
             {
-                action: 'validate'                
+                action: 'validate',
+                bash: $scope.create_bash_script_for_validation(installation_bash, validation_bash),
+                ostype: 'ubuntu:latest' // TODO change
             },
             function (data) {
-                $scope.toast('WTF 1', 'success');
+                this_id = data['id'];
+                $scope.toast('Succesfully submitted tool/data for validation', 'success');
             },
             function (data) {
-                console.log(data);
-                $scope.toast('WTF 2', 'success');
+                $scope.toast(data['error_message'], 'error');
             },
             function (statusText) {
-                $scope.toast('WTF: ' + statusText, 'success');
+                $scope.toast('Server Error:' + statusText, 'error');
             }
         );
     };
