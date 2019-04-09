@@ -205,7 +205,7 @@ def fail(message):
     return web.json_response(responce_data)
 
 def success(d):
-    d['success'] : True
+    d['success'] = True
     return  web.json_response(d)
 
 async def post_handler(request):
