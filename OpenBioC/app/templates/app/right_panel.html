@@ -131,16 +131,16 @@
                         </div>
                         <div class="row">
                             <div class="input-field col s12">
-                                <select multiple>
-                                    <!-- <option value="" disabled selected>Choose OS</option> -->
+                                <select id='os_selected_value'>
                                     <optgroup label="Ubuntu">
-                                        <option value="Ubuntu_14_04">14.04</option>
-                                        <option value="Ubuntu_16_04">16.04</option>
+                                        <!-- adding values to use it for dockerfile-->
+                                        <option value="ubuntu:14.04">14.04</option>
+                                        <option value="ubuntu:16.04">16.04</option>
                                     </optgroup>
                                     <optgroup label="Debian">
-                                        <option value="Debian_7">7 (Wheezy)</option>
-                                        <option value="Debian_8">8 (Jessie)</option>
-                                        <option value="Debian_9">9 (Stretch)</option>
+                                        <option value="jessie">8 (Jessie)</option>
+                                        <option value="stretch">9 (Stretch)</option>
+                                        <option value="buster">10 (Buster)</option>
                                     </optgroup>
                                 </select>
                                 <label>Select Operating System</label>
