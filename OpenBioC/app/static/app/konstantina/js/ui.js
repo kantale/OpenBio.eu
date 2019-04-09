@@ -2054,33 +2054,42 @@ window.onload = function () {
 							
 		
             var makeTippy = function (node, text) {
-
-			return tippy(node.popperRef(), {
-                    content: function () {
-                        var div = document.createElement('div');
-                        div.innerHTML = '<form name="input" >' +
-											'For :	'+ node._private.data.name+'<br>'+
-											'Value :<br>'+
-											'<input type="text" name="value"><br>'	+						
-											'<input type="submit" value="Submit" />' +
-											'</form>';
-						div.style.width = "100px";
-						div.style.height = "120px";
-						//div.style.background = "black";
-						div.style.color = "white";
-						div.style.position= "relative";
-						div.style.zIndex = "3500";					
-                        return div;
-                    },
-                    trigger: 'manual',
-                    arrow: true,
-                    placement: 'bottom',
-                    hideOnClick: false,
-                    multiple: true,
-                    followCursor: true,
-                    theme: 'run', 
-                    sticky: true
-                });
+	
+				return tippy(node.popperRef(), {
+						content: function () {
+								var div = document.createElement('div');
+								div.innerHTML = 
+													//'<form name="input" >' +
+													'Add Value For '+ node._private.data.name+' : <br>'+
+													'<input type="text" id=tippy_text_'+node._private.data.id+' name="Add Value"><br>'	+
+													'<button id=tippy_button_'+node._private.data.id+' class="btn btn-click">Submit</button>'		
+													//'<input type="submit" value="Submit" />' ;
+													//'</form>';
+								div.style.width = "90px";
+								div.style.height = "140px";
+								div.style.color = "black"; //font color
+								div.style.position= "relative";
+								//div.style.zIndex = "10000000000";					
+								return div;
+						},
+						onShown: function() {
+							 $('.btn-click').off("click").on("click", function(){
+								alert( document.getElementById(this.id.replace('tippy_button_', 'tippy_text_')).value);
+							 });
+						},
+						trigger: 'manual',
+						//arrow: true,
+						placement: 'bottom',
+						interactive: true, //this should be true for the content to be interactive and clickable
+						hideOnClick: false,
+						multiple: true,
+						followCursor: true,
+						theme: 'light', 
+						//zIndex: 100001,
+						sticky: true
+						
+					});
+				
             };
 			
 			
