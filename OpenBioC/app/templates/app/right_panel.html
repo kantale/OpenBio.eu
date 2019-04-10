@@ -112,11 +112,19 @@
                 <!-- -------------------------------- Installation ----------------------------------------- -->
                 <!-- --------------------------------------------------------------------------------------- -->
                 <li id="toolsDataInstallation">
-                    <div class="collapsible-header">
+                    <div class="collapsible-header" style="height:55px">
                         <i class="material-icons arrow">keyboard_arrow_right</i>
                         <i class="material-icons">computer</i>
                         Installation
-                        <span class="badge"><i class="material-icons md-red">error_outline</i></span>
+                        <a id="installationRefreshBtn" class="waves-effect waves-teal btn-flat btnCollapsible"><i
+                                class="material-icons" style="margin:0px;">refresh</i></a>
+                        <span class="new badge" style="margin-left: 5px;" data-badge-caption="Unvalidated"></span>
+                        <span class="new badge grey" style="margin-left: 5px;" data-badge-caption="Pending"></span>
+                        <span class="new badge red" style="margin-left: 5px;" data-badge-caption="Failed"></span>
+                        <span class="new badge green" style="margin-left: 5px;" data-badge-caption="Validated"></span>
+                        <small class="text-muted" style="padding-top: 3px">
+                                <span>12 Feb 2019</span>
+                        </small>
                     </div>
                     <div class="collapsible-body">
                         <!-- Hide Variables -->
