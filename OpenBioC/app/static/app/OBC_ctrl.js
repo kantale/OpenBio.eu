@@ -559,6 +559,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 tool_installation_editor.setReadOnly(true);
                 tool_validation_editor.setReadOnly(true);
                 $scope.tools_var_jstree_id_show = true; // Show variable/dependency tree
+
+                $scope.tool_info_validation_message = data.validation_status;
             },
             function (data) {
 
@@ -921,10 +923,36 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
+    * Called $scope.tool_info_validate_pressed upon receiving "queued" status
+    * Backend updates the database
+    */
+    $scope.tool_info_validation_queued = function(this_id, tool) {
+        $scope.ajax(
+            'tool_info_validation_queued/',
+            {
+                payload: {
+                    id: this_id,
+                    status: "queued",
+                    tool: tool
+                }
+            },
+            function(data) {
+                $scope.toast('Succesfully submitted tool/data for validation', 'success');
+                $scope.tool_info_validation_message = 'Queued';
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
+    };
+
+    /*
     * Navbar --> tools/data --> Aprioprate input (search) --> Create New (tool, pressed) --> Installation (tab, pressed) --> Validate (pressed)
     */
     $scope.tool_info_validate_pressed = function() {
-        $scope.tool_info_validation_message = 'Not yet implemented';
         // var ossel = $scope.osSelection;
         var installation_bash = tool_installation_editor.getValue();
         var validation_bash = tool_validation_editor.getValue();
@@ -936,6 +964,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //console.log(installation_bash);
         //console.log('VALIDATION BASH:');
         //console.log(validation_bash);
+        var tool_to_be_validated = {
+            name: $scope.tools_info_name,
+            version: $scope.tools_info_version,
+            edit: $scope.tools_info_edit
+        };
+
 
         $scope.ajax(
             window.OBC_CONTROLLER_URL, // Sent from view: index
@@ -945,8 +979,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 ostype: os_selected_value // user selected os
             },
             function (data) {
-                this_id = data['id'];
-                $scope.toast('Succesfully submitted tool/data for validation', 'success');
+                var this_id = data['id'];
+                var status = data['status']; // This should always be queued
+                if (status != 'queued') {
+                     throw "ERROR: 4529"; // This should never happen
+                }
+                $scope.tool_info_validation_queued(this_id, tool_to_be_validated);
+    
             },
             function (data) {
                 $scope.toast(data['error_message'], 'error');

@@ -22,7 +22,7 @@ from django.views.decorators.csrf import csrf_exempt # https://stackoverflow.com
 from django.middleware.csrf import get_token 
 
 #Import database objects
-from app.models import OBC_user, Tool, Workflow, Variables
+from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations
 
 # Email imports
 import smtplib
@@ -867,6 +867,7 @@ def tools_search_3(request, **kwargs):
 
         'installation_commands': tool.installation_commands,
         'validation_commands': tool.validation_commands,
+        'validation_status': tool.validation_status,
     }
 
     #print ('LOGGG DEPENDENCIES + VARIABLES')
@@ -983,6 +984,7 @@ def tools_add(request, **kwargs):
 
         installation_commands=tool_installation_commands,
         validation_commands=tool_validation_commands,
+        validation_status='unvalidated',
     )
 
     #Save it
@@ -1223,17 +1225,56 @@ def workflows_search_3(request, **kwargs):
     return success(ret)
 
 ### END OF WORKFLOWS ###
+### START OF VALIDATION CALLBACK ###
+
+@has_data
+def tool_info_validation_queued(request, **kwargs):
+    '''
+    This is called from angular in order to connect the controller id with the database tool
+    '''
+    if not 'payload' in kwargs:
+        return fail('payload was not found on callback')
+
+    payload = kwargs['payload']
+
+    assert payload['status'] == 'queued' 
+    tool = Tool.objects.get(**payload['tool'])
+    this_id = payload['id']
+    tool.validation_status = 'Queued'
+    tool.save()
+
+    tv = ToolValidations(tool=tool, task_id=this_id, validation_status='queued')
+    tv.save()
+
+    return success()
+
+
 @csrf_exempt
 @has_data
 def callback(request, **kwargs):
     '''
+    Funtion called by conntroller.py
     '''
-    print ('AAA')
-    return success({'t':3});
+
+    remote_address = request.META['REMOTE_ADDR']
+    print (f'Callback from: {remote_address}')
+
+    if not remote_address in ['139.91.190.79']:
+        return fail(f'Received callback from unknown remote address: {remote_address}')
+
+    if not 'payload' in kwargs:
+        return fail('payload was not found on callback')
+
+    payload = kwargs['payload']
+
+    if payload['status'] == 'running':
+        pass
+        # TO BE IMPLEMENTED....
 
 
+    return success()
 
-### CALLBACK ###
+
 ### END OF CALL BACK ###
 
 ### VIEWS END ######

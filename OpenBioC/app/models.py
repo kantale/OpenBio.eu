@@ -67,6 +67,22 @@ class Tool(models.Model):
     validation_commands = models.TextField() # The BASH commands to validate this tool
 
     variables = models.ManyToManyField(to='Variables', related_name='tools_related') # The exposed variables of this tool
+    validation_status = models.CharField(max_length=256) # unvalidated, submitted, ...
+
+class ToolValidations(models.Model):
+
+    tool = models.ForeignKey(Tool, on_delete=models.CASCADE) # The tool that we are validating
+
+    # The task id in controller. This is a uuid . 
+    # We are not using UUIDField because this is not JSON serializable?? 
+    task_id = models.CharField(max_length=256) 
+
+    validation_status = models.CharField(max_length=256) 
+    errcode = models.IntegerField(null=True)
+    stdout = models.TextField(null=True)
+    stderr = models.TextField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#datefield 
+
 
 class Workflow(models.Model):
     '''
