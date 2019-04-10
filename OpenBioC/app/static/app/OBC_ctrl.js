@@ -929,7 +929,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         var installation_bash = tool_installation_editor.getValue();
         var validation_bash = tool_validation_editor.getValue();
         //take the value from dropdown menu 
-        var os_selected_value= angular.element(document.getElementById('os_selected_value')).val();
+        var os_selected_value = $('#tools_os_combo').val(); // TODO: CHECK IF NOT CHOSEN 
+
         // console.log(os_selected_value);
         //console.log('INSTALLATION BASH:');
         //console.log(installation_bash);
