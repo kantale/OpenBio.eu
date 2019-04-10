@@ -428,6 +428,9 @@ def setup_worker_threads(message_queue, n):
 import socket, errno
 
 def check_if_port_is_used(port):
+    '''
+    Not used.
+    '''
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -447,17 +450,46 @@ def check_if_port_is_used(port):
 
     return used
 
+def get_instance_settings():
+    '''
+    Also see views.py for instance_settings
+    TODO: This exists twice in the project!!
+    '''
+
+    instance_settings =  {
+        'cb62fc6f-f203-4525-bf40-947cbf51bda3': {
+            'port': 8200,
+            'controller_port': 8080,
+            'controller_url': 'http://139.91.190.79:8080/post',
+        },
+        '341422c9-36c4-477e-81b7-26a76c77dd9a': {
+            'port': 8201,
+            'controller_port': 8081,
+            'controller_url': 'http://139.91.190.79:8081/post',
+        },
+    }
+
+    # Deliberately fail if id.txt does not exist
+    with open('id.txt') as f:
+        this_id = f.read().strip()
+
+    return instance_settings[this_id]
+
+
 if __name__ == '__main__':
     message_queue = Thread_queue()
 #    worker_thread = threading.Thread(target=worker, args=(message_queue, 55),)
 #    worker_thread.start()
     setup_worker_threads(message_queue, 2)
+    instance_settings = get_instance_settings()
 
-    if check_if_port_is_used(8080):
-        print ('Running on port 8081')
-        init_web_app(message_queue, port=8081)
-    else:
-        init_web_app(message_queue, port=8080)
+    init_web_app(message_queue, port=instance_settings['controller_port'])
+
+    #if check_if_port_is_used(8080):
+    #    print ('Running on port 8081')
+    #    init_web_app(message_queue, port=8081)
+    #else:
+    #    init_web_app(message_queue, port=8080)
 
 
 

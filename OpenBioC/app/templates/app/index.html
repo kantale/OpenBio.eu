@@ -8,6 +8,8 @@
 		window.general_alert_message = {% autoescape off %}"{{ general_alert_message }}"{% endautoescape %};
 		window.general_success_message = {% autoescape off %}"{{ general_success_message }}"{% endautoescape %}; 
 		window.password_reset_token = "{{ password_reset_token }}";
+		window.OBC_PORT = {{port}};
+		window.OBC_CONTROLLER_URL = "{{controller_url}}";
 	</script>
 
 	<script src="/static/app/jquery-3.3.1.min.js"></script>
