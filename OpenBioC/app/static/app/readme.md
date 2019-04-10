@@ -146,7 +146,7 @@ tar cvf send.tar angular.js angular.min.js d3.v4.min.js jquery-3.3.1.js jquery-3
 <!-- run -->
 ```
 wget -O "materialize-v1.0.0.zip" https://github.com/Dogfalo/materialize/releases/download/1.0.0/materialize-v1.0.0.zip 
-tar zxvf materialize-v1.0.0.zip 
+unzip materialize-v1.0.0.zip 
 ```
 
 ### https://github.com/google/material-design-icons . REQUIRED 
