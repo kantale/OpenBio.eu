@@ -11,6 +11,26 @@ function generateToast(message, classes, duration) {
     });
 }
 
+// scroll to top
+// $('leftPanel').scroll(function() {
+//     console.log('scroll');
+//     var height = $('leftPanel').scrollTop();
+//     if (height > 100) {
+//         $('#back2Top').fadeIn();
+//     } else {
+//         $('#back2Top').fadeOut();
+//     }
+// });
+// $(document).ready(function() {
+//     $("#back2Top").click(function(event) {
+//         event.preventDefault();
+//         $("html, body").animate({ scrollTop: 0 }, "slow");
+//         return false;
+//     });
+
+// });
+
+
 // ---------------------------------------------- Warning Modal --------------------------------------------------
 // $('#warningModal').modal({
 //     // Callback function called before modal is closed.
