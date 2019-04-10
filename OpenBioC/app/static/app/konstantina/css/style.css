@@ -5,7 +5,6 @@
 /* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
 
 .splitter-container {
-    font-family: 'Roboto';
     color: #222;
     text-align: center;
     position: absolute;
@@ -61,7 +60,7 @@ nav {
 
 /* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
 
-#searchFiltersCollapsible {
+#searchFiltersCollapsibleBody {
     border: none;
     padding-top: 0px;
     padding-bottom: 0px;
@@ -230,6 +229,11 @@ nav {
 }
 
 /* Fixed action button */
+
+.fixed-action-btn {
+    right: auto;
+    left: 23px;
+}
 
 /* .fixed-action-btn {
     float: right;
