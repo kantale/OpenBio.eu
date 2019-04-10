@@ -15,6 +15,7 @@ from django.db.models import Q # https://docs.djangoproject.com/en/2.1/topics/db
 from django.db.models import Max # https://docs.djangoproject.com/en/2.1/topics/db/aggregation/
 
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt # https://stackoverflow.com/questions/17716624/django-csrf-cookie-not-set/51398113
 
 # Get csrf_token
 # https://stackoverflow.com/questions/3289860/how-can-i-embed-django-csrf-token-straight-into-html
@@ -28,6 +29,7 @@ import smtplib
 from email.message import EmailMessage
 
 # System imports 
+import os
 import re
 import uuid
 #import datetime # Use timezone.now()
@@ -52,6 +54,23 @@ g = {
     'VARIABLES_TOOL_TREE_ID': '3',
     'SEARCH_WORKFLOW_TREE_ID': '4',
     'format_time_string' : '%a, %d %b %Y %H:%M:%S', # RFC 2822 Internet email standard. https://docs.python.org/2/library/time.html#time.strftime   # '%Y-%m-%d, %H:%M:%S'
+
+    'instance_settings' : {
+        'cb62fc6f-f203-4525-bf40-947cbf51bda3': {
+            'port': 8200,
+            'controller_url': 'http://139.91.190.79:8080/post',
+        },
+        '341422c9-36c4-477e-81b7-26a76c77dd9a': {
+            'port': 8201,
+            'controller_url': 'http://139.91.190.79:8081/post'
+        },
+        'default': {
+            'port': 8200,
+            'controller_url': 'http://139.91.190.79:8080/post',
+        },
+    },
+    'instance_setting_not_found_printed': False,
+
 }
 
 ### HELPING FUNCTIONS AND DECORATORS #####
@@ -416,6 +435,28 @@ def tool_build_dependencies_jstree(tool_dependencies, add_variables=False):
 
 ### VIEWS ############
 
+def get_instance_settings():
+    '''
+    Gets the id of this local installation
+    We are running multiple server instances for development
+    Each instance should have their own port
+    '''
+
+
+    if not os.path.exists('id.txt'):
+        if not g['instance_setting_not_found_printed']:
+            print ('Could not find id.txt setting default')
+            g['instance_setting_not_found_printed'] = True
+
+        return g.get_instance_settings['default']
+    with open('id.txt') as f:
+        this_id = f.read().strip()
+
+    return g['instance_settings'][this_id]
+
+
+
+
 def index(request):
     '''
     View url: ''
@@ -466,6 +507,12 @@ def index(request):
             logger.warning('WARNING: YOU ARE RUNNING IN DEFAULT DJANGO PORT (8000)')
         if port != g['DEFAULT_DEBUG_PORT']:
             logger.warning(f'WARNING: You are not runining on port {g["DEFAULT_DEBUG_PORT"]}')
+
+    # Add port information or other insrtance settings on template
+    instance_settings = get_instance_settings()
+    context['port'] = instance_settings['port']
+    context['controller_url'] = instance_settings['controller_url']
+
 
     return render(request, 'app/index.html', context)
 
@@ -1176,6 +1223,7 @@ def workflows_search_3(request, **kwargs):
     return success(ret)
 
 ### END OF WORKFLOWS ###
+@csrf_exempt
 @has_data
 def callback(request, **kwargs):
     '''

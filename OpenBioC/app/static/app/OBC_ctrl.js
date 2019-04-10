@@ -938,7 +938,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //console.log(validation_bash);
 
         $scope.ajax(
-            'http://0.0.0.0:8080/post',
+            window.OBC_CONTROLLER_URL, // Sent from view: index
             {
                 action: 'validate',
                 bash: $scope.create_bash_script_for_validation(installation_bash, validation_bash),
