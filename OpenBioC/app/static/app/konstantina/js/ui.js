@@ -189,6 +189,7 @@ window.onload = function () {
             });
         }
 
+        // Preloader toogle button
         document.getElementById('preloaderBtn').addEventListener('click', function () {
             if (document.getElementById('leftPanelProgress').style.display == 'block') {
                 document.getElementById('leftPanelProgress').style.display = 'none';
@@ -199,7 +200,15 @@ window.onload = function () {
         });
 
 
+        // Refresh btn on installation header
+        $('.collapsible-header').click(function (event) {
+            if ((event.target.id == 'installationRefreshBtn') || (event.target.parentNode.id == 'installationRefreshBtn')) {
+                event.stopPropagation();
+                console.log('refresh button clicked ui.js 207');
+            }
+        });
 
+        // Search filters collapsible
         function closeCollapsible(event) {
             document.getElementById('searchFiltersBtn').getElementsByClassName('material-icons')[0].innerHTML = 'keyboard_arrow_right';
             elem = $('#searchFiltersCollapsible');
