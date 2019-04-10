@@ -34,6 +34,7 @@ import uuid
 import random
 import asyncio
 import logging
+import requests
 import threading
 import subprocess
 
@@ -47,7 +48,6 @@ import aiohttp_cors
 logging.getLogger('aiohttp').setLevel(logging.DEBUG)
 logging.getLogger('aiohttp').addHandler(logging.StreamHandler(sys.stderr))
 
-lodger = {}
 
 dockerfile_content_template = '''
 #Using ENTRYPOINT
@@ -81,6 +81,7 @@ RUN cd /root; chmod +x {bashscript_filename} ; /bin/bash {bashscript_filename}
 '''
 
 execution_directory = 'executions'
+instance_settings = {} # Will be set later 
 
 def execute_shell(command):
     '''
@@ -105,18 +106,22 @@ def execute_shell(command):
     https://stackoverflow.com/questions/803265/getting-realtime-output-using-subprocess
     '''
 
-    for line in iter(process.stdout.readline, b''):
-        print(line)
+    #for line in iter(process.stdout.readline, b''):
+    #    print(line)
 
     
     (stdout,stderr) = process.communicate()
 
     print(f'[{command!r} exited with {process.returncode}]')
-    return {
+    ret = {
         'stdout' : stdout,
         'stderr' : stderr,
         'errcode' : process.returncode,
     }
+
+    #print ('EXCUTE SHELL ABOUT TO RETURN:')
+    #print (ret)
+    return ret
 
 
 
@@ -254,18 +259,8 @@ async def post_handler(request):
             'bash': bash,
             'id': new_id,
         }
-        lodger[new_id] = message
         message_queue.put(message)
-        return success({'id': new_id})
-
-    elif action == 'query':
-        if not 'id' in data:
-            return fail('key: "id" not present')
-        this_id = data['id']
-        if not str(this_id) in lodger:
-            return fail(f'id: "{this_id}" was not found')
-
-        return success(lodger[this_id])
+        return success({'id': new_id, 'status': 'queued'})
 
     else:
         return fail(f'Unknown action: {action}')
@@ -349,7 +344,35 @@ def init_web_app(message_queue, port=8080):
     #handler = app.make_handler() # DeprecationWarning: Application.make_handler(...) is deprecated, use AppRunner API instead 
     #return handler
 
+def talk_to_server(payload):
+    global instance_settings
 
+    callback_url = instance_settings['callback_url']
+    headers={ "Content-Type" : "application/json", "Accept" : "application/json"}
+
+    r = requests.post(callback_url,  data=json.dumps({'payload': payload}), headers=headers)
+
+    if not r.ok:
+            r.raise_for_status()
+
+    data =  r.json()
+
+    if not 'success' in data:
+        print ('payload')
+        print (payload)
+        print ('Data returned:')
+        print (data)
+        raise Exception('Invalid return data from server. key "success" is not present ')
+
+    if not data['success']:
+        print ('payload')
+        print (payload)
+        print ('Data returned:')
+        print (data)
+        raise Exception('Invalid return data from server. "success" is false ')
+
+    print (data)
+    return data
 
 
 def worker(message_queue, w_id):
@@ -373,26 +396,33 @@ def worker(message_queue, w_id):
             print (f'WORKER: {w_id}. RECEIVED: {this_id}')
             # the executions start and the images are called such as unique id from post
 
-            lodger[this_id]['status'] = 'submitted'
+            payload = {
+                'id': this_id,
+                'status': 'running',
+            }
+            talk_to_server(payload)
+
             result = execute_docker_build(this_id,ostype, bash)
             print ('RESULT FROM execute_docker_build:')
             print (result)
 
             
             #time.sleep(random.randint(1,5))
-            time.sleep(1)
+            #time.sleep(1)
             
             # errcode = 0 means success
             # errcode =! something goes wrong
+            payload = {'id': this_id}
             if result['errcode'] == 0:
-                lodger[this_id]['status'] = 'done'
+                payload['status'] = 'done'
             else:
-                lodger[this_id]['status'] = 'failed'
+                payload[this_id]['status'] = 'failed'
                 #execution(this_id,'mpah',False)
 
-            lodger[this_id]['stdout'] = result['stdout'].decode()
-            lodger[this_id]['stderr'] = result['stderr'].decode()
-            lodger[this_id]['errcode'] = result['errcode']
+            payload['stdout'] = result['stdout'].decode()
+            payload['stderr'] = result['stderr'].decode()
+            payload['errcode'] = result['errcode']
+            talk_to_server(payload)
 
 
             #print(lodger)
@@ -461,11 +491,13 @@ def get_instance_settings():
             'port': 8200,
             'controller_port': 8080,
             'controller_url': 'http://139.91.190.79:8080/post',
+            'callback_url': 'http://139.91.190.79:8200/callback/', # Important: it should always a slash at the end
         },
         '341422c9-36c4-477e-81b7-26a76c77dd9a': {
             'port': 8201,
             'controller_port': 8081,
             'controller_url': 'http://139.91.190.79:8081/post',
+            'callback_url': 'http://139.91.190.79:8201/callback/', 
         },
     }
 
