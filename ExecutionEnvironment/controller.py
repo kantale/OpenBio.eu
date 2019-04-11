@@ -380,7 +380,7 @@ def talk_to_server(payload):
     if not data['success']:
         report_error(payload, data, 'Invalid return data from server. "success" is false ')
 
-    print (data)
+    #print (data)
     return data
 
 
@@ -408,6 +408,9 @@ def worker(message_queue, w_id):
             payload = {
                 'id': this_id,
                 'status': 'Running',
+                'stdout': None,
+                'stderr': None,
+                'errcode' : None,
             }
             talk_to_server(payload)
 
