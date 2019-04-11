@@ -83,8 +83,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         $scope.tool_installation_init = '# Insert the BASH commands that install this tool\n# The following tools are available:\n#  apt-get, wget\n\n';
         $scope.tool_validation_init = '# Insert the BASH commands that confirm that this tool is correctly installed\n# In success, this script should return 0 exit code.\n# A non-zero exit code, means failure to validate installation.\n\nexit 1\n';
-        $scope.tool_info_validation_message = '';
-
+ 
         $scope.tool_variables = [{name: '', value: '', description: ''}];
         $scope.tools_var_jstree_id_show = true;
 
@@ -562,7 +561,6 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                 $scope.tool_info_validation_status = data.validation_status;
                 $scope.tool_info_validation_created_at = data.validation_created_at;
-                $scope.tool_info_validation_message = data.validation_status; // REMOVE THIS !
             },
             function (data) {
 
@@ -707,7 +705,6 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tool_info_validation_status = 'Unvalidated';
         $scope.tool_info_validation_created_at = null;
 
-        $scope.tool_info_validation_message = 'Unvalidated';
     };
 
 
@@ -931,7 +928,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
-    * Called $scope.tool_info_validate_pressed upon receiving "queued" status
+    * Called from $scope.tool_info_validate_pressed upon receiving "queued" status
     * Backend updates the database
     */
     $scope.tool_info_validation_queued = function(this_id, tool) {
@@ -946,7 +943,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             },
             function(data) {
                 $scope.toast('Succesfully submitted tool/data for validation', 'success');
-                $scope.tool_info_validation_message = 'Queued';
+                $scope.tool_info_validation_status = 'Queued';
                 $scope.tool_info_validation_created_at = data['last_validation'];
             },
             function(data) {
@@ -959,7 +956,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
-    * Navbar --> tools/data --> Aprioprate input (search) --> Create New (tool, pressed) --> Installation (tab, pressed) --> Validate (pressed)
+    * Navbar --> tools/data --> Existing tool --> Installation (tab, pressed) --> Validate (pressed)
     */
     $scope.tool_info_validate_pressed = function() {
         // var ossel = $scope.osSelection;
@@ -1001,6 +998,32 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             },
             function (statusText) {
                 $scope.toast('Server Error:' + statusText, 'error');
+            }
+        );
+    };
+
+    /*
+    * Navbar --> tools/data --> Existing tool --> Installation (tab, pressed) --> Validate refresh (pressed)
+    */ 
+    $scope.tool_info_validate_refresh_pressed = function() {
+        $scope.ajax(
+            'tool_validation_status/',
+            {
+                tool: {
+                    name: $scope.tools_info_name,
+                    version: $scope.tools_info_version,
+                    edit: $scope.tools_info_edit                    
+                }
+            },
+            function(data) {
+                $scope.tool_info_validation_status = data['validation_status'];
+                $scope.tool_info_validation_created_at = data['validation_created_at'];
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
             }
         );
     };

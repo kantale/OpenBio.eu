@@ -22,4 +22,5 @@ urlpatterns = [
 
 	path('tool_info_validation_queued/', views.tool_info_validation_queued), # Connect validation task with tool
 	path('callback/', views.callback), # Called from controller in order to update validation status
+	path('tool_validation_status/', views.tool_validation_status), # Query validation status if tool
 ]
