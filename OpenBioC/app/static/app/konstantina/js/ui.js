@@ -1570,7 +1570,7 @@ window.onload = function () {
 		* style needed for the graphs
 		*
 		*/
-		function createCytoscapeObject(){}
+		function createCytoscapeObject(){
 		
 			cy_object = cytoscape({
                 container: document.getElementById('cywf'), // container to render in
@@ -1671,7 +1671,7 @@ window.onload = function () {
 			
 			return cy_object;
 		
-		
+		}
 
         /*
         * Initialize cytoscape graph
