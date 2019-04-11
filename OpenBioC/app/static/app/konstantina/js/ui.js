@@ -1564,13 +1564,15 @@ window.onload = function () {
 
             });
         }
-
-        /*
-        * Initialize cytoscape graph
-        */
-        function initializeTree() {
-
-            cy = cytoscape({
+		
+		/*
+		* This function initialize cytoscape with an empty list of elements and the 
+		* style needed for the graphs
+		*
+		*/
+		function createCytoscapeObject(){}
+		
+			cy_object = cytoscape({
                 container: document.getElementById('cywf'), // container to render in
                 elements: [],
 
@@ -1642,13 +1644,6 @@ window.onload = function () {
                             //"width": 15
                         }
                     },
-                    //                    {
-                    //                        //Do not show the root workflow 
-                    //                        selector: 'node[type="workflow"][!belongto]',
-                    //                        "style": {
-                    //                            "display": "none"
-                    //                        }
-                    //                    },
                     {
                         selector: 'edge',
                         "style": {
@@ -1673,6 +1668,17 @@ window.onload = function () {
 
             });
 
+			
+			return cy_object;
+		
+		
+
+        /*
+        * Initialize cytoscape graph
+        */
+        function initializeTree() {
+
+            cy = createCytoscapeObject();
             /* add menu on node right click*/
 
             cy.cxtmenu({
@@ -1733,9 +1739,6 @@ window.onload = function () {
             // get existing data if any
             currentElements = cy.json().elements;
 
-            console.log('currentElements');
-            console.log(currentElements);
-
             // parse incoming data and transform to cytoscape format
             var treeData = parseWorkflow(myworkflow, belongto);
             var openId;
@@ -1770,8 +1773,6 @@ window.onload = function () {
                     edges: allEdges
                 };
 
-                console.log('treedata');
-                console.log(treeData);
             }
 
             // this is needed because cy.add() causes multiple instances of layout
@@ -1907,11 +1908,8 @@ window.onload = function () {
 
                     //window.OBCUI.edit_steps_from_bash_scripts(node.data.bash, old_root_id, new_root);
 
-                }
-
-
-
-            }
+					}
+				}
 
 
             );
@@ -1985,96 +1983,8 @@ window.onload = function () {
         window.OBCUI.runWorkflow = function() {			
 		
 			// get graph data	
-			cy_run = cytoscape({
-                container: document.getElementById('cywf'), // container to render in
-                elements:[],
-                style: [ // the stylesheet for the graph
-                    {
-                        selector: 'node',
-                        "style": {
-                            "shape": "round-rectangle",
-							"background-color": "#AFB4AE",
-                            //"label": "data(id)",
-                             "label": "data(label)",
-                            //"height": 15,
-                            //"width": 15
-                        }
-                    },
-                    {
-                        selector: 'node[type="step"]',
-                        "style": {
-                            'shape': 'ellipse',
-							'background-color': '#007167',
-                            //'background-color': '#E8E406',
-                            //"height": 15,
-                            //"width": 15
-                        }
-                    },
-                    {
-                        selector: 'node[type="input"]',
-                        "style": {
-                            'shape': 'round-rectangle',
-							'border-width' : '3',
-							'border-color' : '#43A047',
-                            'background-color': '#AFB4AE',
-                            //"height": 15,
-                            //"width": 15
-                        }
-                    },
-                    {
-                        selector: 'node[type="output"]',
-                        "style": {
-                            'shape': 'round-rectangle',
-							'border-width' : '3',
-							'border-color' : '#E53935',
-                            'background-color': '#AFB4AE',
-                            //"height": 15,
-                            //"width": 15
-                        }
-                    },
-					
-					{
-                        selector: 'node[type="workflow"]',
-                        "style": {
-                            'shape': 'diamond',
-							'border-width' : '3',
-							'border-color' : '#E53935',
-                            'background-color': '#AFB4AE',
-                            //"height": 15,
-                            //"width": 15
-                        }
-                    },
-//                    {
-//                        //Do not show the root workflow 
-//                        selector: 'node[type="workflow"][!belongto]',
-//                        "style": {
-//                            "display": "none"
-//                        }
-//                    },
-                    {
-                        selector: 'edge',
-                        "style": {
-                            'curve-style': 'bezier',
-                            'target-arrow-shape': 'triangle',
-                            'width': 2,
-                            'line-color': '#ddd',
-                            'target-arrow-color': '#ddd'
-                        }
-                    }
-                ],
-
-                //zoom: 1,
-                pan: { x: 0, y: 0 },
-
-                layout: {
-                    name: 'breadthfirst',
-                    directed: true,
-                    padding: 2
-                }
-
-
-            });
-
+			cy_run = createCytoscapeObject();
+			
             //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.
             document.querySelector('canvas[data-id="layer2-node"]').style.position = null;
 
@@ -2168,23 +2078,7 @@ window.onload = function () {
 					}
 				});
 				
-				
-				
-            //});
-
-            /* hide tooltip */
-			/*
-            cy.on('mouseout', 'node', function (event) {
-				// destroy all instances
-				mytippys.forEach(function (mytippy) {
-					mytippy.destroy(mytippy.popper);
-				});
-				
-				 //myTippy.destroy();
-			     //myTippy.hide();
-				
-            });
-			*/
+			
 						
         };
 
