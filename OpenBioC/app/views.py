@@ -869,6 +869,8 @@ def tools_search_3(request, **kwargs):
         'validation_commands': tool.validation_commands,
         
         'validation_status': tool.last_validation.validation_status if tool.last_validation else 'Unvalidated',
+        # Show stdout, stderr and error code when the tool is clicked on the tool-search-jstree
+        'stdout' : tool.last_validation.stdout if tool.last_validation else None,
         'validation_created_at' : datetime_to_str(tool.last_validation.created_at) if tool.last_validation else None,
 
     }
@@ -1239,12 +1241,15 @@ def tool_validation_status(request, **kwargs):
     tool_argument = kwargs['tool']
 
     tool = Tool.objects.get(**tool_argument)
-
+    # toolvalidations = ToolValidations.get()
     #print ('TOOL VALIDATION STATUS:')
 
     ret = {
         'validation_status': tool.last_validation.validation_status if tool.last_validation else None ,
         'validation_created_at': datetime_to_str(tool.last_validation.created_at) if tool.last_validation else None,
+        'stderr':tool.last_validation.stderr if tool.last_validation else None,
+        'stdout':tool.last_validation.stdout if tool.last_validation else None,
+        'errcode':tool.last_validation.errcode if tool.last_validation else None,
     }
 
     #print (ret)
@@ -1282,7 +1287,8 @@ def callback(request, **kwargs):
     '''
     Funtion called by conntroller.py
     '''
-
+    print("--------------- REQUEST FROM CONTROLLER ------------------")
+    # print(kwargs)
     remote_address = request.META['REMOTE_ADDR']
     print (f'Callback from: {remote_address}')
 
@@ -1303,15 +1309,30 @@ def callback(request, **kwargs):
     if not 'id' in payload:
         return fail('id was not found on payload')
     this_id = payload['id']
+    # Get the strout strderr and errorcode 
+    if 'stdout' in payload:
+        stdout = payload['stdout']
+    if 'stderr' in payload:
+        stderr = payload['stderr']
+    if 'errcode' in payload:
+        errcode = payload['errcode']
 
+    #print(stdout)
     # Get the tool referring to this task_id
     tool = ToolValidations.get_tool_from_task_id(this_id)
     if tool is None:
         return fail(f'Could not find tool with task_id={this_id}')
 
+
     # Create new ToolValidations
-    tv = ToolValidations(tool=tool, task_id=this_id, validation_status=status)
-    tv.save()
+    # If stdout is emty , stderr and errcode are empty 
+    # If status is Queued or Running set this three None
+    if payload['stdout'] is None :
+        tv = ToolValidations(tool=tool, task_id=this_id, validation_status=status, stdout= None,stderr= None ,errcode= None)
+        tv.save()
+    else:
+        tv = ToolValidations(tool=tool, task_id=this_id, validation_status=status, stdout= stdout, stderr= stderr, errcode= errcode)
+        tv.save()
 
     # Assign tv to tool
     tool.last_validation = tv
