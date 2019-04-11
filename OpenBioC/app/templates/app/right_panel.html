@@ -116,15 +116,17 @@
                         <i class="material-icons arrow">keyboard_arrow_right</i>
                         <i class="material-icons">computer</i>
                         Installation
-                        <a ng-show="!tools_info_editable" ng-click="tool_info_validate_pressed()" id="installationRefreshBtn" class="waves-effect btn-flat btnCollapsible"><i
+                        <a ng-show="!tools_info_editable" ng-click="tool_info_validate_refresh_pressed()" id="installationRefreshBtn" class="waves-effect btn-flat btnCollapsible"><i
                                 class="material-icons" style="margin:0px;">refresh</i></a>
                         <span ng-show="tool_info_validation_status=='Unvalidated'" class="new badge" style="margin-left: 5px;" data-badge-caption="Unvalidated"></span>
                         <span ng-show="tool_info_validation_status=='Queued'" class="new badge grey" style="margin-left: 5px;" data-badge-caption="Queued"></span>
+                        <span ng-show="tool_info_validation_status=='Running'" class="new badge grey" style="margin-left: 5px;" data-badge-caption="Running"></span>
                         <span ng-show="tool_info_validation_status=='Failed'" class="new badge red" style="margin-left: 5px;" data-badge-caption="Failed"></span>
                         <span ng-show="tool_info_validation_status=='Validated'" class="new badge green" style="margin-left: 5px;" data-badge-caption="Validated"></span>
                         <small ng-show="tool_info_validation_created_at" class="text-muted" style="padding-top: 3px">
                                 <span ng-bind="tool_info_validation_created_at"></span>
                         </small>
+                        <small ng-show="(!tools_info_editable) && (tool_info_validation_status=='Unvalidated' || tool_info_validation_status=='Validated' || tool_info_validation_status=='Failed')" ng-click="tool_info_validate_pressed()"><a><span ng-show="tool_info_validation_status=='Validated'">re-</span>validate</a></small>
                     </div>
                     <div class="collapsible-body">
                         <!-- Hide Variables -->
@@ -216,7 +218,7 @@
                         </div>
                         <div class="row col s12 left-align">
                             <code>
-                                <pre ng-bind="tool_info_validation_message"></pre>
+                                <pre ng-bind="tool_info_validation_status"></pre>
                             </code>
                         </div>
                     </div>

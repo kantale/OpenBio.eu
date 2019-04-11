@@ -1232,6 +1232,26 @@ def workflows_search_3(request, **kwargs):
 ### START OF VALIDATION CALLBACK ###
 
 @has_data
+def tool_validation_status(request, **kwargs):
+    '''
+    Called from the refresh button on Tool validation
+    '''
+    tool_argument = kwargs['tool']
+
+    tool = Tool.objects.get(**tool_argument)
+
+    #print ('TOOL VALIDATION STATUS:')
+
+    ret = {
+        'validation_status': tool.last_validation.validation_status if tool.last_validation else None ,
+        'validation_created_at': datetime_to_str(tool.last_validation.created_at) if tool.last_validation else None,
+    }
+
+    #print (ret)
+
+    return success(ret)
+
+@has_data
 def tool_info_validation_queued(request, **kwargs):
     '''
     This is called from angular in order to connect the controller id with the database tool
@@ -1248,11 +1268,13 @@ def tool_info_validation_queued(request, **kwargs):
     tv = ToolValidations(tool=tool, task_id=this_id, validation_status='Queued')
     tv.save()
 
+    print (f'Saved ToolValidation Queued with task_id: {this_id}')
+
     tool.last_validation = tv
     tool.save()
 
 
-    return success()
+    return success({'last_validation': datetime_to_str(tv.created_at)})
 
 @csrf_exempt
 @has_data
@@ -1285,7 +1307,7 @@ def callback(request, **kwargs):
     # Get the tool referring to this task_id
     tool = ToolValidations.get_tool_from_task_id(this_id)
     if tool is None:
-        return fail('Could not find tool with this task_id')
+        return fail(f'Could not find tool with task_id={this_id}')
 
     # Create new ToolValidations
     tv = ToolValidations(tool=tool, task_id=this_id, validation_status=status)
@@ -1294,6 +1316,8 @@ def callback(request, **kwargs):
     # Assign tv to tool
     tool.last_validation = tv
     tool.save()
+
+    #print (f'CALLBACK: Tool: {tool.name}/{tool.version}/{tool.edit}  id: {this_id} status: {status}')
 
     return success()
 

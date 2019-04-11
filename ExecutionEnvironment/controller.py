@@ -266,7 +266,7 @@ async def post_handler(request):
             'id': new_id,
         }
         message_queue.put(message)
-        return success({'id': new_id, 'status': 'queued'})
+        return success({'id': new_id, 'status': 'Queued'})
 
     else:
         return fail(f'Unknown action: {action}')
@@ -425,7 +425,7 @@ def worker(message_queue, w_id):
             if result['errcode'] == 0:
                 payload['status'] = 'Validated'
             else:
-                payload[this_id]['status'] = 'Failed'
+                payload['status'] = 'Failed'
                 #execution(this_id,'mpah',False)
 
             payload['stdout'] = result['stdout'].decode()
