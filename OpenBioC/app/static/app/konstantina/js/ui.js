@@ -2091,27 +2091,28 @@ window.onload = function () {
 
 				});
 			
-			//add text-editor-tooltip in each input/output
+			/**** Add text-editor-tooltip in each input/output ****/
 			
 			/* 
             * Function for creating tooltip and their content.
+			*
             */
-					
-							
-		
             var makeTippy = function (node, text) {
 	
 				return tippy(node.popperRef(), {
+					
 						content: function () {
 								var div = document.createElement('div');
 								div.innerHTML = 
-													//'<form name="input" >' +
-													'Add Value For '+ node._private.data.name+' : <br>'+
-													'<input type="text" id=tippy_text_'+node._private.data.id+' name="Add Value"><br>'	+
-													'<button id=tippy_button_'+node._private.data.id+' class="btn btn-click">Submit</button>'		
-													//'<input type="submit" value="Submit" />' ;
-													//'</form>';
-								div.style.width = "90px";
+												//'<form name="input" >' +
+												node._private.data.description+ '<br>'+
+												'Add Value For '+ node._private.data.name+' : <br>'+
+												'<input type="text" id=tippy_text_'+node._private.data.id+' name="Add Value"><br>'	+
+												'<button id=tippy_button_'+node._private.data.id+' class="btn btn-click">Submit</button>'		
+												//'<input type="submit" value="Submit" />' ;
+												//'</form>';
+												
+								div.style.width = "200px";
 								div.style.height = "140px";
 								div.style.color = "black"; //font color
 								div.style.position= "relative";
@@ -2119,14 +2120,18 @@ window.onload = function () {
 								return div;
 						},
 						onShown: function() {
-							 $('.btn-click').off("click").on("click", function(){
-								alert( document.getElementById(this.id.replace('tippy_button_', 'tippy_text_')).value);
-							 });
+									$('.btn-click').off("click").on("click", function(){
+									alert( document.getElementById(this.id.replace('tippy_button_', 'tippy_text_')).value);
+									// tippy should be destroyed
+									
+									});
+							
+									
 						},
 						trigger: 'manual',
 						//arrow: true,
 						placement: 'bottom',
-						interactive: true, //this should be true for the content to be interactive and clickable
+						interactive: true,	//this should be true for the content to be interactive and clickable
 						hideOnClick: false,
 						multiple: true,
 						followCursor: true,
@@ -2134,25 +2139,22 @@ window.onload = function () {
 						//zIndex: 100001,
 						sticky: true
 						
-					});
+				});
 				
             };
 			
 			
-			/* show tooltip */
+				/* show tooltip */
 			
-            var mytippys=[]; // array for keeping instances of tooltips, needed for destroying all instances on mouse out
-			//cy.on('mouseover', 'node', function (event) {
- 
-				// destroy all instances
-				mytippys.forEach(function (mytippy) {
+				var mytippys=[]; // array for keeping instances of tooltips, needed for destroying all instances on mouse out
+				
+				mytippys.forEach(function (mytippy) { // destroy all instances
 					mytippy.destroy(mytippy.popper);
 				});	
  
- 
-				//nodeId = this._private.data.id;
+				// Add tooltip in inputs
 				cy.nodes().forEach(function(node){
-					if(node._private.data.type==='input' || node._private.data.type==='output' ){
+					if(node._private.data.type==='input' ){
 						myTippy = makeTippy(node, node.data.id);
 						mytippys.push(myTippy);
 						myTippy.show();
