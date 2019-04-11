@@ -1977,8 +1977,6 @@ window.onload = function () {
 
             window.cy_setup_events();
 
-
-
         }
 
         /*
@@ -2082,8 +2080,8 @@ window.onload = function () {
 
 			
             cy_run.json({ elements: cy.json().elements});  // Add new data
-				cy_run.ready(function () {                     // Wait for nodes to be added  
-					cy_run.layout({                            // Call layout
+				cy_run.ready(function () {                 // Wait for nodes to be added  
+					cy_run.layout({                         // Call layout
 						name: 'breadthfirst',
 						directed: true,
 						padding: 2
@@ -2092,6 +2090,13 @@ window.onload = function () {
 				});
 			
 			/**** Add text-editor-tooltip in each input/output ****/
+			// close tooltip 
+			$(document).ready(function(c) {
+				$('.close').on('click', function(c){
+					$(this).parent().fadeOut('slow', function(c){
+					});
+				});	
+			});
 			
 			/* 
             * Function for creating tooltip and their content.
@@ -2105,11 +2110,12 @@ window.onload = function () {
 								var div = document.createElement('div');
 								div.innerHTML = 
 												//'<form name="input" >' +
+												'<button type="button" class="close">×</button><br>'+  // onclick='+alert($(this).parent());+'
 												node._private.data.description+ '<br>'+
 												'Add Value For '+ node._private.data.name+' : <br>'+
 												'<input type="text" id=tippy_text_'+node._private.data.id+' name="Add Value"><br>'	+
-												'<button id=tippy_button_'+node._private.data.id+' class="btn btn-click">Submit</button>'		
-												//'<input type="submit" value="Submit" />' ;
+												'<button id=tippy_button_'+node._private.data.id+' class="btn btn-click">set</button>'		
+												//'<input type="submit" value="set" />' ;
 												//'</form>';
 												
 								div.style.width = "200px";
@@ -2125,7 +2131,6 @@ window.onload = function () {
 									// tippy should be destroyed
 									
 									});
-							
 									
 						},
 						trigger: 'manual',
@@ -2143,6 +2148,8 @@ window.onload = function () {
 				
             };
 			
+			
+				
 			
 				/* show tooltip */
 			
