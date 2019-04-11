@@ -1252,7 +1252,7 @@ def tool_info_validation_queued(request, **kwargs):
     tool.save()
 
 
-    return success()
+    return success({'last_validation': datetime_to_str(tv.created_at)})
 
 @csrf_exempt
 @has_data
