@@ -70,6 +70,9 @@ class Tool(models.Model):
     validation_status = models.CharField(max_length=256) # unvalidated, submitted, ...
 
 class ToolValidations(models.Model):
+    '''
+    This is like a log entry.
+    '''
 
     tool = models.ForeignKey(Tool, on_delete=models.CASCADE) # The tool that we are validating
 

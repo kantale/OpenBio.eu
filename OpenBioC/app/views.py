@@ -1268,8 +1268,13 @@ def callback(request, **kwargs):
     payload = kwargs['payload']
 
     if payload['status'] == 'running':
-        pass
-        # TO BE IMPLEMENTED....
+        this_id = payload['id']
+
+        # Get the ToolValidation for this id
+        tvs = ToolValidations.objects.filter(task_id=this_id).aggregate(Max('created_at'))
+        print ('created_at_max:')
+        print (tvs['created_at__max'])
+        
 
 
     return success()
