@@ -11,6 +11,26 @@ function generateToast(message, classes, duration) {
     });
 }
 
+// scroll to top
+// $('leftPanel').scroll(function() {
+//     console.log('scroll');
+//     var height = $('leftPanel').scrollTop();
+//     if (height > 100) {
+//         $('#back2Top').fadeIn();
+//     } else {
+//         $('#back2Top').fadeOut();
+//     }
+// });
+// $(document).ready(function() {
+//     $("#back2Top").click(function(event) {
+//         event.preventDefault();
+//         $("html, body").animate({ scrollTop: 0 }, "slow");
+//         return false;
+//     });
+
+// });
+
+
 // ---------------------------------------------- Warning Modal --------------------------------------------------
 // $('#warningModal').modal({
 //     // Callback function called before modal is closed.
@@ -86,11 +106,12 @@ window.onload = function () {
         });
 
         // --------------------------------- Fixed action button initialization ------------------------------------------
-        var elems = document.querySelectorAll('.fixed-action-btn');
-        var instances = M.FloatingActionButton.init(elems, {
-            direction: 'top',
-            hoverEnabled: false
-        });
+        $('.fixed-action-btn').floatingActionButton();
+        // var elems = document.querySelectorAll('.fixed-action-btn');
+        // var instances = M.FloatingActionButton.init(elems, {
+        //     direction: 'top',
+        //     hoverEnabled: false
+        // });
 
         // ----------------------------------------- Sign up / Sign in Modal ---------------------------------------------
         $('#signModal').modal({
@@ -112,7 +133,7 @@ window.onload = function () {
                     // ----------------------------------------------------------------------------------------------
                     // ---------------------------------------- DELETE START ----------------------------------------
                     // ----------------------------------------------------------------------------------------------
-                    if(event.id == 'references'){
+                    if (event.id == 'references') {
                         document.getElementById('referencesRightPanel').style.display = 'block';
                     }
                     // ----------------------------------------------------------------------------------------------
@@ -138,7 +159,7 @@ window.onload = function () {
                         cy.resize();
                     }
                     if (event.id == 'workflowRightPanelStep') {
-                        
+
                     }
                 },
                 // Callback function called before collapsible is closed
@@ -151,7 +172,7 @@ window.onload = function () {
                     // ----------------------------------------------------------------------------------------------
                     // ---------------------------------------- DELETE START ----------------------------------------
                     // ----------------------------------------------------------------------------------------------
-                    if(event.id == 'references'){
+                    if (event.id == 'references') {
                         document.getElementById('referencesRightPanel').style.display = 'none';
                     }
                     // ----------------------------------------------------------------------------------------------
@@ -168,24 +189,44 @@ window.onload = function () {
             });
         }
 
-        
-        
-        function closeCollapsible(){
-            elem = $('#collapsible')
-            var instance = M.Collapsible.getInstance(elem); 
+        // Preloader toogle button
+        document.getElementById('preloaderBtn').addEventListener('click', function () {
+            if (document.getElementById('leftPanelProgress').style.display == 'block') {
+                document.getElementById('leftPanelProgress').style.display = 'none';
+            }
+            else {
+                document.getElementById('leftPanelProgress').style.display = 'block';
+            }
+        });
+
+
+        // Refresh btn on installation header
+        $('.collapsible-header').click(function (event) {
+            if ((event.target.id == 'installationRefreshBtn') || (event.target.parentNode.id == 'installationRefreshBtn')) {
+                event.stopPropagation();
+                console.log('refresh button clicked ui.js 207');
+            }
+        });
+
+        // Search filters collapsible
+        function closeCollapsible(event) {
+            document.getElementById('searchFiltersBtn').getElementsByClassName('material-icons')[0].innerHTML = 'keyboard_arrow_right';
+            elem = $('#searchFiltersCollapsible');
+            var instance = M.Collapsible.getInstance(elem);
             instance.close(0);
-            document.getElementById('searchFilters').removeEventListener('click', closeCollapsible);
-            document.getElementById('searchFilters').addEventListener('click', openCollapsible);
+            document.getElementById('searchFiltersBtn').removeEventListener('click', closeCollapsible);
+            document.getElementById('searchFiltersBtn').addEventListener('click', openCollapsible);
         }
-        function openCollapsible(){
-            elem = $('#collapsible')
-            var instance = M.Collapsible.getInstance(elem); 
+        function openCollapsible(event) {
+            document.getElementById('searchFiltersBtn').getElementsByClassName('material-icons')[0].innerHTML = 'keyboard_arrow_down';
+            elem = $('#searchFiltersCollapsible');
+            var instance = M.Collapsible.getInstance(elem);
             instance.open(0);
-            document.getElementById('searchFilters').removeEventListener('click', openCollapsible);
-            document.getElementById('searchFilters').addEventListener('click', closeCollapsible);
+            document.getElementById('searchFiltersBtn').removeEventListener('click', openCollapsible);
+            document.getElementById('searchFiltersBtn').addEventListener('click', closeCollapsible);
         }
-        document.getElementById('searchFilters').addEventListener('click', openCollapsible);
-        
+        document.getElementById('searchFiltersBtn').addEventListener('click', openCollapsible);
+
         // ------------------------------------ Initializations for profile page -----------------------------------------
         $('#profilePublicInfo').val(
             'Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck.');
@@ -474,6 +515,8 @@ window.onload = function () {
                 else {
                     leftSide.width(screenWidth - parseInt(splitterWidthEdges, 10));
                 }
+                // show floating action button
+                document.getElementById('createNewBtn').style.display = 'block';
             }
             // Show right panel
             else if (rightWidth <= parseInt(splitterWidthEdges, 10)) {
@@ -482,11 +525,13 @@ window.onload = function () {
                 }
                 else {
                     leftSide.width(0);
+                    document.getElementById('createNewBtn').style.display = 'none';
                 }
             }
             // Hide left panel
             else if (leftWidth <= minPanelWidth + parseInt(splitterWidth, 10)) {
                 leftSide.width(0);
+                document.getElementById('createNewBtn').style.display = 'none';
             }
             // Hide right panel
             else if (rightWidth <= minPanelWidth + parseInt(splitterWidth, 10)) {
@@ -543,6 +588,7 @@ window.onload = function () {
                 if (leftWidth <= minPanelWidth) {
                     if (eventPageX <= minPanelWidth - ((2 / 3) * minPanelWidth)) {
                         leftSide.width(0);
+                        document.getElementById('createNewBtn').style.display = 'none';
                         setRowAlignment();
                         setSlitterbarWidth();
                     }
@@ -555,6 +601,7 @@ window.onload = function () {
                 else if (rightWidth <= minPanelWidth) {
                     if (eventPageX >= screenWidth - (minPanelWidth - ((2 / 3) * minPanelWidth))) {
                         leftSide.width(screenWidth);
+                        document.getElementById('createNewBtn').style.display = 'block';
                         setRowAlignment();
                         setSlitterbarWidth();
                     }
@@ -566,6 +613,7 @@ window.onload = function () {
                 // Move splitter bar
                 else {
                     leftSide.width(eventPageX - leftOfLeft - splitterBar.width() / 2);
+                    document.getElementById('createNewBtn').style.display = 'block';
                     setRowAlignment();
                     setSlitterbarWidth();
                     return;
@@ -846,12 +894,12 @@ window.onload = function () {
             if (target.closest('#cywf').length && (!workflow_step_editor.getReadOnly())) {
 
                 var workflow = {
-                    name : this_id_array[0],
-                    edit : this_id_array[1]
+                    name: this_id_array[0],
+                    edit: this_id_array[1]
                 };
 
                 angular.element($('#angular_div')).scope().$apply(function () {
-                    angular.element($('#angular_div')).scope().workflow_add_workflow(workflow); 
+                    angular.element($('#angular_div')).scope().workflow_add_workflow(workflow);
                 });
             }
             else {
@@ -930,17 +978,17 @@ window.onload = function () {
         // TODO : Change NAMES NAMESPACE UI
         window.OBCUI = {
             sep: '__',
-            call_re: new RegExp('((^call)|([\\s]+call))\\([\\w]+\\)', 'g' ), // Matches: "call(a)" , "  call(a)", "ABC call(a)", "ABC   call(a)"
+            call_re: new RegExp('((^call)|([\\s]+call))\\([\\w]+\\)', 'g'), // Matches: "call(a)" , "  call(a)", "ABC call(a)", "ABC   call(a)"
             call_re_id: new RegExp('call\\(([\\w]+)\\)'), // 
-            call_replace: function(bash, old_id, new_id){return bash.replace(new RegExp('(call[\\s]*\\([\\s]*)' + old_id + '([\\s]*\\))', 'g'), '$1' + new_id + '$2');},
+            call_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('(call[\\s]*\\([\\s]*)' + old_id + '([\\s]*\\))', 'g'), '$1' + new_id + '$2'); },
 
 
 
-            io_re : new RegExp('\\$\\((input|output)__[a-zA-Z0-9][\\w]*\\)', 'g'), // [^_\w] Does not work???
+            io_re: new RegExp('\\$\\((input|output)__[a-zA-Z0-9][\\w]*\\)', 'g'), // [^_\w] Does not work???
             io_re_id: new RegExp('\\$\\((input|output)__([\\w]+)\\)'), // TODO: ADD  WHITE SPACEDS JUST LIKE calls
-            io_replace: function(bash, old_id, new_id) {return bash.replace(new RegExp('(\\$\\((input|output)__)' + old_id + '(\\))'), '$1' + new_id + '$3');}
+            io_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('(\\$\\((input|output)__)' + old_id + '(\\))'), '$1' + new_id + '$3'); }
         };
-				
+
 
         /*
         * bash: the bash text
@@ -948,9 +996,9 @@ window.onload = function () {
         * find_elements_fun: Function to return all IDs
         * replace_fun: Function that gets an old id
         */
-        window.OBCUI.edit_bash = function(bash, apply_to_element_fun, find_elements_fun, replace_fun) {
+        window.OBCUI.edit_bash = function (bash, apply_to_element_fun, find_elements_fun, replace_fun) {
             var new_bash = bash;
-            find_elements_fun(bash).forEach(function(element) {
+            find_elements_fun(bash).forEach(function (element) {
                 console.log('GAMATO: element');
                 console.log(element);
                 console.log('GAMATO: To be replaced with:');
@@ -966,47 +1014,47 @@ window.onload = function () {
         /*
         * Return a list of steps that are called in this bash script
         */
-        window.OBCUI.get_steps_from_bash_script = function(t) {
+        window.OBCUI.get_steps_from_bash_script = function (t) {
             var steps = [];
 
             //Remove bash comments
             var no_comments = window.OBCUI.remove_bash_comments(t);
 
             console.log('NO COMMENTS BASH SCRIPT:');
-            console.log('-->' +  no_comments + '<--');
+            console.log('-->' + no_comments + '<--');
 
             var splitted = no_comments.split('\n');
 
-            splitted.forEach(function(line) {
-				//console.log("line : ");
-				//console.log(line);
-	
+            splitted.forEach(function (line) {
+                //console.log("line : ");
+                //console.log(line);
+
                 //If this is an empty-ish string, return
                 if (!$.trim(line).length) {
                     return;
                 }
 
-                var results = line.match(window.OBCUI.call_re); 
-				console.log("PROCESSING line: " + line);
+                var results = line.match(window.OBCUI.call_re);
+                console.log("PROCESSING line: " + line);
                 console.log("FOUND THE FOLLOWING CALLS:");
-				console.log(results);
-	
+                console.log(results);
+
                 if (results) {
-                    results.forEach(function(result) {
-						
+                    results.forEach(function (result) {
+
                         console.log('PROCESSING THE FOLLOOWING CALL: -->' + result + '<--');
 
                         var step_id = result.match(window.OBCUI.call_re_id)[1];
-						console.log("matched step id : ");
-						console.log(step_id);
+                        console.log("matched step id : ");
+                        console.log(step_id);
                         //Is there a node with type step and id step_id ?
                         if (cy.$("node[type='step'][id='" + step_id + "']").length) {
                             //Add it only if it is not already there
                             if (!steps.includes(step_id)) {
                                 steps.push(step_id);
                             }
-                        } 
-						
+                        }
+
                     });
                 }
             });
@@ -1017,8 +1065,8 @@ window.onload = function () {
 
         /*
         * Return a list of input output variables from the bash script 
-        */         
-        window.OBCUI.get_input_outputs_from_bash_script = function(t) {
+        */
+        window.OBCUI.get_input_outputs_from_bash_script = function (t) {
 
             //Remove bash comments. DUPLICATE FIXME
             var no_comments = window.OBCUI.remove_bash_comments(t);
@@ -1026,10 +1074,10 @@ window.onload = function () {
             var outputs = [];
 
             var splitted = no_comments.split('\n');
-            splitted.forEach(function(line) {
-                var results = line.match(window.OBCUI.io_re);  
+            splitted.forEach(function (line) {
+                var results = line.match(window.OBCUI.io_re);
                 if (results) {
-                    results.forEach(function(result){
+                    results.forEach(function (result) {
                         var splitted = result.match(window.OBCUI.io_re_id); // AAAAAAA
                         var input_output = splitted[1];
                         var variable_name = splitted[2];
@@ -1051,25 +1099,25 @@ window.onload = function () {
                     });
                 }
             });
-			
-			return {inputs: inputs, outputs: outputs};
+
+            return { inputs: inputs, outputs: outputs };
 
         };
 
         /*
         * Return a list of tools whose variables are used in this bash script
         */
-        window.OBCUI.get_tools_from_bash_script = function(t) {
+        window.OBCUI.get_tools_from_bash_script = function (t) {
             var tools = [];
 
             //Remove bash comments
             var no_comments = window.OBCUI.remove_bash_comments(t);
 
             var splitted = no_comments.split('\n');
-            splitted.forEach(function(line){
-               var results =  line.match(/\$\([\w]+__[\w\.]+__[\d]+__[\w]+\)/g);
-               if (results) {
-                   results.forEach(function(result){
+            splitted.forEach(function (line) {
+                var results = line.match(/\$\([\w]+__[\w\.]+__[\d]+__[\w]+\)/g);
+                if (results) {
+                    results.forEach(function (result) {
                         var splitted_ids = result.match(/\$\(([\w]+__[\w\.]+__[\d]+)__([\w]+)\)/);
                         var tool_id = splitted_ids[1] + '__2';
                         var variable_id = splitted_ids[2];
@@ -1080,7 +1128,7 @@ window.onload = function () {
 
                             //Does this tool has a variable with name: variable_id ?
                             var tool_tool_variables = cy_tool_node.data().variables;
-                            tool_tool_variables.forEach(function(variable){
+                            tool_tool_variables.forEach(function (variable) {
                                 if (variable.name == variable_id) {
                                     //Add it if it not already there
                                     if (!tools.includes(tool_id)) {
@@ -1091,7 +1139,7 @@ window.onload = function () {
 
                         }
 
-                   });
+                    });
                 }
             });
 
@@ -1111,7 +1159,7 @@ window.onload = function () {
         * Get the edit of this wotkflow id
         */
         function get_edit_from_workflow_id(workflow_id) {
-             return workflow_id.split(window.OBCUI.sep)[1];  
+            return workflow_id.split(window.OBCUI.sep)[1];
             //return workflow_id.split(window.OBCUI.sep)[1];
         }
 
@@ -1185,7 +1233,7 @@ window.onload = function () {
             if (sio_id_splitted.length != 3) {
                 return null;
             }
-            return create_workflow_id({name: sio_id_splitted[1], edit: sio_id_splitted[2]});
+            return create_workflow_id({ name: sio_id_splitted[1], edit: sio_id_splitted[2] });
         }
 
         /*
@@ -1207,27 +1255,27 @@ window.onload = function () {
         * Replace the ids of a list of SIO (in lists of a node: steps[], inputs[], outputs[])
         * old_root_id : Change only SIOs that have as a workflow: old_root_id
         */
-		function replace_worfklow_id_of_list_of_SIO_id(array, old_root_id, new_root){
-			array.forEach(function(sio_id){
-				if (get_workflow_id_from_SIO_id(sio_id) === old_root_id){
-					var index = array.indexOf(sio_id);
-					sio_id=create_SIO_id({name: get_SIO_name_from_SIO_id(sio_id)}, new_root);
-					array[index] = sio_id;
-				}
-			});
-			
-			return array;
-		}
+        function replace_worfklow_id_of_list_of_SIO_id(array, old_root_id, new_root) {
+            array.forEach(function (sio_id) {
+                if (get_workflow_id_from_SIO_id(sio_id) === old_root_id) {
+                    var index = array.indexOf(sio_id);
+                    sio_id = create_SIO_id({ name: get_SIO_name_from_SIO_id(sio_id) }, new_root);
+                    array[index] = sio_id;
+                }
+            });
+
+            return array;
+        }
 
         /*
         * Remove commends from text
         * Everything that starts with '#'
         */
-        window.OBCUI.remove_bash_comments = function(t) {
+        window.OBCUI.remove_bash_comments = function (t) {
             var no_comments = [];
             var t_splitted = t.split('\n');
 
-            t_splitted.forEach(function(line){
+            t_splitted.forEach(function (line) {
                 //Check if this line is a comment
                 if (line.match(/^[\s]*#/)) {
                     //This is a comment. Ignore it
@@ -1271,18 +1319,18 @@ window.onload = function () {
                 if (d.type === 'input' || d.type === 'output') {
                     var this_input_output_id = create_input_output_id(d, this_node_wf_belong_to);
 
-                    var myNode = {data: {id: this_input_output_id, label: d.name, name: d.name, type: d.type, description: d.description, belongto: this_node_wf_belong_to}};
+                    var myNode = { data: { id: this_input_output_id, label: d.name, name: d.name, type: d.type, description: d.description, belongto: this_node_wf_belong_to } };
                     myNodes.push(myNode);
                     //Connect with belongto workflow
-                    myEdges.push({data: {source: this_node_wf_belong_to_id, target: this_input_output_id, id: create_workflow_edge_id(this_node_wf_belong_to_id, this_input_output_id)}});
+                    myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_input_output_id, id: create_workflow_edge_id(this_node_wf_belong_to_id, this_input_output_id) } });
                 }
-				
+
 
                 //TOOLS 
                 if (d.type === "tool") {
-      
+
                     //If d.id is a JSON string parse it. d.id might come either from jstree (needs parsing) or cytoscape (does not need parsing)
-                    if (d.id.indexOf('[')>-1) {
+                    if (d.id.indexOf('[') > -1) {
                         d.id = JSON.parse(d.id).join(window.OBCUI.sep);
                         /*remove special characters*/
                         //d.id = d.id.replace(/\./g,''); // CYTOSCAPE ALLOWS . IN IDS
@@ -1294,37 +1342,37 @@ window.onload = function () {
                     }
 
                     if (d.dep_id != "#") {
-                        if (d.dep_id.indexOf('[')>-1) { // Parse it if this is JSON. 
+                        if (d.dep_id.indexOf('[') > -1) { // Parse it if this is JSON. 
                             d.dep_id = JSON.parse(d.dep_id).join(window.OBCUI.sep);
                             /*remove special characters*/
-                           // d.dep_id = d.dep_id.replace(/\./g,''); //CYTOSCAPE ALLOWS . IN IDS
+                            // d.dep_id = d.dep_id.replace(/\./g,''); //CYTOSCAPE ALLOWS . IN IDS
                         }
 
                         //var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'no', variables: d.variables } };
-                        var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'no', dep_id: d.dep_id, variables: d.variables, belongto: this_node_wf_belong_to } };
+                        var myNode = { data: { id: d.id, text: d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'no', dep_id: d.dep_id, variables: d.variables, belongto: this_node_wf_belong_to } };
 
                         myNodes.push(myNode);
                         var myEdge = { data: { id: create_workflow_edge_id(d.dep_id, d.id), weight: 1, source: d.dep_id, target: d.id } };
                         myEdges.push(myEdge);
-						
+
                     } else {
                         //var myNode = { data: { id: d.id, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'yes', variables: d.variables } };
-                        var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'yes', dep_id: d.dep_id, variables: d.variables, belongto: this_node_wf_belong_to } };
+                        var myNode = { data: { id: d.id, text: d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'yes', dep_id: d.dep_id, variables: d.variables, belongto: this_node_wf_belong_to } };
                         myNodes.push(myNode);
-                        myEdges.push({data: {source: this_node_wf_belong_to_id, target: d.id, id: create_workflow_edge_id(this_node_wf_belong_to_id, d.id)}});
+                        myEdges.push({ data: { source: this_node_wf_belong_to_id, target: d.id, id: create_workflow_edge_id(this_node_wf_belong_to_id, d.id) } });
                     }
 
                 }
-				
-				 //WORKFLOWS
-				 if (d.type === "workflow") {
-					//TODO add root feature (different than tools): wfroot:yes
-				    
+
+                //WORKFLOWS
+                if (d.type === "workflow") {
+                    //TODO add root feature (different than tools): wfroot:yes
+
                     var this_workflow_id = create_workflow_id(d);
 
-                    var myNode = { data: { id: this_workflow_id, name: d.name, edit: d.edit, label: create_workflow_label(d), type: 'workflow', belongto: this_node_wf_belong_to} };
+                    var myNode = { data: { id: this_workflow_id, name: d.name, edit: d.edit, label: create_workflow_label(d), type: 'workflow', belongto: this_node_wf_belong_to } };
                     myNodes.push(myNode);
-                    myEdges.push({data: {source: this_node_wf_belong_to_id, target: this_workflow_id, id:create_workflow_edge_id(this_node_wf_belong_to_id, this_workflow_id)}});
+                    myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_workflow_id, id: create_workflow_edge_id(this_node_wf_belong_to_id, this_workflow_id) } });
                 }
 
 
@@ -1333,12 +1381,12 @@ window.onload = function () {
                     //Why this redundancy?
                     //jstree uses d.name, cytoscape uses d.label and we also need an id...
                     var this_step_id = create_step_id(d, this_node_wf_belong_to);
-                    var myNode = { data: { id: this_step_id, name:d.name, label: d.name, type: d.type, bash: d.bash, tools:d.tools, steps:d.steps, inputs:d.inputs, outputs:d.outputs, belongto: this_node_wf_belong_to } };
+                    var myNode = { data: { id: this_step_id, name: d.name, label: d.name, type: d.type, bash: d.bash, tools: d.tools, steps: d.steps, inputs: d.inputs, outputs: d.outputs, belongto: this_node_wf_belong_to } };
                     myNodes.push(myNode);
-                    
+
                     //Connect with belong workflow
-                    myEdges.push({data: {source:this_node_wf_belong_to_id, target: this_step_id, id:create_workflow_edge_id(this_node_wf_belong_to_id, this_step_id) }});
-                    
+                    myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_step_id, id: create_workflow_edge_id(this_node_wf_belong_to_id, this_step_id) } });
+
                     //create edges to tools and/or steps
                     if (typeof d.tools !== "undefined") {
                         //replace special characters
@@ -1346,7 +1394,7 @@ window.onload = function () {
                         d.tools.forEach(function (element) {
                             //element = element.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
 
-                            var myEdge = { data: { 'id': create_workflow_edge_id(this_step_id, element)  , 'weight': 1, 'source': this_step_id, 'target': element } };
+                            var myEdge = { data: { 'id': create_workflow_edge_id(this_step_id, element), 'weight': 1, 'source': this_step_id, 'target': element } };
                             myEdges.push(myEdge);
 
                         });
@@ -1354,23 +1402,23 @@ window.onload = function () {
 
                     if (typeof d.steps !== "undefined") {
                         d.steps.forEach(function (element) {
-							
+
                             var myEdge = { data: { 'id': create_workflow_edge_id(this_step_id, element), 'weight': 1, 'source': this_step_id, 'target': element } };
                             myEdges.push(myEdge);
 
                         });
                     }
-					
-					
-					 if (typeof d.inputs !== "undefined") {
+
+
+                    if (typeof d.inputs !== "undefined") {
                         d.inputs.forEach(function (element) {
                             var myEdge = { data: { 'id': create_workflow_edge_id(element, this_step_id), 'weight': 1, 'source': element, 'target': this_step_id } };
                             myEdges.push(myEdge);
 
                         });
                     }
-					
-					if (typeof d.outputs !== "undefined") {
+
+                    if (typeof d.outputs !== "undefined") {
                         d.outputs.forEach(function (element) {
                             var myEdge = { data: { 'id': create_workflow_edge_id(this_step_id, element), 'weight': 1, 'source': this_step_id, 'target': element } };
                             myEdges.push(myEdge);
@@ -1396,48 +1444,48 @@ window.onload = function () {
 
 
         }
-		
-		
+
+
 		/*
 		* This function closes the successors of a workflow except the input/output
 		* Should be use every time a tool or workflow is dr&dropped in the workflow editor
 		* and everytime a tool or workflow is clicked in the right menu
 		*/
-		window.cy_close_successors = function(){
-			
-			// close all successors of root node or workflow node	: except inputs and outputs or other wfs
+        window.cy_close_successors = function () {
+
+            // close all successors of root node or workflow node	: except inputs and outputs or other wfs
             cy.json().elements.nodes.forEach(function (node) {
-				
-				//close the successors of a (previous saved) workflow  except the inouts/outputs
-				if(node.data.type==="workflow"  &&  node.data.edit!=="null"){
-					cy.$("#" + node.data.id).successors().targets().forEach(function (element) {
-				
-						if(element['_private'].data.type ==='input' || element['_private'].data.type ==='output' || element['_private'].data.type ==='workflow' ){
-								element.style("display", "element");
-						}else{					
-							element.style("display", "none");
-						}
-								
-					});
-					
-					//cy.$("#" + node.data.id).successors().targets().style("display", "none");
-				}
-				
-				
-				//if(node.data.type==="tool" && typeof node.data.root !== 'undefined' && node.data.root === 'yes')
-					// cy.$("#" + node.data.id).successors().targets().style("display", "none");
-	
+
+                //close the successors of a (previous saved) workflow  except the inouts/outputs
+                if (node.data.type === "workflow" && node.data.edit !== "null") {
+                    cy.$("#" + node.data.id).successors().targets().forEach(function (element) {
+
+                        if (element['_private'].data.type === 'input' || element['_private'].data.type === 'output' || element['_private'].data.type === 'workflow') {
+                            element.style("display", "element");
+                        } else {
+                            element.style("display", "none");
+                        }
+
+                    });
+
+                    //cy.$("#" + node.data.id).successors().targets().style("display", "none");
+                }
+
+
+                //if(node.data.type==="tool" && typeof node.data.root !== 'undefined' && node.data.root === 'yes')
+                // cy.$("#" + node.data.id).successors().targets().style("display", "none");
+
 
             });
-			
-			
-		}
+
+
+        }
 
         /*
         * After importing a graph or adding new nodes, we need to register cytoscape events.
         * This function is called from buildtree and also from angular when we do: cy.json(data['workflow']) from angular
         */
-        window.cy_setup_events = function() {
+        window.cy_setup_events = function () {
             // collapse - expand nodes
             cy.on('click', 'node', function (event) {
                 //connectedEdges: next level
@@ -1449,32 +1497,30 @@ window.onload = function () {
                         this.connectedEdges().targets().style("display", "element");
                     } else {
                         //hide the children nodes and edges recursively  
-						this.successors().targets().forEach(function (element) {
-								//check if node has flag(open)								
-								if(typeof element['_private'].data.flag ==='undefined' || element['_private'].data.flag !=='open'){
-									element.style("display", "none");
-								}
-								
-							});
+                        this.successors().targets().forEach(function (element) {
+                            //check if node has flag(open)								
+                            if (typeof element['_private'].data.flag === 'undefined' || element['_private'].data.flag !== 'open') {
+                                element.style("display", "none");
+                            }
+
+                        });
                     }
                 }
                 if (this['_private'].data.type == "step") { // Click at a step node
                     //Call angular function
                     var this_data = this['_private'].data;
                     angular.element($('#angular_div')).scope().$apply(function () {
-                        angular.element($('#angular_div')).scope().workflop_step_node_clicked(this_data); 
+                        angular.element($('#angular_div')).scope().workflop_step_node_clicked(this_data);
                     });
                 }
 
             });
-			
-			
+
+
 			/* 
             * Function for creating tooltip and their content.
             */
             var makeTippy = function (node, text) {
-				console.log("node here : ");
-				console.log(node);
                 return tippy(node.popperRef(), {
                     content: function () {
                         var div = document.createElement('div');
@@ -1491,16 +1537,16 @@ window.onload = function () {
                     sticky: true
                 });
             };
-			
-			
-			 /* show tooltip */
-            var mytippys=[]; // arry for keeping instances of tooltips, needed for destroying all instances on mouse out
-			cy.on('mouseover', 'node', function (event) {
- 
-				nodeId = this._private.data.id
+
+
+            /* show tooltip */
+            var mytippys = []; // arry for keeping instances of tooltips, needed for destroying all instances on mouse out
+            cy.on('mouseover', 'node', function (event) {
+
+                nodeId = this._private.data.id
                 myNode = cy.getElementById(nodeId);
                 myTippy = makeTippy(myNode, nodeId);
-				mytippys.push(myTippy);
+                mytippys.push(myTippy);
                 myTippy.show();
 
 
@@ -1508,14 +1554,14 @@ window.onload = function () {
 
             /* hide tooltip */
             cy.on('mouseout', 'node', function (event) {
-				// destroy all instances
-				mytippys.forEach(function (mytippy) {
-					mytippy.destroy(mytippy.popper);
-				});
-				
-				 //myTippy.destroy();
-			     //myTippy.hide();
-				
+                // destroy all instances
+                mytippys.forEach(function (mytippy) {
+                    mytippy.destroy(mytippy.popper);
+                });
+
+                //myTippy.destroy();
+                //myTippy.hide();
+
             });
         }
 
@@ -1526,7 +1572,7 @@ window.onload = function () {
 
             cy = cytoscape({
                 container: document.getElementById('cywf'), // container to render in
-                elements:[],
+                elements: [],
 
                 //elements: [ // list of graph elements to start with
                 //      { // node a
@@ -1545,7 +1591,7 @@ window.onload = function () {
                         selector: 'node',
                         "style": {
                             "shape": "round-rectangle",
-							"background-color": "#AFB4AE",
+                            "background-color": "#AFB4AE",
                             //"label": "data(id)",
                             "label": "data(label)",
                             //"height": 15,
@@ -1556,7 +1602,7 @@ window.onload = function () {
                         selector: 'node[type="step"]',
                         "style": {
                             'shape': 'ellipse',
-							'background-color': '#007167',
+                            'background-color': '#007167',
                             //'background-color': '#E8E406',
                             //"height": 15,
                             //"width": 15
@@ -1566,8 +1612,8 @@ window.onload = function () {
                         selector: 'node[type="input"]',
                         "style": {
                             'shape': 'round-rectangle',
-							'border-width' : '3',
-							'border-color' : '#43A047',
+                            'border-width': '3',
+                            'border-color': '#43A047',
                             'background-color': '#AFB4AE',
                             //"height": 15,
                             //"width": 15
@@ -1577,32 +1623,32 @@ window.onload = function () {
                         selector: 'node[type="output"]',
                         "style": {
                             'shape': 'round-rectangle',
-							'border-width' : '3',
-							'border-color' : '#E53935',
+                            'border-width': '3',
+                            'border-color': '#E53935',
                             'background-color': '#AFB4AE',
                             //"height": 15,
                             //"width": 15
                         }
                     },
-					
-					{
+
+                    {
                         selector: 'node[type="workflow"]',
                         "style": {
                             'shape': 'diamond',
-							'border-width' : '3',
-							'border-color' : '#E53935',
+                            'border-width': '3',
+                            'border-color': '#E53935',
                             'background-color': '#AFB4AE',
                             //"height": 15,
                             //"width": 15
                         }
                     },
-//                    {
-//                        //Do not show the root workflow 
-//                        selector: 'node[type="workflow"][!belongto]',
-//                        "style": {
-//                            "display": "none"
-//                        }
-//                    },
+                    //                    {
+                    //                        //Do not show the root workflow 
+                    //                        selector: 'node[type="workflow"][!belongto]',
+                    //                        "style": {
+                    //                            "display": "none"
+                    //                        }
+                    //                    },
                     {
                         selector: 'edge',
                         "style": {
@@ -1645,18 +1691,18 @@ window.onload = function () {
                             //Ideally the deletion logic should be placed here.
                             //Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
                             angular.element($('#angular_div')).scope().$apply(function () {
-                                angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id()); 
+                                angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id());
                             });
- 
-//                           var j = cy.$('#' + ele.id());
-//                           
-//							/* remove node successors*/
-//							j.successors().targets().forEach(function (element) {
-//									cy.remove(element);
-//								
-//							})
-//							/*remove node*/
-//							cy.remove(j);
+
+                            //                           var j = cy.$('#' + ele.id());
+                            //                           
+                            //							/* remove node successors*/
+                            //							j.successors().targets().forEach(function (element) {
+                            //									cy.remove(element);
+                            //								
+                            //							})
+                            //							/*remove node*/
+                            //							cy.remove(j);
 
                         }
                     }
@@ -1693,23 +1739,23 @@ window.onload = function () {
             // parse incoming data and transform to cytoscape format
             var treeData = parseWorkflow(myworkflow, belongto);
             var openId;
-            
+
             //concat all data
             if (typeof currentElements.nodes !== 'undefined') {
-				
-                /* check if new node exists in current data */
-				 treeData.nodes.forEach(function(element) {
-					 currentElements.nodes.forEach(function(celement){
-						if(element.data.id===celement.data.id){
-		    				openId=celement.data.id;						
-						}
-					 });      
-				});
 
-			
+                /* check if new node exists in current data */
+                treeData.nodes.forEach(function (element) {
+                    currentElements.nodes.forEach(function (celement) {
+                        if (element.data.id === celement.data.id) {
+                            openId = celement.data.id;
+                        }
+                    });
+                });
+
+
                 var allNodes = [], allEdges = [];
                 allNodes = currentElements.nodes.concat(treeData.nodes);
-				
+
                 if (typeof currentElements.edges !== 'undefined' && typeof treeData.edges !== 'undefined') {
                     allEdges = currentElements.edges.concat(treeData.edges);
                 }
@@ -1725,7 +1771,7 @@ window.onload = function () {
                 };
 
                 console.log('treedata');
-                console.log(treeData);	
+                console.log(treeData);
             }
 
             // this is needed because cy.add() causes multiple instances of layout
@@ -1741,154 +1787,154 @@ window.onload = function () {
 
             });
 
-		  
+
             //Add open flag for nodes that should always stay open (these are the nodes that belong to more than one tool)
-            cy.$('#'+openId).data('flag', 'open');
+            cy.$('#' + openId).data('flag', 'open');
 
             window.cy_setup_events();
-			//close successors of tool
-			cy.$('node[type="tool"][root="yes"]').successors().targets().style("display", "none");;
-			
-		}
-		
-		
+            //close successors of tool
+            cy.$('node[type="tool"][root="yes"]').successors().targets().style("display", "none");;
+
+        }
+
+
 		/**
 		** This function updates the workflow so that the can be forked: root edit changes to null
 		**
 		**/
-		window.forkWorkflow = function(){
-			
-			var currentElements = cy.json().elements;
+        window.forkWorkflow = function () {
+
+            var currentElements = cy.json().elements;
             var old_root_id, old_root_name, old_root_edit, old_root_belong;
             var new_root, new_root_id;
-		
-			// Find the root workflow and change edit to null
-			currentElements.nodes.forEach(function(node){
-				if(node.data.belongto===null){
-						
-					// Finds the root workflow					
-					old_root_id = node.data.id;		
-					old_root_name = node.data.name;
-					old_root_edit = node.data.edit;
-					old_root_belong = {name: old_root_name, edit: old_root_edit};
-					
-					// Updated id
-                    new_root = {name: node.data.name, edit: null};
-                    new_root_id = create_workflow_id(new_root);
-					node.data.id=new_root_id;
-                    // Update edit. edit = null
-					node.data.edit=null;
-					
-				}
-				
-			});
-			
-			console.log("*************old_root_belong**************");
-			console.log(old_root_belong);
-			
-		
-			// Change belongto for the nodes that have root workflow as source
-			currentElements.nodes.forEach(function(node){
 
-                    //Root node belongto is null
-                    if (!node.data.belongto) {
-                        return;
+            // Find the root workflow and change edit to null
+            currentElements.nodes.forEach(function (node) {
+                if (node.data.belongto === null) {
+
+                    // Finds the root workflow					
+                    old_root_id = node.data.id;
+                    old_root_name = node.data.name;
+                    old_root_edit = node.data.edit;
+                    old_root_belong = { name: old_root_name, edit: old_root_edit };
+
+                    // Updated id
+                    new_root = { name: node.data.name, edit: null };
+                    new_root_id = create_workflow_id(new_root);
+                    node.data.id = new_root_id;
+                    // Update edit. edit = null
+                    node.data.edit = null;
+
+                }
+
+            });
+
+            console.log("*************old_root_belong**************");
+            console.log(old_root_belong);
+
+
+            // Change belongto for the nodes that have root workflow as source
+            currentElements.nodes.forEach(function (node) {
+
+                //Root node belongto is null
+                if (!node.data.belongto) {
+                    return;
+                }
+
+                //Unfortunately: 
+                // JSON.stringify({a:'a', b:'b'}) === JSON.stringify({a:'a', b:'b'}) --> True
+                // JSON.stringify({a:'a', b:'b'}) === JSON.stringify({b:'b', a:'a'}) --> False
+                // there isn't any stragihtforward way of comparing key-pair objects in javascript...
+                // https://stackoverflow.com/questions/1068834/object-comparison-in-javascript 
+                // Making sure that the order is correct
+                var node_root_belong_ordered = { name: node.data.belongto.name, edit: node.data.belongto.edit };
+                if (JSON.stringify(node_root_belong_ordered) === JSON.stringify(old_root_belong)) {
+                    node.data.belongto = { name: old_root_name, edit: null };
+                    if (['step', 'input', 'output'].indexOf(node.data.type) >= 0) {
+                        node.data.id = create_step_id(node.data, new_root);
+                        //node.data.id = node.data.id.substr(0, node.data.id.lastIndexOf(window.OBCUI.sep))+'__null';
+                    }
+                }
+
+                /** List os steps, inputs, outputs should also be updated if they contain references to root wf. **/
+
+                // List of steps.			
+                if (typeof node.data.steps != 'undefined' && node.data.steps.length > 0) {
+                    replace_worfklow_id_of_list_of_SIO_id(node.data.steps, old_root_id, new_root);
+                }
+
+                // List of inputs.
+                if (typeof node.data.inputs != 'undefined' && node.data.inputs.length > 0) {
+                    replace_worfklow_id_of_list_of_SIO_id(node.data.inputs, old_root_id, new_root);
+                }
+
+                // List of outputs.
+                if (typeof node.data.outputs != 'undefined' && node.data.outputs.length > 0) {
+                    replace_worfklow_id_of_list_of_SIO_id(node.data.outputs, old_root_id, new_root);
+                }
+
+                /* bash field of node should also be updated if it contains call to step, input, output */
+
+                if (typeof node.data.bash != 'undefined') {  // TODO: 'bash' in node.bash CODING STYLE
+
+                    // Change the step id
+                    function change_SIO_id(old_step_id, new_step_id) {
+                        if (get_workflow_id_from_SIO_id(old_step_id) == old_root_id) {
+                            return create_SIO_id({ name: get_SIO_name_from_SIO_id(old_step_id) }, new_root);
+                        }
+                        else {
+                            return old_step_id;
+                        }
                     }
 
-                    //Unfortunately: 
-                    // JSON.stringify({a:'a', b:'b'}) === JSON.stringify({a:'a', b:'b'}) --> True
-                    // JSON.stringify({a:'a', b:'b'}) === JSON.stringify({b:'b', a:'a'}) --> False
-                    // there isn't any stragihtforward way of comparing key-pair objects in javascript...
-                    // https://stackoverflow.com/questions/1068834/object-comparison-in-javascript 
-                    // Making sure that the order is correct
-                    var node_root_belong_ordered = {name: node.data.belongto.name, edit: node.data.belongto.edit};
-					if(JSON.stringify(node_root_belong_ordered) === JSON.stringify(old_root_belong)){
-						node.data.belongto = {name: old_root_name, edit: null};
-                        if (['step', 'input', 'output'].indexOf(node.data.type)>=0) {
-                            node.data.id = create_step_id(node.data, new_root);
-                            //node.data.id = node.data.id.substr(0, node.data.id.lastIndexOf(window.OBCUI.sep))+'__null';
-                        } 
-					}
-					
-					/** List os steps, inputs, outputs should also be updated if they contain references to root wf. **/
-					
-					// List of steps.			
-					if(typeof node.data.steps != 'undefined' && node.data.steps.length > 0 ){
-							replace_worfklow_id_of_list_of_SIO_id(node.data.steps, old_root_id, new_root);
-					}
-					
-					// List of inputs.
-					if(typeof node.data.inputs != 'undefined' && node.data.inputs.length > 0 ){
-							replace_worfklow_id_of_list_of_SIO_id(node.data.inputs, old_root_id, new_root);
-					}
 
-					// List of outputs.
-					if(typeof node.data.outputs != 'undefined' && node.data.outputs.length > 0 ){
-							replace_worfklow_id_of_list_of_SIO_id(node.data.outputs, old_root_id, new_root);
-					}
+                    console.log('OLD BASH:');
+                    console.log(node.data.bash);
 
-					/* bash field of node should also be updated if it contains call to step, input, output */
-					
-					if(typeof node.data.bash != 'undefined'){  // TODO: 'bash' in node.bash CODING STYLE
+                    //Change step ids
+                    node.data.bash = window.OBCUI.edit_bash(node.data.bash, change_SIO_id, window.OBCUI.get_steps_from_bash_script, window.OBCUI.call_replace);
 
-						// Change the step id
-                        function change_SIO_id(old_step_id, new_step_id) {
-                            if (get_workflow_id_from_SIO_id(old_step_id) == old_root_id) {
-                                return create_SIO_id({name: get_SIO_name_from_SIO_id(old_step_id)}, new_root);
-                            }
-                            else {
-                                return old_step_id;
-                            }
-                        }
-							
-
-                        console.log('OLD BASH:');
-                        console.log(node.data.bash);
-
-                        //Change step ids
-                        node.data.bash = window.OBCUI.edit_bash(node.data.bash, change_SIO_id, window.OBCUI.get_steps_from_bash_script, window.OBCUI.call_replace);
-
-                        //Change input/output ids
-                        node.data.bash = window.OBCUI.edit_bash(node.data.bash, change_SIO_id, 
-                            function (t) {
-                                var ret = window.OBCUI.get_input_outputs_from_bash_script(t);
-                                return ret.inputs.concat(ret.outputs);
-                            }, 
+                    //Change input/output ids
+                    node.data.bash = window.OBCUI.edit_bash(node.data.bash, change_SIO_id,
+                        function (t) {
+                            var ret = window.OBCUI.get_input_outputs_from_bash_script(t);
+                            return ret.inputs.concat(ret.outputs);
+                        },
                         window.OBCUI.io_replace);
 
-                        console.log('NEW BASH:')
-                        console.log(node.data.bash);
+                    console.log('NEW BASH:')
+                    console.log(node.data.bash);
 
-						//window.OBCUI.edit_steps_from_bash_scripts(node.data.bash, old_root_id, new_root);
+                    //window.OBCUI.edit_steps_from_bash_scripts(node.data.bash, old_root_id, new_root);
 
-					}
-					
-					
-						
-				}
-				
-				
-			);
-			
-			
-			// change all edges that connect to root.  
-			currentElements.edges.forEach(function(edge){
-				
+                }
+
+
+
+            }
+
+
+            );
+
+
+            // change all edges that connect to root.  
+            currentElements.edges.forEach(function (edge) {
+
                 /* EDGE SOURCES */
 
-				//find edges that have as source the root workflow
-				if(edge.data.source===old_root_id) {
-					edge.data.source = new_root_id;
-                }
-				
-                //Find edges that have the root_workflow in their source
-                else if (get_workflow_id_from_SIO_id(edge.data.source) === old_root_id) {
-                    edge.data.source = create_SIO_id({name: get_SIO_name_from_SIO_id(edge.data.source)}, new_root);
+                //find edges that have as source the root workflow
+                if (edge.data.source === old_root_id) {
+                    edge.data.source = new_root_id;
                 }
 
-				//if(edge.data.source.endsWith(old_root))
-				//	edge.data.source = edge.data.source.substr(0, edge.data.source.lastIndexOf(old_root))+new_root; 
-				
+                //Find edges that have the root_workflow in their source
+                else if (get_workflow_id_from_SIO_id(edge.data.source) === old_root_id) {
+                    edge.data.source = create_SIO_id({ name: get_SIO_name_from_SIO_id(edge.data.source) }, new_root);
+                }
+
+                //if(edge.data.source.endsWith(old_root))
+                //	edge.data.source = edge.data.source.substr(0, edge.data.source.lastIndexOf(old_root))+new_root; 
+
                 /* EDGE TARGETS */
 
                 if (edge.data.target == old_root_id) {
@@ -1897,22 +1943,22 @@ window.onload = function () {
 
                 //Find edges that have the root_workflow in their target
                 else if (get_workflow_id_from_SIO_id(edge.data.target) === old_root_id) {
-                    edge.data.target = create_SIO_id({name: get_SIO_name_from_SIO_id(edge.data.target)}, new_root);
+                    edge.data.target = create_SIO_id({ name: get_SIO_name_from_SIO_id(edge.data.target) }, new_root);
                 }
 
 
-				//if(edge.data.target.endsWith(old_root))	//check for steps that ends with old_root
-				//	edge.data.target = edge.data.target.substr(0, edge.data.target.lastIndexOf(old_root))+new_root; 
-				//
+                //if(edge.data.target.endsWith(old_root))	//check for steps that ends with old_root
+                //	edge.data.target = edge.data.target.substr(0, edge.data.target.lastIndexOf(old_root))+new_root; 
+                //
 
                 //Change the id of the edge
-                edge.data.id = create_workflow_edge_id(edge.data.source, edge.data.target);		
-				
-			});
-			
-			
-			/** re run layout **/
-			// this initialization is needed because cy.add() causes multiple instances of layout
+                edge.data.id = create_workflow_edge_id(edge.data.source, edge.data.target);
+
+            });
+
+
+            /** re run layout **/
+            // this initialization is needed because cy.add() causes multiple instances of layout
             initializeTree();
 
             cy.json({ elements: currentElements });   // Add updated data
@@ -1925,15 +1971,15 @@ window.onload = function () {
 
             });
 
-		  
+
             //Add open flag for nodes that should always stay open (these are the nodes that belong to more than one tool) : TODO FIX THAT, NOT WORKING LIKE THAT
             //cy.$('#'+openId).data('flag', 'open');		
-			
+
             window.cy_setup_events();
-			
-				
-			
-		}
+
+
+
+        }
 
         /*
         * Called from angular $scope.workflow_info_run_pressed
@@ -2130,9 +2176,7 @@ window.onload = function () {
 				
             });
 			*/
-			
-			
-			
+						
         };
 
 
@@ -2144,9 +2188,9 @@ window.onload = function () {
             //cy.destroy();
             cy.remove('edge, node');
 
-             cy.json({
+            cy.json({
                 elements: {
-                    nodes: [{data: {id: create_workflow_id({name:name, edit: null}), label: name, name:name, edit: null, type: "workflow", belongto:null}}]
+                    nodes: [{ data: { id: create_workflow_id({ name: name, edit: null }), label: name, name: name, edit: null, type: "workflow", belongto: null } }]
                 }
             });
 
@@ -2164,20 +2208,20 @@ window.onload = function () {
             cy.center();
 
         }
-		
+
 		/*
 		* Redraw the graph so that initial  
 		* Re-run the layout of cytoscape
 		*/
-		window.redraw = function(){
-			
-		   cy.layout({// Call layout
-                    name: 'breadthfirst',
-                    directed: true,
-                    padding: 2
-                }).run();	
-			
-		}
+        window.redraw = function () {
+
+            cy.layout({// Call layout
+                name: 'breadthfirst',
+                directed: true,
+                padding: 2
+            }).run();
+
+        }
     }
 
 
