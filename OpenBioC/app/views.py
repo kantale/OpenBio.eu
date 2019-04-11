@@ -448,7 +448,7 @@ def get_instance_settings():
             print ('Could not find id.txt setting default')
             g['instance_setting_not_found_printed'] = True
 
-        return g.get_instance_settings['default']
+        return g['instance_settings']['default']
     with open('id.txt') as f:
         this_id = f.read().strip()
 
