@@ -448,7 +448,7 @@ def get_instance_settings():
             print ('Could not find id.txt setting default')
             g['instance_setting_not_found_printed'] = True
 
-        return g['instance_settings']['default']
+        return g.get_instance_settings['default']
     with open('id.txt') as f:
         this_id = f.read().strip()
 
@@ -1248,7 +1248,6 @@ def tool_info_validation_queued(request, **kwargs):
 
     return success()
 
-
 @csrf_exempt
 @has_data
 def callback(request, **kwargs):
@@ -1264,12 +1263,38 @@ def callback(request, **kwargs):
 
     if not 'payload' in kwargs:
         return fail('payload was not found on callback')
-
     payload = kwargs['payload']
 
-    if payload['status'] == 'running':
-        pass
-        # TO BE IMPLEMENTED....
+    if not 'status' in payload:
+        return fail('status was not found on payload')
+    status = payload['status']
+
+    if not 'id' in payload:
+        return fail('id was not found on payload')
+    this_id = payload['id']
+
+    # Get the tool referring to this task_id
+    tool = ToolValidations.get_tool_from_task_id(this_id)
+    if tool is None:
+        return fail('Could not find tool with this task_id')
+
+    if status == 'running':
+        # Change status to running!
+        tool.validation_status = 'Running'
+        tool.save()
+
+    elif status == 'done':
+        # Change status to Validated!
+        tool.validation_status = 'Validated'
+        tool.save()
+
+    elif status == 'failed':
+        # Change status to Failed
+        tool.validation_status = 'Failed'
+        tool.save()
+
+    else:
+        return fail(f'Unknown status: {status}')
 
 
     return success()
