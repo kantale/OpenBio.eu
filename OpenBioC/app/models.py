@@ -70,6 +70,21 @@ class Tool(models.Model):
     validation_status = models.CharField(max_length=256) # unvalidated, submitted, ...
 
 class ToolValidations(models.Model):
+    '''
+    This is like a log entry.
+    '''
+
+    @staticmethod
+    def get_tool_from_task_id(task_id):
+        '''
+        Gets the tool from a task_id field in the ToolValidations Table
+        '''
+        query = ToolValidations.objects.filter(task_id=task_id).order_by('created_at')
+        if not query.exists():
+            return None
+
+        # Get the tool of the last record with that id
+        return query.last().tool
 
     tool = models.ForeignKey(Tool, on_delete=models.CASCADE) # The tool that we are validating
 

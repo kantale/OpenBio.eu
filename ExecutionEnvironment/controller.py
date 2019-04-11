@@ -83,6 +83,12 @@ RUN cd /root; chmod +x {bashscript_filename} ; /bin/bash {bashscript_filename}
 execution_directory = 'executions'
 instance_settings = {} # Will be set later 
 
+class OBC_Controller_Exception(Exception):
+    '''
+    Custom OBC Exception
+    '''
+    pass
+
 def execute_shell(command):
     '''
     Executes a command in shell
@@ -345,7 +351,18 @@ def init_web_app(message_queue, port=8080):
     #return handler
 
 def talk_to_server(payload):
+    '''
+    Call this in order to talk to openbio.eu/callback
+    '''
     global instance_settings
+
+    def report_error(payload, data, message):
+        print ('payload')
+        print (payload)
+        print ('Data returned:')
+        print (data)
+        raise OBC_Controller_Exception(message)
+
 
     callback_url = instance_settings['callback_url']
     headers={ "Content-Type" : "application/json", "Accept" : "application/json"}
@@ -358,18 +375,10 @@ def talk_to_server(payload):
     data =  r.json()
 
     if not 'success' in data:
-        print ('payload')
-        print (payload)
-        print ('Data returned:')
-        print (data)
-        raise Exception('Invalid return data from server. key "success" is not present ')
+        report_error(payload, data, 'Invalid return data from server. key "success" is not present')
 
     if not data['success']:
-        print ('payload')
-        print (payload)
-        print ('Data returned:')
-        print (data)
-        raise Exception('Invalid return data from server. "success" is false ')
+        report_error(payload, data, 'Invalid return data from server. "success" is false ')
 
     print (data)
     return data
