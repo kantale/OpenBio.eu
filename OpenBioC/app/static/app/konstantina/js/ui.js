@@ -1572,7 +1572,7 @@ window.onload = function () {
 		*/
 		function createCytoscapeObject(){
 		
-			cy_object = cytoscape({
+			var cy_object = cytoscape({
                 container: document.getElementById('cywf'), // container to render in
                 elements: [],
 
@@ -1983,21 +1983,22 @@ window.onload = function () {
         window.OBCUI.runWorkflow = function() {			
 		
 			// get graph data	
-			cy_run = createCytoscapeObject();
+			//cy_run = createCytoscapeObject();
 			
             //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.
             document.querySelector('canvas[data-id="layer2-node"]').style.position = null;
 
-			
-            cy_run.json({ elements: cy.json().elements});  // Add new data
-				cy_run.ready(function () {                 // Wait for nodes to be added  
-					cy_run.layout({                         // Call layout
-						name: 'breadthfirst',
-						directed: true,
-						padding: 2
-					}).run();
+			if (false) {
+                cy_run.json({ elements: cy.json().elements});  // Add new data
+    				cy_run.ready(function () {                 // Wait for nodes to be added  
+    					cy_run.layout({                         // Call layout
+    						name: 'breadthfirst',
+    						directed: true,
+    						padding: 2
+    					}).run();
 
-				});
+    				});
+            }
 			
 			/**** Add text-editor-tooltip in each input/output ****/
 			// close tooltip 
@@ -2018,13 +2019,14 @@ window.onload = function () {
 					
 						content: function () {
 								var div = document.createElement('div');
+                                div.setAttribute("id", "tippy_div_" + node._private.data.id);
 								div.innerHTML = 
 												//'<form name="input" >' +
 												'<button type="button" class="close">×</button><br>'+  // onclick='+alert($(this).parent());+'
 												node._private.data.description+ '<br>'+
 												'Add Value For '+ node._private.data.name+' : <br>'+
-												'<input type="text" id=tippy_text_'+node._private.data.id+' name="Add Value"><br>'	+
-												'<button id=tippy_button_'+node._private.data.id+' class="btn btn-click">set</button>'		
+												'<input type="text" id="tippy_text_'+node._private.data.id+'" name="Add Value"><br>'	+
+												'<button id="tippy_button_'+node._private.data.id+'" class="btn btn-click">set</button>'		
 												//'<input type="submit" value="set" />' ;
 												//'</form>';
 												
@@ -2036,11 +2038,28 @@ window.onload = function () {
 								return div;
 						},
 						onShown: function() {
-									$('.btn-click').off("click").on("click", function(){
-									alert( document.getElementById(this.id.replace('tippy_button_', 'tippy_text_')).value);
-									// tippy should be destroyed
-									
-									});
+						  //$('.btn-click').off("click").on("click", function(){
+                          $('#tippy_button_' + node._private.data.id).off("click").on("click", function(){
+    							//alert( document.getElementById(this.id.replace('tippy_button_', 'tippy_text_')).value);
+    							// tippy should be destroyed
+                               // var value = document.getElementById(this.id.replace('tippy_button_', 'tippy_text_')).value;
+                                var value = document.getElementById('tippy_text_'+node._private.data.id).value;
+                                console.log('Node ID:');
+                                console.log(node._private.data.id);
+                                console.log('Input parameter:');
+                                console.log(node._private.data);
+                                console.log('Value:');
+                                console.log(value);
+                                node.data('value', value);
+                                console.log('Input parameter after');
+                                console.log(node._private.data);
+
+                                node.data('label', node._private.data.name+'='+value);
+                                //$(this).parent().fadeOut('slow', function(c){});
+
+                                $('#tippy_div_' + node._private.data.id).remove();
+
+							});
 									
 						},
 						trigger: 'manual',
