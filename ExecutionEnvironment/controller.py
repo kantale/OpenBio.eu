@@ -407,7 +407,7 @@ def worker(message_queue, w_id):
 
             payload = {
                 'id': this_id,
-                'status': 'running',
+                'status': 'Running',
             }
             talk_to_server(payload)
 
@@ -423,9 +423,9 @@ def worker(message_queue, w_id):
             # errcode =! something goes wrong
             payload = {'id': this_id}
             if result['errcode'] == 0:
-                payload['status'] = 'done'
+                payload['status'] = 'Validated'
             else:
-                payload[this_id]['status'] = 'failed'
+                payload[this_id]['status'] = 'Failed'
                 #execution(this_id,'mpah',False)
 
             payload['stdout'] = result['stdout'].decode()

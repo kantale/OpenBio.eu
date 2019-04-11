@@ -560,7 +560,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 tool_validation_editor.setReadOnly(true);
                 $scope.tools_var_jstree_id_show = true; // Show variable/dependency tree
 
-                $scope.tool_info_validation_message = data.validation_status;
+                $scope.tool_info_validation_status = data.validation_status;
+                $scope.tool_info_validation_created_at = data.validation_created_at;
+                $scope.tool_info_validation_message = data.validation_status; // REMOVE THIS !
             },
             function (data) {
 
@@ -700,6 +702,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         tool_validation_editor.setReadOnly(false);
 
         $scope.tools_var_jstree_id_show = true; // Show variable/dependency tree
+
+        //Empty validation status
+        $scope.tool_info_validation_status = 'Unvalidated';
+        $scope.tool_info_validation_created_at = null;
+        
+        $scope.tool_info_validation_message = 'Unvalidated';
     };
 
 
@@ -932,7 +940,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             {
                 payload: {
                     id: this_id,
-                    status: "queued",
+                    status: "Queued",
                     tool: tool
                 }
             },
@@ -981,7 +989,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             function (data) {
                 var this_id = data['id'];
                 var status = data['status']; // This should always be queued
-                if (status != 'queued') {
+                if (status != 'Queued') {
                      throw "ERROR: 4529"; // This should never happen
                 }
                 $scope.tool_info_validation_queued(this_id, tool_to_be_validated);

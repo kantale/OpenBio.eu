@@ -67,7 +67,8 @@ class Tool(models.Model):
     validation_commands = models.TextField() # The BASH commands to validate this tool
 
     variables = models.ManyToManyField(to='Variables', related_name='tools_related') # The exposed variables of this tool
-    validation_status = models.CharField(max_length=256) # unvalidated, submitted, ...
+    #validation_status = models.CharField(max_length=256) # unvalidated, submitted, ...
+    last_validation = models.ForeignKey(to="ToolValidations", null=True, on_delete=models.CASCADE, related_name='last_validation_related')
 
 class ToolValidations(models.Model):
     '''

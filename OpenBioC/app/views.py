@@ -448,7 +448,7 @@ def get_instance_settings():
             print ('Could not find id.txt setting default')
             g['instance_setting_not_found_printed'] = True
 
-        return g.get_instance_settings['default']
+        return g['instance_settings']['default']
     with open('id.txt') as f:
         this_id = f.read().strip()
 
@@ -867,7 +867,10 @@ def tools_search_3(request, **kwargs):
 
         'installation_commands': tool.installation_commands,
         'validation_commands': tool.validation_commands,
-        'validation_status': tool.validation_status,
+        
+        'validation_status': tool.last_validation.validation_status if tool.last_validation else 'Unvalidated',
+        'validation_created_at' : datetime_to_str(tool.last_validation.created_at) if tool.last_validation else None,
+
     }
 
     #print ('LOGGG DEPENDENCIES + VARIABLES')
@@ -984,7 +987,8 @@ def tools_add(request, **kwargs):
 
         installation_commands=tool_installation_commands,
         validation_commands=tool_validation_commands,
-        validation_status='unvalidated',
+        
+        last_validation=None,
     )
 
     #Save it
@@ -1237,14 +1241,16 @@ def tool_info_validation_queued(request, **kwargs):
 
     payload = kwargs['payload']
 
-    assert payload['status'] == 'queued' 
+    assert payload['status'] == 'Queued' 
     tool = Tool.objects.get(**payload['tool'])
     this_id = payload['id']
-    tool.validation_status = 'Queued'
+
+    tv = ToolValidations(tool=tool, task_id=this_id, validation_status='Queued')
+    tv.save()
+
+    tool.last_validation = tv
     tool.save()
 
-    tv = ToolValidations(tool=tool, task_id=this_id, validation_status='queued')
-    tv.save()
 
     return success()
 
@@ -1269,6 +1275,9 @@ def callback(request, **kwargs):
         return fail('status was not found on payload')
     status = payload['status']
 
+    if not status in ['Running', 'Validated', 'Failed']:
+        return fail(f'Unknown status: {status}')
+
     if not 'id' in payload:
         return fail('id was not found on payload')
     this_id = payload['id']
@@ -1278,24 +1287,13 @@ def callback(request, **kwargs):
     if tool is None:
         return fail('Could not find tool with this task_id')
 
-    if status == 'running':
-        # Change status to running!
-        tool.validation_status = 'Running'
-        tool.save()
+    # Create new ToolValidations
+    tv = ToolValidations(tool=tool, task_id=this_id, validation_status=status)
+    tv.save()
 
-    elif status == 'done':
-        # Change status to Validated!
-        tool.validation_status = 'Validated'
-        tool.save()
-
-    elif status == 'failed':
-        # Change status to Failed
-        tool.validation_status = 'Failed'
-        tool.save()
-
-    else:
-        return fail(f'Unknown status: {status}')
-
+    # Assign tv to tool
+    tool.last_validation = tv
+    tool.save()
 
     return success()
 
