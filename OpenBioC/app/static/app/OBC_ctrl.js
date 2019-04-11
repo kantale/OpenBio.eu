@@ -706,7 +706,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //Empty validation status
         $scope.tool_info_validation_status = 'Unvalidated';
         $scope.tool_info_validation_created_at = null;
-        
+
         $scope.tool_info_validation_message = 'Unvalidated';
     };
 
@@ -947,6 +947,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             function(data) {
                 $scope.toast('Succesfully submitted tool/data for validation', 'success');
                 $scope.tool_info_validation_message = 'Queued';
+                $scope.tool_info_validation_created_at = data['last_validation'];
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');
