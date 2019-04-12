@@ -140,10 +140,11 @@
                                 tree="tools_var_jstree" ng-show="tools_var_jstree_id_show"></div>
                         </div>
                         <div class="row">
+                             <!-- adding values to use it for dockerfile-->
                             <div class="input-field col s12">
                                 <select id='tools_os_combo'>
                                     <optgroup label="Ubuntu">
-                                        <!-- adding values to use it for dockerfile-->
+                                       
                                         <option value="ubuntu:14.04">Ubuntu:14.04</option>
                                         <option value="ubuntu:16.04">Ubuntu:16.04</option>
                                     </optgroup>
@@ -153,7 +154,9 @@
                                         <option value="buster">Debian 10 (Buster)</option>
                                     </optgroup>
                                 </select>
-                                <label>Select Operating System</label>
+                                <!-- <select ng-options="item as item.name for item in os_type_selection_init" ng-model="selected"></select>
+                                
+                                <label>Select Operating System</label> -->
                             </div>
                         </div>
                         <!-- Installation -->
