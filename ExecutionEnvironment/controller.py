@@ -380,7 +380,7 @@ def talk_to_server(payload):
     if not data['success']:
         report_error(payload, data, 'Invalid return data from server. "success" is false ')
 
-    print (data)
+    #print (data)
     return data
 
 
