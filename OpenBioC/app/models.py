@@ -66,7 +66,7 @@ class Tool(models.Model):
     created_at = models.DateTimeField(auto_now_add=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#datefield 
 
     dependencies = models.ManyToManyField(to='Tool', related_name='dependencies_related') # the dependencies of this tool
-
+    os_type = models.TextField(null=True) # The os which user select to install this tool
     installation_commands = models.TextField() # The BASH commands to install this tool
     validation_commands = models.TextField() # The BASH commands to validate this tool
 
