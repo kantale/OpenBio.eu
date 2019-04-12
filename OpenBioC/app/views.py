@@ -41,6 +41,8 @@ import simplejson
 
 from collections import Counter
 
+from ansi2html import Ansi2HTMLConverter # https://github.com/ralphbean/ansi2html/
+
 __version__ = '0.0.4rc'
 
 # Get an instance of a logger
@@ -70,7 +72,7 @@ g = {
         },
     },
     'instance_setting_not_found_printed': False,
-
+    'ansi2html_converter': Ansi2HTMLConverter(), # https://github.com/ralphbean/ansi2html/
 }
 
 ### HELPING FUNCTIONS AND DECORATORS #####
@@ -129,6 +131,13 @@ def datetime_to_str(d):
     '''
     
     return d.strftime(g['format_time_string'])
+
+def convert_ansi_to_html(ansi):
+    '''
+    Create a nice standalone html page from stdout
+    https://github.com/ralphbean/ansi2html/
+    '''
+    return g['ansi2html_converter'].convert(ansi)
 
 def create_uuid_token():
     '''
@@ -1335,6 +1344,32 @@ def callback(request, **kwargs):
     #print (f'CALLBACK: Tool: {tool.name}/{tool.version}/{tool.edit}  id: {this_id} status: {status}')
 
     return success()
+
+def tools_show_stdout(request, tools_info_name, tools_info_version, tools_info_edit):
+    '''
+    URL : 
+    path(r'tool_stdout/[\\w]+/[\\w\\.]+/[\\d]+/', views.tools_show_stdout), # Show stdout of tool
+    '''
+    #print (tools_info_name, tools_info_version, tools_info_edit)
+    tool_repr = Tool.get_repr(tools_info_name, tools_info_version, tools_info_edit)
+
+    try: 
+        tool = Tool.objects.get(name=tools_info_name, version=tools_info_version, edit=int(tools_info_edit))
+    except ObjectDoesNotExist as e:
+        return fail(f'Could not find tool: {tool_repr}')
+
+    if not tool.last_validation:
+        return fail(f'Could not find any validation effort for tool: {tool_repr}')
+
+    if not tool.last_validation.stdout:
+        return fail(f'Coud not find stdout on the lst validation efoort of tool: {tool_repr}')
+
+    context = {
+        'html': convert_ansi_to_html(tool.last_validation.stdout)
+    }
+
+    return render(request, 'app/tool_stdout.html', context)
+
 
 
 ### END OF CALL BACK ###

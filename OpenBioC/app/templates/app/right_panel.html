@@ -212,22 +212,10 @@
                                 </table>
                             </div>
                         </div>
-                        <div class='row'>
-                            <strong><a href ng-click="tool_results_show_clicked()"><span
-                                            ng-show="tool_results_show">Hide</span><span
-                                            ng-show="!tool_results_show">Show</span> installation
-                                        results</a></strong>
-                            <div class="left-align" should-apply="!tool_results_show_clicked()"
-                            ng-show="tool_results_show">
-                                    <strong class="teal-text text-lighten-2">STATUS :</strong>
-                                    <pre ng-bind="tool_info_validation_status"></pre>
-                                    <strong class="teal-text text-lighten-2">STDOUT :</strong>
-                                    <pre ng-bind="tool_info_validation_stdout"></pre>
-                                    <strong class="teal-text text-lighten-2">STDERR :</strong>
-                                    <pre ng-bind="tool_info_validation_stderr"></pre>
-                                    <strong class="teal-text text-lighten-2">ERRORODE :</strong>
-                                    <pre ng-bind="tool_info_validation_errcode"></pre>
-                            </div>
+                        <div class='row' ng-show="tool_info_validation_status=='Validated' || tool_info_validation_status=='Failed'">
+                            {% verbatim %}
+                            <a href="tool_stdout/{{tools_info_name}}/{{tools_info_version}}/{{tools_info_edit}}/" target="_blank">Show STDOUT</a>
+                            {% endverbatim %}
                         </div>
                     </div>
                 </li>

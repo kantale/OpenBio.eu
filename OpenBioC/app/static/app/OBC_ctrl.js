@@ -86,7 +86,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     
         $scope.tool_variables = [{name: '', value: '', description: ''}];
         $scope.tools_var_jstree_id_show = true;
-        
+
         $scope.workflows_info_editable = false;
         $scope.workflow_website = '';
         $scope.workflow_description = '';
@@ -560,8 +560,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.tools_var_jstree_id_show = true; // Show variable/dependency tree
 
                 $scope.tool_info_validation_status = data.validation_status;
-                $scope.tool_info_validation_stdout = data.stdout;
-                $scope.tool_info_validation_stderr = data.stderr;
+               // $scope.tool_info_validation_stdout = data.stdout;
+               // $scope.tool_info_validation_stderr = data.stderr;
                 $scope.tool_info_validation_errcode = data.errcode;
                 $scope.tool_info_validation_created_at = data.validation_created_at;
             },
@@ -1019,8 +1019,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             },
             function(data) {
                 $scope.tool_info_validation_status = data['validation_status'];
-                $scope.tool_info_validation_stdout = data.stdout;
-                $scope.tool_info_validation_sterr = data.stderr;
+            //    $scope.tool_info_validation_stdout = data.stdout;
+            //    $scope.tool_info_validation_stderr = data.stderr;
                 $scope.tool_info_validation_errcode = data.errcode;
                 // console.log('DATA');
                 // console.log(data);
@@ -1070,17 +1070,6 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     $scope.tools_var_jstree_id_show_clicked = function() {
         $scope.tools_var_jstree_id_show = !$scope.tools_var_jstree_id_show;
     };
-    /*
-    * Navbar --> tools/data --> Appropriate input (search) --> Create New (tool, pressed) --> Installation (tab, pressed) 
-    *--> Show results from installation href link (clicked)
-    */
-    $scope.tool_results_show_clicked = function() {
-        $scope.tool_results_show = !$scope.tool_results_show;
-    };
-
-
-
-
 
 
     ////// JSTREES ////////

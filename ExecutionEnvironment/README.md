@@ -12,6 +12,12 @@ pip install aiohttp_cors
 conda install requests
 ```
 
+### Install  ansi2html 
+Convert text with ANSI color codes to HTML: https://pypi.org/project/ansi2html/
+```
+pip install ansi2html 
+```
+
 ### Run:
 ```
 python server.py
