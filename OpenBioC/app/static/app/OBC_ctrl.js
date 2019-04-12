@@ -51,6 +51,10 @@ angular.module('OBC_app').filter('workflow_label', function() {
     }
 });
 
+app.config(function($interpolateProvider) {
+    $interpolateProvider.startSymbol('{[{');
+    $interpolateProvider.endSymbol('}]}');
+});
 
 app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     /*
@@ -81,7 +85,15 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tools_info_forked_from = null; //From which tool is this tool forked from?
         $scope.tool_changes = ''; // Changes from forked
         // TODO : List of os types 
-
+        $scope.chooseOs=[
+            {dist:'Ubuntu',name:'Ubuntu:14.04',value:'ubuntu:14.04'},
+            {dist:'Ubuntu',name:'Ubuntu:16.04',value:'ubuntu:16.04'},
+            {dist:'Ubuntu',name:'Debian 8 (Jessie)',value:'jessie'},
+            {dist:'Debian',name:'Debian 9 (Stretch)',value:'stretch'},
+            {dist:'Debian',name:'Debian 10 (Buster)',value:'buster'}
+        ];
+        // preselected os
+        //$scope.selectedOs = null;
         $scope.tool_installation_init = '# Insert the BASH commands that install this tool\n# The following tools are available:\n#  apt-get, wget\n\n';
         $scope.tool_validation_init = '# Insert the BASH commands that confirm that this tool is correctly installed\n# In success, this script should return 0 exit code.\n# A non-zero exit code, means failure to validate installation.\n\nexit 1\n';
     
