@@ -1625,12 +1625,13 @@ window.onload = function () {
 
             });
 			
-			
+			 // Right-click menu for input nodes
 			 cy.cxtmenu({
-                selector: 'node',
+                //selector: 'node',
+				selector: 'node[type="input"]',
                 commands: [
                     {
-                        content: 'Edit',
+                        content: 'Set',
                         select: function (ele) {
 										
 							editNode= cy.$('node[id="' + ele.id() + '"]');
@@ -1639,6 +1640,43 @@ window.onload = function () {
 								editTippy.show();								   //show edit tooltip	
 							}
                         }
+                    },
+                    {
+                        content: 'Delete',
+                        select: function (ele) {
+
+                            //Ideally the deletion logic should be placed here.
+                            //Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
+                            angular.element($('#angular_div')).scope().$apply(function () {
+                                angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id());
+                            });
+
+                            //                           var j = cy.$('#' + ele.id());
+                            //                           
+                            //							/* remove node successors*/
+                            //							j.successors().targets().forEach(function (element) {
+                            //									cy.remove(element);
+                            //								
+                            //							})
+                            //							/*remove node*/
+                            //							cy.remove(j);
+
+                        }
+                    }
+                ]
+
+            });
+			
+			// Right-click menu for all except input nodes
+			cy.cxtmenu({
+                //selector: 'node',
+				selector: 'node[type!="input"]',
+                commands: [
+                    {
+                        content: 'Edit',
+                        select: function (ele) {
+										
+						}
                     },
                     {
                         content: 'Delete',
