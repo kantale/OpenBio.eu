@@ -1632,12 +1632,12 @@ window.onload = function () {
                     {
                         content: 'Edit',
                         select: function (ele) {
-                            console.log("edit");
-							//open tooltip for adding 
-							//var node = cy.$('node[id="' + node_id + '"]');
-							editNode = cy.getElementById(ele.id());						
-							editTippy = makeEditTippy(editNode, ele.id());
-							editTippy.show();
+										
+							editNode= cy.$('node[id="' + ele.id() + '"]');
+							if(editNode[0]._private.data.type==="input"){  //check if node is input type	
+								editTippy = makeEditTippy(editNode[0], ele.id());  //add edit tooltip
+								editTippy.show();								   //show edit tooltip	
+							}
                         }
                     },
                     {
@@ -2051,13 +2051,23 @@ window.onload = function () {
         window.OBCUI.runWorkflow = function() {
 
 			//check if inputs are set
-
+				emptyInputs=[];	
 				//if yes alert ok message
 				//if no alert error message
+				cy.json().elements.nodes.forEach(function (node) {
+					if(node.data.type==="input"){  //if node is inout check if has value
+						if(typeof node.data.value==='undefined') 
+						  emptyInputs.push(node);
+					}
+					
+				});
 				
+				if (emptyInputs.length>0){
+					alert("Values for inputs have not been setted");
+				}else{
+					alert("You can now run the workflow");
+				}
 		
-			// get graph data	
-			//cy_run = createCytoscapeObject();
 			
 						
         };
