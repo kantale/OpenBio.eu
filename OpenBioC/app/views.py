@@ -880,6 +880,8 @@ def tools_search_3(request, **kwargs):
         'validation_status': tool.last_validation.validation_status if tool.last_validation else 'Unvalidated',
         # Show stdout, stderr and error code when the tool is clicked on the tool-search-jstree
         'stdout' : tool.last_validation.stdout if tool.last_validation else None,
+        'stderr' : tool.last_validation.stderr if tool.last_validation else None,
+        'errcode' : tool.last_validation.errcode if tool.last_validation else None,
         'validation_created_at' : datetime_to_str(tool.last_validation.created_at) if tool.last_validation else None,
 
     }
@@ -1322,7 +1324,7 @@ def callback(request, **kwargs):
 
     stdout = payload.get('stdout', None)
     stderr = payload.get('stderr', None)
-    errcode = payload.get('errorcode', None)    
+    errcode = payload.get('errcode', None)    
 
     #print(stdout)
     # Get the tool referring to this task_id
