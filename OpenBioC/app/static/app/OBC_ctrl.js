@@ -85,8 +85,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tool_validation_init = '# Insert the BASH commands that confirm that this tool is correctly installed\n# In success, this script should return 0 exit code.\n# A non-zero exit code, means failure to validate installation.\n\nexit 1\n';
     
         $scope.tool_variables = [{name: '', value: '', description: ''}];
-
         $scope.tools_var_jstree_id_show = true;
+        
         $scope.workflows_info_editable = false;
         $scope.workflow_website = '';
         $scope.workflow_description = '';
@@ -455,7 +455,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
-    *   Get the number of all tools
+    *  Get the number of all tools
     */
     $scope.tools_search_1 = function() {
         $scope.ajax(
