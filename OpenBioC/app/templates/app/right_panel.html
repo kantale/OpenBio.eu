@@ -112,21 +112,33 @@
                 <!-- -------------------------------- Installation ----------------------------------------- -->
                 <!-- --------------------------------------------------------------------------------------- -->
                 <li id="toolsDataInstallation">
-                    <div class="collapsible-header" style="height:55px">
-                        <i class="material-icons arrow">keyboard_arrow_right</i>
-                        <i class="material-icons">computer</i>
-                        Installation
-                        <a ng-show="!tools_info_editable" ng-click="tool_info_validate_refresh_pressed()" id="installationRefreshBtn" class="waves-effect btn-flat btnCollapsible"><i
-                                class="material-icons" style="margin:0px;">refresh</i></a>
-                        <span ng-show="tool_info_validation_status=='Unvalidated'" class="new badge" style="margin-left: 5px;" data-badge-caption="Unvalidated"></span>
-                        <span ng-show="tool_info_validation_status=='Queued'" class="new badge grey" style="margin-left: 5px;" data-badge-caption="Queued"></span>
-                        <span ng-show="tool_info_validation_status=='Running'" class="new badge grey" style="margin-left: 5px;" data-badge-caption="Running"></span>
-                        <span ng-show="tool_info_validation_status=='Failed'" class="new badge red" style="margin-left: 5px;" data-badge-caption="Failed"></span>
-                        <span ng-show="tool_info_validation_status=='Validated'" class="new badge green" style="margin-left: 5px;" data-badge-caption="Validated"></span>
+                    <div class="collapsible-header" style="height:55px; display:block;">
+                        <i class="material-icons arrow left">keyboard_arrow_right</i>
+                        <i class="material-icons left">computer</i>
+                        <span class="left">Installation</span>
+
+                        <small
+                            ng-show="(!tools_info_editable) && (tool_info_validation_status=='Unvalidated' || tool_info_validation_status=='Validated' || tool_info_validation_status=='Failed')"
+                            ng-click="tool_info_validate_pressed()" class="right"><a><span
+                                    ng-show="tool_info_validation_status=='Validated'">re-</span>validate</a></small>
+
+                        <span ng-show="tool_info_validation_status=='Unvalidated'" class="new badge right"
+                            style="margin-left: 5px;" data-badge-caption="Unvalidated"></span>
+                        <span ng-show="tool_info_validation_status=='Queued'" class="new badge grey right"
+                            style="margin-left: 5px;" data-badge-caption="Queued"></span>
+                        <span ng-show="tool_info_validation_status=='Running'" class="new badge grey right"
+                            style="margin-left: 5px;" data-badge-caption="Running"></span>
+                        <span ng-show="tool_info_validation_status=='Failed'" class="new badge red right"
+                            style="margin-left: 5px;" data-badge-caption="Failed"></span>
+                        <span ng-show="tool_info_validation_status=='Validated'" class="new badge green right"
+                            style="margin-left: 5px;" data-badge-caption="Validated"></span>
                         <small ng-show="tool_info_validation_created_at" class="text-muted" style="padding-top: 3px">
-                                <span ng-bind="tool_info_validation_created_at"></span>
+                            <span ng-bind="tool_info_validation_created_at"></span>
                         </small>
-                        <small ng-show="(!tools_info_editable) && (tool_info_validation_status=='Unvalidated' || tool_info_validation_status=='Validated' || tool_info_validation_status=='Failed')" ng-click="tool_info_validate_pressed()"><a><span ng-show="tool_info_validation_status=='Validated'">re-</span>validate</a></small>
+
+                        <a ng-show="!tools_info_editable" ng-click="tool_info_validate_refresh_pressed()"
+                            id="installationRefreshBtn" class="waves-effect btn-flat btnCollapsible right"><i
+                                class="material-icons" style="margin:0px;">refresh</i></a>
                     </div>
                     <div class="collapsible-body">
                         <!-- Hide Variables -->
