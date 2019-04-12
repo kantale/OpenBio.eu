@@ -408,9 +408,6 @@ def worker(message_queue, w_id):
             payload = {
                 'id': this_id,
                 'status': 'Running',
-                'stdout': None,
-                'stderr': None,
-                'errcode' : None,
             }
             talk_to_server(payload)
 

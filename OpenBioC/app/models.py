@@ -94,9 +94,9 @@ class ToolValidations(models.Model):
     task_id = models.CharField(max_length=256) 
 
     validation_status = models.CharField(max_length=256) 
-    errcode = models.IntegerField(null=False)
-    stdout = models.TextField(null=False)
-    stderr = models.TextField(null=False)
+    errcode = models.IntegerField(null=True)
+    stdout = models.TextField(null=True)
+    stderr = models.TextField(null=True)
     created_at = models.DateTimeField(auto_now_add=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#datefield 
 
 

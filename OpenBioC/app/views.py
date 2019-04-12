@@ -1245,14 +1245,14 @@ def tool_validation_status(request, **kwargs):
     #print ('TOOL VALIDATION STATUS:')
 
     ret = {
-        'validation_status': tool.last_validation.validation_status if tool.last_validation else None ,
+        'validation_status': tool.last_validation.validation_status if tool.last_validation else 'Unvalidated',
         'validation_created_at': datetime_to_str(tool.last_validation.created_at) if tool.last_validation else None,
         'stderr':tool.last_validation.stderr if tool.last_validation else None,
         'stdout':tool.last_validation.stdout if tool.last_validation else None,
         'errcode':tool.last_validation.errcode if tool.last_validation else None,
     }
 
-    #print (ret)
+    print (ret)
 
     return success(ret)
 
@@ -1309,13 +1309,11 @@ def callback(request, **kwargs):
     if not 'id' in payload:
         return fail('id was not found on payload')
     this_id = payload['id']
-    # Get the strout strderr and errorcode 
-    if 'stdout' in payload:
-        stdout = payload['stdout']
-    if 'stderr' in payload:
-        stderr = payload['stderr']
-    if 'errcode' in payload:
-        errcode = payload['errcode']
+    # Get the stdout stdderr and errorcode 
+
+    stdout = payload.get('stdout', None)
+    stderr = payload.get('stderr', None)
+    errcode = payload.get('errorcode', None)    
 
     #print(stdout)
     # Get the tool referring to this task_id
@@ -1327,12 +1325,8 @@ def callback(request, **kwargs):
     # Create new ToolValidations
     # If stdout is emty , stderr and errcode are empty 
     # If status is Queued or Running set this three None
-    if payload['stdout'] is None :
-        tv = ToolValidations(tool=tool, task_id=this_id, validation_status=status, stdout= None,stderr= None ,errcode= None)
-        tv.save()
-    else:
-        tv = ToolValidations(tool=tool, task_id=this_id, validation_status=status, stdout= stdout, stderr= stderr, errcode= errcode)
-        tv.save()
+    tv = ToolValidations(tool=tool, task_id=this_id, validation_status=status, stdout= stdout, stderr= stderr, errcode= errcode)
+    tv.save()
 
     # Assign tv to tool
     tool.last_validation = tv
