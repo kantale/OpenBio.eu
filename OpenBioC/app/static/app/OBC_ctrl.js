@@ -1020,7 +1020,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             function(data) {
                 $scope.tool_info_validation_status = data['validation_status'];
                 $scope.tool_info_validation_stdout = data.stdout;
-                $scope.tool_info_validation_sterr = data.stderr;
+                $scope.tool_info_validation_stderr = data.stderr;
                 $scope.tool_info_validation_errcode = data.errcode;
                 // console.log('DATA');
                 // console.log(data);
