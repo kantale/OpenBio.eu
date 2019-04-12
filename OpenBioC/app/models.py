@@ -49,6 +49,10 @@ class Tool(models.Model):
         '''
         unique_together = (('name', 'version', 'edit'),)
 
+    @staticmethod
+    def get_repr(name, version, edit):
+        return f'{name}/{version}/{edit}'
+
     name = models.CharField(max_length=256)
     version = models.CharField(max_length=256)
     edit = models.IntegerField()
