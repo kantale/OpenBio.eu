@@ -212,16 +212,22 @@
                                 </table>
                             </div>
                         </div>
-                        <!--
-                        <div class="row col s12" ng-show="!tools_info_editable">
-                            <button class="btn waves-effect waves-light"
-                                ng-click="tool_info_validate_pressed()">Validate</button>
-                        </div>
-                        -->
-                        <div class="row col s12 left-align">
-                            <code>
-                                <pre ng-bind="tool_info_validation_status"></pre>
-                            </code>
+                        <div class='row'>
+                            <strong><a href ng-click="tool_results_show_clicked()"><span
+                                            ng-show="tool_results_show">Hide</span><span
+                                            ng-show="!tool_results_show">Show</span> installation
+                                        results</a></strong>
+                            <div class="left-align" should-apply="!tool_results_show_clicked()"
+                            ng-show="tool_results_show">
+                                    <strong class="teal-text text-lighten-2">STATUS :</strong>
+                                    <pre ng-bind="tool_info_validation_status"></pre>
+                                    <strong class="teal-text text-lighten-2">STDOUT :</strong>
+                                    <pre ng-bind="tool_info_validation_stdout"></pre>
+                                    <strong class="teal-text text-lighten-2">STDERR :</strong>
+                                    <pre ng-bind="tool_info_validation_stderr"></pre>
+                                    <strong class="teal-text text-lighten-2">ERRORODE :</strong>
+                                    <pre ng-bind="tool_info_validation_errcode"></pre>
+                            </div>
                         </div>
                     </div>
                 </li>
