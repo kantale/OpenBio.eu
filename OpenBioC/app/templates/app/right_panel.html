@@ -118,14 +118,22 @@
                         <span class="left">Installation</span>
 
                         {% verbatim %}
-                        <small class="right"><a href="tool_stdout/{{tools_info_name}}/{{tools_info_version}}/{{tools_info_edit}}/" target="_blank">output ICON</a></small>
+                        <small class="right">
+                            <a href="tool_stdout/{{tools_info_name}}/{{tools_info_version}}/{{tools_info_edit}}/"
+                                target="_blank" class="tooltipped" data-position="bottom" data-tooltip="Show STDOUT">
+                                <i class="material-icons left" style="margin-right:0px;">open_in_new</i>
+                            </a>
+                        </small>
                         {% endverbatim %}
                         <small
                             ng-show="(!tools_info_editable) && (tool_info_validation_status=='Unvalidated' || tool_info_validation_status=='Validated' || tool_info_validation_status=='Failed')"
-                            ng-click="tool_info_validate_pressed()" class="right"><a><span
-                                    ng-show="tool_info_validation_status=='Validated'">re-</span>validate</a></small>
+                            ng-click="tool_info_validate_pressed()" class="right"
+                            style="padding-top:4px; margin-left:5px; margin-right:5px;">
+                            <a><span ng-show="tool_info_validation_status=='Validated'">re-</span>validate</a>
+                        </small>
 
-                        <small ng-show="tool_info_validation_created_at" class="text-muted right" style="padding-top: 3px">
+                        <small ng-show="tool_info_validation_created_at" class="text-muted right"
+                            style="padding-top: 4px; margin-left: 5px; margin-right: 5px;">
                             <span ng-bind="tool_info_validation_created_at"></span>
                         </small>
                         <span ng-show="tool_info_validation_status=='Unvalidated'" class="new badge right"
