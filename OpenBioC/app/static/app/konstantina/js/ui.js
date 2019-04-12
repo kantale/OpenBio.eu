@@ -1518,7 +1518,8 @@ window.onload = function () {
 
 
 			/* 
-            * Function for creating tooltip and their content.
+            * Function for creating tooltip on node hover.
+			*
             */
             var makeTippy = function (node, text) {
                 return tippy(node.popperRef(), {
@@ -1536,6 +1537,66 @@ window.onload = function () {
                     //theme: 'light', 
                     sticky: true
                 });
+            };
+
+			
+			
+			/* 
+            * Function for creating tooltip for setting input node value.
+            */
+            var makeEditTippy = function (node, text) {
+                return tippy(node.popperRef(), {
+					
+                    	content: function () {
+								var div = document.createElement('div');
+                                div.setAttribute("id", "tippy_div_" + node._private.data.id);
+								div.innerHTML = 
+												'<button type="button" class="close">×</button><br>'+  // onclick='+alert($(this).parent());+'
+												node._private.data.description+ '<br>'+
+												'Add Value For '+ node._private.data.name+' : <br>'+
+												'<input type="text" id="tippy_text_'+node._private.data.id+'" name="Add Value"><br>'	+
+												'<button id="tippy_button_'+node._private.data.id+'" class="btn btn-click">set</button>'		
+												
+								div.style.width = "200px";
+								div.style.height = "140px";
+								div.style.color = "black"; //font color
+								div.style.position= "relative";
+								//div.style.zIndex = "10000000000";					
+								return div;
+						},
+						onShown: function() {
+							//$('.btn-click').off("click").on("click", function(){
+							$('#tippy_button_' + node._private.data.id).off("click").on("click", function(){
+    							//alert( document.getElementById(this.id.replace('tippy_button_', 'tippy_text_')).value);
+    							// tippy should be destroyed
+                                var value = document.getElementById('tippy_text_'+node._private.data.id).value;
+                                node.data('value', value);
+                                node.data('label', node._private.data.name+'='+value);
+                                //$(this).parent().fadeOut('slow', function(c){});
+                                $('#tippy_div_' + node._private.data.id).remove();
+
+							});
+							
+							$('.close').on('click', function(c){
+									$('#tippy_div_' + node._private.data.id).remove();
+									//$(this).parent().fadeOut('slow', function(c){
+								//});
+							});	
+									
+						},
+						trigger: 'manual',
+						//arrow: true,
+						placement: 'bottom',
+						interactive: true,	//this should be true for the content to be interactive and clickable
+						hideOnClick: false,
+						multiple: true,
+						followCursor: true,
+						theme: 'light', 
+						//zIndex: 100001,
+						sticky: true
+                
+				
+				});
             };
 
 
@@ -1563,6 +1624,49 @@ window.onload = function () {
                 //myTippy.hide();
 
             });
+			
+			
+			 cy.cxtmenu({
+                selector: 'node',
+                commands: [
+                    {
+                        content: 'Edit',
+                        select: function (ele) {
+                            console.log("edit");
+							//open tooltip for adding 
+							//var node = cy.$('node[id="' + node_id + '"]');
+							editNode = cy.getElementById(ele.id());						
+							editTippy = makeEditTippy(editNode, ele.id());
+							editTippy.show();
+                        }
+                    },
+                    {
+                        content: 'Delete',
+                        select: function (ele) {
+
+                            //Ideally the deletion logic should be placed here.
+                            //Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
+                            angular.element($('#angular_div')).scope().$apply(function () {
+                                angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id());
+                            });
+
+                            //                           var j = cy.$('#' + ele.id());
+                            //                           
+                            //							/* remove node successors*/
+                            //							j.successors().targets().forEach(function (element) {
+                            //									cy.remove(element);
+                            //								
+                            //							})
+                            //							/*remove node*/
+                            //							cy.remove(j);
+
+                        }
+                    }
+                ]
+
+            });
+			
+			
         }
 		
 		/*
@@ -1681,43 +1785,7 @@ window.onload = function () {
             cy = createCytoscapeObject();
             /* add menu on node right click*/
 
-            cy.cxtmenu({
-                selector: 'node',
-                commands: [
-                    {
-                        content: 'Edit',
-                        select: function (ele) {
-                            console.log("edit");
-                        }
-                    },
-                    {
-                        content: 'Delete',
-                        select: function (ele) {
-
-                            //Ideally the deletion logic should be placed here.
-                            //Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
-                            angular.element($('#angular_div')).scope().$apply(function () {
-                                angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id());
-                            });
-
-                            //                           var j = cy.$('#' + ele.id());
-                            //                           
-                            //							/* remove node successors*/
-                            //							j.successors().targets().forEach(function (element) {
-                            //									cy.remove(element);
-                            //								
-                            //							})
-                            //							/*remove node*/
-                            //							cy.remove(j);
-
-                        }
-                    }
-                ]
-
-            });
-
-
-            //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.
+           //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.
             document.querySelector('canvas[data-id="layer2-node"]').style.position = null;
 
         }
@@ -1980,123 +2048,16 @@ window.onload = function () {
         /*
         * Called from angular $scope.workflow_info_run_pressed
         */
-        window.OBCUI.runWorkflow = function() {			
+        window.OBCUI.runWorkflow = function() {
+
+			//check if inputs are set
+
+				//if yes alert ok message
+				//if no alert error message
+				
 		
 			// get graph data	
 			//cy_run = createCytoscapeObject();
-			
-            //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.
-            document.querySelector('canvas[data-id="layer2-node"]').style.position = null;
-
-			if (false) {
-                cy_run.json({ elements: cy.json().elements});  // Add new data
-    				cy_run.ready(function () {                 // Wait for nodes to be added  
-    					cy_run.layout({                         // Call layout
-    						name: 'breadthfirst',
-    						directed: true,
-    						padding: 2
-    					}).run();
-
-    				});
-            }
-			
-			/**** Add text-editor-tooltip in each input/output ****/
-			// close tooltip 
-			$(document).ready(function(c) {
-				$('.close').on('click', function(c){
-					$(this).parent().fadeOut('slow', function(c){
-					});
-				});	
-			});
-			
-			/* 
-            * Function for creating tooltip and their content.
-			*
-            */
-            var makeTippy = function (node, text) {
-	
-				return tippy(node.popperRef(), {
-					
-						content: function () {
-								var div = document.createElement('div');
-                                div.setAttribute("id", "tippy_div_" + node._private.data.id);
-								div.innerHTML = 
-												//'<form name="input" >' +
-												'<button type="button" class="close">×</button><br>'+  // onclick='+alert($(this).parent());+'
-												node._private.data.description+ '<br>'+
-												'Add Value For '+ node._private.data.name+' : <br>'+
-												'<input type="text" id="tippy_text_'+node._private.data.id+'" name="Add Value"><br>'	+
-												'<button id="tippy_button_'+node._private.data.id+'" class="btn btn-click">set</button>'		
-												//'<input type="submit" value="set" />' ;
-												//'</form>';
-												
-								div.style.width = "200px";
-								div.style.height = "140px";
-								div.style.color = "black"; //font color
-								div.style.position= "relative";
-								//div.style.zIndex = "10000000000";					
-								return div;
-						},
-						onShown: function() {
-						  //$('.btn-click').off("click").on("click", function(){
-                          $('#tippy_button_' + node._private.data.id).off("click").on("click", function(){
-    							//alert( document.getElementById(this.id.replace('tippy_button_', 'tippy_text_')).value);
-    							// tippy should be destroyed
-                               // var value = document.getElementById(this.id.replace('tippy_button_', 'tippy_text_')).value;
-                                var value = document.getElementById('tippy_text_'+node._private.data.id).value;
-                                console.log('Node ID:');
-                                console.log(node._private.data.id);
-                                console.log('Input parameter:');
-                                console.log(node._private.data);
-                                console.log('Value:');
-                                console.log(value);
-                                node.data('value', value);
-                                console.log('Input parameter after');
-                                console.log(node._private.data);
-
-                                node.data('label', node._private.data.name+'='+value);
-                                //$(this).parent().fadeOut('slow', function(c){});
-
-                                $('#tippy_div_' + node._private.data.id).remove();
-
-							});
-									
-						},
-						trigger: 'manual',
-						//arrow: true,
-						placement: 'bottom',
-						interactive: true,	//this should be true for the content to be interactive and clickable
-						hideOnClick: false,
-						multiple: true,
-						followCursor: true,
-						theme: 'light', 
-						//zIndex: 100001,
-						sticky: true
-						
-				});
-				
-            };
-			
-			
-				
-			
-				/* show tooltip */
-			
-				var mytippys=[]; // array for keeping instances of tooltips, needed for destroying all instances on mouse out
-				
-				mytippys.forEach(function (mytippy) { // destroy all instances
-					mytippy.destroy(mytippy.popper);
-				});	
- 
-				// Add tooltip in inputs
-				cy.nodes().forEach(function(node){
-					if(node._private.data.type==='input' ){
-						myTippy = makeTippy(node, node.data.id);
-						mytippys.push(myTippy);
-						myTippy.show();
-					}
-				});
-				
 			
 						
         };
