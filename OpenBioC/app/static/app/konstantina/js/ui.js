@@ -2051,7 +2051,7 @@ window.onload = function () {
         window.OBCUI.runWorkflow = function() {
 
 			//check if inputs are set
-				emptyInputs=[];	
+				var emptyInputs=[];	
 				//if yes alert ok message
 				//if no alert error message
 				cy.json().elements.nodes.forEach(function (node) {
@@ -2063,7 +2063,12 @@ window.onload = function () {
 				});
 				
 				if (emptyInputs.length>0){
-					alert("Values for inputs have not been setted");
+					
+					var empty_nodes_values='';
+					emptyInputs.forEach(function (node) {
+						empty_nodes_values += node.data.label+" ,";
+					});
+					alert("Value for "+empty_nodes_values.substring(0, empty_nodes_values.length - 1)+" has not been setted");
 				}else{
 					alert("You can now run the workflow");
 				}
