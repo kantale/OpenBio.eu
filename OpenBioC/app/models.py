@@ -32,6 +32,49 @@ class Variables(models.Model):
     description = models.CharField(max_length=256, null=False)
     tool = models.ForeignKey(to='Tool', on_delete=models.CASCADE, null=False, related_name='variables_related')
 
+class OS_types(models.Model):
+    '''
+    Hold OS types
+    Another option: https://pypi.org/project/django-multiselectfield/
+    '''
+    ubuntu_14_04 = 'ubuntu:14.04'
+    ubuntu_16_04 = 'ubuntu:16.04'
+    debian_jessin = 'jessie'
+    debian_stretch = 'stretch'
+    denian_buster = 'buster'
+
+
+    OS_CHOICES = (
+        (ubuntu_14_04,'Ubuntu:14.04'),
+        (ubuntu_16_04,'Ubuntu:16.04'), 
+        (debian_jessin,'Debian 8 (Jessie)'),
+        (debian_stretch,'Debian 9 (Stretch)'),
+        (denian_buster,'Debian 10 (Buster)'),
+     )
+
+    groups = {
+        'Ubuntu': [ubuntu_14_04, ubuntu_16_04],
+        'Debian': [debian_jessin, debian_stretch, denian_buster],
+
+    }
+
+    @staticmethod
+    def get_angular_model():
+        '''
+        Return a list of..
+        {group:'Ubuntu',name:'Ubuntu:14.04',value:'ubuntu:14.04'},
+        '''
+
+        return [{
+            'group': [group_name for group_name, group_values in OS_types.groups.items() if os_value in group_values][0],
+            'name': os_name,
+            'value': os_value
+        } for os_value, os_name in OS_types.OS_CHOICES]
+
+    os_choices = models.CharField(choices=OS_CHOICES, max_length=100)
+
+
+
 class Tool(models.Model):
     '''
     This table describes Tools and Data
@@ -84,7 +127,7 @@ class Tool(models.Model):
     created_at = models.DateTimeField(auto_now_add=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#datefield 
 
     dependencies = models.ManyToManyField(to='Tool', related_name='dependencies_related') # the dependencies of this tool
-    os_type = models.TextField(null=True) #, choices=OS_CHOICES)  The os which user select to install this tool
+    os_choices = models.ManyToManyField(to='OS_types') # The OSs that this tool runs 
     installation_commands = models.TextField() # The BASH commands to install this tool
     validation_commands = models.TextField() # The BASH commands to validate this tool
 

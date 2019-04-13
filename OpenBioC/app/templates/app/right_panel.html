@@ -179,7 +179,7 @@
                                     </optgroup>
                                
                                 </select> -->
-                                 <select ng-model="selectedOption" ng-options="os.name group by os.group for os in chooseOs" ng-disabled="selectedOption"></select>
+                                 <select id="tool_os_choices_select" ng-model="tool_os_choices" ng-options="os.name group by os.group for os in os_choices" ng-disabled="tools_info_editable" ></select>
 
                                 <label>Select Operating System</label>
 

@@ -9,3 +9,32 @@ cd plink-1.07-x86_64
 
 
 
+
+
+
+```
+angular.element($('#angular_div')).scope().$apply(function () {
+	console.log(angular.element($('#angular_div')).scope().tools_info_editable);
+});
+
+
+angular.element($('#angular_div')).scope().$apply(function () {
+    console.log(angular.element($('#angular_div')).scope().tool_os_choices);
+});
+
+angular.element($('#angular_div')).scope().$apply(function () {
+    console.log(angular.element($('#angular_div')).scope().os_choices);
+});
+
+
+angular.element($('#angular_div')).scope().$apply(function () {
+	angular.element($('#angular_div')).scope().tool_os_choices = { group: "Debian", name: "Debian 9 (Stretch)", value: "stretch", "$$hashKey": "object:10" };
+});
+
+
+angular.element($('#angular_div')).scope().$apply(function () {
+	angular.element($('#angular_div')).scope().tool_os_choices = {"group": "Debian", "name": "Debian 10 (Buster)", "value": "buster"};
+});
+
+```
+
