@@ -1003,7 +1003,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.toast(data['error_message'], 'error');
             },
             function (statusText) {
-                $scope.toast('Server Error:' + statusText, 'error');
+                $scope.toast('Validation Server is unavailable. Please try later.', 'error');
             }
         );
     };

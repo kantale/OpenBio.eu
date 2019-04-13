@@ -118,7 +118,7 @@
                         <span class="left">Installation</span>
 
                         {% verbatim %}
-                        <small class="right">
+                        <small class="right" ng-show="tool_info_validation_status=='Validated' || tool_info_validation_status=='Failed'">
                             <a href="tool_stdout/{{tools_info_name}}/{{tools_info_version}}/{{tools_info_edit}}/"
                                 target="_blank" class="tooltipped" data-position="bottom" data-tooltip="Show STDOUT">
                                 <i class="material-icons left" style="margin-right:0px;">open_in_new</i>
