@@ -949,6 +949,10 @@ def tools_add(request, **kwargs):
     if not tools_search_version:
         return fail('Invalid version')
 
+    #os_type Update 
+    os_type_selected = kwargs.get('os_type_selected','')
+    if not os_type_selected:
+        return fail('Operating system cannot be empty')
     #Get the maximum version
     tool_all = Tool.objects.filter(name=tools_search_name, version=tools_search_version)
     if not tool_all.exists():
@@ -968,8 +972,8 @@ def tools_add(request, **kwargs):
     else:
         tool_forked_from = None
         tool_changes = None
-    #os_type
-    os_type_selected = kwargs['tool_os_selection']
+    
+    
     #Installation/Validation commands 
     tool_installation_commands = kwargs['tool_installation_commands']
     tool_validation_commands = kwargs['tool_validation_commands']
@@ -1334,13 +1338,12 @@ def callback(request, **kwargs):
     if tool is None:
         return fail(f'Could not find tool with task_id={this_id}')
 
-
     # Create new ToolValidations
     # If stdout is emty , stderr and errcode are empty 
     # If status is Queued or Running set this three None
     tv = ToolValidations(tool=tool, task_id=this_id, validation_status=status, stdout= stdout, stderr= stderr, errcode= errcode)
     tv.save()
-
+    print (f'CALLBACK: Tool: {tool.name}/{tool.version}/{tool.edit}  id: {this_id} status: {status}')
     # Assign tv to tool
     tool.last_validation = tv
     tool.save()
