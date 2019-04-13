@@ -51,7 +51,6 @@ angular.module('OBC_app').filter('workflow_label', function() {
     }
 });
 
-
 app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     /*
     * ok some things that are here perhaps could be placed elsewhere.. 
@@ -80,8 +79,15 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tools_info_editable = false; // Can we edit tools_info ?
         $scope.tools_info_forked_from = null; //From which tool is this tool forked from?
         $scope.tool_changes = ''; // Changes from forked
-        // TODO : List of os types 
-
+        // TODO : fix the values (the debian versions is not correct for Dockerfile)
+        $scope.chooseOs=[
+            {group:'Ubuntu',name:'Ubuntu:14.04',value:'ubuntu:14.04'},
+            {group:'Ubuntu',name:'Ubuntu:16.04',value:'ubuntu:16.04'},
+            {group:'Debian',name:'Debian 8 (Jessie)',value:'jessie'},
+            {group:'Debian',name:'Debian 9 (Stretch)',value:'stretch'},
+            {group:'Debian',name:'Debian 10 (Buster)',value:'buster'}
+        ];
+        
         $scope.tool_installation_init = '# Insert the BASH commands that install this tool\n# The following tools are available:\n#  apt-get, wget\n\n';
         $scope.tool_validation_init = '# Insert the BASH commands that confirm that this tool is correctly installed\n# In success, this script should return 0 exit code.\n# A non-zero exit code, means failure to validate installation.\n\nexit 1\n';
     
@@ -554,7 +560,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 angular.copy(data['dependencies_jstree'], $scope.tools_dep_jstree_model);
                 angular.copy(data['variables_js_tree'], $scope.tools_var_jstree_model);
                 $scope.tool_variables = data['variables'];
-                $('#tools_os_combo').val(data['os_type']);
+                // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
+                // find and save the selected os when the user search specific tool
+                $scope.selectedOption = $scope.chooseOs.find(os => os.value === data['os_type']);
+                // TODO : Make the Dropdown disabled 
+                // BUG : when i find the tool i must click in dropdown to show the tool
+                //console.log($scope.selectedOption);
                 tool_installation_editor.setValue(data['installation_commands'], -1);
                 tool_validation_editor.setValue(data['validation_commands'], -1);
                 tool_installation_editor.setReadOnly(true);
@@ -690,6 +701,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tool_website = '';
         $scope.tool_description = '';
         $scope.tool_changes = '';
+        $scope.selectedOption = '';
 
         //Empty dependencies JSTREE 
         angular.copy([], $scope.tools_dep_jstree_model);
@@ -699,7 +711,6 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         //Empty variables
         $scope.tool_variables = [{name: '', value: '', description: ''}];
-        $('#tools_os_combo').attr('readonly', true);
 
         tool_installation_editor.setValue($scope.tool_installation_init, -1);
         tool_installation_editor.setReadOnly(false);
@@ -836,7 +847,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         console.log("$scope.tools_dep_jstree_model:");
         console.log($scope.tools_dep_jstree_model);
-
+        os_type_selected = $scope.selectedOption.value;
+        //console.log(os_type_selected);
         //Get the dependencies
         var tool_dependencies = [];
         for (var i=0; i<$scope.tools_dep_jstree_model.length; i++) {
@@ -855,10 +867,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 'tool_description': $scope.tool_description,
                 'tool_forked_from': $scope.tools_info_forked_from,
                 'tool_changes': $scope.tool_changes,
-
+                'os_type_selected' : os_type_selected,
                 'tool_dependencies': tool_dependencies,
                 'tool_variables': $scope.tool_variables,
-                'tool_os_selection': $('#tools_os_combo').val(),
                 'tool_installation_commands': tool_installation_editor.getValue(),
                 'tool_validation_commands': tool_validation_editor.getValue()
 
@@ -920,7 +931,6 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         if ($scope.tool_variables.length == 0) {
             $scope.tool_variables = [{name: '', value: '', description: ''}];
         }
-        $('#tools_os_combo').attr('readonly', true);
         tool_installation_editor.setReadOnly(false);
         tool_validation_editor.setReadOnly(false);
         $scope.tools_var_jstree_id_show = true; // Show variable/dependency tree
@@ -969,7 +979,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         var installation_bash = tool_installation_editor.getValue();
         var validation_bash = tool_validation_editor.getValue();
         //take the value from dropdown menu 
-        var os_selected_value = $('#tools_os_combo').val(); // TODO: CHECK IF NOT CHOSEN 
+        var os_selected_value = os_type_selected; // TODO: CHECK IF NOT CHOSEN 
 
         // console.log(os_selected_value);
         //console.log('INSTALLATION BASH:');

@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import User
-
 '''
 After making changes here run:
 python manage.py makemigrations
@@ -43,6 +42,8 @@ class Tool(models.Model):
 
     https://docs.djangoproject.com/en/2.1/ref/models/options/#unique-together
     '''
+
+
     class Meta:
         '''
         https://docs.djangoproject.com/en/2.1/ref/models/options/#unique-together
@@ -52,6 +53,23 @@ class Tool(models.Model):
     @staticmethod
     def get_repr(name, version, edit):
         return f'{name}/{version}/{edit}'
+
+    '''
+    Os_selection ChoicesField
+    https://docs.djangoproject.com/en/2.2/ref/models/fields/#field-options
+    '''
+    # OS_CHOICES = (
+    #     ('Ubuntu',(
+    #         ('ubuntu:14.04','Ubuntu:14.04'),
+    #         ('ubuntu:16.04','Ubuntu:16.04'),
+    #     )),
+    #     ('Debian',(
+    #         ('jessie','Debian 8 (Jessie)'),
+    #         ('stretch','Debian 9 (Stretch)'),
+    #         ('buster','Debian 10 (Buster)')
+    #     )), 
+    # )
+
 
     name = models.CharField(max_length=256)
     version = models.CharField(max_length=256)
@@ -66,7 +84,7 @@ class Tool(models.Model):
     created_at = models.DateTimeField(auto_now_add=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#datefield 
 
     dependencies = models.ManyToManyField(to='Tool', related_name='dependencies_related') # the dependencies of this tool
-    os_type = models.TextField(null=True) # The os which user select to install this tool
+    os_type = models.TextField(null=True) #, choices=OS_CHOICES)  The os which user select to install this tool
     installation_commands = models.TextField() # The BASH commands to install this tool
     validation_commands = models.TextField() # The BASH commands to validate this tool
 
