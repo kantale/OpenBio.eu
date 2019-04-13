@@ -80,13 +80,15 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tools_info_forked_from = null; //From which tool is this tool forked from?
         $scope.tool_changes = ''; // Changes from forked
         // TODO : fix the values (the debian versions is not correct for Dockerfile)
-        $scope.chooseOs=[
-            {group:'Ubuntu',name:'Ubuntu:14.04',value:'ubuntu:14.04'},
-            {group:'Ubuntu',name:'Ubuntu:16.04',value:'ubuntu:16.04'},
-            {group:'Debian',name:'Debian 8 (Jessie)',value:'jessie'},
-            {group:'Debian',name:'Debian 9 (Stretch)',value:'stretch'},
-            {group:'Debian',name:'Debian 10 (Buster)',value:'buster'}
-        ];
+        $scope.os_choices = window.OBC_OS_CHOICES;
+
+//        $scope.chooseOs=[
+//            {group:'Ubuntu',name:'Ubuntu:14.04',value:'ubuntu:14.04'},
+//            {group:'Ubuntu',name:'Ubuntu:16.04',value:'ubuntu:16.04'},
+//            {group:'Debian',name:'Debian 8 (Jessie)',value:'jessie'},
+//            {group:'Debian',name:'Debian 9 (Stretch)',value:'stretch'},
+//            {group:'Debian',name:'Debian 10 (Buster)',value:'buster'}
+//        ];
         
         $scope.tool_installation_init = '# Insert the BASH commands that install this tool\n# The following tools are available:\n#  apt-get, wget\n\n';
         $scope.tool_validation_init = '# Insert the BASH commands that confirm that this tool is correctly installed\n# In success, this script should return 0 exit code.\n# A non-zero exit code, means failure to validate installation.\n\nexit 1\n';
@@ -562,7 +564,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.tool_variables = data['variables'];
                 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
                 // find and save the selected os when the user search specific tool
-                $scope.selectedOption = $scope.chooseOs.find(os => os.value === data['os_type']);
+                //$scope.selectedOption = $scope.chooseOs.find(os => os.value === data['os_type']);
+
+                $scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === data['tool_os_choices'][0]})  ; // Take just the first. The model allows for multiple choices
+                console.log('$scope.tool_os_choices:');
+                console.log($scope.tool_os_choices);
+                $('#tool_os_choices_select').formSelect();
+
                 // TODO : Make the Dropdown disabled 
                 // BUG : when i find the tool i must click in dropdown to show the tool
                 //console.log($scope.selectedOption);
@@ -701,7 +709,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tool_website = '';
         $scope.tool_description = '';
         $scope.tool_changes = '';
-        $scope.selectedOption = '';
+        //$scope.selectedOption = '';
 
         //Empty dependencies JSTREE 
         angular.copy([], $scope.tools_dep_jstree_model);
@@ -721,6 +729,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //Empty validation status
         $scope.tool_info_validation_status = 'Unvalidated';
         $scope.tool_info_validation_created_at = null;
+
+        $scope.tool_os_choices = '';
 
     };
 
@@ -842,13 +852,18 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     /*
     * Navbar --> Tools/data --> Appropriate input --> "Create New" button --> Pressed --> Filled input --> Save (button) --> Pressed
     * See also: workflows_create_save_pressed 
+    * 
+
+selectedOption DELETE THIS
+
     */
     $scope.tool_create_save_pressed = function() {
 
         console.log("$scope.tools_dep_jstree_model:");
         console.log($scope.tools_dep_jstree_model);
-        os_type_selected = $scope.selectedOption.value;
+        //os_type_selected = $scope.selectedOption.value;
         //console.log(os_type_selected);
+
         //Get the dependencies
         var tool_dependencies = [];
         for (var i=0; i<$scope.tools_dep_jstree_model.length; i++) {
@@ -867,7 +882,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 'tool_description': $scope.tool_description,
                 'tool_forked_from': $scope.tools_info_forked_from,
                 'tool_changes': $scope.tool_changes,
-                'os_type_selected' : os_type_selected,
+                'tool_os_choices' : $scope.tool_os_choices,
                 'tool_dependencies': tool_dependencies,
                 'tool_variables': $scope.tool_variables,
                 'tool_installation_commands': tool_installation_editor.getValue(),

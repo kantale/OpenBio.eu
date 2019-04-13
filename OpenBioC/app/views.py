@@ -22,7 +22,7 @@ from django.views.decorators.csrf import csrf_exempt # https://stackoverflow.com
 from django.middleware.csrf import get_token 
 
 #Import database objects
-from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations
+from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations, OS_types
 
 # Email imports
 import smtplib
@@ -522,6 +522,8 @@ def index(request):
     context['port'] = instance_settings['port']
     context['controller_url'] = instance_settings['controller_url']
 
+    # Get OS choices
+    context['os_choices'] = simplejson.dumps(OS_types.get_angular_model());
 
     return render(request, 'app/index.html', context)
 
@@ -873,8 +875,7 @@ def tools_search_3(request, **kwargs):
         'variables_js_tree': tool_variables_jstree,
 
         'variables': tool_variables,
-        # set os type
-        'os_type': tool.os_type,
+        'tool_os_choices': [x.os_choices for x in tool.os_choices.all()],
         'installation_commands': tool.installation_commands,
         'validation_commands': tool.validation_commands,
         
@@ -950,9 +951,10 @@ def tools_add(request, **kwargs):
         return fail('Invalid version')
 
     #os_type Update 
-    os_type_selected = kwargs.get('os_type_selected','')
-    if not os_type_selected:
+    tool_os_choices = kwargs.get('tool_os_choices','')
+    if not tool_os_choices:
         return fail('Operating system cannot be empty')
+
     #Get the maximum version
     tool_all = Tool.objects.filter(name=tools_search_name, version=tools_search_version)
     if not tool_all.exists():
@@ -1003,7 +1005,6 @@ def tools_add(request, **kwargs):
         description = tool_description,
         forked_from = tool_forked_from,
         changes = tool_changes,
-        os_type = os_type_selected,
         installation_commands=tool_installation_commands,
         validation_commands=tool_validation_commands,
         
@@ -1029,6 +1030,10 @@ def tools_add(request, **kwargs):
         new_tool.variables.add(*variable_objects)
         new_tool.save()
 
+    #Add os type
+    OS_types_obj, created = OS_types.objects.get_or_create(os_choices=tool_os_choices['value'])
+    new_tool.os_choices.add(OS_types_obj)
+    new_tool.save()
 
     ret = {
         'edit': next_edit,

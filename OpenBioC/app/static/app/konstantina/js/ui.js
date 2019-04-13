@@ -155,6 +155,9 @@ window.onload = function () {
                     if (event.classList.contains('disabled')) {
                         event.classList.remove('active');
                     }
+                    if (event.id == 'toolsDataInstallation') {
+                        $('#tool_os_choices_select').formSelect();
+                    }
                     if ((event.id == 'workflowRightPanelGeneral') || (event.id == 'workflowRightPanelStep')) {
                         cy.resize();
                     }
