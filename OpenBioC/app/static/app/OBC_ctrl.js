@@ -567,8 +567,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 //$scope.selectedOption = $scope.chooseOs.find(os => os.value === data['os_type']);
 
                 $scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === data['tool_os_choices'][0]})  ; // Take just the first. The model allows for multiple choices
-                console.log('$scope.tool_os_choices:');
-                console.log($scope.tool_os_choices);
+                //console.log('$scope.tool_os_choices:');
+                //console.log($scope.tool_os_choices);
                 $('#tool_os_choices_select').formSelect();
 
                 // TODO : Make the Dropdown disabled 
@@ -730,7 +730,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tool_info_validation_status = 'Unvalidated';
         $scope.tool_info_validation_created_at = null;
 
-        $scope.tool_os_choices = '';
+        $scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === 'ubuntu:16.04'})  ;;
+        console.log('$scope.os_choices:');
+        console.log($scope.os_choices);
+        console.log('$scope.tool_os_choices:');
+        console.log($scope.tool_os_choices);
+        //$('#tool_os_choices_select').formSelect();
+        $timeout(function(){$('#tool_os_choices_select').formSelect();}, 100);
 
     };
 
@@ -949,6 +955,10 @@ selectedOption DELETE THIS
         tool_installation_editor.setReadOnly(false);
         tool_validation_editor.setReadOnly(false);
         $scope.tools_var_jstree_id_show = true; // Show variable/dependency tree
+
+        // Set the operating system
+        $scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === $scope.tool_os_choices.value})  ;;
+        $timeout(function(){$('#tool_os_choices_select').formSelect();}, 100);
     };
 
     /*
