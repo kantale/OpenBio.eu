@@ -562,18 +562,15 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 angular.copy(data['dependencies_jstree'], $scope.tools_dep_jstree_model);
                 angular.copy(data['variables_js_tree'], $scope.tools_var_jstree_model);
                 $scope.tool_variables = data['variables'];
+
                 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
                 // find and save the selected os when the user search specific tool
                 //$scope.selectedOption = $scope.chooseOs.find(os => os.value === data['os_type']);
-
                 $scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === data['tool_os_choices'][0]})  ; // Take just the first. The model allows for multiple choices
                 //console.log('$scope.tool_os_choices:');
                 //console.log($scope.tool_os_choices);
                 $('#tool_os_choices_select').formSelect();
 
-                // TODO : Make the Dropdown disabled 
-                // BUG : when i find the tool i must click in dropdown to show the tool
-                //console.log($scope.selectedOption);
                 tool_installation_editor.setValue(data['installation_commands'], -1);
                 tool_validation_editor.setValue(data['validation_commands'], -1);
                 tool_installation_editor.setReadOnly(true);
@@ -585,9 +582,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                // $scope.tool_info_validation_stderr = data.stderr;
                 $scope.tool_info_validation_errcode = data.errcode;
                 $scope.tool_info_validation_created_at = data.validation_created_at;
+
+                $timeout(function(){M.updateTextFields()}, 10); //Update text fields so that we don't get a crumbled text input
             },
             function (data) {
-
+                $scope.toast('Error 5429', 'error');
             },
             function(statusText) {
                 $scope.tools_info_error_message = statusText;
@@ -730,6 +729,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tool_info_validation_status = 'Unvalidated';
         $scope.tool_info_validation_created_at = null;
 
+        // Default operating system is ubuntu:16.04 . FIXME!
         $scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === 'ubuntu:16.04'})  ;;
         console.log('$scope.os_choices:');
         console.log($scope.os_choices);
@@ -956,8 +956,8 @@ selectedOption DELETE THIS
         tool_validation_editor.setReadOnly(false);
         $scope.tools_var_jstree_id_show = true; // Show variable/dependency tree
 
-        // Set the operating system
-        $scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === $scope.tool_os_choices.value})  ;;
+        // Set the operating system. Practically we are setting tool_os_choices = tool_os_choices ... But that was the only way I could do it
+        $scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === $scope.tool_os_choices.value});
         $timeout(function(){$('#tool_os_choices_select').formSelect();}, 100);
     };
 
