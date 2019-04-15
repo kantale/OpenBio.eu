@@ -1530,6 +1530,7 @@ window.onload = function () {
                         var div = document.createElement('div');
 						div.setAttribute("id", "tippy_div_" + node._private.data.id);
                         div.innerHTML = text;
+						div.style.zIndex = "-1000000000000000000000000";	
                         return div;
                     },
                     trigger: 'manual',
@@ -1549,7 +1550,8 @@ window.onload = function () {
             * Function for creating tooltip for setting input node value.
             */
             var makeEditTippy = function (node, text) {
-                return tippy(node.popperRef(), {
+				
+				editTippy = tippy(node.popperRef(), {
 					
                     	content: function () {
 								var div = document.createElement('div');
@@ -1568,39 +1570,48 @@ window.onload = function () {
 								//div.style.zIndex = "10000000000";					
 								return div;
 						},
-						onShown: function() {
-							//$('.btn-click').off("click").on("click", function(){
-							$('#tippy_button_' + node._private.data.id).off("click").on("click", function(){
-    							//alert( document.getElementById(this.id.replace('tippy_button_', 'tippy_text_')).value);
-    							// tippy should be destroyed
-                                var value = document.getElementById('tippy_text_'+node._private.data.id).value;
-                                node.data('value', value);
-                                node.data('label', node._private.data.name+'='+value);
-                                //$(this).parent().fadeOut('slow', function(c){});
-                                $('#tippy_edit_div_' + node._private.data.id).remove();
-
-							});
-							
-							$('.close').on('click', function(c){
-									$('#tippy_edit_div_' + node._private.data.id).remove();
-									//$(this).parent().fadeOut('slow', function(c){
-								//});
-							});	
+						onShown: function(){
+								//$('.btn-click').off("click").on("click", function(){
+								/* code for SET button */
+								$('#tippy_button_' + node._private.data.id).off("click").on("click", function(){
+									//alert( document.getElementById(this.id.replace('tippy_button_', 'tippy_text_')).value);
+									// tippy should be destroyed
+									var value = document.getElementById('tippy_text_'+node._private.data.id).value;
+									node.data('value', value);
+									node.data('label', node._private.data.name+'='+value);
+									//$(this).parent().fadeOut('slow', function(c){});
+								   // $('#tippy_edit_div_' + node._private.data.id).remove();
+									
+									//destroy tippy
+									editTippy.destroy(editTippy.popper);								
+									
+								});
+								
+								/* code for x button */
+								$('.close').on('click', function(c){
+									//destroy tippy
+									editTippy.destroy(editTippy.popper);
+									
+										//$('#tippy_edit_div_' + node._private.data.id).remove();	
+										//$(this).parent().fadeOut('slow', function(c){
+									//});
+								});	
 									
 						},
-						trigger: 'manual',
-						//arrow: true,
-						placement: 'bottom',
-						interactive: true,	//this should be true for the content to be interactive and clickable
-						hideOnClick: false,
-						multiple: true,
-						followCursor: true,
-						theme: 'light', 
-						//zIndex: 100001,
-						sticky: true
-                
-				
+							trigger: 'manual',
+							//arrow: true,
+							placement: 'bottom',
+							interactive: true,	//this should be true for the content to be interactive and clickable
+							hideOnClick: false,
+							multiple: true,
+							followCursor: true,
+							theme: 'light', 
+							//zIndex: 100001,
+							sticky: true
+							
 				});
+				
+                return editTippy;
             };
 
 
@@ -1608,14 +1619,26 @@ window.onload = function () {
             var mytippys = []; // arry for keeping instances of tooltips, needed for destroying all instances on mouse out
             cy.on('mouseover', 'node', function (event) {
 
-                nodeId = this._private.data.id
+                nodeId = this._private.data.id;
                 myNode = cy.getElementById(nodeId);
                 myTippy = makeTippy(myNode, nodeId);
                 mytippys.push(myTippy);
                 myTippy.show();
-
-
+				
             });
+			
+			//on right click close tooltip before menu opens
+			/*
+			cy.on('cxttap', 'node', function (event){
+				console.log(this._private.data.id);
+				//$('#tippy_div_' + this._private.data.id).remove();
+				  mytippys.forEach(function (mytippy) {
+					  //console.log(mytippy);
+						mytippy.destroy(mytippy.popper);
+                });
+				
+			});
+			*/
 
             /* hide tooltip */
             cy.on('mouseout', 'node', function (event) {
@@ -1629,15 +1652,15 @@ window.onload = function () {
 
             });
 			
-			 // Right-click menu for input nodes //close: $('#tippy_edit_div_' + ele.id()).remove();
+			 // Right-click menu for input nodes 
 			 cy.cxtmenu({
+				menuRadius: 85, 	
                 //selector: 'node',
 				selector: 'node[type="input"]',
                 commands: [
                     {
                         content: 'Set',
-                        select: function (ele) {
-										
+                        select: function (ele) {					
 							editNode= cy.$('node[id="' + ele.id() + '"]');
 							if(editNode[0]._private.data.type==="input"){  //check if node is input type	
 								editTippy = makeEditTippy(editNode[0], ele.id());  //add edit tooltip
@@ -1670,7 +1693,6 @@ window.onload = function () {
 					 {
                         content: 'Cancel',
                         select: function (ele) {
-										
 							cy.cxtmenu().destroy();
                         }
                     }
@@ -1679,7 +1701,9 @@ window.onload = function () {
             });
 			
 			// Right-click menu for all except input nodes
+			
 			cy.cxtmenu({
+				menuRadius: 85, 
                 //selector: 'node',
 				selector: 'node[type!="input"]',
                 commands: [
@@ -1721,6 +1745,7 @@ window.onload = function () {
                 ]
 
             });
+			
 			
 			
         }
@@ -1803,7 +1828,7 @@ window.onload = function () {
                             //"height": 15,
                             //"width": 15
                         }
-                    },
+                    },/*
                     {
                         selector: 'edge',
                         "style": {
@@ -1812,7 +1837,19 @@ window.onload = function () {
                             'width': 2,
                             'line-color': '#ddd',
                             'target-arrow-color': '#ddd'
+                        },*/
+						{
+                        selector: 'edge',
+                        "style": {
+                            'curve-style': 'bezier',
+                            'target-arrow-shape': 'triangle',
+                            'width': 2,
+							'line-dash-pattern': [6, 3], 
+							'line-dash-offset': 24,
+                            'line-color': '#ddd',
+                            'target-arrow-color': '#ddd'
                         }
+						
                     }
                 ],
 
