@@ -362,34 +362,35 @@
         </div>
 
 
-
-        <ul class="collapsible expandable faster" style="margin-top:0px;">
-            <li id="workflowRightPanelGeneral">
-                <div class="collapsible-header">
-                    <i class="material-icons arrow">keyboard_arrow_right</i>
-                    <i class="material-icons">info</i>
-                    General
-                </div>
-                <div class="collapsible-body">
-                    <div class="row">
-                        <form class="col s12">
-                            <div class="input-field">
-                                <input id="workflowsGeneralWebsite" type="text" class="validate"
-                                    ng-model="workflow_website" ng-disabled="!workflows_info_editable">
-                                <label for="workflowsGeneralWebsite">Website</label>
-                            </div>
-                            <div class="input-field">
-                                <textarea id="workflowsGeneralDescription" class="validate materialize-textarea"
-                                    ng-model="workflow_description" ng-disabled="!workflows_info_editable"></textarea>
-                                <label for="workflowsGeneralDescription">Description</label>
-                            </div>
-                            <div class="input-field" ng-show="workflow_info_forked_from">
-                                <textarea id="workflowsGeneralEditSummary" class="validate materialize-textarea"
-                                    ng-model="workflow_changes" ng-disabled="!workflows_info_editable"></textarea>
-                                <label for="workflowsGeneralEditSummary">Edit Summary</label>
-                            </div>
-                            <div class="input-field chips left-align"></div>
-                        </form>
+            <ul class="collapsible expandable faster" style="margin-top:0px;">
+                <li id="workflowRightPanelGeneral">
+                    <div class="collapsible-header">
+                        <i class="material-icons arrow">keyboard_arrow_right</i>
+                        <i class="material-icons">info</i>
+                        General
+                    </div>
+                    <div class="collapsible-body">
+                        <div class="row">
+                            <form class="col s12">
+                                <div class="input-field">
+                                    <input id="workflowsGeneralWebsite" type="text" class="validate"
+                                        ng-model="workflow_website" ng-disabled="!workflows_info_editable">
+                                    <label for="workflowsGeneralWebsite">Website</label>
+                                </div>
+                                <div class="input-field">
+                                    <textarea id="workflowsGeneralDescription" class="validate materialize-textarea"
+                                        ng-model="workflow_description"
+                                        ng-disabled="!workflows_info_editable"></textarea>
+                                    <label for="workflowsGeneralDescription">Description</label>
+                                </div>
+                                <div class="input-field" ng-show="workflow_info_forked_from">
+                                    <textarea id="workflowsGeneralEditSummary" class="validate materialize-textarea"
+                                        ng-model="workflow_changes" ng-disabled="!workflows_info_editable"></textarea>
+                                    <label for="workflowsGeneralEditSummary">Edit Summary</label>
+                                </div>
+                                <div id="workflowChips" class="input-field chips left-align" ng-disabled="!tools_info_editable"></div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </li>
