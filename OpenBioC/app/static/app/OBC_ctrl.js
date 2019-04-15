@@ -2099,7 +2099,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         window.forkWorkflow();
 
         $scope.workflows_info_editable = true;
-        $scope.toast("Workflows successfully forked. Press Save after completing your edits", 'success');
+        $scope.toast("Workflow successfully forked. Press Save after completing your edits", 'success');
 
         $scope.workflow_info_forked_from = {
             'name': $scope.workflow_info_name,  
@@ -2178,7 +2178,49 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * worfklows --> info (right panel) --> button "Run" --> Pressed
     */
     $scope.workflow_info_run_pressed = function() {
-        window.OBCUI.runWorkflow();
+        var workflow_options = window.OBCUI.get_workflow_options();
+
+        // Check for uncheck options
+        var unset_options = [];
+        for (var option in workflow_options) {
+            if (workflow_options[option] === null) {
+                unset_options.push(option);
+            }
+        }
+
+        if (unset_options.length) {
+            $scope.toast('Please set all input variables. Unset variables: ' + unset_options.join(', '), 'error');
+            return;
+        }
+
+        $scope.ajax(
+            'run_workflow/',
+            {
+                'workflow_options': workflow_options,
+                'workflow': {
+                    'name': $scope.workflow_info_name,
+                    'edit': $scope.workflow_info_edit
+                }
+            },
+            function(data) {
+                console.log('data:');
+                console.log(data);
+
+                $("#hiddena").attr({
+                    "download" : 'script.sh',
+                    "href" : "data:text/plain," + data['the_script']        
+                }).get(0).click();
+
+                //$scope.toast('Run workflow problem: ' + data['error_message'], 'error');
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast('Error: 3811 ' + statusText, 'error');
+            }
+        );
+
     };
 
 

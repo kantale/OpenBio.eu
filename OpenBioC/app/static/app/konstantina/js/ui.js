@@ -1528,7 +1528,6 @@ window.onload = function () {
                 return tippy(node.popperRef(), {
                     content: function () {
                         var div = document.createElement('div');
-						div.setAttribute("id", "tippy_div_" + node._private.data.id);
                         div.innerHTML = text;
                         return div;
                     },
@@ -1553,7 +1552,7 @@ window.onload = function () {
 					
                     	content: function () {
 								var div = document.createElement('div');
-                                div.setAttribute("id", "tippy_edit_div_" + node._private.data.id);
+                                div.setAttribute("id", "tippy_div_" + node._private.data.id);
 								div.innerHTML = 
 												'<button type="button" class="close">×</button><br>'+  // onclick='+alert($(this).parent());+'
 												node._private.data.description+ '<br>'+
@@ -1577,12 +1576,12 @@ window.onload = function () {
                                 node.data('value', value);
                                 node.data('label', node._private.data.name+'='+value);
                                 //$(this).parent().fadeOut('slow', function(c){});
-                                $('#tippy_edit_div_' + node._private.data.id).remove();
+                                $('#tippy_div_' + node._private.data.id).remove();
 
 							});
 							
 							$('.close').on('click', function(c){
-									$('#tippy_edit_div_' + node._private.data.id).remove();
+									$('#tippy_div_' + node._private.data.id).remove();
 									//$(this).parent().fadeOut('slow', function(c){
 								//});
 							});	
@@ -1629,7 +1628,7 @@ window.onload = function () {
 
             });
 			
-			 // Right-click menu for input nodes //close: $('#tippy_edit_div_' + ele.id()).remove();
+			 // Right-click menu for input nodes
 			 cy.cxtmenu({
                 //selector: 'node',
 				selector: 'node[type="input"]',
@@ -1668,7 +1667,7 @@ window.onload = function () {
                         }
                     },
 					 {
-                        content: 'Cancel',
+                        content: 'Skip',
                         select: function (ele) {
 										
 							cy.cxtmenu().destroy();
@@ -1712,12 +1711,12 @@ window.onload = function () {
                         }
                     },
 					 {
-                        content: 'Cancel',
+                        content: 'Skip',
                         select: function (ele) {
 										
 							cy.cxtmenu().destroy();
                         }
-					 }
+                    }
                 ]
 
             });
@@ -2103,34 +2102,27 @@ window.onload = function () {
 
         /*
         * Called from angular $scope.workflow_info_run_pressed
+        * * Check if input options are unset
+        * * Get the workflow options
         */
-        window.OBCUI.runWorkflow = function() {
+        window.OBCUI.get_workflow_options = function() {
+            var workflow_options = {}
 
-			//check if inputs are set
-				var emptyInputs=[];	
-				//if yes alert ok message
-				//if no alert error message
-				cy.json().elements.nodes.forEach(function (node) {
-					if(node.data.type==="input"){  //if node is inout check if has value
-						if(typeof node.data.value==='undefined') 
-						  emptyInputs.push(node);
-					}
-					
-				});
-				
-				if (emptyInputs.length>0){
-					
-					var empty_nodes_values='';
-					emptyInputs.forEach(function (node) {
-						empty_nodes_values += node.data.label+" ,";
-					});
-					alert("Value for "+empty_nodes_values.substring(0, empty_nodes_values.length - 1)+" has not been setted");
-				}else{
-					alert("You can now run the workflow");
+			cy.json().elements.nodes.forEach(function (node) {
+				if(node.data.type==="input"){  //if node is inout check if has value
+					if(typeof node.data.value==='undefined') {
+                        workflow_options[node.data.id] = null;
+                    }
+                    else {
+                        workflow_options[node.data.id] = node.data.value;
+                    }
 				}
-		
+				
+			});
 			
-						
+            return workflow_options;
+		  			
+			
         };
 
 
