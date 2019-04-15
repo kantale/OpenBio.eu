@@ -813,6 +813,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.workflow_website = '';
         $scope.workflow_description = '';
 
+        //Clear keyword chips
+        window.OBCUI.delete_all_chip_data('workflowChips');
+        window.OBCUI.chip_enable('workflowChips');
+
         //Clear graph
         $scope.workflow_info_clear_pressed();
 
@@ -1734,6 +1738,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 if (! $scope.workflow_input_outputs.length) {
                     $scope.workflow_input_outputs = [{name: '', description: '', out:true}];
                 }
+
+                //Set keyowords to chips
+                window.OBCUI.set_chip_data('workflowChips', data['keywords']);
+                window.OBCUI.chip_disable('workflowChips');
+
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');
@@ -2095,6 +2104,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 workflow_website : $scope.workflow_website,
                 workflow_description : $scope.workflow_description,
                 workflow_changes: $scope.workflow_changes,
+                workflow_keywords: window.OBCUI.get_chip_data('workflowChips'),
                 workflow_json : cy.json()
             },
             function(data) {
@@ -2139,6 +2149,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         }
         $scope.workflow_changes = '';
         workflow_step_editor.setReadOnly(false);
+
+        //Make Chips editable
+        window.OBCUI.chip_enable('workflowChips');
 
         //Update Step Editor Tab completion 
         $scope.workflow_update_tab_completion_info_to_step();
