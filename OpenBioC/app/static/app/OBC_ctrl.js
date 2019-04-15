@@ -959,6 +959,10 @@ selectedOption DELETE THIS
         // Set the operating system. Practically we are setting tool_os_choices = tool_os_choices ... But that was the only way I could do it
         $scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === $scope.tool_os_choices.value});
         $timeout(function(){$('#tool_os_choices_select').formSelect();}, 100);
+
+        // The new tool is unvalidated
+        $scope.tool_info_validation_status = 'Unvalidated';
+        $scope.tool_info_validation_created_at = null;
     };
 
     /*
@@ -1003,8 +1007,6 @@ selectedOption DELETE THIS
         // var ossel = $scope.osSelection;
         var installation_bash = tool_installation_editor.getValue();
         var validation_bash = tool_validation_editor.getValue();
-        //take the value from dropdown menu 
-        var os_selected_value = os_type_selected; // TODO: CHECK IF NOT CHOSEN 
 
         // console.log(os_selected_value);
         //console.log('INSTALLATION BASH:');
@@ -1023,7 +1025,7 @@ selectedOption DELETE THIS
             {
                 action: 'validate',
                 bash: $scope.create_bash_script_for_validation(installation_bash, validation_bash),
-                ostype: os_selected_value // user selected os
+                ostype: $scope.tool_os_choices.value // user selected os
             },
             function (data) {
                 var this_id = data['id'];
