@@ -207,7 +207,22 @@ window.onload = function () {
         $('.collapsible-header').click(function (event) {
             if ((event.target.id == 'installationRefreshBtn') || (event.target.parentNode.id == 'installationRefreshBtn')) {
                 event.stopPropagation();
-                console.log('refresh button clicked ui.js 207');
+                console.log('refresh button clicked');
+            }
+            else if((event.target.id == 'installationSTDOUT') || (event.target.parentNode.id == 'installationSTDOUT')){
+                event.stopPropagation();
+                console.log('stdout button clicked');
+            }
+            else if (event.target.classList.contains('plusBtn') || event.target.parentNode.classList.contains('plusBtn')) {
+                event.stopPropagation();
+                var id;
+                if (event.target.tagName == 'I') {
+                    id = event.target.parentNode.id;
+                }
+                else {
+                    id = event.target.id;
+                }
+                console.log('add button clicked with id: ' + id);
             }
         });
 
@@ -995,9 +1010,9 @@ window.onload = function () {
         /*
         * Get the data (keywords) from an id chip.
         */
-        window.OBCUI.get_chip_data = function(this_id) {
+        window.OBCUI.get_chip_data = function (this_id) {
             var data = [];
-            M.Chips.getInstance(document.getElementById(this_id)).getData().forEach(function(chip) {
+            M.Chips.getInstance(document.getElementById(this_id)).getData().forEach(function (chip) {
                 data.push(chip.tag);
             })
 
@@ -1007,10 +1022,10 @@ window.onload = function () {
         /*
         * Delete all chip data
         */
-        window.OBCUI.delete_all_chip_data = function(this_id) {
+        window.OBCUI.delete_all_chip_data = function (this_id) {
             //Get all data
             var data = window.OBCUI.get_chip_data(this_id);
-            for (var i=0; i<data.length; i++) {
+            for (var i = 0; i < data.length; i++) {
                 M.Chips.getInstance(document.getElementById(this_id)).deleteChip(0);
             }
         };
@@ -1018,14 +1033,14 @@ window.onload = function () {
         /*
         * Set data to id chip
         */
-        window.OBCUI.set_chip_data = function(this_id, data) {
+        window.OBCUI.set_chip_data = function (this_id, data) {
 
             //First delete previous data
             window.OBCUI.delete_all_chip_data(this_id);
 
             //Set new
-            data.forEach(function(datum) {
-                 M.Chips.getInstance(document.getElementById(this_id)).addChip({tag: datum});
+            data.forEach(function (datum) {
+                M.Chips.getInstance(document.getElementById(this_id)).addChip({ tag: datum });
             });
 
         };
@@ -1033,17 +1048,17 @@ window.onload = function () {
         /*
         * Disable "x" and input from chip
         */
-        window.OBCUI.chip_disable = function(this_id) {
+        window.OBCUI.chip_disable = function (this_id) {
             //Remove "x"
-            $('#' + this_id + ' i').css('display','none');
+            $('#' + this_id + ' i').css('display', 'none');
 
             //Disable input
             $('#' + this_id + ' input').prop('disabled', true);
         };
 
-        window.OBCUI.chip_enable = function(this_id) {
+        window.OBCUI.chip_enable = function (this_id) {
             //Add "x"
-            $('#' + this_id + ' i').css('display','block');
+            $('#' + this_id + ' i').css('display', 'block');
 
             //Enable input
             $('#' + this_id + ' input').prop('disabled', false);
@@ -1598,64 +1613,64 @@ window.onload = function () {
                 });
             };
 
-			
-			
+
+
 			/* 
             * Function for creating tooltip for setting input node value.
             */
             var makeEditTippy = function (node, text) {
                 return tippy(node.popperRef(), {
-					
-                    	content: function () {
-								var div = document.createElement('div');
-                                div.setAttribute("id", "tippy_div_" + node._private.data.id);
-								div.innerHTML = 
-												'<button type="button" class="close">×</button><br>'+  // onclick='+alert($(this).parent());+'
-												node._private.data.description+ '<br>'+
-												'Add Value For '+ node._private.data.name+' : <br>'+
-												'<input type="text" id="tippy_text_'+node._private.data.id+'" name="Add Value"><br>'	+
-												'<button id="tippy_button_'+node._private.data.id+'" class="btn btn-click">set</button>'		
-												
-								div.style.width = "200px";
-								div.style.height = "140px";
-								div.style.color = "black"; //font color
-								div.style.position= "relative";
-								//div.style.zIndex = "10000000000";					
-								return div;
-						},
-						onShown: function() {
-							//$('.btn-click').off("click").on("click", function(){
-							$('#tippy_button_' + node._private.data.id).off("click").on("click", function(){
-    							//alert( document.getElementById(this.id.replace('tippy_button_', 'tippy_text_')).value);
-    							// tippy should be destroyed
-                                var value = document.getElementById('tippy_text_'+node._private.data.id).value;
-                                node.data('value', value);
-                                node.data('label', node._private.data.name+'='+value);
-                                //$(this).parent().fadeOut('slow', function(c){});
-                                $('#tippy_div_' + node._private.data.id).remove();
 
-							});
-							
-							$('.close').on('click', function(c){
-									$('#tippy_div_' + node._private.data.id).remove();
-									//$(this).parent().fadeOut('slow', function(c){
-								//});
-							});	
-									
-						},
-						trigger: 'manual',
-						//arrow: true,
-						placement: 'bottom',
-						interactive: true,	//this should be true for the content to be interactive and clickable
-						hideOnClick: false,
-						multiple: true,
-						followCursor: true,
-						theme: 'light', 
-						//zIndex: 100001,
-						sticky: true
-                
-				
-				});
+                    content: function () {
+                        var div = document.createElement('div');
+                        div.setAttribute("id", "tippy_div_" + node._private.data.id);
+                        div.innerHTML =
+                            '<button type="button" class="close">×</button><br>' +  // onclick='+alert($(this).parent());+'
+                            node._private.data.description + '<br>' +
+                            'Add Value For ' + node._private.data.name + ' : <br>' +
+                            '<input type="text" id="tippy_text_' + node._private.data.id + '" name="Add Value"><br>' +
+                            '<button id="tippy_button_' + node._private.data.id + '" class="btn btn-click">set</button>'
+
+                        div.style.width = "200px";
+                        div.style.height = "140px";
+                        div.style.color = "black"; //font color
+                        div.style.position = "relative";
+                        //div.style.zIndex = "10000000000";					
+                        return div;
+                    },
+                    onShown: function () {
+                        //$('.btn-click').off("click").on("click", function(){
+                        $('#tippy_button_' + node._private.data.id).off("click").on("click", function () {
+                            //alert( document.getElementById(this.id.replace('tippy_button_', 'tippy_text_')).value);
+                            // tippy should be destroyed
+                            var value = document.getElementById('tippy_text_' + node._private.data.id).value;
+                            node.data('value', value);
+                            node.data('label', node._private.data.name + '=' + value);
+                            //$(this).parent().fadeOut('slow', function(c){});
+                            $('#tippy_div_' + node._private.data.id).remove();
+
+                        });
+
+                        $('.close').on('click', function (c) {
+                            $('#tippy_div_' + node._private.data.id).remove();
+                            //$(this).parent().fadeOut('slow', function(c){
+                            //});
+                        });
+
+                    },
+                    trigger: 'manual',
+                    //arrow: true,
+                    placement: 'bottom',
+                    interactive: true,	//this should be true for the content to be interactive and clickable
+                    hideOnClick: false,
+                    multiple: true,
+                    followCursor: true,
+                    theme: 'light',
+                    //zIndex: 100001,
+                    sticky: true
+
+
+                });
             };
 
 
@@ -1683,21 +1698,21 @@ window.onload = function () {
                 //myTippy.hide();
 
             });
-			
-			 // Right-click menu for input nodes
-			 cy.cxtmenu({
+
+            // Right-click menu for input nodes
+            cy.cxtmenu({
                 //selector: 'node',
-				selector: 'node[type="input"]',
+                selector: 'node[type="input"]',
                 commands: [
                     {
                         content: 'Set',
                         select: function (ele) {
-										
-							editNode= cy.$('node[id="' + ele.id() + '"]');
-							if(editNode[0]._private.data.type==="input"){  //check if node is input type	
-								editTippy = makeEditTippy(editNode[0], ele.id());  //add edit tooltip
-								editTippy.show();								   //show edit tooltip	
-							}
+
+                            editNode = cy.$('node[id="' + ele.id() + '"]');
+                            if (editNode[0]._private.data.type === "input") {  //check if node is input type	
+                                editTippy = makeEditTippy(editNode[0], ele.id());  //add edit tooltip
+                                editTippy.show();								   //show edit tooltip	
+                            }
                         }
                     },
                     {
@@ -1722,27 +1737,27 @@ window.onload = function () {
 
                         }
                     },
-					 {
+                    {
                         content: 'Skip',
                         select: function (ele) {
-										
-							cy.cxtmenu().destroy();
+
+                            cy.cxtmenu().destroy();
                         }
                     }
                 ]
 
             });
-			
-			// Right-click menu for all except input nodes
-			cy.cxtmenu({
+
+            // Right-click menu for all except input nodes
+            cy.cxtmenu({
                 //selector: 'node',
-				selector: 'node[type!="input"]',
+                selector: 'node[type!="input"]',
                 commands: [
                     {
                         content: 'Edit',
                         select: function (ele) {
-										
-						}
+
+                        }
                     },
                     {
                         content: 'Delete',
@@ -1766,28 +1781,28 @@ window.onload = function () {
 
                         }
                     },
-					 {
+                    {
                         content: 'Skip',
                         select: function (ele) {
-										
-							cy.cxtmenu().destroy();
+
+                            cy.cxtmenu().destroy();
                         }
                     }
                 ]
 
             });
-			
-			
+
+
         }
-		
+
 		/*
 		* This function initialize cytoscape with an empty list of elements and the 
 		* style needed for the graphs
 		*
 		*/
-		function createCytoscapeObject(){
-		
-			var cy_object = cytoscape({
+        function createCytoscapeObject() {
+
+            var cy_object = cytoscape({
                 container: document.getElementById('cywf'), // container to render in
                 elements: [],
 
@@ -1883,10 +1898,10 @@ window.onload = function () {
 
             });
 
-			
-			return cy_object;
-		
-		}
+
+            return cy_object;
+
+        }
 
         /*
         * Initialize cytoscape graph
@@ -1896,7 +1911,7 @@ window.onload = function () {
             cy = createCytoscapeObject();
             /* add menu on node right click*/
 
-           //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.
+            //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.
             document.querySelector('canvas[data-id="layer2-node"]').style.position = null;
 
         }
@@ -2087,8 +2102,8 @@ window.onload = function () {
 
                     //window.OBCUI.edit_steps_from_bash_scripts(node.data.bash, old_root_id, new_root);
 
-					}
-				}
+                }
+            }
 
 
             );
@@ -2161,24 +2176,24 @@ window.onload = function () {
         * * Check if input options are unset
         * * Get the workflow options
         */
-        window.OBCUI.get_workflow_options = function() {
+        window.OBCUI.get_workflow_options = function () {
             var workflow_options = {}
 
-			cy.json().elements.nodes.forEach(function (node) {
-				if(node.data.type==="input"){  //if node is inout check if has value
-					if(typeof node.data.value==='undefined') {
+            cy.json().elements.nodes.forEach(function (node) {
+                if (node.data.type === "input") {  //if node is inout check if has value
+                    if (typeof node.data.value === 'undefined') {
                         workflow_options[node.data.id] = null;
                     }
                     else {
                         workflow_options[node.data.id] = node.data.value;
                     }
-				}
-				
-			});
-			
+                }
+
+            });
+
             return workflow_options;
-		  			
-			
+
+
         };
 
 
