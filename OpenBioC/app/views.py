@@ -1252,6 +1252,30 @@ def workflows_search_3(request, **kwargs):
 
     return success(ret)
 
+@has_data
+def run_workflow(request, **kwargs):
+    '''
+    Defined in urls.py:
+    path('run_workflow/', views.run_workflow), # Acceps a workflow_options and workflow object. Runs a workflow
+
+    https://docs.djangoproject.com/en/2.2/ref/request-response/#telling-the-browser-to-treat-the-response-as-a-file-attachment
+    '''
+
+    #workflow = kwargs['workflow']
+    #workflow_options = kwargs['workflow_options']
+
+    the_script = 'ls -l'
+
+    #response = HttpResponse(the_script, content_type='application/x-sh')
+    #response['Content-Disposition'] = 'attachment; filename="script.sh"'
+
+    ret = {
+        'the_script': 'ls -l'
+    }
+
+    return success(ret)
+
+
 ### END OF WORKFLOWS ###
 ### START OF VALIDATION CALLBACK ###
 
