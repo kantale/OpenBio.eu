@@ -15,6 +15,7 @@ from django.db.models import Q # https://docs.djangoproject.com/en/2.1/topics/db
 from django.db.models import Max # https://docs.djangoproject.com/en/2.1/topics/db/aggregation/
 
 from django.utils import timezone
+#from django.utils.html import escape # https://docs.djangoproject.com/en/2.2/ref/utils/#module-django.utils.html
 from django.views.decorators.csrf import csrf_exempt # https://stackoverflow.com/questions/17716624/django-csrf-cookie-not-set/51398113
 
 # Get csrf_token
@@ -22,7 +23,7 @@ from django.views.decorators.csrf import csrf_exempt # https://stackoverflow.com
 from django.middleware.csrf import get_token 
 
 #Import database objects
-from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations, OS_types
+from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations, OS_types, Keyword
 
 # Email imports
 import smtplib
@@ -40,6 +41,7 @@ import logging # https://docs.djangoproject.com/en/2.1/topics/logging/
 import simplejson
 
 from collections import Counter
+import urllib.parse # https://stackoverflow.com/questions/40557606/how-to-url-encode-in-python-3/40557716 
 
 from ansi2html import Ansi2HTMLConverter # https://github.com/ralphbean/ansi2html/
 
@@ -871,6 +873,8 @@ def tools_search_3(request, **kwargs):
         'forked_from': tool_to_json(tool.forked_from),
         'changes': tool.changes,
 
+        'tool_keywords': [keyword.keyword for keyword in tool.keywords.all()],
+
         'dependencies_jstree': tool_dependencies_jstree,
         'variables_js_tree': tool_variables_jstree,
 
@@ -1033,6 +1037,11 @@ def tools_add(request, **kwargs):
     #Add os type
     OS_types_obj, created = OS_types.objects.get_or_create(os_choices=tool_os_choices['value'])
     new_tool.os_choices.add(OS_types_obj)
+    new_tool.save()
+
+    #Add keywords
+    keywords = [Keyword.objects.get_or_create(keyword=keyword)[0] for keyword in kwargs['tool_keywords']]
+    new_tool.keywords.add(*keywords)
     new_tool.save()
 
     ret = {
@@ -1217,6 +1226,10 @@ def workflows_add(request, **kwargs):
         new_workflow.tools.add(*tools)
         new_workflow.save()
 
+    # Add keywords
+    keywords = [Keyword.objects.get_or_create(keyword=keyword)[0] for keyword in kwargs['workflow_keywords']]
+    new_workflow.keywords.add(*keywords)
+    new_workflow.save();
 
     ret = {
         'edit': next_edit,
@@ -1247,6 +1260,7 @@ def workflows_search_3(request, **kwargs):
         'description': workflow.description,
         'created_at': datetime_to_str(workflow.created_at),
         'forked_from': workflow_to_json(workflow.forked_from),
+        'keywords': [keyword.keyword for keyword in workflow.keywords.all()],
         'workflow' : simplejson.loads(workflow.workflow),
     }
 
@@ -1261,16 +1275,41 @@ def run_workflow(request, **kwargs):
     https://docs.djangoproject.com/en/2.2/ref/request-response/#telling-the-browser-to-treat-the-response-as-a-file-attachment
     '''
 
-    #workflow = kwargs['workflow']
-    #workflow_options = kwargs['workflow_options']
+    workflow_arg = kwargs['workflow']
+    workflow_options_arg = kwargs['workflow_options']
 
-    the_script = 'ls -l'
+    workflow = Workflow.objects.get(**workflow_arg)
+    workflow_cy = simplejson.loads(workflow.workflow)
+    #print (workflow_cy)
+
+    # Get the tools of this workflow
+    workflow_tools = [tool for tool in workflow_cy['elements']['nodes'] if tool['data']['type']=='tool']
+    # Add bash information that does not exist in cytoscape graph
+    for workflow_tool in workflow_tools:
+        workflow_tool_obj = Tool.objects.get(
+            name=workflow_tool['data']['name'], 
+            version=workflow_tool['data']['version'], 
+            edit=workflow_tool['data']['edit'])
+
+        workflow_tool['data']['installation_commands'] =  workflow_tool_obj.installation_commands
+        workflow_tool['data']['validation_commands'] = workflow_tool_obj.validation_commands
+        workflow_tool['data']['os_choices'] = [choice.os_choices for choice in workflow_tool_obj.os_choices.all()]
+
+    output_object = {
+        'arguments': workflow_options_arg,
+        'workflow': workflow_cy,
+    }
+    #output_object = simplejson.dumps(output_object) # .replace('#', 'aa')
+    output_object = urllib.parse.quote(simplejson.dumps(output_object))
+    #output_object = escape(simplejson.dumps(output_object))
+
+    print ('output_object')
+    print (output_object)
 
     #response = HttpResponse(the_script, content_type='application/x-sh')
     #response['Content-Disposition'] = 'attachment; filename="script.sh"'
-
     ret = {
-        'the_script': 'ls -l'
+        'output_object': output_object
     }
 
     return success(ret)

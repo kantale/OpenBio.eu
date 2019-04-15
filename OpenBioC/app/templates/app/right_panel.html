@@ -66,7 +66,7 @@
                                         ng-model="tool_changes" ng-disabled="!tools_info_editable"></textarea>
                                     <label for="generalEditSummary">Edit Summary</label>
                                 </div>
-                                <div id="generalChips" class="input-field chips left-align"></div>
+                                <div id="toolChips" class="input-field chips left-align" ng-disabled="!tools_info_editable"></div>
                             </form>
                         </div>
                     </div>
@@ -374,7 +374,7 @@
                                         ng-model="workflow_changes" ng-disabled="!workflows_info_editable"></textarea>
                                     <label for="workflowsGeneralEditSummary">Edit Summary</label>
                                 </div>
-                                <div class="input-field chips left-align"></div>
+                                <div id="workflowChips" class="input-field chips left-align" ng-disabled="!tools_info_editable"></div>
                             </form>
                         </div>
                     </div>

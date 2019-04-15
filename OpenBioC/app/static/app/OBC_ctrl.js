@@ -76,7 +76,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tools_edit_regexp = /^\d+$/; 
         $scope.tools_search_warning= "";
         $scope.workflows_search_warning = "";
+
+        //$scope.set_tools_info_editable(false);
         $scope.tools_info_editable = false; // Can we edit tools_info ?
+
         $scope.tools_info_forked_from = null; //From which tool is this tool forked from?
         $scope.tool_changes = ''; // Changes from forked
         // TODO : fix the values (the debian versions is not correct for Dockerfile)
@@ -124,6 +127,14 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     ];
 
     $scope.selected = { value: $scope.itemArray[0] };
+
+    /*
+    * Anytime we change tools_info_editable we need the UI to respond.
+    * Add here explicit stuff that should change when tools_info_editable change
+    */ 
+    $scope.set_tools_info_editable = function(b) {
+        $scope.tools_info_editable = b;
+    };
 
     /*
     * Helper function that perform ajax calls
@@ -559,6 +570,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.tools_info_success_message = '';
                 $scope.tools_info_error_message = '';
 
+                //Set chip data
+                window.OBCUI.set_chip_data('toolChips', data['tool_keywords']);
+                window.OBCUI.chip_disable('toolChips');
+
                 angular.copy(data['dependencies_jstree'], $scope.tools_dep_jstree_model);
                 angular.copy(data['variables_js_tree'], $scope.tools_var_jstree_model);
                 $scope.tool_variables = data['variables'];
@@ -696,7 +711,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.show_tools_info = true;
         //$scope.show_workflows_info = false; // TODO. THIS SHOULDN'T BE HERE
 
-        $scope.tools_info_editable = true;
+        $scope.set_tools_info_editable(true);
+        //$scope.tools_info_editable = true;
         $scope.tool_info_created_at = null;
         $scope.tools_info_forked_from = null;
         $scope.tools_info_name = $scope.tools_search_name;
@@ -736,6 +752,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //$('#tool_os_choices_select').formSelect();
         $timeout(function(){$('#tool_os_choices_select').formSelect();}, 100);
 
+        //Delete all chip
+        window.OBCUI.delete_all_chip_data('toolChips');
+        window.OBCUI.chip_enable('toolChips'); // Enable them
     };
 
 
@@ -779,7 +798,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */
     $scope.workflows_search_create_new_pressed_ok = function() {
         //Close tool accordion
-        $scope.tools_info_editable = false;
+        $scope.set_tools_info_editable(false);
+        //$scope.tools_info_editable = false;
         window.cancelToolDataBtn_click();
 
         //Open Workflows accordion
@@ -792,6 +812,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.workflow_info_forked_from = null;
         $scope.workflow_website = '';
         $scope.workflow_description = '';
+
+        //Clear keyword chips
+        window.OBCUI.delete_all_chip_data('workflowChips');
+        window.OBCUI.chip_enable('workflowChips');
 
         //Clear graph
         $scope.workflow_info_clear_pressed();
@@ -879,6 +903,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 'tools_search_version': $scope.tools_info_version,
                 'tool_website': $scope.tool_website,
                 'tool_description': $scope.tool_description,
+                'tool_keywords': window.OBCUI.get_chip_data('toolChips'),
                 'tool_forked_from': $scope.tools_info_forked_from,
                 'tool_changes': $scope.tool_changes,
                 'tool_os_choices' : $scope.tool_os_choices,
@@ -891,10 +916,14 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             function(data) {
                 $scope.tools_info_success_message = 'Tool/Data successfully saved';
                 $scope.toast($scope.tools_info_success_message, 'success');
-                $scope.tools_info_editable = false;
+                $scope.set_tools_info_editable(false);
+                //$scope.tools_info_editable = false;
                 $scope.tool_info_created_at = data['created_at'];
                 $scope.tools_info_edit = data['edit'];
                 $scope.tools_search_input_changed(); //Update search results
+
+                //Disable chip
+                window.OBCUI.chip_disable('toolChips');
             },
             function(data) {
                 $scope.tools_info_error_message = data['error_message'];
@@ -913,7 +942,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     $scope.tools_search_show_item = function(item) {
         $scope.show_tools_info = true;
         $scope.show_workflows_info = false;
-        $scope.tools_info_editable = false;
+        $scope.set_tools_info_editable(false);
+        //$scope.tools_info_editable = false;
         $scope.tools_search_3(item);
         M.updateTextFields(); // The text inputs in Materialize needs to be updated after change.
     };
@@ -928,7 +958,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             return;
         }
 
-        $scope.tools_info_editable = true;
+        $scope.set_tools_info_editable(true);
+        //$scope.tools_info_editable = true;
         $scope.tools_info_error_message = '';
         $scope.tools_info_success_message = "Tool successfully forked. Press Save after completing your edits";
         $scope.toast($scope.tools_info_success_message, 'success');
@@ -956,6 +987,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         // The new tool is unvalidated
         $scope.tool_info_validation_status = 'Unvalidated';
         $scope.tool_info_validation_created_at = null;
+
+        // Enable chip edit
+        window.OBCUI.chip_enable('toolChips'); // Enable them
     };
 
     /*
@@ -1403,7 +1437,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.tools_search_show_item($scope.modal_data.node.data);
                 window.createToolDataBtn_click();
                 window.cancelWorkflowBtn_click();
-                $scope.tools_info_editable = false;
+                $scope.set_tools_info_editable(false);
+                //$scope.tools_info_editable = false;
                 $scope.workflows_info_editable = false;
             }
             else if (who_called_me == 'TOOLS_CREATE_BUTTON') {
@@ -1412,7 +1447,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             else if (who_called_me == 'TOOLS_CANCEL_BUTTON') {
                 console.log('MODAL WHO CALLED ME: TOOLS_CANCEL_BUTTON');
                 window.cancelToolDataBtn_click(); // Close Tool panel
-                $scope.tools_info_editable = false;
+                $scope.set_tools_info_editable(false);
+                //$scope.tools_info_editable = false;
             }
             else if (who_called_me == 'WORKFLOWS_CANCEL_BUTTON') {
                 console.log('MODAL WHO CALLED ME: WORKFLOWS_CANCEL_BUTTON');
@@ -1702,6 +1738,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 if (! $scope.workflow_input_outputs.length) {
                     $scope.workflow_input_outputs = [{name: '', description: '', out:true}];
                 }
+
+                //Set keyowords to chips
+                window.OBCUI.set_chip_data('workflowChips', data['keywords']);
+                window.OBCUI.chip_disable('workflowChips');
+
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');
@@ -2063,6 +2104,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 workflow_website : $scope.workflow_website,
                 workflow_description : $scope.workflow_description,
                 workflow_changes: $scope.workflow_changes,
+                workflow_keywords: window.OBCUI.get_chip_data('workflowChips'),
                 workflow_json : cy.json()
             },
             function(data) {
@@ -2107,6 +2149,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         }
         $scope.workflow_changes = '';
         workflow_step_editor.setReadOnly(false);
+
+        //Make Chips editable
+        window.OBCUI.chip_enable('workflowChips');
 
         //Update Step Editor Tab completion 
         $scope.workflow_update_tab_completion_info_to_step();
@@ -2206,9 +2251,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 console.log('data:');
                 console.log(data);
 
+                // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs
                 $("#hiddena").attr({
-                    "download" : 'script.sh',
-                    "href" : "data:text/plain," + data['the_script']        
+                    "download" : 'workflow.json',
+                    //"href" : "data:text/plain;charset=US-ASCII," + data['output_object']      
+                    "href" : "data:," + data['output_object']
+                    //"href": "http://www.google.com" 
                 }).get(0).click();
 
                 //$scope.toast('Run workflow problem: ' + data['error_message'], 'error');
