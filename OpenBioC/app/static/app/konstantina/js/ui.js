@@ -1528,6 +1528,7 @@ window.onload = function () {
                 return tippy(node.popperRef(), {
                     content: function () {
                         var div = document.createElement('div');
+						div.setAttribute("id", "tippy_div_" + node._private.data.id);
                         div.innerHTML = text;
                         return div;
                     },
@@ -1552,7 +1553,7 @@ window.onload = function () {
 					
                     	content: function () {
 								var div = document.createElement('div');
-                                div.setAttribute("id", "tippy_div_" + node._private.data.id);
+                                div.setAttribute("id", "tippy_edit_div_" + node._private.data.id);
 								div.innerHTML = 
 												'<button type="button" class="close">×</button><br>'+  // onclick='+alert($(this).parent());+'
 												node._private.data.description+ '<br>'+
@@ -1576,12 +1577,12 @@ window.onload = function () {
                                 node.data('value', value);
                                 node.data('label', node._private.data.name+'='+value);
                                 //$(this).parent().fadeOut('slow', function(c){});
-                                $('#tippy_div_' + node._private.data.id).remove();
+                                $('#tippy_edit_div_' + node._private.data.id).remove();
 
 							});
 							
 							$('.close').on('click', function(c){
-									$('#tippy_div_' + node._private.data.id).remove();
+									$('#tippy_edit_div_' + node._private.data.id).remove();
 									//$(this).parent().fadeOut('slow', function(c){
 								//});
 							});	
@@ -1628,7 +1629,7 @@ window.onload = function () {
 
             });
 			
-			 // Right-click menu for input nodes
+			 // Right-click menu for input nodes //close: $('#tippy_edit_div_' + ele.id()).remove();
 			 cy.cxtmenu({
                 //selector: 'node',
 				selector: 'node[type="input"]',
@@ -1667,7 +1668,7 @@ window.onload = function () {
                         }
                     },
 					 {
-                        content: 'Skip',
+                        content: 'Cancel',
                         select: function (ele) {
 										
 							cy.cxtmenu().destroy();
@@ -1711,11 +1712,12 @@ window.onload = function () {
                         }
                     },
 					 {
-                        content: 'Skip',
+                        content: 'Cancel',
                         select: function (ele) {
 										
 							cy.cxtmenu().destroy();
                         }
+					 }
                 ]
 
             });
