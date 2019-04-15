@@ -1665,6 +1665,13 @@ window.onload = function () {
                             //							cy.remove(j);
 
                         }
+                    },
+					 {
+                        content: 'Skip',
+                        select: function (ele) {
+										
+							cy.cxtmenu().destroy();
+                        }
                     }
                 ]
 
@@ -1702,7 +1709,13 @@ window.onload = function () {
                             //							cy.remove(j);
 
                         }
-                    }
+                    },
+					 {
+                        content: 'Skip',
+                        select: function (ele) {
+										
+							cy.cxtmenu().destroy();
+                        }
                 ]
 
             });
