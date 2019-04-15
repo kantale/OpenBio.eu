@@ -78,7 +78,7 @@ window.onload = function () {
         $('.datepicker').datepicker();
 
         // ---------------------------------------- Chips initialization -------------------------------------------------
-        $('#generalChips').chips({
+        $('#toolChips').chips({
             placeholder: 'Enter keywords',
             secondaryPlaceholder: '+ keyword',
             autocompleteOptions: {
@@ -992,6 +992,62 @@ window.onload = function () {
             io_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('(\\$\\((input|output)__)' + old_id + '(\\))'), '$1' + new_id + '$3'); }
         };
 
+        /*
+        * Get the data (keywords) from an id chip.
+        */
+        window.OBCUI.get_chip_data = function(this_id) {
+            var data = [];
+            M.Chips.getInstance(document.getElementById(this_id)).getData().forEach(function(chip) {
+                data.push(chip.tag);
+            })
+
+            return data;
+        };
+
+        /*
+        * Delete all chip data
+        */
+        window.OBCUI.delete_all_chip_data = function(this_id) {
+            //Get all data
+            var data = window.OBCUI.get_chip_data(this_id);
+            for (var i=0; i<data.length; i++) {
+                M.Chips.getInstance(document.getElementById(this_id)).deleteChip(0);
+            }
+        };
+
+        /*
+        * Set data to id chip
+        */
+        window.OBCUI.set_chip_data = function(this_id, data) {
+
+            //First delete previous data
+            window.OBCUI.delete_all_chip_data(this_id);
+
+            //Set new
+            data.forEach(function(datum) {
+                 M.Chips.getInstance(document.getElementById(this_id)).addChip({tag: datum});
+            });
+
+        };
+
+        /*
+        * Disable "x" and input from chip
+        */
+        window.OBCUI.chip_disable = function(this_id) {
+            //Remove "x"
+            $('#' + this_id + ' i').css('display','none');
+
+            //Disable input
+            $('#' + this_id + ' input').prop('disabled', true);
+        };
+
+        window.OBCUI.chip_enable = function(this_id) {
+            //Add "x"
+            $('#' + this_id + ' i').css('display','block');
+
+            //Enable input
+            $('#' + this_id + ' input').prop('disabled', false);
+        };
 
         /*
         * bash: the bash text
