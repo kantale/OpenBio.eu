@@ -91,6 +91,22 @@ window.onload = function () {
                 minLength: 1
             }
         });
+
+        $('#workflowChips').chips({
+            placeholder: 'Enter keywords',
+            secondaryPlaceholder: '+ keyword',
+            autocompleteOptions: {
+                data: {
+                    'Apple': null,
+                    'Microsoft': null,
+                    'Google': null
+                },
+                limit: Infinity,
+                minLength: 1
+            }
+        });
+
+
         $('#searchChips').chips({
             placeholder: 'Enter keywords',
             secondaryPlaceholder: '+ keyword',
@@ -2095,44 +2111,46 @@ window.onload = function () {
 
 
             // change all edges that connect to root.  
-            currentElements.edges.forEach(function (edge) {
+            if ('edges' in currentElements) { 
+                // There is a extreme case where a workflow may not have any edge! The line above checks for this case.
+                currentElements.edges.forEach(function (edge) {
 
-                /* EDGE SOURCES */
+                    /* EDGE SOURCES */
 
-                //find edges that have as source the root workflow
-                if (edge.data.source === old_root_id) {
-                    edge.data.source = new_root_id;
-                }
+                    //find edges that have as source the root workflow
+                    if (edge.data.source === old_root_id) {
+                        edge.data.source = new_root_id;
+                    }
 
-                //Find edges that have the root_workflow in their source
-                else if (get_workflow_id_from_SIO_id(edge.data.source) === old_root_id) {
-                    edge.data.source = create_SIO_id({ name: get_SIO_name_from_SIO_id(edge.data.source) }, new_root);
-                }
+                    //Find edges that have the root_workflow in their source
+                    else if (get_workflow_id_from_SIO_id(edge.data.source) === old_root_id) {
+                        edge.data.source = create_SIO_id({ name: get_SIO_name_from_SIO_id(edge.data.source) }, new_root);
+                    }
 
-                //if(edge.data.source.endsWith(old_root))
-                //	edge.data.source = edge.data.source.substr(0, edge.data.source.lastIndexOf(old_root))+new_root; 
+                    //if(edge.data.source.endsWith(old_root))
+                    //	edge.data.source = edge.data.source.substr(0, edge.data.source.lastIndexOf(old_root))+new_root; 
 
-                /* EDGE TARGETS */
+                    /* EDGE TARGETS */
 
-                if (edge.data.target == old_root_id) {
-                    edge.data.target = new_root_id;
-                }
+                    if (edge.data.target == old_root_id) {
+                        edge.data.target = new_root_id;
+                    }
 
-                //Find edges that have the root_workflow in their target
-                else if (get_workflow_id_from_SIO_id(edge.data.target) === old_root_id) {
-                    edge.data.target = create_SIO_id({ name: get_SIO_name_from_SIO_id(edge.data.target) }, new_root);
-                }
+                    //Find edges that have the root_workflow in their target
+                    else if (get_workflow_id_from_SIO_id(edge.data.target) === old_root_id) {
+                        edge.data.target = create_SIO_id({ name: get_SIO_name_from_SIO_id(edge.data.target) }, new_root);
+                    }
 
 
-                //if(edge.data.target.endsWith(old_root))	//check for steps that ends with old_root
-                //	edge.data.target = edge.data.target.substr(0, edge.data.target.lastIndexOf(old_root))+new_root; 
-                //
+                    //if(edge.data.target.endsWith(old_root))	//check for steps that ends with old_root
+                    //	edge.data.target = edge.data.target.substr(0, edge.data.target.lastIndexOf(old_root))+new_root; 
+                    //
 
-                //Change the id of the edge
-                edge.data.id = create_workflow_edge_id(edge.data.source, edge.data.target);
+                    //Change the id of the edge
+                    edge.data.id = create_workflow_edge_id(edge.data.source, edge.data.target);
 
-            });
-
+                });
+            }
 
             /** re run layout **/
             // this initialization is needed because cy.add() causes multiple instances of layout
