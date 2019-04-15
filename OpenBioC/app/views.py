@@ -1224,6 +1224,10 @@ def workflows_add(request, **kwargs):
         new_workflow.tools.add(*tools)
         new_workflow.save()
 
+    # Add keywords
+    keywords = [Keyword.objects.get_or_create(keyword=keyword)[0] for keyword in kwargs['workflow_keywords']]
+    new_workflow.keywords.add(*keywords)
+    new_workflow.save();
 
     ret = {
         'edit': next_edit,
@@ -1254,6 +1258,7 @@ def workflows_search_3(request, **kwargs):
         'description': workflow.description,
         'created_at': datetime_to_str(workflow.created_at),
         'forked_from': workflow_to_json(workflow.forked_from),
+        'keywords': [keyword.keyword for keyword in workflow.keywords.all()],
         'workflow' : simplejson.loads(workflow.workflow),
     }
 
