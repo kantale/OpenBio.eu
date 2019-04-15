@@ -76,7 +76,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tools_edit_regexp = /^\d+$/; 
         $scope.tools_search_warning= "";
         $scope.workflows_search_warning = "";
+
+        //$scope.set_tools_info_editable(false);
         $scope.tools_info_editable = false; // Can we edit tools_info ?
+
         $scope.tools_info_forked_from = null; //From which tool is this tool forked from?
         $scope.tool_changes = ''; // Changes from forked
         // TODO : fix the values (the debian versions is not correct for Dockerfile)
@@ -124,6 +127,14 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     ];
 
     $scope.selected = { value: $scope.itemArray[0] };
+
+    /*
+    * Anytime we change tools_info_editable we need the UI to respond.
+    * Add here explicit stuff that should change when tools_info_editable change
+    */ 
+    $scope.set_tools_info_editable = function(b) {
+        $scope.tools_info_editable = b;
+    };
 
     /*
     * Helper function that perform ajax calls
@@ -559,13 +570,16 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.tools_info_success_message = '';
                 $scope.tools_info_error_message = '';
 
+                //Set chip data
+                window.OBCUI.set_chip_data('toolChips', data['tool_keywords']);
+                window.OBCUI.chip_disable('toolChips');
+
                 angular.copy(data['dependencies_jstree'], $scope.tools_dep_jstree_model);
                 angular.copy(data['variables_js_tree'], $scope.tools_var_jstree_model);
                 $scope.tool_variables = data['variables'];
 
                 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
                 // find and save the selected os when the user search specific tool
-                //$scope.selectedOption = $scope.chooseOs.find(os => os.value === data['os_type']);
                 $scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === data['tool_os_choices'][0]})  ; // Take just the first. The model allows for multiple choices
                 //console.log('$scope.tool_os_choices:');
                 //console.log($scope.tool_os_choices);
@@ -596,6 +610,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     /*
     *   navbar --> Tools --> Search sidebar --> Name or Version or Name Change
+    *   See also: workflows_search_input_changed 
     */
     $scope.tools_search_input_changed = function() {
 
@@ -650,6 +665,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     /*
     *   navbar --> Tools --> Search sidebar --> Combobox Workflows --> Name or Version or Name Change
+    *   See also tools_search_input_changed
     */
     $scope.workflows_search_input_changed = function() {
         //Check workflow name
@@ -671,11 +687,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             return; 
         }
 
-
         //Everything seems to be ok
         $scope.workflows_search_warning = '';
         $scope.workflows_search_2();
-
 
     };
 
@@ -697,7 +711,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.show_tools_info = true;
         //$scope.show_workflows_info = false; // TODO. THIS SHOULDN'T BE HERE
 
-        $scope.tools_info_editable = true;
+        $scope.set_tools_info_editable(true);
+        //$scope.tools_info_editable = true;
         $scope.tool_info_created_at = null;
         $scope.tools_info_forked_from = null;
         $scope.tools_info_name = $scope.tools_search_name;
@@ -708,7 +723,6 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tool_website = '';
         $scope.tool_description = '';
         $scope.tool_changes = '';
-        //$scope.selectedOption = '';
 
         //Empty dependencies JSTREE 
         angular.copy([], $scope.tools_dep_jstree_model);
@@ -738,6 +752,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //$('#tool_os_choices_select').formSelect();
         $timeout(function(){$('#tool_os_choices_select').formSelect();}, 100);
 
+        //Delete all chip
+        window.OBCUI.delete_all_chip_data('toolChips');
+        window.OBCUI.chip_enable('toolChips'); // Enable them
     };
 
 
@@ -781,7 +798,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */
     $scope.workflows_search_create_new_pressed_ok = function() {
         //Close tool accordion
-        $scope.tools_info_editable = false;
+        $scope.set_tools_info_editable(false);
+        //$scope.tools_info_editable = false;
         window.cancelToolDataBtn_click();
 
         //Open Workflows accordion
@@ -859,16 +877,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * Navbar --> Tools/data --> Appropriate input --> "Create New" button --> Pressed --> Filled input --> Save (button) --> Pressed
     * See also: workflows_create_save_pressed 
     * 
-
-selectedOption DELETE THIS
-
     */
     $scope.tool_create_save_pressed = function() {
 
-        console.log("$scope.tools_dep_jstree_model:");
-        console.log($scope.tools_dep_jstree_model);
-        //os_type_selected = $scope.selectedOption.value;
-        //console.log(os_type_selected);
+//        console.log("$scope.tools_dep_jstree_model:");
+//        console.log($scope.tools_dep_jstree_model);
 
         //Get the dependencies
         var tool_dependencies = [];
@@ -886,6 +899,7 @@ selectedOption DELETE THIS
                 'tools_search_version': $scope.tools_info_version,
                 'tool_website': $scope.tool_website,
                 'tool_description': $scope.tool_description,
+                'tool_keywords': window.OBCUI.get_chip_data('toolChips'),
                 'tool_forked_from': $scope.tools_info_forked_from,
                 'tool_changes': $scope.tool_changes,
                 'tool_os_choices' : $scope.tool_os_choices,
@@ -898,10 +912,14 @@ selectedOption DELETE THIS
             function(data) {
                 $scope.tools_info_success_message = 'Tool/Data successfully saved';
                 $scope.toast($scope.tools_info_success_message, 'success');
-                $scope.tools_info_editable = false;
+                $scope.set_tools_info_editable(false);
+                //$scope.tools_info_editable = false;
                 $scope.tool_info_created_at = data['created_at'];
                 $scope.tools_info_edit = data['edit'];
                 $scope.tools_search_input_changed(); //Update search results
+
+                //Disable chip
+                window.OBCUI.chip_disable('toolChips');
             },
             function(data) {
                 $scope.tools_info_error_message = data['error_message'];
@@ -920,7 +938,8 @@ selectedOption DELETE THIS
     $scope.tools_search_show_item = function(item) {
         $scope.show_tools_info = true;
         $scope.show_workflows_info = false;
-        $scope.tools_info_editable = false;
+        $scope.set_tools_info_editable(false);
+        //$scope.tools_info_editable = false;
         $scope.tools_search_3(item);
         M.updateTextFields(); // The text inputs in Materialize needs to be updated after change.
     };
@@ -935,7 +954,8 @@ selectedOption DELETE THIS
             return;
         }
 
-        $scope.tools_info_editable = true;
+        $scope.set_tools_info_editable(true);
+        //$scope.tools_info_editable = true;
         $scope.tools_info_error_message = '';
         $scope.tools_info_success_message = "Tool successfully forked. Press Save after completing your edits";
         $scope.toast($scope.tools_info_success_message, 'success');
@@ -963,6 +983,9 @@ selectedOption DELETE THIS
         // The new tool is unvalidated
         $scope.tool_info_validation_status = 'Unvalidated';
         $scope.tool_info_validation_created_at = null;
+
+        // Enable chip edit
+        window.OBCUI.chip_enable('toolChips'); // Enable them
     };
 
     /*
@@ -1166,10 +1189,11 @@ selectedOption DELETE THIS
     * Get the dependencies of this tool
     * This is called from OBC.js
     * what_to_do == 1: DRAG FROM SEARCH TREE TO DEPENDENCY TREE
-    * what_to_do == 2: DRAG FROM SWARCH TREE TO WORKFLOW DIV
+    * what_to_do == 2: DRAG FROM SEARCH TREE TO WORKFLOW DIV
     */
     $scope.tool_get_dependencies = function(tool, what_to_do) {
 
+        // If the tools_info_editable is not editbaled we are not allowed to drop items 
         if (what_to_do == 1 && (!$scope.tools_info_editable)) {
             return;
         }
@@ -1183,7 +1207,7 @@ selectedOption DELETE THIS
             },
             function(data) {
 
-                if (what_to_do == 1) { // DRAG FROM SEARCH TREE TO DEPENDENCY TREE
+                if (what_to_do == 1) { // DRAG FROM TOOL SEARCH TREE TO DEPENDENCY TREE
                     $scope.tools_info_error_message = '';
 
                     //Is this action valid?
@@ -1218,7 +1242,7 @@ selectedOption DELETE THIS
                         $scope.tools_var_jstree_model.push(data['variables_jstree'][i]);
                     }
                 }
-                else if (what_to_do == 2) { //DRAG FROM SEARCH TREE TO WORKFLOW DIV
+                else if (what_to_do == 2) { //DRAG FROM TOOLS SEARCH TREE TO WORKFLOW DIV
                     console.log('UPDATE THE GRAPH WITH: dependencies_jstree');
                     console.log(data['dependencies_jstree']);
                     console.log('variables_jstree:');
@@ -1249,8 +1273,9 @@ selectedOption DELETE THIS
                             }
                         }
                     });
+
                     //Make sure that all dependencies_jstree nodes have a variables field
-                    //Also make sure that all ependencies_jstree nodes have a belongto fields
+                    //Also make sure that all dependencies_jstree nodes have a belongto fields
                     for (var i=0; i<data['dependencies_jstree'].length; i++) {
                         if (typeof data['dependencies_jstree'][i].variables !== 'undefined') {
                         }
@@ -1408,7 +1433,8 @@ selectedOption DELETE THIS
                 $scope.tools_search_show_item($scope.modal_data.node.data);
                 window.createToolDataBtn_click();
                 window.cancelWorkflowBtn_click();
-                $scope.tools_info_editable = false;
+                $scope.set_tools_info_editable(false);
+                //$scope.tools_info_editable = false;
                 $scope.workflows_info_editable = false;
             }
             else if (who_called_me == 'TOOLS_CREATE_BUTTON') {
@@ -1417,7 +1443,8 @@ selectedOption DELETE THIS
             else if (who_called_me == 'TOOLS_CANCEL_BUTTON') {
                 console.log('MODAL WHO CALLED ME: TOOLS_CANCEL_BUTTON');
                 window.cancelToolDataBtn_click(); // Close Tool panel
-                $scope.tools_info_editable = false;
+                $scope.set_tools_info_editable(false);
+                //$scope.tools_info_editable = false;
             }
             else if (who_called_me == 'WORKFLOWS_CANCEL_BUTTON') {
                 console.log('MODAL WHO CALLED ME: WORKFLOWS_CANCEL_BUTTON');
@@ -2077,6 +2104,7 @@ selectedOption DELETE THIS
                 workflow_step_editor.setReadOnly(true);
 
                 $scope.toast('Workflow successfully saved', 'success');
+                $scope.workflows_search_input_changed(); //Update search results
             },
             function(data) {
                 $scope.workflows_info_error_message = data['error_message'];
@@ -2103,7 +2131,7 @@ selectedOption DELETE THIS
         window.forkWorkflow();
 
         $scope.workflows_info_editable = true;
-        $scope.toast("Workflows successfully forked. Press Save after completing your edits", 'success');
+        $scope.toast("Workflow successfully forked. Press Save after completing your edits", 'success');
 
         $scope.workflow_info_forked_from = {
             'name': $scope.workflow_info_name,  
@@ -2182,7 +2210,49 @@ selectedOption DELETE THIS
     * worfklows --> info (right panel) --> button "Run" --> Pressed
     */
     $scope.workflow_info_run_pressed = function() {
-        window.OBCUI.runWorkflow();
+        var workflow_options = window.OBCUI.get_workflow_options();
+
+        // Check for uncheck options
+        var unset_options = [];
+        for (var option in workflow_options) {
+            if (workflow_options[option] === null) {
+                unset_options.push(option);
+            }
+        }
+
+        if (unset_options.length) {
+            $scope.toast('Please set all input variables. Unset variables: ' + unset_options.join(', '), 'error');
+            return;
+        }
+
+        $scope.ajax(
+            'run_workflow/',
+            {
+                'workflow_options': workflow_options,
+                'workflow': {
+                    'name': $scope.workflow_info_name,
+                    'edit': $scope.workflow_info_edit
+                }
+            },
+            function(data) {
+                console.log('data:');
+                console.log(data);
+
+                $("#hiddena").attr({
+                    "download" : 'script.sh',
+                    "href" : "data:text/plain," + data['the_script']        
+                }).get(0).click();
+
+                //$scope.toast('Run workflow problem: ' + data['error_message'], 'error');
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast('Error: 3811 ' + statusText, 'error');
+            }
+        );
+
     };
 
 

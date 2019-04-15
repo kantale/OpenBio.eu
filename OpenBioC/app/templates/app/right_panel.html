@@ -66,7 +66,7 @@
                                         ng-model="tool_changes" ng-disabled="!tools_info_editable"></textarea>
                                     <label for="generalEditSummary">Edit Summary</label>
                                 </div>
-                                <div id="generalChips" class="input-field chips left-align"></div>
+                                <div id="toolChips" class="input-field chips left-align" ng-disabled="!tools_info_editable"></div>
                             </form>
                         </div>
                     </div>
@@ -325,7 +325,7 @@
                 <!-- Buttons -->
                 <div class="row right-align">
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
-                        data-tooltip="Run" ng-click="workflow_info_run_pressed()">Run</a>
+                        data-tooltip="Run" ng-click="workflow_info_run_pressed()" ng-disabled="workflows_info_editable">Run</a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fit" ng-click="workflow_info_fit_pressed()">Fit</a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
