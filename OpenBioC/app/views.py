@@ -22,7 +22,7 @@ from django.views.decorators.csrf import csrf_exempt # https://stackoverflow.com
 from django.middleware.csrf import get_token 
 
 #Import database objects
-from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations, OS_types
+from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations, OS_types, Keyword
 
 # Email imports
 import smtplib
@@ -871,6 +871,8 @@ def tools_search_3(request, **kwargs):
         'forked_from': tool_to_json(tool.forked_from),
         'changes': tool.changes,
 
+        'tool_keywords': [keyword.keyword for keyword in tool.keywords.all()],
+
         'dependencies_jstree': tool_dependencies_jstree,
         'variables_js_tree': tool_variables_jstree,
 
@@ -1033,6 +1035,11 @@ def tools_add(request, **kwargs):
     #Add os type
     OS_types_obj, created = OS_types.objects.get_or_create(os_choices=tool_os_choices['value'])
     new_tool.os_choices.add(OS_types_obj)
+    new_tool.save()
+
+    #Add keywords
+    keywords = [Keyword.objects.get_or_create(keyword=keyword)[0] for keyword in kwargs['tool_keywords']]
+    new_tool.keywords.add(*keywords)
     new_tool.save()
 
     ret = {
@@ -1251,6 +1258,34 @@ def workflows_search_3(request, **kwargs):
     }
 
     return success(ret)
+
+@has_data
+def run_workflow(request, **kwargs):
+    '''
+    Defined in urls.py:
+    path('run_workflow/', views.run_workflow), # Acceps a workflow_options and workflow object. Runs a workflow
+
+    https://docs.djangoproject.com/en/2.2/ref/request-response/#telling-the-browser-to-treat-the-response-as-a-file-attachment
+    '''
+
+    workflow_arg = kwargs['workflow']
+    workflow_options_arg = kwargs['workflow_options']
+
+    workflow = Workflow.objects.get(**workflow_arg)
+
+
+
+    the_script = 'ls -l'
+
+    #response = HttpResponse(the_script, content_type='application/x-sh')
+    #response['Content-Disposition'] = 'attachment; filename="script.sh"'
+
+    ret = {
+        'the_script': 'ls -l'
+    }
+
+    return success(ret)
+
 
 ### END OF WORKFLOWS ###
 ### START OF VALIDATION CALLBACK ###
