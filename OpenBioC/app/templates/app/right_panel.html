@@ -112,7 +112,7 @@
                 <!-- -------------------------------- Installation ----------------------------------------- -->
                 <!-- --------------------------------------------------------------------------------------- -->
                 <li id="toolsDataInstallation">
-                    <div class="collapsible-header" style="height:55px; display:block;">
+                    <div class="collapsible-header" style="height:55px; display:block;z-index: 1;">
                         <i class="material-icons arrow left">keyboard_arrow_right</i>
                         <i class="material-icons left">computer</i>
                         <span class="left">Installation</span>
@@ -127,8 +127,9 @@
                         {% endverbatim %}
                         <small
                             ng-show="(!tools_info_editable) && (tool_info_validation_status=='Unvalidated' || tool_info_validation_status=='Validated' || tool_info_validation_status=='Failed')"
-                            ng-click="tool_info_validate_pressed()" class="right"
-                            style="padding-top:4px; margin-left:5px; margin-right:5px;">
+                            class="right"
+                            ng-click="tool_info_validate_pressed()"
+                            style="padding-top:4px; margin-left:5px; margin-right:5px;z-index: 2;">
                             <a><span ng-show="tool_info_validation_status=='Validated'">re-</span>validate</a>
                         </small>
 
