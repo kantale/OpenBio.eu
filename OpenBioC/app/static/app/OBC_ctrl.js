@@ -2251,9 +2251,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 console.log('data:');
                 console.log(data);
 
+                // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs
                 $("#hiddena").attr({
-                    "download" : 'script.sh',
-                    "href" : "data:text/plain," + data['the_script']        
+                    "download" : 'workflow.json',
+                    //"href" : "data:text/plain;charset=US-ASCII," + data['output_object']      
+                    "href" : "data:," + data['output_object']
+                    //"href": "http://www.google.com" 
                 }).get(0).click();
 
                 //$scope.toast('Run workflow problem: ' + data['error_message'], 'error');
