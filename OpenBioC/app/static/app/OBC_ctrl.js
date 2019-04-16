@@ -2115,6 +2115,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                 $scope.toast('Workflow successfully saved', 'success');
                 $scope.workflows_search_input_changed(); //Update search results
+
+                //When we save a workflow, the UI keeps the cy version that has not been processed by the server
+                //This version contains "null" values for the root id. Do we fetch it from the server.
+                $scope.workflows_search_3({name: $scope.workflow_info_name, edit:data['edit']});
             },
             function(data) {
                 $scope.workflows_info_error_message = data['error_message'];
@@ -2188,7 +2192,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 //});
 
                 //the information regarding edges exists on the nodes. 
-                //We do not have to pass the complete worfklow, or edger information.
+                //We do not have to pass the complete worfklow, or edge information.
                 var nodes_to_add = []
                 workflow_cytoscape.elements.nodes.forEach(function(node){ nodes_to_add.push(node.data) });
                 window.buildTree(nodes_to_add, {name: $scope.workflow_info_name, edit: null});  
