@@ -71,6 +71,18 @@ class Worfklow:
 				message = 'Input parameter: {} has not been set!'.format(root_input_node['id'])
 				raise OBC_Executor_Exception(message)
 
+	def get_tool_installation_order(self, ):
+		'''
+		Get a list of tools in dependency order.
+		'''
+
+		for a_node in self.node_iterator():
+			if not self.is_tool(a_node):
+				continue
+
+			print (a_node)
+
+
 
 	def get_input_parameters(self, ):
 		'''
@@ -115,6 +127,9 @@ class Worfklow:
 		'''
 		'''
 		return node['type'] == self.STEP_TYPE
+
+	def is_tool(self, node):
+		return node['type'] == self.TOOL_TYPE
 
 	def belongto(self, node):
 		'''
@@ -169,6 +184,7 @@ if __name__ == '__main__':
 	w = Worfklow(args.workflow_filename)
 	#print (w.root_inputs_outputs)
 	#print (w)
+	w.get_tool_installation_order()
 
 	
 
