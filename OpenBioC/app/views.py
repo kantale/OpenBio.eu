@@ -15,6 +15,7 @@ from django.db.models import Q # https://docs.djangoproject.com/en/2.1/topics/db
 from django.db.models import Max # https://docs.djangoproject.com/en/2.1/topics/db/aggregation/
 
 from django.utils import timezone
+#from django.utils.html import escape # https://docs.djangoproject.com/en/2.2/ref/utils/#module-django.utils.html
 from django.views.decorators.csrf import csrf_exempt # https://stackoverflow.com/questions/17716624/django-csrf-cookie-not-set/51398113
 
 # Get csrf_token
@@ -40,6 +41,7 @@ import logging # https://docs.djangoproject.com/en/2.1/topics/logging/
 import simplejson
 
 from collections import Counter
+import urllib.parse # https://stackoverflow.com/questions/40557606/how-to-url-encode-in-python-3/40557716 
 
 from ansi2html import Ansi2HTMLConverter # https://github.com/ralphbean/ansi2html/
 
@@ -1277,16 +1279,37 @@ def run_workflow(request, **kwargs):
     workflow_options_arg = kwargs['workflow_options']
 
     workflow = Workflow.objects.get(**workflow_arg)
+    workflow_cy = simplejson.loads(workflow.workflow)
+    #print (workflow_cy)
 
+    # Get the tools of this workflow
+    workflow_tools = [tool for tool in workflow_cy['elements']['nodes'] if tool['data']['type']=='tool']
+    # Add bash information that does not exist in cytoscape graph
+    for workflow_tool in workflow_tools:
+        workflow_tool_obj = Tool.objects.get(
+            name=workflow_tool['data']['name'], 
+            version=workflow_tool['data']['version'], 
+            edit=workflow_tool['data']['edit'])
 
+        workflow_tool['data']['installation_commands'] =  workflow_tool_obj.installation_commands
+        workflow_tool['data']['validation_commands'] = workflow_tool_obj.validation_commands
+        workflow_tool['data']['os_choices'] = [choice.os_choices for choice in workflow_tool_obj.os_choices.all()]
 
-    the_script = 'ls -l'
+    output_object = {
+        'arguments': workflow_options_arg,
+        'workflow': workflow_cy,
+    }
+    #output_object = simplejson.dumps(output_object) # .replace('#', 'aa')
+    output_object = urllib.parse.quote(simplejson.dumps(output_object))
+    #output_object = escape(simplejson.dumps(output_object))
+
+    print ('output_object')
+    print (output_object)
 
     #response = HttpResponse(the_script, content_type='application/x-sh')
     #response['Content-Disposition'] = 'attachment; filename="script.sh"'
-
     ret = {
-        'the_script': 'ls -l'
+        'output_object': output_object
     }
 
     return success(ret)
