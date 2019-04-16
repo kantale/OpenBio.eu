@@ -90,6 +90,7 @@ class OBC_Controller_Exception(Exception):
     pass
 
 def execute_shell(command):
+
     '''
     Executes a command in shell
     dummy: Do nothing. Return a success-like message
@@ -115,14 +116,16 @@ def execute_shell(command):
     #for line in iter(process.stdout.readline, b''):
     #    print(line)
 
-    
+    timer = time.time()    
     (stdout,stderr) = process.communicate()
-
+    timer_e = time.time()
+    executionTime = timer_e - timer
     print(f'[{command!r} exited with {process.returncode}]')
     ret = {
         'stdout' : stdout,
         'stderr' : stderr,
         'errcode' : process.returncode,
+        'executionTime' : executionTime,
     }
 
     #print ('EXCUTE SHELL ABOUT TO RETURN:')
@@ -413,7 +416,8 @@ def worker(message_queue, w_id):
 
             result = execute_docker_build(this_id,ostype, bash)
             print ('RESULT FROM execute_docker_build:')
-            print (result)
+            #print (result['stderr'])
+            #print (result['executionTime'])
 
             
             #time.sleep(random.randint(1,5))
@@ -431,6 +435,7 @@ def worker(message_queue, w_id):
             payload['stdout'] = result['stdout'].decode()
             payload['stderr'] = result['stderr'].decode()
             payload['errcode'] = result['errcode']
+            payload['executionTime'] =result['executionTime']
             talk_to_server(payload)
 
 
