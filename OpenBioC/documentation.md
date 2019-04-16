@@ -38,3 +38,6 @@ angular.element($('#angular_div')).scope().$apply(function () {
 
 ```
 
+$scope.tools_search_input_changed(); //Update search results
+
+
