@@ -1303,8 +1303,8 @@ def run_workflow(request, **kwargs):
     output_object = urllib.parse.quote(simplejson.dumps(output_object))
     #output_object = escape(simplejson.dumps(output_object))
 
-    print ('output_object')
-    print (output_object)
+    #print ('output_object')
+    #print (output_object)
 
     #response = HttpResponse(the_script, content_type='application/x-sh')
     #response['Content-Disposition'] = 'attachment; filename="script.sh"'
