@@ -180,30 +180,34 @@
                 <div class="row" ng-show="!tools_info_editable">
                     Operating System: <span ng-bind="tool_os_choices.name"></span>
                 </div>
-                <div class="row" ng-show="tools_info_editable">
-                    <!-- adding values to use it for dockerfile-->
+                <!-- adding values to use it for dockerfile-->
+                <!--<div class="row" ng-show="tools_info_editable">
                     <div class="input-field col s12">
-
-                        <!-- <select>
-                                    <optgroup label="Ubuntu">
-                                       
-                                        <option value="ubuntu:14.04">Ubuntu:14.04</option>
-                                        <option value="ubuntu:16.04">Ubuntu:16.04</option>
-                                    </optgroup>
-                                    <optgroup label="Debian">
-                                        <option value="jessie">Debian 8 (Jessie)</option>
-                                        <option value="stretch">Debian 9 (Stretch)</option>
-                                        <option value="buster">Debian 10 (Buster)</option>
-                                    </optgroup>
-                               
-                                </select> -->
+                         <select>
+                            <optgroup label="Ubuntu">
+                                <option value="ubuntu:14.04">Ubuntu:14.04</option>
+                                <option value="ubuntu:16.04">Ubuntu:16.04</option>
+                            </optgroup>
+                            <optgroup label="Debian">
+                                <option value="jessie">Debian 8 (Jessie)</option>
+                                <option value="stretch">Debian 9 (Stretch)</option>
+                                <option value="buster">Debian 10 (Buster)</option>
+                            </optgroup>
+                        </select> 
                         <select id="tool_os_choices_select" ng-model="tool_os_choices"
                             ng-options="os.name group by os.group for os in os_choices"></select>
-
                         <label>Select Operating System</label>
-
+                    </div>
+                </div>-->
+                <div class="row" ng-show="tools_info_editable">
+                    <!-- adding values to use it for dockerfile-->
+                    <div class="col s12 left-align">
+                        <span>Select Operating System</span>
+                        <select id="tool_os_choices_select" ng-model="tool_os_choices"
+                            ng-options="os.name group by os.group for os in os_choices"></select>
                     </div>
                 </div>
+
                 <!-- Installation -->
                 <div class="row">
                     <h5>Installation Commands</h5>
@@ -361,39 +365,52 @@
             </div>
         </div>
 
-
-            <ul class="collapsible expandable faster" style="margin-top:0px;">
-                <li id="workflowRightPanelGeneral">
-                    <div class="collapsible-header">
-                        <i class="material-icons arrow">keyboard_arrow_right</i>
-                        <i class="material-icons">info</i>
-                        General
-                    </div>
-                    <div class="collapsible-body">
+        <!-- --------------------------------------------------------------------------------------- -->
+        <!-- ---------------------------------- General -------------------------------------------- -->
+        <!-- --------------------------------------------------------------------------------------- -->
+        <ul class="collapsible expandable faster" style="margin-top:0px;">
+            <li id="workflowRightPanelGeneral">
+                <div class="collapsible-header">
+                    <i class="material-icons arrow">keyboard_arrow_right</i>
+                    <i class="material-icons">info</i>
+                    General
+                </div>
+                <div class="collapsible-body">
+                    <form class="col s12">
                         <div class="row">
-                            <form class="col s12">
-                                <div class="input-field">
-                                    <input id="workflowsGeneralWebsite" type="text" class="validate"
-                                        ng-model="workflow_website" ng-disabled="!workflows_info_editable">
-                                    <label for="workflowsGeneralWebsite">Website</label>
-                                </div>
-                                <div class="input-field">
-                                    <textarea id="workflowsGeneralDescription" class="validate materialize-textarea"
-                                        ng-model="workflow_description"
-                                        ng-disabled="!workflows_info_editable"></textarea>
-                                    <label for="workflowsGeneralDescription">Description</label>
-                                </div>
-                                <div class="input-field" ng-show="workflow_info_forked_from">
-                                    <textarea id="workflowsGeneralEditSummary" class="validate materialize-textarea"
-                                        ng-model="workflow_changes" ng-disabled="!workflows_info_editable"></textarea>
-                                    <label for="workflowsGeneralEditSummary">Edit Summary</label>
-                                </div>
-                                <div id="workflowChips" class="input-field chips left-align" ng-disabled="!tools_info_editable"></div>
-                            </form>
+                            <div class="input-field col s12 m6 grid-s12-m6-l6">
+                                <input id="generalWorkflowName" type="text" class="validate">
+                                <label for="generalWorkflowName">Name</label>
+                            </div>
+
+                            <div class="input-field col s12 m6 grid-s12-m6-l6">
+                                <input id="generalWorkflowEdit" type="text" class="validate">
+                                <label for="generalWorkflowEdit">Edit</label>
+                            </div>
+                            <div class="input-field col s12 grid-s12-m12-l12">
+                                <input id="workflowsGeneralWebsite" type="text" class="validate"
+                                    ng-model="workflow_website" ng-disabled="!workflows_info_editable">
+                                <label for="workflowsGeneralWebsite">Website</label>
+                            </div>
+                            <div class="input-field col s12 grid-s12-m12-l12">
+                                <textarea id="workflowsGeneralDescription" class="validate materialize-textarea"
+                                    ng-model="workflow_description" ng-disabled="!workflows_info_editable"></textarea>
+                                <label for="workflowsGeneralDescription">Description</label>
+                            </div>
+
+
+                            <div class="input-field col s12 grid-s12-m12-l12" ng-show="workflow_info_forked_from">
+                                <textarea id="workflowsGeneralEditSummary" class="validate materialize-textarea"
+                                    ng-model="workflow_changes" ng-disabled="!workflows_info_editable"></textarea>
+                                <label for="workflowsGeneralEditSummary">Edit Summary</label>
+                            </div>
+                            <div id="workflowChips" class="input-field chips left-align col s12 grid-s12-m12-l12"
+                                ng-disabled="!tools_info_editable"></div>
                         </div>
-                    </div>
-                </li>
-            </ul>
+                    </form>
+                </div>
+            </li>
+        </ul>
         <!-- --------------------------------------------------------------------------------------- -->
         <!-- ------------------------------------ Graph -------------------------------------------- -->
         <!-- --------------------------------------------------------------------------------------- -->
@@ -407,16 +424,18 @@
         </div>
 
         <hr>
-        <!-- --------------------------------------------------------------------------------------- -->
-        <!-- ------------------------------- Edit Workflow ----------------------------------------- -->
-        <!-- --------------------------------------------------------------------------------------- -->
         <ul id="editWorkflowAccordion" class="collapsible expandable faster" style="margin-top:0px;">
+            <!-- --------------------------------------------------------------------------------------- -->
+            <!-- ------------------------------- Step Workflow ----------------------------------------- -->
+            <!-- --------------------------------------------------------------------------------------- -->
             <li id="workflowRightPanelStep">
                 <!-- class="disabled" -->
-                <div class="collapsible-header">
-                    <i class="material-icons arrow">keyboard_arrow_right</i>
-                    <i class="material-icons">linear_scale</i>
-                    Step
+                <div class="collapsible-header customCollapsibleHeader">
+                    <i class="material-icons arrow left">keyboard_arrow_right</i>
+                    <i class="material-icons left">linear_scale</i>
+                    <span class="left" style="margin-right: 10px;">Step</span>
+                    <a id="workflowStepPlusBtn" class="waves-effect btn green plusBtn right tooltipped"
+                        data-position="left" data-tooltip="Add Step"><i class="material-icons plusIcon">add</i></a>
                 </div>
                 <div class="collapsible-body">
                     <div class="row">
@@ -453,6 +472,9 @@
                     </div>
                 </div>
             </li>
+            <!-- --------------------------------------------------------------------------------------- -->
+            <!-- ---------------------------- Inputs / Outputs ----------------------------------------- -->
+            <!-- --------------------------------------------------------------------------------------- -->
             <li id="workflowRightPanelInputsOutputs">
                 <div class="collapsible-header">
                     <i class="material-icons arrow">keyboard_arrow_right</i>
@@ -514,6 +536,9 @@
                     </div>
                 </div>
             </li>
+            <!-- --------------------------------------------------------------------------------------- -->
+            <!-- ------------------------------ Statistics Workflow ------------------------------------ -->
+            <!-- --------------------------------------------------------------------------------------- -->
             <li id="workflowStatistics">
                 <div class="collapsible-header">
                     <i class="material-icons arrow">keyboard_arrow_right</i>
