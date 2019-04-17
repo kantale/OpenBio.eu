@@ -1965,7 +1965,9 @@ window.onload = function () {
             cy = createCytoscapeObject();
 
             //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.
-            document.querySelector('canvas[data-id="layer2-node"]').style.position = null;
+            //document.querySelector('canvas[data-id="layer2-node"]').style.position = null;
+			document.getElementById("cywf").querySelector('canvas[data-id="layer2-node"]').style.position = null; 
+
 
         }
 		
@@ -2077,8 +2079,8 @@ window.onload = function () {
 
             });
 
-            //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.
-            document.querySelector('canvas[data-id="layer2-node"]').style.position = null;  //check if it works
+            //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.	
+			document.getElementById("cyrep").querySelector('canvas[data-id="layer2-node"]').style.position = null; 
 
         }
 
