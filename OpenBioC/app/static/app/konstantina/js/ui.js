@@ -1395,11 +1395,6 @@ window.onload = function () {
         * belongto: the workflow to be added to
         */
         function parseWorkflow(incomingData, belongto) {
-            console.log('parseWorkflow incomingData:');
-            console.log(incomingData);
-
-            console.log('belongto:');
-            console.log(belongto);
 
             var myNodes = [], myEdges = [];
 
@@ -1523,13 +1518,6 @@ window.onload = function () {
                 }
 
             });
-
-            console.log('NODES:');
-            console.log(myNodes);
-            console.log('EDGES:');
-            console.log(myEdges);
-
-
 
             return {
                 nodes: myNodes,
@@ -1970,15 +1958,127 @@ window.onload = function () {
         }
 
         /*
-        * Initialize cytoscape graph
+        * Initialize WORKFLOW graph
         */
         function initializeTree() {
 
             cy = createCytoscapeObject();
-            /* add menu on node right click*/
 
             //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.
             document.querySelector('canvas[data-id="layer2-node"]').style.position = null;
+
+        }
+		
+		/*
+        * Create REPORT graph
+		*
+        */
+		window.createRepTree = function(workflowToReport){
+			//function createRepTree(workflowToReport) {
+
+            var cy_rep = cytoscape({
+                container: document.getElementById('cyrep'), // container to render in
+                elements: [],
+                style: [ // the stylesheet for the graph
+                    {
+                        selector: 'node',
+                        "style": {
+                            "shape": "round-rectangle",
+                            "background-color": "black",
+                            //"label": "data(id)",
+                            "label": "data(label)",
+                            //"height": 15,
+                            //"width": 15
+                        }
+                    },
+                    {
+                        selector: 'node[type="step"]',
+                        "style": {
+                            'shape': 'ellipse',
+                            'background-color': 'black',
+                        }
+                    },
+                    {
+                        selector: 'node[type="input"]',
+                        "style": {
+                            'shape': 'round-rectangle',
+                            //'border-width': '3',
+                            //'border-color': '#43A047',
+                            'background-color': 'black',
+  
+                        }
+                    },
+                    {
+                        selector: 'node[type="output"]',
+                        "style": {
+                            'shape': 'round-rectangle',
+                            //'border-width': '3',
+                            //'border-color': '#E53935',
+                            'background-color': 'black',
+                            //"height": 15,
+                            //"width": 15
+                        }
+                    },
+
+                    {
+                        selector: 'node[type="workflow"]',
+                        "style": {
+                            'shape': 'diamond',
+                            //'border-width': '3',
+                            //'border-color': '#E53935',
+                            'background-color': 'black',
+                            //"height": 15,
+                            //"width": 15
+                        }
+                    },/*
+                    {
+                        selector: 'edge',
+                        "style": {
+                            'curve-style': 'bezier',
+                            'target-arrow-shape': 'triangle',
+                            'width': 2,
+                            'line-color': '#ddd',
+                            'target-arrow-color': '#ddd'
+                        },*/
+						{
+                        selector: 'edge',
+                        "style": {
+                            'curve-style': 'bezier',
+                            'target-arrow-shape': 'triangle',
+                            'width': 2,
+							'line-dash-pattern': [6, 3], 
+							'line-dash-offset': 24,
+                            'line-color': 'black',
+                            'target-arrow-color': 'black'
+                        }
+						
+                    }
+                ],
+
+                //zoom: 1,
+                pan: { x: 0, y: 0 },
+
+                layout: {
+                    name: 'breadthfirst',
+                    directed: true,
+                    padding: 2
+                }
+
+
+            });
+			
+			cy_rep.json({ elements:  workflowToReport});   // Add new data
+            cy_rep.ready(function () {           // Wait for nodes to be added  
+                cy_rep.layout({                   // Call layout
+                    name: 'breadthfirst',
+                    directed: true,
+                    padding: 2
+                }).run();
+
+            });
+
+            //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.
+            document.querySelector('canvas[data-id="layer2-node"]').style.position = null;  //check if it works
 
         }
 
