@@ -1982,43 +1982,121 @@ window.onload = function () {
                 container: document.getElementById('cyrep'), // container to render in
                 elements: [],
                 style: [ // the stylesheet for the graph
-                    {
-                        selector: 'node',
+					/*
+					* Tools have 4 states :  pending, installing, installed, failed.
+					*
+					*/
+					{   // * tool pending state : initial state*//
+                        selector: 'node[type="tool"]',  //[state = "pending"]
                         "style": {
                             "shape": "round-rectangle",
-                            "background-color": "black",
+                            "background-color": "#AFB4AE",
                             //"label": "data(id)",
-                            "label": "data(label)",
+                            "label": "data(label)"+" pending" ,
+                        }
+                    },{   // * tool installing state * //
+                        selector: 'node[type="tool"][state = "installing"]',
+                        "style": {
+                            "shape": "round-rectangle",
+                            "background-color": "#AFB4AE",
+                            //"label": "data(id)",
+                            "label": "data(label) installing ",
+
+                        }
+                    },{   // * tool installed state *//
+                        selector: 'node[type="tool"][state = "installed"]',
+                        "style": {
+                            "shape": "round-rectangle",
+                            "background-color": "#AFB4AE",
+                            //"label": "data(id)",
+                            "label": "data(label) installed",
+
+                        }
+                    },{   // * tool failed state *//
+                        selector: 'node[type="tool"][state = "failed"]',
+                        "style": {
+                            "shape": "round-rectangle",
+                            "background-color": "#AFB4AE",
+                            //"label": "data(id)",
+                            "label": "data(label) failed",
                             //"height": 15,
                             //"width": 15
                         }
                     },
+					/*
+					* Steps have 3 states :  "not running" "running", "failed".
+					*
+					*/
                     {
                         selector: 'node[type="step"]',
                         "style": {
                             'shape': 'ellipse',
-                            'background-color': 'black',
+                            'background-color': '#AFB4AE',
                         }
                     },
+					 {
+                        selector: 'node[type="step"][state="running"]',
+                        "style": {
+                            'shape': 'ellipse',
+                            'background-color': '#AFB4AE',
+							"label": "[running]"
+                        }
+                    },
+					 {
+                        selector: 'node[type="step"][state="failed"]',
+                        "style": {
+                            'shape': 'ellipse',
+                            'background-color': '#AFB4AE',
+							"label": "[failed]"
+                        }
+                    },
+					/*
+					* inputs have 2 states :  "unset" "set".
+					*
+					*/
                     {
                         selector: 'node[type="input"]',
                         "style": {
                             'shape': 'round-rectangle',
                             //'border-width': '3',
                             //'border-color': '#43A047',
-                            'background-color': 'black',
+                            'background-color': '#AFB4AE',
+  
+                        }
+                    }, {
+                        selector: 'node[type="input"][state="set"]',
+                        "style": {
+                            'shape': 'round-rectangle',
+                            //'border-width': '3',
+                            //'border-color': '#43A047',
+                            'background-color': '#AFB4AE',
+							"label": "[setted]"
   
                         }
                     },
+					/*
+					* outputs have 2 states :  "unset" "set".
+					*
+					*/
                     {
                         selector: 'node[type="output"]',
                         "style": {
                             'shape': 'round-rectangle',
                             //'border-width': '3',
                             //'border-color': '#E53935',
-                            'background-color': 'black',
-                            //"height": 15,
-                            //"width": 15
+                            'background-color': '#AFB4AE'
+
+                        }
+                    },
+                    {
+                        selector: 'node[type="output"][state="setted"]',
+                        "style": {
+                            'shape': 'round-rectangle',
+                            //'border-width': '3',
+                            //'border-color': '#E53935',
+                            'background-color': '#AFB4AE',
+							"label": "[setted]"
+
                         }
                     },
 
@@ -2028,11 +2106,11 @@ window.onload = function () {
                             'shape': 'diamond',
                             //'border-width': '3',
                             //'border-color': '#E53935',
-                            'background-color': 'black',
-                            //"height": 15,
-                            //"width": 15
+                            'background-color': '#AFB4AE'
+
                         }
-                    },/*
+                    },
+					/*
                     {
                         selector: 'edge',
                         "style": {
@@ -2050,8 +2128,8 @@ window.onload = function () {
                             'width': 2,
 							'line-dash-pattern': [6, 3], 
 							'line-dash-offset': 24,
-                            'line-color': 'black',
-                            'target-arrow-color': 'black'
+                            'line-color': '#AFB4AE',
+                            'target-arrow-color': '#AFB4AE'
                         }
 						
                     }
@@ -2078,9 +2156,14 @@ window.onload = function () {
                 }).run();
 
             });
+			
 
+			cy_rep.resize();
             //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.	
-			document.getElementById("cyrep").querySelector('canvas[data-id="layer2-node"]').style.position = null; 
+			document.getElementById("cyrep").querySelector('canvas[data-id="layer2-node"]').style.position = null;
+
+			//console.log(cy_rep.json());
+
 
         }
 
