@@ -223,14 +223,17 @@ window.onload = function () {
 
         // Refresh btn on installation header
         $('.collapsible-header').click(function (event) {
+            // Refresh button
             if ((event.target.id == 'installationRefreshBtn') || (event.target.parentNode.id == 'installationRefreshBtn')) {
                 event.stopPropagation();
                 console.log('refresh button clicked');
             }
+            // STDOUT button
             else if((event.target.id == 'installationSTDOUT') || (event.target.parentNode.id == 'installationSTDOUT')){
                 event.stopPropagation();
                 console.log('stdout button clicked');
             }
+            // Add button (left panel)
             else if (event.target.classList.contains('plusBtn') || event.target.parentNode.classList.contains('plusBtn')) {
                 event.stopPropagation();
                 var id;
@@ -552,7 +555,7 @@ window.onload = function () {
                     leftSide.width(screenWidth - parseInt(splitterWidthEdges, 10));
                 }
                 // show floating action button
-                document.getElementById('createNewBtn').style.display = 'block';
+                // document.getElementById('createNewBtn').style.display = 'block';
             }
             // Show right panel
             else if (rightWidth <= parseInt(splitterWidthEdges, 10)) {
@@ -561,13 +564,13 @@ window.onload = function () {
                 }
                 else {
                     leftSide.width(0);
-                    document.getElementById('createNewBtn').style.display = 'none';
+                    // document.getElementById('createNewBtn').style.display = 'none';
                 }
             }
             // Hide left panel
             else if (leftWidth <= minPanelWidth + parseInt(splitterWidth, 10)) {
                 leftSide.width(0);
-                document.getElementById('createNewBtn').style.display = 'none';
+                // document.getElementById('createNewBtn').style.display = 'none';
             }
             // Hide right panel
             else if (rightWidth <= minPanelWidth + parseInt(splitterWidth, 10)) {
@@ -624,7 +627,7 @@ window.onload = function () {
                 if (leftWidth <= minPanelWidth) {
                     if (eventPageX <= minPanelWidth - ((2 / 3) * minPanelWidth)) {
                         leftSide.width(0);
-                        document.getElementById('createNewBtn').style.display = 'none';
+                        // document.getElementById('createNewBtn').style.display = 'none';
                         setRowAlignment();
                         setSlitterbarWidth();
                     }
@@ -637,7 +640,7 @@ window.onload = function () {
                 else if (rightWidth <= minPanelWidth) {
                     if (eventPageX >= screenWidth - (minPanelWidth - ((2 / 3) * minPanelWidth))) {
                         leftSide.width(screenWidth);
-                        document.getElementById('createNewBtn').style.display = 'block';
+                        // document.getElementById('createNewBtn').style.display = 'block';
                         setRowAlignment();
                         setSlitterbarWidth();
                     }
@@ -649,7 +652,7 @@ window.onload = function () {
                 // Move splitter bar
                 else {
                     leftSide.width(eventPageX - leftOfLeft - splitterBar.width() / 2);
-                    document.getElementById('createNewBtn').style.display = 'block';
+                    // document.getElementById('createNewBtn').style.display = 'block';
                     setRowAlignment();
                     setSlitterbarWidth();
                     return;
