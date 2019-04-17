@@ -43,6 +43,8 @@ function generateToast(message, classes, duration) {
 
 window.onload = function () {
 
+	
+
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // ------------------------------------------------------------------- Initializations ------------------------------------------------------------------------------------------
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1570,12 +1572,109 @@ window.onload = function () {
 
 
         }
+		
+		
+			/* 
+            * Function for creating tooltip on node hover.
+			*
+            */
+            var makeTippy = function (node, text) {
+                return tippy(node.popperRef(), {
+                    content: function () {
+                        var div = document.createElement('div');
+                        div.innerHTML = text;
+						div.style.zIndex = "-1000000000000000000000000";	
+                        return div;
+                    },
+                    trigger: 'manual',
+                    arrow: true,
+                    placement: 'right',
+                    hideOnClick: false,
+                    multiple: true,
+                    //followCursor: true,
+                    //theme: 'light', 
+                    sticky: true
+                });
+            };
+
+
+
+			/* 
+            * Function for creating tooltip for setting input node value.
+            */
+            var makeEditTippy = function (node, text) {
+				
+				editTippy = tippy(node.popperRef(), {
+					
+                    	content: function () {
+								var div = document.createElement('div');
+                                div.setAttribute("id", "tippy_div_" + node._private.data.id);
+								div.innerHTML = 
+												'<button type="button" class="close">×</button><br>'+  // onclick='+alert($(this).parent());+'
+												node._private.data.description+ '<br>'+
+												'Add Value For '+ node._private.data.name+' : <br>'+
+												'<input type="text" id="tippy_text_'+node._private.data.id+'" name="Add Value"><br>'	+
+												'<button id="tippy_button_'+node._private.data.id+'" class="btn btn-click">set</button>'		
+												
+								div.style.width = "200px";
+								div.style.height = "140px";
+								div.style.color = "black"; //font color
+								div.style.position= "relative";
+								//div.style.zIndex = "10000000000";					
+								return div;
+						},
+
+						onShown: function(){
+								//$('.btn-click').off("click").on("click", function(){
+								/* code for SET button */
+								$('#tippy_button_' + node._private.data.id).off("click").on("click", function(){
+									//alert( document.getElementById(this.id.replace('tippy_button_', 'tippy_text_')).value);
+									// tippy should be destroyed
+									var value = document.getElementById('tippy_text_'+node._private.data.id).value;
+									node.data('value', value);
+									node.data('label', node._private.data.name+'='+value);
+									//$(this).parent().fadeOut('slow', function(c){});
+								   // $('#tippy_edit_div_' + node._private.data.id).remove();
+									
+									//destroy tippy
+									editTippy.destroy(editTippy.popper);	
+									
+								});
+								
+								/* code for x button */
+								$('.close').on('click', function(c){
+									//destroy tippy
+									editTippy.destroy(editTippy.popper);
+									
+										//$('#tippy_edit_div_' + node._private.data.id).remove();	
+										//$(this).parent().fadeOut('slow', function(c){
+									//});
+								});	
+								
+						},
+							trigger: 'manual',
+							//arrow: true,
+							placement: 'bottom',
+							interactive: true,	//this should be true for the content to be interactive and clickable
+							hideOnClick: false,
+							multiple: true,
+							followCursor: true,
+							theme: 'light', 
+							//zIndex: 100001,
+							sticky: true
+							
+				});
+				
+                return editTippy;
+            };
 
         /*
         * After importing a graph or adding new nodes, we need to register cytoscape events.
         * This function is called from buildtree and also from angular when we do: cy.json(data['workflow']) from angular
         */
         window.cy_setup_events = function () {
+			
+				
             // collapse - expand nodes
             cy.on('click', 'node', function (event) {
                 //connectedEdges: next level
@@ -1607,101 +1706,32 @@ window.onload = function () {
             });
 
 
-			/* 
-            * Function for creating tooltip on node hover.
-			*
-            */
-            var makeTippy = function (node, text) {
-                return tippy(node.popperRef(), {
-                    content: function () {
-                        var div = document.createElement('div');
-                        div.innerHTML = text;
-                        return div;
-                    },
-                    trigger: 'manual',
-                    arrow: true,
-                    placement: 'right',
-                    hideOnClick: false,
-                    multiple: true,
-                    //followCursor: true,
-                    //theme: 'light', 
-                    sticky: true
-                });
-            };
-
-
-
-			/* 
-            * Function for creating tooltip for setting input node value.
-            */
-            var makeEditTippy = function (node, text) {
-                return tippy(node.popperRef(), {
-
-                    content: function () {
-                        var div = document.createElement('div');
-                        div.setAttribute("id", "tippy_div_" + node._private.data.id);
-                        div.innerHTML =
-                            '<button type="button" class="close">×</button><br>' +  // onclick='+alert($(this).parent());+'
-                            node._private.data.description + '<br>' +
-                            'Add Value For ' + node._private.data.name + ' : <br>' +
-                            '<input type="text" id="tippy_text_' + node._private.data.id + '" name="Add Value"><br>' +
-                            '<button id="tippy_button_' + node._private.data.id + '" class="btn btn-click">set</button>'
-
-                        div.style.width = "200px";
-                        div.style.height = "140px";
-                        div.style.color = "black"; //font color
-                        div.style.position = "relative";
-                        //div.style.zIndex = "10000000000";					
-                        return div;
-                    },
-                    onShown: function () {
-                        //$('.btn-click').off("click").on("click", function(){
-                        $('#tippy_button_' + node._private.data.id).off("click").on("click", function () {
-                            //alert( document.getElementById(this.id.replace('tippy_button_', 'tippy_text_')).value);
-                            // tippy should be destroyed
-                            var value = document.getElementById('tippy_text_' + node._private.data.id).value;
-                            node.data('value', value);
-                            node.data('label', node._private.data.name + '=' + value);
-                            //$(this).parent().fadeOut('slow', function(c){});
-                            $('#tippy_div_' + node._private.data.id).remove();
-
-                        });
-
-                        $('.close').on('click', function (c) {
-                            $('#tippy_div_' + node._private.data.id).remove();
-                            //$(this).parent().fadeOut('slow', function(c){
-                            //});
-                        });
-
-                    },
-                    trigger: 'manual',
-                    //arrow: true,
-                    placement: 'bottom',
-                    interactive: true,	//this should be true for the content to be interactive and clickable
-                    hideOnClick: false,
-                    multiple: true,
-                    followCursor: true,
-                    theme: 'light',
-                    //zIndex: 100001,
-                    sticky: true
-
-
-                });
-            };
 
 
             /* show tooltip */
             var mytippys = []; // arry for keeping instances of tooltips, needed for destroying all instances on mouse out
             cy.on('mouseover', 'node', function (event) {
 
-                nodeId = this._private.data.id
+                nodeId = this._private.data.id;
                 myNode = cy.getElementById(nodeId);
                 myTippy = makeTippy(myNode, nodeId);
                 mytippys.push(myTippy);
                 myTippy.show();
-
-
+				
             });
+			
+			//on right click close tooltip before menu opens
+			/*
+			cy.on('cxttap', 'node', function (event){
+				console.log(this._private.data.id);
+				//$('#tippy_div_' + this._private.data.id).remove();
+				  mytippys.forEach(function (mytippy) {
+					  //console.log(mytippy);
+						mytippy.destroy(mytippy.popper);
+                });
+				
+			});
+			*/
 
             /* hide tooltip */
             cy.on('mouseout', 'node', function (event) {
@@ -1709,106 +1739,111 @@ window.onload = function () {
                 mytippys.forEach(function (mytippy) {
                     mytippy.destroy(mytippy.popper);
                 });
-
                 //myTippy.destroy();
                 //myTippy.hide();
-
             });
 
-            // Right-click menu for input nodes
-            cy.cxtmenu({
-                //selector: 'node',
-                selector: 'node[type="input"]',
-                commands: [
-                    {
-                        content: 'Set',
-                        select: function (ele) {
+			 // Right-click menu for input nodes 
+			 window.input_menu = cy.cxtmenu({
+								menuRadius: 85, 	
+								//selector: 'node',
+								selector: 'node[type="input"]',
+								commands: [
+									{
+										content: 'Set',
+										select: function (ele) {
+																
+											editNode= cy.$('node[id="' + ele.id() + '"]');
+											if(editNode[0]._private.data.type==="input"){  //check if node is input type
+											
+												editTippy = makeEditTippy(editNode[0], ele.id());  //add edit tooltip
+												editTippy.show();								   //show edit tooltip	
+											}
+											//input_menu.destroy();
+										}
+									},
+									{
+										content: 'Delete',
+										select: function (ele) {
 
-                            editNode = cy.$('node[id="' + ele.id() + '"]');
-                            if (editNode[0]._private.data.type === "input") {  //check if node is input type	
-                                editTippy = makeEditTippy(editNode[0], ele.id());  //add edit tooltip
-                                editTippy.show();								   //show edit tooltip	
-                            }
-                        }
-                    },
-                    {
-                        content: 'Delete',
-                        select: function (ele) {
+											//Ideally the deletion logic should be placed here.
+											//Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
+											angular.element($('#angular_div')).scope().$apply(function () {
+												angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id());
+											});
 
-                            //Ideally the deletion logic should be placed here.
-                            //Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
-                            angular.element($('#angular_div')).scope().$apply(function () {
-                                angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id());
-                            });
+											//                           var j = cy.$('#' + ele.id());
+											//                           
+											//							/* remove node successors*/
+											//							j.successors().targets().forEach(function (element) {
+											//									cy.remove(element);
+											//								
+											//							})
+											//							/*remove node*/
+											//							cy.remove(j);
+											//input_menu.destroy();
+											
+										}
+									},
+									 {
+										content: 'Cancel',
+										select: function (ele) {
+											console.log("CANCEL OPTION");
+											cy.cxtmenu().destroy();
+											//input_menu.destroy();
+										}
+									}
+								]
 
-                            //                           var j = cy.$('#' + ele.id());
-                            //                           
-                            //							/* remove node successors*/
-                            //							j.successors().targets().forEach(function (element) {
-                            //									cy.remove(element);
-                            //								
-                            //							})
-                            //							/*remove node*/
-                            //							cy.remove(j);
+							});
+			
+			// Right-click menu for all except input nodes
+		    window.menu = cy.cxtmenu({
+									menuRadius: 85, 
+									//selector: 'node',
+									selector: 'node[type!="input"]',
+									commands: [
+										{
+											content: 'Edit',
+											select: function (ele) {
+											//menu.destroy();	
+											}
+										},
+										{
+											content: 'Delete',
+											select: function (ele) {
 
-                        }
-                    },
-                    {
-                        content: 'Skip',
-                        select: function (ele) {
+												//Ideally the deletion logic should be placed here.
+												//Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
+												angular.element($('#angular_div')).scope().$apply(function () {
+														angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id());
+												});
 
-                            cy.cxtmenu().destroy();
-                        }
-                    }
-                ]
+												//                           var j = cy.$('#' + ele.id());
+												//                           
+												//							/* remove node successors*/
+												//							j.successors().targets().forEach(function (element) {
+												//									cy.remove(element);
+												//								
+												//							})
+												//							/*remove node*/
+												//							cy.remove(j);
+												
+												//menu.destroy();
+											}
+										},
+										 {
+											content: 'Cancel',
+											select: function (ele) {
+												console.log("CANCEL 2 OPTION");
+												cy.cxtmenu().destroy();
+												//menu.destroy();
+											}
+										}
+									]
 
-            });
-
-            // Right-click menu for all except input nodes
-            cy.cxtmenu({
-                //selector: 'node',
-                selector: 'node[type!="input"]',
-                commands: [
-                    {
-                        content: 'Edit',
-                        select: function (ele) {
-
-                        }
-                    },
-                    {
-                        content: 'Delete',
-                        select: function (ele) {
-
-                            //Ideally the deletion logic should be placed here.
-                            //Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
-                            angular.element($('#angular_div')).scope().$apply(function () {
-                                angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id());
-                            });
-
-                            //                           var j = cy.$('#' + ele.id());
-                            //                           
-                            //							/* remove node successors*/
-                            //							j.successors().targets().forEach(function (element) {
-                            //									cy.remove(element);
-                            //								
-                            //							})
-                            //							/*remove node*/
-                            //							cy.remove(j);
-
-                        }
-                    },
-                    {
-                        content: 'Skip',
-                        select: function (ele) {
-
-                            cy.cxtmenu().destroy();
-                        }
-                    }
-                ]
-
-            });
-
-
+								});
+	
         }
 
 		/*
@@ -1889,7 +1924,7 @@ window.onload = function () {
                             //"height": 15,
                             //"width": 15
                         }
-                    },
+                    },/*
                     {
                         selector: 'edge',
                         "style": {
@@ -1898,7 +1933,19 @@ window.onload = function () {
                             'width': 2,
                             'line-color': '#ddd',
                             'target-arrow-color': '#ddd'
+                        },*/
+						{
+                        selector: 'edge',
+                        "style": {
+                            'curve-style': 'bezier',
+                            'target-arrow-shape': 'triangle',
+                            'width': 2,
+							'line-dash-pattern': [6, 3], 
+							'line-dash-offset': 24,
+                            'line-color': '#ddd',
+                            'target-arrow-color': '#ddd'
                         }
+						
                     }
                 ],
 

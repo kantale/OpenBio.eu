@@ -101,7 +101,16 @@ class Tool(models.Model):
 
     @staticmethod
     def get_repr(name, version, edit):
+        '''
+        A string reporesentation of the Tool
+        '''
         return f'{name}/{version}/{edit}'
+
+    def __str__(self,):
+        '''
+        A string representation of the tool
+        '''
+        return Tool.get_repr(self.name, self.version, self.edit)
 
     '''
     Os_selection ChoicesField

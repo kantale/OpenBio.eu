@@ -1294,6 +1294,7 @@ def run_workflow(request, **kwargs):
         workflow_tool['data']['installation_commands'] =  workflow_tool_obj.installation_commands
         workflow_tool['data']['validation_commands'] = workflow_tool_obj.validation_commands
         workflow_tool['data']['os_choices'] = [choice.os_choices for choice in workflow_tool_obj.os_choices.all()]
+        workflow_tool['data']['dependencies'] = [str(tool) for tool in workflow_tool_obj.dependencies.all()]
 
     output_object = {
         'arguments': workflow_options_arg,
