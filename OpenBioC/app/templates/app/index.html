@@ -11,6 +11,8 @@
 		window.OBC_PORT = {{port}};
 		window.OBC_CONTROLLER_URL = "{{controller_url}}";
 		window.OBC_OS_CHOICES = {{os_choices|safe}};
+		window.menu=null;
+		window.input_menu=null;
 	</script>
 
 	<script src="/static/app/jquery-3.3.1.min.js"></script>
@@ -260,6 +262,7 @@ LOGO FOOTER
 <script type="text/javascript" src="/static/app/OBC_app.js"></script>
 <script type="text/javascript" src="/static/app/OBC_ctrl.js"></script>
 <script type="text/javascript">
+
 angular.element(document).ready(function () {
 	$('select').formSelect();
 });

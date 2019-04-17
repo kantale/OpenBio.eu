@@ -43,6 +43,8 @@ function generateToast(message, classes, duration) {
 
 window.onload = function () {
 
+	
+
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // ------------------------------------------------------------------- Initializations ------------------------------------------------------------------------------------------
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1555,43 +1557,8 @@ window.onload = function () {
 
 
         }
-
-        /*
-        * After importing a graph or adding new nodes, we need to register cytoscape events.
-        * This function is called from buildtree and also from angular when we do: cy.json(data['workflow']) from angular
-        */
-        window.cy_setup_events = function () {
-            // collapse - expand nodes
-            cy.on('click', 'node', function (event) {
-                //connectedEdges: next level
-                //successors: next levels recursively
-
-                // inputs and outpus never collapse
-                if (this['_private'].data.type !== "step" && this['_private'].data.type !== "input" && this['_private'].data.type !== "output") { //steps should never collapse
-                    if (this.successors().targets().style("display") == "none") {
-                        this.connectedEdges().targets().style("display", "element");
-                    } else {
-                        //hide the children nodes and edges recursively  
-                        this.successors().targets().forEach(function (element) {
-                            //check if node has flag(open)								
-                            if (typeof element['_private'].data.flag === 'undefined' || element['_private'].data.flag !== 'open') {
-                                element.style("display", "none");
-                            }
-
-                        });
-                    }
-                }
-                if (this['_private'].data.type == "step") { // Click at a step node
-                    //Call angular function
-                    var this_data = this['_private'].data;
-                    angular.element($('#angular_div')).scope().$apply(function () {
-                        angular.element($('#angular_div')).scope().workflop_step_node_clicked(this_data);
-                    });
-                }
-
-            });
-
-
+		
+		
 			/* 
             * Function for creating tooltip on node hover.
 			*
@@ -1655,7 +1622,7 @@ window.onload = function () {
 								   // $('#tippy_edit_div_' + node._private.data.id).remove();
 									
 									//destroy tippy
-									editTippy.destroy(editTippy.popper);								
+									editTippy.destroy(editTippy.popper);	
 									
 								});
 								
@@ -1685,6 +1652,45 @@ window.onload = function () {
 				
                 return editTippy;
             };
+
+        /*
+        * After importing a graph or adding new nodes, we need to register cytoscape events.
+        * This function is called from buildtree and also from angular when we do: cy.json(data['workflow']) from angular
+        */
+        window.cy_setup_events = function () {
+			
+				
+            // collapse - expand nodes
+            cy.on('click', 'node', function (event) {
+                //connectedEdges: next level
+                //successors: next levels recursively
+
+                // inputs and outpus never collapse
+                if (this['_private'].data.type !== "step" && this['_private'].data.type !== "input" && this['_private'].data.type !== "output") { //steps should never collapse
+                    if (this.successors().targets().style("display") == "none") {
+                        this.connectedEdges().targets().style("display", "element");
+                    } else {
+                        //hide the children nodes and edges recursively  
+                        this.successors().targets().forEach(function (element) {
+                            //check if node has flag(open)								
+                            if (typeof element['_private'].data.flag === 'undefined' || element['_private'].data.flag !== 'open') {
+                                element.style("display", "none");
+                            }
+
+                        });
+                    }
+                }
+                if (this['_private'].data.type == "step") { // Click at a step node
+                    //Call angular function
+                    var this_data = this['_private'].data;
+                    angular.element($('#angular_div')).scope().$apply(function () {
+                        angular.element($('#angular_div')).scope().workflop_step_node_clicked(this_data);
+                    });
+                }
+
+            });
+
+
 
 
             /* show tooltip */
@@ -1718,109 +1724,112 @@ window.onload = function () {
                 mytippys.forEach(function (mytippy) {
                     mytippy.destroy(mytippy.popper);
                 });
-
                 //myTippy.destroy();
                 //myTippy.hide();
-
             });
 			
 
 			 // Right-click menu for input nodes 
+			 window.input_menu = cy.cxtmenu({
+								menuRadius: 85, 	
+								//selector: 'node',
+								selector: 'node[type="input"]',
+								commands: [
+									{
+										content: 'Set',
+										select: function (ele) {
+																
+											editNode= cy.$('node[id="' + ele.id() + '"]');
+											if(editNode[0]._private.data.type==="input"){  //check if node is input type
+											
+												editTippy = makeEditTippy(editNode[0], ele.id());  //add edit tooltip
+												editTippy.show();								   //show edit tooltip	
+											}
+											//input_menu.destroy();
+										}
+									},
+									{
+										content: 'Delete',
+										select: function (ele) {
 
-			 cy.cxtmenu({
-				menuRadius: 85, 	
-                //selector: 'node',
-				selector: 'node[type="input"]',
-                commands: [
-                    {
-                        content: 'Set',
-                        select: function (ele) {					
-							editNode= cy.$('node[id="' + ele.id() + '"]');
-							if(editNode[0]._private.data.type==="input"){  //check if node is input type	
-								editTippy = makeEditTippy(editNode[0], ele.id());  //add edit tooltip
-								editTippy.show();								   //show edit tooltip	
-							}
-                        }
-                    },
-                    {
-                        content: 'Delete',
-                        select: function (ele) {
+											//Ideally the deletion logic should be placed here.
+											//Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
+											angular.element($('#angular_div')).scope().$apply(function () {
+												angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id());
+											});
 
-                            //Ideally the deletion logic should be placed here.
-                            //Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
-                            angular.element($('#angular_div')).scope().$apply(function () {
-                                angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id());
-                            });
+											//                           var j = cy.$('#' + ele.id());
+											//                           
+											//							/* remove node successors*/
+											//							j.successors().targets().forEach(function (element) {
+											//									cy.remove(element);
+											//								
+											//							})
+											//							/*remove node*/
+											//							cy.remove(j);
+											//input_menu.destroy();
+											
+										}
+									},
+									 {
+										content: 'Cancel',
+										select: function (ele) {
+											console.log("CANCEL OPTION");
+											cy.cxtmenu().destroy();
+											//input_menu.destroy();
+										}
+									}
+								]
 
-                            //                           var j = cy.$('#' + ele.id());
-                            //                           
-                            //							/* remove node successors*/
-                            //							j.successors().targets().forEach(function (element) {
-                            //									cy.remove(element);
-                            //								
-                            //							})
-                            //							/*remove node*/
-                            //							cy.remove(j);
-
-                        }
-                    },
-					 {
-                        content: 'Skip',
-                        select: function (ele) {
-							cy.cxtmenu().destroy();
-                        }
-                    }
-                ]
-
-            });
+							});
 			
 			// Right-click menu for all except input nodes
-			
-			cy.cxtmenu({
-				menuRadius: 85, 
-                //selector: 'node',
-				selector: 'node[type!="input"]',
-                commands: [
-                    {
-                        content: 'Edit',
-                        select: function (ele) {
-										
-						}
-                    },
-                    {
-                        content: 'Delete',
-                        select: function (ele) {
+		    window.menu = cy.cxtmenu({
+									menuRadius: 85, 
+									//selector: 'node',
+									selector: 'node[type!="input"]',
+									commands: [
+										{
+											content: 'Edit',
+											select: function (ele) {
+											//menu.destroy();	
+											}
+										},
+										{
+											content: 'Delete',
+											select: function (ele) {
 
-                            //Ideally the deletion logic should be placed here.
-                            //Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
-                            angular.element($('#angular_div')).scope().$apply(function () {
-                                angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id());
-                            });
+												//Ideally the deletion logic should be placed here.
+												//Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
+												angular.element($('#angular_div')).scope().$apply(function () {
+														angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id());
+												});
 
-                            //                           var j = cy.$('#' + ele.id());
-                            //                           
-                            //							/* remove node successors*/
-                            //							j.successors().targets().forEach(function (element) {
-                            //									cy.remove(element);
-                            //								
-                            //							})
-                            //							/*remove node*/
-                            //							cy.remove(j);
+												//                           var j = cy.$('#' + ele.id());
+												//                           
+												//							/* remove node successors*/
+												//							j.successors().targets().forEach(function (element) {
+												//									cy.remove(element);
+												//								
+												//							})
+												//							/*remove node*/
+												//							cy.remove(j);
+												
+												//menu.destroy();
+											}
+										},
+										 {
+											content: 'Cancel',
+											select: function (ele) {
+												console.log("CANCEL 2 OPTION");
+												cy.cxtmenu().destroy();
+												//menu.destroy();
+											}
+										}
+									]
 
-                        }
-                    },
-					 {
-                        content: 'Skip',
-                        select: function (ele) {
-										
-							cy.cxtmenu().destroy();
-                        }
-                    }
-                ]
-
-            });
-			
-			
+								});
+	
 			
         }
 		
