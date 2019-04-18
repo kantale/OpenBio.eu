@@ -1,9 +1,12 @@
 
 import os
 import json
+import logging
 import argparse 
 
 from collections import defaultdict
+
+logging.basicConfig(level=logging.DEBUG)
 
 class OBC_Executor_Exception(Exception):
 	'''
@@ -47,7 +50,18 @@ class Worfklow:
         self.parse_workflow_filename()
 
     def __str__(self,):
+        '''
+        '''
         return json.dumps(self.workflow, indent=4)
+
+    def tool_bash_script_generator(self,):
+        '''
+        '''
+        tool_installation_order = self.get_tool_installation_order()
+        for tool in tool_installation_order:
+            logging.info('Building installation bash commands for: {}'.format(tool['label']))
+            yield tool['installation_commands']
+
 
     def parse_workflow_filename(self, ):
         '''
@@ -82,10 +96,10 @@ class Worfklow:
 
         # Check that all root input output are set
         for root_input_node in self.root_inputs_outputs['inputs']:
-            print ('The following input values have been set:')
+            logging.info('The following input values have been set:')
             for arg_input_name, arg_input_value in self.input_parameters.items():
                 if arg_input_name == root_input_node['id']:
-                    print ('  {}={}'.format(root_input_node['id'], arg_input_value))
+                    logging.info('  {}={}'.format(root_input_node['id'], arg_input_value))
                     break
             else:
                 message = 'Input parameter: {} has not been set!'.format(root_input_node['id'])
@@ -260,20 +274,21 @@ class Worfklow:
 
 
 if __name__ == '__main__':
-	'''
+    '''
 
-	'''
-	parser = argparse.ArgumentParser(description='OpenBio-C worfklow execute-or')
+    '''
+    parser = argparse.ArgumentParser(description='OpenBio-C worfklow execute-or')
 
-	parser.add_argument('-W', '--workflow', dest='workflow_filename', help='JSON filename of the workflow to run', required=True)
+    parser.add_argument('-W', '--workflow', dest='workflow_filename', help='JSON filename of the workflow to run', required=True)
 
-	args = parser.parse_args()
+    args = parser.parse_args()
 
 
-	w = Worfklow(args.workflow_filename)
-	#print (w.root_inputs_outputs)
-	#print (w)
-	w.get_tool_installation_order()
+    w = Worfklow(args.workflow_filename)
+    #print (w.root_inputs_outputs)
+    #print (w)
+    #w.get_tool_installation_order()
+    list(w.tool_bash_script_generator())
 
 	
 
