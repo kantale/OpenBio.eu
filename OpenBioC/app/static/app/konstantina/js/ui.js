@@ -235,7 +235,6 @@ window.onload = function () {
             }
             // Add button (left panel)
             else if (event.target.classList.contains('plusBtn') || event.target.parentNode.classList.contains('plusBtn')) {
-                event.stopPropagation();
                 var id;
                 if (event.target.tagName == 'I') {
                     id = event.target.parentNode.id;
@@ -244,6 +243,10 @@ window.onload = function () {
                     id = event.target.id;
                 }
                 console.log('add button clicked with id: ' + id);
+
+                if(id!='workflowStepPlusBtn'){
+                    event.stopPropagation();
+                }
             }
         });
 
@@ -1021,11 +1024,12 @@ window.onload = function () {
             call_re_id: new RegExp('call\\(([\\w]+)\\)'), // 
             call_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('(call[\\s]*\\([\\s]*)' + old_id + '([\\s]*\\))', 'g'), '$1' + new_id + '$2'); },
 
+            tool_re: new RegExp('\\$\\{[\\w]+__[\\w\\.]+__[\\d]+__[\\w]+\\}', 'g'), // ${hello__1__1__exec_path}
+            tool_re_id: new RegExp('\\$\\{([\\w]+__[\\w\\.]+__[\\d]+)__([\\w]+)\\}'),
 
-
-            io_re: new RegExp('\\$\\((input|output)__[a-zA-Z0-9][\\w]*\\)', 'g'), // [^_\w] Does not work???
-            io_re_id: new RegExp('\\$\\((input|output)__([\\w]+)\\)'), // TODO: ADD  WHITE SPACEDS JUST LIKE calls
-            io_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('(\\$\\((input|output)__)' + old_id + '(\\))'), '$1' + new_id + '$3'); }
+            io_re: new RegExp('\\$\\{(input|output)__[a-zA-Z0-9][\\w]*\\}', 'g'), // [^_\w] Does not work???
+            io_re_id: new RegExp('\\$\\{(input|output)__([\\w]+)\\}'), // TODO: ADD  WHITE SPACEDS JUST LIKE calls
+            io_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('(\\$\\{(input|output)__)' + old_id + '(\\})'), '$1' + new_id + '$3'); }
         };
 
         /*
@@ -1210,10 +1214,10 @@ window.onload = function () {
 
             var splitted = no_comments.split('\n');
             splitted.forEach(function (line) {
-                var results = line.match(/\$\([\w]+__[\w\.]+__[\d]+__[\w]+\)/g);
+                var results = line.match(window.OBCUI.tool_re);
                 if (results) {
                     results.forEach(function (result) {
-                        var splitted_ids = result.match(/\$\(([\w]+__[\w\.]+__[\d]+)__([\w]+)\)/);
+                        var splitted_ids = result.match(window.OBCUI.tool_re_id);
                         var tool_id = splitted_ids[1] + '__2';
                         var variable_id = splitted_ids[2];
                         //Does this tool_id exist?
