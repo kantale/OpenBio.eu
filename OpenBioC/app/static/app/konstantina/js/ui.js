@@ -1975,14 +1975,10 @@ window.onload = function () {
 
         }
 		
-		/*
-        * Create REPORT graph
-		*
-        */
-		window.createRepTree = function(workflowToReport){
-			//function createRepTree(workflowToReport) {
-
-            var cy_rep = cytoscape({
+		
+		window.initializeRepTree = function () {
+			
+			var cy_rep = cytoscape({
                 container: document.getElementById('cyrep'), // container to render in
                 elements: [],
                 style: [ // the stylesheet for the graph
@@ -2003,7 +1999,7 @@ window.onload = function () {
                         "style": {
                             "shape": "round-rectangle",
                             "background-color": "#AFB4AE",
-                            //"label": "data(id)",
+                            "label": "data(label)",
                             "label": "data(label) installing ",
 
                         }
@@ -2152,8 +2148,24 @@ window.onload = function () {
             });
 			
 			
+			return cy_rep;
+			
+		}
+		
+			//initializeRepTree();
+		
+		
+		/*
+        * Create REPORT graph
+		*
+        */
+		window.createRepTree = function(workflowToReport){
+			//function createRepTree(workflowToReport) {
+
 				
-				
+			cy_rep = initializeRepTree();
+			
+
 			
 		/* edges animation function */
 			
@@ -2195,6 +2207,41 @@ window.onload = function () {
 
 			
         }
+		
+		/* function for node animation  */ 
+				window.nodeAnimation = function(node_anim_id, state){
+					// get node by id
+					var node_anim = cy_rep.$('#' + node_anim_id);
+					var type = node_anim[0]._private.data.type;
+					//var state = node_anim[0]._private.data.state;
+					//check given state
+					
+					console.log(type);
+					
+					/* Tools have 4 states :  pending (default), installing, installed, failed. */
+					if(type === 'tool'){
+							if(state==="installing")  anim_style = {'background-color': 'yellow'};
+							if(state==="installed")  anim_style = {'background-color': 'green'};
+							if(state==="failed")  anim_style = {'background-color': 'red'};
+
+					}
+					
+					/* Steps have 3 states :  "not running" (default) "running", "failed". */
+					if(type === 'step'){
+							if(state==="running")  anim_style = {'background-color': 'yellow'};
+							if(state==="failed")  anim_style = {'background-color': 'red'};
+
+					}
+					
+					
+					return (node_anim.animation({
+								  style : anim_style, //style: { 'background-color': 'red', },
+								  duration: 1  //duration of animation in milliseconds
+								}).play()   //.promise('complete').then(loopEdgeAnimation(edge_anim)) :TODO fic it so that it can loop
+							);
+					
+					
+				};
 		
 		
         initializeTree();
