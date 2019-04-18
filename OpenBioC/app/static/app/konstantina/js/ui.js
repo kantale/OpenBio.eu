@@ -1992,7 +1992,7 @@ window.onload = function () {
                             "shape": "round-rectangle",
                             "background-color": "#AFB4AE",
                             //"label": "data(id)",
-                            "label": "data(label)"+" pending" ,
+                            "label": "data(label)" + "pending"
                         }
                     },{   // * tool installing state * //
                         selector: 'node[type="tool"][state = "installing"]',
@@ -2147,27 +2147,52 @@ window.onload = function () {
 
             });
 			
+			
+				
+				
+			
+		/* edges animation function */
+			
 			cy_rep.json({ elements:  workflowToReport});   // Add new data
-            cy_rep.ready(function () {           // Wait for nodes to be added  
-                cy_rep.layout({                   // Call layout
-                    name: 'breadthfirst',
-                    directed: true,
-                    padding: 2
-                }).run();
+					
+				 
+				/* function for edge animation  */ 
+				var loopEdgeAnimation = function(edge_anim){
+					
+					return (edge_anim.animation({
+								  style: { 'line-color': 'red', 'target-arrow-color': 'red'},
+								  duration: 8000  //duration of animation in milliseconds
+								}).play()   //.promise('complete').then(loopEdgeAnimation(edge_anim)) :TODO fic it so that it can loop
+							);
+					
+					
+				};
+				
+				
+				// call the function for specified edges
+				//loopEdgeAnimation(cy_rep.$("edge")[0]);
 
-            });
+				cy_rep.ready(function () {           // Wait for nodes to be added  
+					cy_rep.layout({                   // Call layout
+						name: 'breadthfirst',
+						directed: true,
+						padding: 2
+					}).run();
+				
+				/* animate */
+				//animate();
+				
+				});
 			
 
 			cy_rep.resize();
             //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.	
 			document.getElementById("cyrep").querySelector('canvas[data-id="layer2-node"]').style.position = null;
 
-			//console.log(cy_rep.json());
-
-
+			
         }
-
-
+		
+		
         initializeTree();
 
 
