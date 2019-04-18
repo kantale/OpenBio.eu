@@ -8,8 +8,24 @@ cd plink-1.07-x86_64
 ./plink --noweb --file test
 
 
+####
+cat > runme.sh << THEEND
 
+echo "Welcome to tool HELLO WORLD!"
+echo "\$1" > output.txt
 
+THEEND
+chmod +x runme.sh 
+
+####
+
+STEP1
+
+#####
+${hello__1__2__exec_path} ${input__input_par__hello__null}
+${output__output_par__hello__null}=output.txt 
+
+#####
 
 
 ```
