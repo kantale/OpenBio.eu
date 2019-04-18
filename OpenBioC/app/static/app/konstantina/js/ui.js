@@ -235,7 +235,6 @@ window.onload = function () {
             }
             // Add button (left panel)
             else if (event.target.classList.contains('plusBtn') || event.target.parentNode.classList.contains('plusBtn')) {
-                event.stopPropagation();
                 var id;
                 if (event.target.tagName == 'I') {
                     id = event.target.parentNode.id;
@@ -244,6 +243,10 @@ window.onload = function () {
                     id = event.target.id;
                 }
                 console.log('add button clicked with id: ' + id);
+
+                if(id!='workflowStepPlusBtn'){
+                    event.stopPropagation();
+                }
             }
         });
 

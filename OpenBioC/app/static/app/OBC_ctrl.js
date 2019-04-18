@@ -1860,7 +1860,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.workflow_update_tab_completion_info_to_step();
 
         //Open accordion
-        window.openEditWorkflowBtn_click();
+        //window.openEditWorkflowBtn_click();
 
         $scope.workflows_step_name = ''; //Clear STEP name
         workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1); //Add default content
