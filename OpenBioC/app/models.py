@@ -45,22 +45,22 @@ class OS_types(models.Model):
     '''
     ubuntu_14_04 = 'ubuntu:14.04'
     ubuntu_16_04 = 'ubuntu:16.04'
-    debian_jessin = 'jessie'
-    debian_stretch = 'stretch'
-    denian_buster = 'buster'
+    debian_jessie = 'debian:8'
+    debian_stretch = 'debian:9'
+    denian_buster = 'debian:10'
 
 
     OS_CHOICES = (
         (ubuntu_14_04,'Ubuntu:14.04'),
         (ubuntu_16_04,'Ubuntu:16.04'), 
-        (debian_jessin,'Debian 8 (Jessie)'),
+        (debian_jessie,'Debian 8 (Jessie)'),
         (debian_stretch,'Debian 9 (Stretch)'),
         (denian_buster,'Debian 10 (Buster)'),
      )
 
     groups = {
         'Ubuntu': [ubuntu_14_04, ubuntu_16_04],
-        'Debian': [debian_jessin, debian_stretch, denian_buster],
+        'Debian': [debian_jessie, debian_stretch, denian_buster],
 
     }
 
