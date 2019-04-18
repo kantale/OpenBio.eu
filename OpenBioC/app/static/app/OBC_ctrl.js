@@ -1794,7 +1794,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 this_data.variables.forEach(function(variable) {
                     completion_info.push({
                         caption: 'tool/' + this_data.name + '/' + this_data.version + '/' + this_data.edit + '/' +  variable.name,
-                        value: '$(' + this_data.name + '__' + this_data.version + '__' + this_data.edit + '__' + variable.name + ')',
+                        value: '${' + this_data.name + '__' + this_data.version + '__' + this_data.edit + '__' + variable.name + '}',
                         meta: variable.description
                     });
                 });
@@ -1810,7 +1810,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             else if (this_data.type=='input' || this_data.type=='output') {
                 completion_info.push({
                     caption: this_data.type + '/' + this_data.name + '/' + this_data.belongto.name + '/' + this_node_belong_to_show_edit,
-                    value: '$(' + this_data.type + '__' + this_data.name + '__' + this_data.belongto.name + '__' + this_node_belong_to_value_edit + ')',
+                    value: '${' + this_data.type + '__' + this_data.name + '__' + this_data.belongto.name + '__' + this_node_belong_to_value_edit + '}',
                     meta: this_data.description
                 });
             }
@@ -1860,7 +1860,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.workflow_update_tab_completion_info_to_step();
 
         //Open accordion
-        window.openEditWorkflowBtn_click();
+        //window.openEditWorkflowBtn_click();
 
         $scope.workflows_step_name = ''; //Clear STEP name
         workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1); //Add default content

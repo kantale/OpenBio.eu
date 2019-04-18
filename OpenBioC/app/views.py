@@ -1146,7 +1146,7 @@ def set_edit_to_cytoscape_json(cy, edit):
 @has_data
 def workflows_add(request, **kwargs):
     if request.user.is_anonymous: # Server should always check..
-        return fail('Please login to create new tools')
+        return fail('Please login to create new workflow')
 
 
     workflows_search_name = kwargs.get('workflows_search_name', '')

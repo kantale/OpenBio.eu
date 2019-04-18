@@ -1,9 +1,12 @@
 
 import os
 import json
+import logging
 import argparse 
 
 from collections import defaultdict
+
+logging.basicConfig(level=logging.DEBUG)
 
 class OBC_Executor_Exception(Exception):
 	'''
@@ -47,7 +50,18 @@ class Worfklow:
         self.parse_workflow_filename()
 
     def __str__(self,):
+        '''
+        '''
         return json.dumps(self.workflow, indent=4)
+
+    def tool_bash_script_generator(self,):
+        '''
+        '''
+        tool_installation_order = self.get_tool_installation_order()
+        for tool in tool_installation_order:
+            logging.info('Building installation bash commands for: {}'.format(tool['label']))
+            yield tool
+
 
     def parse_workflow_filename(self, ):
         '''
@@ -81,15 +95,19 @@ class Worfklow:
         self.check_tool_dependencies_for_circles();
 
         # Check that all root input output are set
+        self.input_parameter_values = {}
         for root_input_node in self.root_inputs_outputs['inputs']:
-            print ('The following input values have been set:')
+            logging.info('The following input values have been set:')
             for arg_input_name, arg_input_value in self.input_parameters.items():
                 if arg_input_name == root_input_node['id']:
-                    print ('  {}={}'.format(root_input_node['id'], arg_input_value))
+                    logging.info('  {}={}'.format(root_input_node['id'], arg_input_value))
+                    self.input_parameter_values[root_input_node['id']] = {'value': arg_input_value, 'description': root_input_node['description']}
                     break
             else:
-                message = 'Input parameter: {} has not been set!'.format(root_input_node['id'])
-                raise OBC_Executor_Exception(message)
+                #message = 'Input parameter: {} has not been set!'.format(root_input_node['id'])
+                #raise OBC_Executor_Exception(message)
+                local_input_parameter = input('Input parameter: {} has not been set. Enter value:'.format(root_input_node['id']))
+                self.input_parameter_values[root_input_node['id']] = {'value': local_input_parameter, 'description': root_input_node['description']}
 
     def check_tool_dependencies_for_circles(self,):
         '''
@@ -111,6 +129,52 @@ class Worfklow:
                 message = 'Found circular tool dependency!'
                 message += '\n' + ' --> '.join(circle)
                 raise OBC_Executor_Exception(message)
+
+    def get_tool_bash_commands(self, tool):
+        '''
+        '''
+
+        # Add Bash commands
+        ret =  '### BASH COMMANDS FOR TOOL: {}\n'.format(tool['label'])
+        ret += tool['installation_commands'] + '\n'
+        ret += '### END OF {}\n'.format(tool['label'])
+
+        ret += '\n'
+        ret += '### SETTING TOOL VARIABLES FOR: {}\n'.format(tool['label'])
+        for tool_variable in tool['variables']:
+            ret += '{}="{}" # {} \n'.format(tool_variable['name'], tool_variable['value'], tool_variable['description'])
+        ret += '### END OF SETTING TOOL VARIABLES FOR: {}\n\n'.format(tool['label'])
+
+        return ret
+
+
+    def get_input_bash_commands(self,):
+        '''
+        '''
+        ret = '### SET ROOT WORKFLOW INPUT PARAMETERS\n'
+        for variable, data in self.input_parameter_values.items():
+            ret += '{}="{}" #  {}\n'.format(variable, data['value'], data['description'])
+        ret += '### END OF SET ROOT WORKFLOW INPUT PARAMETERS'
+
+        return ret
+
+    def get_step_bash_commands(self, ):
+        '''
+        TODO: CREATE AN ORDERING ACCORDING TO WORKFLOWS!
+        '''
+        ret = '### SETTING BASH FUNCTIONS FOR STEPS\n\n'
+        for a_node in self.node_iterator():
+            if not self.is_step(a_node):
+                continue
+
+            ret += '# STEP: {}\n'.format(a_node['id'])
+            ret += '{} () {{\n'.format(a_node['id'])
+            ret += a_node['bash'] + '\n'
+            ret += '}\n'
+
+        ret += '### END OF SETTING BASH FUNCTIONS FOR STEPS\n'
+
+        return ret
 
 
     def get_tool_slash_id(self, tool):
@@ -216,7 +280,10 @@ class Worfklow:
         return node['type'] == self.STEP_TYPE
 
     def is_tool(self, node):
+        '''
+        '''
         return node['type'] == self.TOOL_TYPE
+
 
     def belongto(self, node):
         '''
@@ -225,7 +292,6 @@ class Worfklow:
             return None
 
         return node['belongto']['name'] + '__' + str(node['belongto']['edit'])
-
 
 
     def get_input_output_from_workflow(self, node):
@@ -258,22 +324,66 @@ class Worfklow:
 
         return ret
 
+class BaseExecutor():
+    '''
+    '''
+    def __init__(self, workflow):
+        if not isinstance(workflow, Worfklow):
+            raise OBC_Executor_Exception('workflow Unknown ')
+        self.workflow = workflow
+
+
+
+class LocalExecutor(BaseExecutor):
+    '''
+    Creates a unique BIG script!
+    '''
+
+    def build(self, output_filename):
+        with open(output_filename, 'w') as f:
+            # INSTALLATION TOOL BASH
+            for tool in self.workflow.tool_bash_script_generator():
+                f.write(self.workflow.get_tool_bash_commands(tool))
+
+            # INPUT PARAMETERS BASH
+            f.write(self.workflow.get_input_bash_commands())
+
+            # STEP FUNCTIONS BASH
+            f.write(self.workflow.get_step_bash_commands())
+
+        logging.info(f'Created file: {output_filename}')
+
+
+
+class DockerExecutor(BaseExecutor):
+    '''
+    '''
+    pass
+
+class AmazonExecutor(BaseExecutor):
+    '''
+    '''
+    pass
 
 if __name__ == '__main__':
-	'''
+    '''
 
-	'''
-	parser = argparse.ArgumentParser(description='OpenBio-C worfklow execute-or')
+    '''
+    parser = argparse.ArgumentParser(description='OpenBio-C worfklow execute-or')
 
-	parser.add_argument('-W', '--workflow', dest='workflow_filename', help='JSON filename of the workflow to run', required=True)
+    parser.add_argument('-W', '--workflow', dest='workflow_filename', help='JSON filename of the workflow to run', required=True)
 
-	args = parser.parse_args()
+    args = parser.parse_args()
 
 
-	w = Worfklow(args.workflow_filename)
-	#print (w.root_inputs_outputs)
-	#print (w)
-	w.get_tool_installation_order()
+    w = Worfklow(args.workflow_filename)
+    #print (w.root_inputs_outputs)
+    #print (w)
+    #w.get_tool_installation_order()
+    #list(w.tool_bash_script_generator())
+
+    le = LocalExecutor(w)
+    le.build(output_filename='script.sh')
 
 	
 
