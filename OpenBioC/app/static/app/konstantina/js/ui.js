@@ -1716,8 +1716,7 @@ window.onload = function () {
             });
 			
 			//on right click close tooltip before menu opens
-			/*
-			cy.on('cxttap', 'node', function (event){
+			cy.on('cxttapstart', 'node', function (event){
 				console.log(this._private.data.id);
 				//$('#tippy_div_' + this._private.data.id).remove();
 				  mytippys.forEach(function (mytippy) {
@@ -1726,16 +1725,14 @@ window.onload = function () {
                 });
 				
 			});
-			*/
+			
 
-            /* hide tooltip */
+            /* hide tooltip before cxtmenu opens, otherwise they overlap */
             cy.on('mouseout', 'node', function (event) {
                 // destroy all instances
                 mytippys.forEach(function (mytippy) {
                     mytippy.destroy(mytippy.popper);
                 });
-                //myTippy.destroy();
-                //myTippy.hide();
             });
 
 			 // Right-click menu for input nodes 
@@ -1743,6 +1740,8 @@ window.onload = function () {
 								menuRadius: 85, 	
 								//selector: 'node',
 								selector: 'node[type="input"]',
+								//zIndex: 199999999, 
+								openMenuEvents: 'cxttapstart', 
 								commands: [
 									{
 										content: 'Set',
@@ -1797,6 +1796,7 @@ window.onload = function () {
 									menuRadius: 85, 
 									//selector: 'node',
 									selector: 'node[type!="input"]',
+									openMenuEvents: 'cxttapstart', 
 									commands: [
 										{
 											content: 'Edit',
