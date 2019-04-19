@@ -2077,30 +2077,10 @@ window.onload = function () {
 			//function createRepTree(workflowToReport) {
 
 				
-			cy_rep = initializeRepTree();
-			
-
-			
-		/* edges animation function */
-			
+			cy_rep = initializeRepTree();		
 			cy_rep.json({ elements:  workflowToReport});   // Add new data
 					
-				 
-				/* function for edge animation  */ 
-				var loopEdgeAnimation = function(edge_anim){
-					
-					return (edge_anim.animation({
-								  style: { 'line-color': 'red', 'target-arrow-color': 'red'},
-								  duration: 8000  //duration of animation in milliseconds
-								}).play()   //.promise('complete').then(loopEdgeAnimation(edge_anim)) :TODO fic it so that it can loop
-							);
-					
-					
-				};
 				
-				
-				// call the function for specified edges
-				//loopEdgeAnimation(cy_rep.$("edge")[0]);
 
 				cy_rep.ready(function () {           // Wait for nodes to be added  
 					cy_rep.layout({                   // Call layout
@@ -2108,9 +2088,7 @@ window.onload = function () {
 						directed: true,
 						padding: 2
 					}).run();
-				
-				/* animate */
-				//animate();
+
 				
 				});
 			
@@ -2173,6 +2151,40 @@ window.onload = function () {
 					
 					
 				};
+				
+				
+				
+			/* function for edge animation  */ 
+			window.edgeAnimation = function(source_anim_id, target_anim_id, state){
+						//var source_anim = cy_rep.$('#' + source_anim_id);
+						//var target_anim = cy_rep.$('#' + target_anim_id);
+						// get edge by source / target
+						var edges  = cy_rep.$("edge");
+						var edge_anim=null;
+						
+						edges.forEach(function (edge) {
+							
+				
+									if(edge._private.data.source === source_anim_id && edge._private.data.target===target_anim_id){
+											edge_anim = edge;
+									}
+											
+						})
+						
+				
+					if(edge_anim!== null){
+						
+							return (edge_anim.animation({
+										  style: { 'line-color': 'red', 'target-arrow-color': 'red'},
+										  duration: 5000  //duration of animation in milliseconds
+										}).play()   //.promise('complete').then(loopEdgeAnimation(edge_anim)) :TODO fic it so that it can loop
+									);
+									
+								// call the function for specified edges
+								//loopEdgeAnimation(cy_rep.$("edge")[0]);
+					}
+					
+			}	
 		
 		
         initializeTree();
