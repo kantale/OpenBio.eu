@@ -1891,7 +1891,7 @@ window.onload = function () {
                         "style": {
                             'shape': 'round-rectangle',
                             'border-width': '3',
-                            'border-color': '#43A047',
+                            'border-color': '#43A047', 
                             'background-color': '#AFB4AE',
                             //"height": 15,
                             //"width": 15
@@ -2118,11 +2118,11 @@ window.onload = function () {
 									anim_label = label +  "installing";
 								}
 							if(state==="installed")  {
-									anim_style = {'background-color': 'green'};
+									anim_style = {'background-color': '#43A047'};
 									anim_label = label + "installed";
 							}
 							if(state==="failed")  {
-									anim_style = {'background-color': 'red'};
+									anim_style = {'background-color': '#E53935'};
 									anim_label = label + "failed";
 							}
 
@@ -2135,18 +2135,27 @@ window.onload = function () {
 									anim_label = label + "running";
 							}
 							if(state==="failed")  {
-									anim_style = {'background-color': 'red'};
+									anim_style = {'background-color': '#E53935'};
 									anim_label = label + "failed";
 							}
 
 					}
 					
+					/* Outputs have 2 states :  "Unset" (default), "Set" */
+					if(type === 'output'){
+							if(state==="set")  {
+									anim_style = {'background-color': '#43A047'};
+									anim_label = label + "setted";
+							}
+					}
+					
+					
 					
 					return (node_anim.animation({
-								  style : anim_style, //style: { 'background-color': 'red', },
+								  style : anim_style, 	//style: { 'background-color': 'red', },
 								  label: anim_label,
-								  duration: 1  //duration of animation in milliseconds
-								}).play()   //.promise('complete').then(loopEdgeAnimation(edge_anim)) :TODO fic it so that it can loop
+								  duration: 1  			//duration of animation in milliseconds
+								}).play()   			//.promise('complete').then(loopEdgeAnimation(edge_anim)) :TODO fic it so that it can loop
 							);
 					
 					
@@ -2156,28 +2165,39 @@ window.onload = function () {
 				
 			/* function for edge animation  */ 
 			window.edgeAnimation = function(source_anim_id, target_anim_id, state){
-						//var source_anim = cy_rep.$('#' + source_anim_id);
-						//var target_anim = cy_rep.$('#' + target_anim_id);
 						// get edge by source / target
 						var edges  = cy_rep.$("edge");
 						var edge_anim=null;
 						
 						edges.forEach(function (edge) {
-							
-				
-									if(edge._private.data.source === source_anim_id && edge._private.data.target===target_anim_id){
-											edge_anim = edge;
-									}
+
+								if(edge._private.data.source === source_anim_id && edge._private.data.target===target_anim_id){
+									edge_anim = edge;
+								}
 											
 						})
 						
 				
 					if(edge_anim!== null){
 						
+						/* (1) "Never run", (2) Running blinking, (3) "run at least once" */ 
+						var edge_anim_style=null;
+						
+						//if(state==="Never run") edge_anim_style = { 'line-color': 'red', 'target-arrow-color': 'red'};
+						if(state==="Running") {
+								edge_anim_style = { 'line-color': 'red', 'target-arrow-color': '#E53935'};
+						}
+						if(state==="Run") {
+								edge_anim_style = { 'line-color': 'green', 'target-arrow-color': '#43A047'};
+						}else{
+								edge_anim_style = { 'line-color': '#ddd', 'target-arrow-color': '#ddd'};
+						}
+						
+						
 							return (edge_anim.animation({
-										  style: { 'line-color': 'red', 'target-arrow-color': 'red'},
+										  style: edge_anim_style,
 										  duration: 5000  //duration of animation in milliseconds
-										}).play()   //.promise('complete').then(loopEdgeAnimation(edge_anim)) :TODO fic it so that it can loop
+										}).play()         //.promise('complete').then(loopEdgeAnimation(edge_anim)) :TODO fic it so that it can loop
 									);
 									
 								// call the function for specified edges
