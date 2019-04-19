@@ -2513,24 +2513,16 @@ window.onload = function () {
 		* Fits workflow's content in center
 		*/
         window.fit = function () {
-            cy.reset();
-            cy.center();
-
-        }
-
-		/*
-		* Redraw the graph so that initial  
-		* Re-run the layout of cytoscape
-		*/
-        window.redraw = function () {
-
-            cy.layout({// Call layout
+            //cy.reset();
+            //cy.center();
+			 cy.layout({// Call layout
                 name: 'breadthfirst',
                 directed: true,
                 padding: 2
             }).run();
 
         }
+
     }
 
 
