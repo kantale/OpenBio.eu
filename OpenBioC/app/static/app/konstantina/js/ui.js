@@ -1982,135 +1982,51 @@ window.onload = function () {
                 container: document.getElementById('cyrep'), // container to render in
                 elements: [],
                 style: [ // the stylesheet for the graph
-					/*
-					* Tools have 4 states :  pending, installing, installed, failed.
-					*
-					*/
-					{   // * tool pending state : initial state*//
+					{   // * tool default state : initial state*//
                         selector: 'node[type="tool"]',  //[state = "pending"]
                         "style": {
                             "shape": "round-rectangle",
                             "background-color": "#AFB4AE",
-                            //"label": "data(id)",
-                            "label": "data(label)" + "pending"
-                        }
-                    },{   // * tool installing state * //
-                        selector: 'node[type="tool"][state = "installing"]',
-                        "style": {
-                            "shape": "round-rectangle",
-                            "background-color": "#AFB4AE",
-                            "label": "data(label)",
-                            "label": "data(label) installing ",
-
-                        }
-                    },{   // * tool installed state *//
-                        selector: 'node[type="tool"][state = "installed"]',
-                        "style": {
-                            "shape": "round-rectangle",
-                            "background-color": "#AFB4AE",
-                            //"label": "data(id)",
-                            "label": "data(label) installed",
-
-                        }
-                    },{   // * tool failed state *//
-                        selector: 'node[type="tool"][state = "failed"]',
-                        "style": {
-                            "shape": "round-rectangle",
-                            "background-color": "#AFB4AE",
-                            //"label": "data(id)",
-                            "label": "data(label) failed",
-                            //"height": 15,
-                            //"width": 15
+                            "label": "data(label)"
                         }
                     },
-					/*
-					* Steps have 3 states :  "not running" "running", "failed".
-					*
-					*/
                     {
                         selector: 'node[type="step"]',
                         "style": {
                             'shape': 'ellipse',
                             'background-color': '#AFB4AE',
+							"label": "data(label)"
                         }
                     },
-					 {
-                        selector: 'node[type="step"][state="running"]',
-                        "style": {
-                            'shape': 'ellipse',
-                            'background-color': '#AFB4AE',
-							"label": "[running]"
-                        }
-                    },
-					 {
-                        selector: 'node[type="step"][state="failed"]',
-                        "style": {
-                            'shape': 'ellipse',
-                            'background-color': '#AFB4AE',
-							"label": "[failed]"
-                        }
-                    },
-					/*
-					* inputs have 2 states :  "unset" "set".
-					*
-					*/
-                    {
+					{
                         selector: 'node[type="input"]',
                         "style": {
                             'shape': 'round-rectangle',
-                            //'border-width': '3',
-                            //'border-color': '#43A047',
                             'background-color': '#AFB4AE',
+							"label": "data(label)"
   
                         }
-                    }, {
-                        selector: 'node[type="input"][state="set"]',
-                        "style": {
-                            'shape': 'round-rectangle',
-                            //'border-width': '3',
-                            //'border-color': '#43A047',
-                            'background-color': '#AFB4AE',
-							"label": "[setted]"
-  
-                        }
-                    },
-					/*
-					* outputs have 2 states :  "unset" "set".
-					*
-					*/
+                    }, 
                     {
                         selector: 'node[type="output"]',
                         "style": {
                             'shape': 'round-rectangle',
-                            //'border-width': '3',
-                            //'border-color': '#E53935',
-                            'background-color': '#AFB4AE'
-
-                        }
-                    },
-                    {
-                        selector: 'node[type="output"][state="setted"]',
-                        "style": {
-                            'shape': 'round-rectangle',
-                            //'border-width': '3',
-                            //'border-color': '#E53935',
                             'background-color': '#AFB4AE',
-							"label": "[setted]"
+							"label": "data(label)"
 
                         }
                     },
-
                     {
                         selector: 'node[type="workflow"]',
                         "style": {
                             'shape': 'diamond',
                             //'border-width': '3',
                             //'border-color': '#E53935',
-                            'background-color': '#AFB4AE'
+                            'background-color': '#AFB4AE',
+							"label": "data(label)"
 
                         }
                     },
-					/*
                     {
                         selector: 'edge',
                         "style": {
@@ -2119,7 +2035,9 @@ window.onload = function () {
                             'width': 2,
                             'line-color': '#ddd',
                             'target-arrow-color': '#ddd'
-                        },*/
+                        }
+					}
+						/*,
 						{
                         selector: 'edge',
                         "style": {
@@ -2130,23 +2048,19 @@ window.onload = function () {
 							'line-dash-offset': 24,
                             'line-color': '#AFB4AE',
                             'target-arrow-color': '#AFB4AE'
-                        }
-						
-                    }
+							}
+						*/	
                 ],
 
-                //zoom: 1,
-                pan: { x: 0, y: 0 },
+					//zoom: 1,
+					pan: { x: 0, y: 0 },
 
-                layout: {
-                    name: 'breadthfirst',
-                    directed: true,
-                    padding: 2
-                }
-
-
+					layout: {
+						name: 'breadthfirst',
+						directed: true,
+						padding: 2
+					}
             });
-			
 			
 			return cy_rep;
 			
@@ -2213,6 +2127,7 @@ window.onload = function () {
 					// get node by id
 					var node_anim = cy_rep.$('#' + node_anim_id);
 					var type = node_anim[0]._private.data.type;
+					var label = node_anim[0]._private.data.label;
 					//var state = node_anim[0]._private.data.state;
 					//check given state
 					
@@ -2220,22 +2135,38 @@ window.onload = function () {
 					
 					/* Tools have 4 states :  pending (default), installing, installed, failed. */
 					if(type === 'tool'){
-							if(state==="installing")  anim_style = {'background-color': 'yellow'};
-							if(state==="installed")  anim_style = {'background-color': 'green'};
-							if(state==="failed")  anim_style = {'background-color': 'red'};
+							if(state==="installing")  {
+									anim_style = {'background-color': 'yellow'};
+									anim_label = label +  "installing";
+								}
+							if(state==="installed")  {
+									anim_style = {'background-color': 'green'};
+									anim_label = label + "installed";
+							}
+							if(state==="failed")  {
+									anim_style = {'background-color': 'red'};
+									anim_label = label + "failed";
+							}
 
 					}
 					
 					/* Steps have 3 states :  "not running" (default) "running", "failed". */
 					if(type === 'step'){
-							if(state==="running")  anim_style = {'background-color': 'yellow'};
-							if(state==="failed")  anim_style = {'background-color': 'red'};
+							if(state==="running")  {
+									anim_style = {'background-color': 'yellow'};
+									anim_label = label + "running";
+							}
+							if(state==="failed")  {
+									anim_style = {'background-color': 'red'};
+									anim_label = label + "failed";
+							}
 
 					}
 					
 					
 					return (node_anim.animation({
 								  style : anim_style, //style: { 'background-color': 'red', },
+								  label: anim_label,
 								  duration: 1  //duration of animation in milliseconds
 								}).play()   //.promise('complete').then(loopEdgeAnimation(edge_anim)) :TODO fic it so that it can loop
 							);
