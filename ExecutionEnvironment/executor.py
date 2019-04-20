@@ -94,7 +94,7 @@ class Worfklow:
         # Check that that there are not circular dependencies
         self.check_tool_dependencies_for_circles();
 
-        # Check that all root input output are set
+        # Check that all root input are set
         self.input_parameter_values = {}
         for root_input_node in self.root_inputs_outputs['inputs']:
             logging.info('The following input values have been set:')
@@ -108,6 +108,30 @@ class Worfklow:
                 #raise OBC_Executor_Exception(message)
                 local_input_parameter = input('Input parameter: {} has not been set. Enter value:'.format(root_input_node['id']))
                 self.input_parameter_values[root_input_node['id']] = {'value': local_input_parameter, 'description': root_input_node['description']}
+
+        # Check that all outpus will be eventually set
+        self.output_parameter_step_setters = {}
+        for root_output_node in self.root_inputs_outputs['outputs']:
+            found_output_filling_step = False
+            for step_node in self.node_iterator():
+                if not self.is_step(step_node):
+                    continue
+
+                if root_output_node['id'] in step_node['outputs']:
+                    if not self.output_parameter_step_setters.get(root_output_node['id']) in [None, step_node]:
+                        message = 'Output variable: {} is set by more than one steps:\n'.format(root_output_node['id'])
+                        message += '   {}\n'.format(self.output_parameter_step_setters[root_output_node['id']]['id'])
+                        message += '   {}\n'.format(step_node['id'])
+                        raise OBC_Executor_Exception(message)
+
+                    self.output_parameter_step_setters[root_output_node['id']] = step_node
+                    found_output_filling_step = True
+
+            if not found_output_filling_step:
+                message = 'Output {} is not set by any step!'.format(root_output_node['id'])
+                raise OBC_Executor_Exception(message)
+
+        # Try to figure out the running order of steps that fill output variables
 
     def check_tool_dependencies_for_circles(self,):
         '''
