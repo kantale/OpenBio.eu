@@ -106,6 +106,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.workflow_info_forked_from = null; // From which workflow was this workflow forked from?
         $scope.workflows_info_error_message = '';
         $scope.workflows_step_name = '';
+        $scope.workflows_step_main = false;
         $scope.workflows_step_description = '';
         $scope.worfklows_step_ace_init = '# Insert the BASH commands for this step\n\n';
         workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1);
@@ -822,6 +823,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         //Clear STEP
         $scope.workflows_step_name = '';
+        $scope.workflows_step_main = false;
         $scope.workflows_step_description = '';
         workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1);
         workflow_step_editor.setReadOnly(false); 
@@ -1863,6 +1865,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //window.openEditWorkflowBtn_click();
 
         $scope.workflows_step_name = ''; //Clear STEP name
+        $scope.workflows_step_main = false; 
         workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1); //Add default content
     };
 
@@ -1906,6 +1909,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //The object to pass to buildTree has to be a list of node objects
         var step_node = [{
             name: $scope.workflows_step_name,
+            main: $scope.workflows_step_main,
             type: 'step',
             bash: bash_commands,
             steps: steps,
@@ -1921,6 +1925,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         //Empty STEP fields
         $scope.workflows_step_name = '';
+        $scope.workflows_step_main = false;
         workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1);
 
     };
@@ -1940,6 +1945,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         //Empty the step editor
         $scope.workflows_step_name = '';
+        $scope.workflows_step_main = false;
         workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1);
         $scope.workflow_step_add_update_label = 'Add';
     
@@ -2036,6 +2042,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.workflow_step_previous_step = step;
 
         $scope.workflows_step_name = step.name;
+        $scope.workflows_step_main = step.main;
         $('#editWorkflowNameLabel').addClass('active');
         workflow_step_editor.setValue(step.bash, -1);
 
