@@ -1480,7 +1480,7 @@ window.onload = function () {
                     //Why this redundancy?
                     //jstree uses d.name, cytoscape uses d.label and we also need an id...
                     var this_step_id = create_step_id(d, this_node_wf_belong_to);
-                    var myNode = { data: { id: this_step_id, name: d.name, label: d.name, type: d.type, bash: d.bash, tools: d.tools, steps: d.steps, inputs: d.inputs, outputs: d.outputs, belongto: this_node_wf_belong_to } };
+                    var myNode = { data: { id: this_step_id, name: d.name, label: d.name, type: d.type, bash: d.bash, main:d.main, tools: d.tools, steps: d.steps, inputs: d.inputs, outputs: d.outputs, belongto: this_node_wf_belong_to } };
                     myNodes.push(myNode);
 
                     //Connect with belong workflow
@@ -2065,7 +2065,7 @@ window.onload = function () {
 
 		/**
 		** This function updates the workflow so that the can be forked: root edit changes to null
-		**
+		** fork workflow , workflow fork 
 		**/
         window.forkWorkflow = function () {
 
@@ -2109,7 +2109,7 @@ window.onload = function () {
                 //Unfortunately: 
                 // JSON.stringify({a:'a', b:'b'}) === JSON.stringify({a:'a', b:'b'}) --> True
                 // JSON.stringify({a:'a', b:'b'}) === JSON.stringify({b:'b', a:'a'}) --> False
-                // there isn't any stragihtforward way of comparing key-pair objects in javascript...
+                // there isn't any straightforward way of comparing key-pair objects in javascript...
                 // https://stackoverflow.com/questions/1068834/object-comparison-in-javascript 
                 // Making sure that the order is correct
                 var node_root_belong_ordered = { name: node.data.belongto.name, edit: node.data.belongto.edit };

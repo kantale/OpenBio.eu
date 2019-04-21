@@ -1894,6 +1894,17 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             }
         }
 
+        // Check that ONLY ONE step is declared as "main"
+        // If we setting this value to true and there is already a main step, throw an error
+        if ($scope.workflows_step_main) {
+            if (cy.$('node[type="step"][?main]').length) {
+                $scope.toast("There is already a 'main' step for this workflow", "error");
+                $scope.workflows_step_main = false;
+                return;
+            }
+        }
+
+
         $scope.workflow_step_error_message = '';
 
         var bash_commands = workflow_step_editor.getValue(); //BASH Commands
@@ -1988,7 +1999,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             }
         }
         else if (data.type=='input' || data.type=='output') {
-            //Check if this is belongs to root WF
+            //Check if it belongs to root WF
             if (window.is_workflow_root_from_SIO_id(node.id())) {
                 
                 //Locate the index 
