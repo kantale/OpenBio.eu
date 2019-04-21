@@ -247,6 +247,19 @@ window.onload = function () {
             }
         });
 
+
+        document.getElementById('toggleReportsBtn').addEventListener('click', function(){
+            console.log('show/hide reports right panel');
+            if(document.getElementById('reportsRightPanel').style.display == 'block'){
+                document.getElementById('reportsRightPanel').style.display = 'none';
+            }
+            else{
+                document.getElementById('reportsRightPanel').style.display = 'block';
+            }
+        });
+
+
+
         // Search filters collapsible
         function closeCollapsible(event) {
             document.getElementById('searchFiltersBtn').getElementsByClassName('material-icons')[0].innerHTML = 'keyboard_arrow_right';
@@ -1024,9 +1037,14 @@ window.onload = function () {
             tool_re: new RegExp('\\$\\{[\\w]+__[\\w\\.]+__[\\d]+__[\\w]+\\}', 'g'), // ${hello__1__1__exec_path}
             tool_re_id: new RegExp('\\$\\{([\\w]+__[\\w\\.]+__[\\d]+)__([\\w]+)\\}'),
 
-            io_re: new RegExp('\\$\\{(input|output)__[a-zA-Z0-9][\\w]*\\}', 'g'), // [^_\w] Does not work???
-            io_re_id: new RegExp('\\$\\{(input|output)__([\\w]+)\\}'), // TODO: ADD  WHITE SPACEDS JUST LIKE calls
-            io_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('(\\$\\{(input|output)__)' + old_id + '(\\})'), '$1' + new_id + '$3'); }
+//            io_re: new RegExp('\\$\\{(input|output)__[a-zA-Z0-9][\\w]*\\}', 'g'), // [^_\w] Does not work???
+//            io_re_id: new RegExp('\\$\\{(input|output)__([\\w]+)\\}'), // TODO: ADD  WHITE SPACEDS JUST LIKE calls
+//            io_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('(\\$\\{(input|output)__)' + old_id + '(\\})'), '$1' + new_id + '$3'); }
+
+            io_re: new RegExp('(input|output)__[a-zA-Z0-9][\\w]*', 'g'), // [^_\w] Does not work???
+            io_re_id: new RegExp('(input|output)__([\\w]+)'), // TODO: ADD  WHITE SPACEDS JUST LIKE calls
+            io_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('((input|output)__)' + old_id), '$1' + new_id); }
+
         };
 
         /*
@@ -1477,7 +1495,7 @@ window.onload = function () {
                     //Why this redundancy?
                     //jstree uses d.name, cytoscape uses d.label and we also need an id...
                     var this_step_id = create_step_id(d, this_node_wf_belong_to);
-                    var myNode = { data: { id: this_step_id, name: d.name, label: d.name, type: d.type, bash: d.bash, tools: d.tools, steps: d.steps, inputs: d.inputs, outputs: d.outputs, belongto: this_node_wf_belong_to } };
+                    var myNode = { data: { id: this_step_id, name: d.name, label: d.name, type: d.type, bash: d.bash, main:d.main, tools: d.tools, steps: d.steps, inputs: d.inputs, outputs: d.outputs, belongto: this_node_wf_belong_to } };
                     myNodes.push(myNode);
 
                     //Connect with belong workflow
@@ -2062,7 +2080,7 @@ window.onload = function () {
 
 		/**
 		** This function updates the workflow so that the can be forked: root edit changes to null
-		**
+		** fork workflow , workflow fork 
 		**/
         window.forkWorkflow = function () {
 
@@ -2106,7 +2124,7 @@ window.onload = function () {
                 //Unfortunately: 
                 // JSON.stringify({a:'a', b:'b'}) === JSON.stringify({a:'a', b:'b'}) --> True
                 // JSON.stringify({a:'a', b:'b'}) === JSON.stringify({b:'b', a:'a'}) --> False
-                // there isn't any stragihtforward way of comparing key-pair objects in javascript...
+                // there isn't any straightforward way of comparing key-pair objects in javascript...
                 // https://stackoverflow.com/questions/1068834/object-comparison-in-javascript 
                 // Making sure that the order is correct
                 var node_root_belong_ordered = { name: node.data.belongto.name, edit: node.data.belongto.edit };

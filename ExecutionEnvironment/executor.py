@@ -73,7 +73,10 @@ class Worfklow:
 
         self.input_parameters = self.get_input_parameters()
         self.root_workflow = self.get_root_workflow()
+        self.root_step = self.get_root_step()
         self.root_inputs_outputs = self.get_input_output_from_workflow(self.root_workflow)
+        self.output_parameters = self.root_inputs_outputs['outputs']
+
 
         # Apply some integrity checks
         for node in self.node_iterator():
@@ -94,7 +97,7 @@ class Worfklow:
         # Check that that there are not circular dependencies
         self.check_tool_dependencies_for_circles();
 
-        # Check that all root input output are set
+        # Check that all root input are set
         self.input_parameter_values = {}
         for root_input_node in self.root_inputs_outputs['inputs']:
             logging.info('The following input values have been set:')
@@ -108,6 +111,38 @@ class Worfklow:
                 #raise OBC_Executor_Exception(message)
                 local_input_parameter = input('Input parameter: {} has not been set. Enter value:'.format(root_input_node['id']))
                 self.input_parameter_values[root_input_node['id']] = {'value': local_input_parameter, 'description': root_input_node['description']}
+
+        # Check that all outpus will be eventually set
+        self.output_parameter_step_setters = {}
+        for root_output_node in self.root_inputs_outputs['outputs']:
+            found_output_filling_step = False
+            for step_node in self.node_iterator():
+                if not self.is_step(step_node):
+                    continue
+
+                if root_output_node['id'] in step_node['outputs']:
+                    if not self.output_parameter_step_setters.get(root_output_node['id']) in [None, step_node]:
+                        message = 'Output variable: {} is set by more than one steps:\n'.format(root_output_node['id'])
+                        message += '   {}\n'.format(self.output_parameter_step_setters[root_output_node['id']]['id'])
+                        message += '   {}\n'.format(step_node['id'])
+                        raise OBC_Executor_Exception(message)
+
+                    self.output_parameter_step_setters[root_output_node['id']] = step_node
+                    found_output_filling_step = True
+
+            if not found_output_filling_step:
+                message = 'Output {} is not set by any step!'.format(root_output_node['id'])
+                raise OBC_Executor_Exception(message)
+
+        # Confirm that all workflows have exactly one main step
+        for workflow in self.get_all_workflows():
+            main_counter = sum(step['main'] for step in self.get_steps_from_workflow(workflow))
+            if main_counter == 0:
+                message = 'Workflow {} has 0 main steps'.format(workflow['id'])
+                raise OBC_Executor_Exception(message)
+            if main_counter > 1:
+                message = 'Workflow {} has more than one ({}) main steps'.format(workflow['id'], main_counter)
+
 
     def check_tool_dependencies_for_circles(self,):
         '''
@@ -142,7 +177,7 @@ class Worfklow:
         ret += '\n'
         ret += '### SETTING TOOL VARIABLES FOR: {}\n'.format(tool['label'])
         for tool_variable in tool['variables']:
-            ret += '{}="{}" # {} \n'.format(tool_variable['name'], tool_variable['value'], tool_variable['description'])
+            ret += '{}__{}="{}" # {} \n'.format(self.get_tool_dash_id(tool), tool_variable['name'], tool_variable['value'], tool_variable['description'])
         ret += '### END OF SETTING TOOL VARIABLES FOR: {}\n\n'.format(tool['label'])
 
         return ret
@@ -153,8 +188,17 @@ class Worfklow:
         '''
         ret = '### SET ROOT WORKFLOW INPUT PARAMETERS\n'
         for variable, data in self.input_parameter_values.items():
-            ret += '{}="{}" #  {}\n'.format(variable, data['value'], data['description'])
+            ret += 'input__{}="{}" #  {}\n'.format(variable, data['value'], data['description'])
         ret += '### END OF SET ROOT WORKFLOW INPUT PARAMETERS'
+
+        return ret
+
+    def get_output_bash_commands(self,):
+        ret = '### PRINT OUTPUT PARAMETERS\n'
+        ret += 'echo "Output Variables:"\n'
+        for output_parameter in self.output_parameters:
+            ret += 'echo "{} = ${{output__{}}}"\n'.format(output_parameter['id'], output_parameter['id'])
+        ret += '### END OF PRINTINT OUTPUT PARAMETERS\n'
 
         return ret
 
@@ -176,11 +220,25 @@ class Worfklow:
 
         return ret
 
+    def get_main_step_bash_commands(self,):
+        '''
+        '''
+
+        ret = '### CALLING MAIN STEP\n'
+        ret += '{}\n'.format(self.root_step['id'])
+        ret += '### END OF CALLING MAIN STEP\n'
+
+        return ret
 
     def get_tool_slash_id(self, tool):
         '''
         '''
         return '/'.join([tool['name'], tool['version'], str(tool['edit'])])
+
+    def get_tool_dash_id(self, tool):
+        '''
+        '''
+        return '__'.join([tool['name'], tool['version'], str(tool['edit'])])
 
     def get_tool_installation_order(self, ):
         '''
@@ -245,6 +303,11 @@ class Worfklow:
         for node in self.workflow['workflow']['elements']['nodes']:
             yield node['data']
 
+    def is_root_workflow(self, workflow):
+        '''
+        '''
+        return workflow.get('belongto', None) is None
+
     def get_root_workflow(self,):
         '''
         '''
@@ -252,7 +315,7 @@ class Worfklow:
         ret = None
 
         for node in self.node_iterator():
-            if node.get('belongto', None) is None:
+            if self.is_root_workflow(node):
                 if not ret is None:
                     raise OBC_Executor_Exception('Integrity Error: Found more than one root workflow')
 
@@ -263,11 +326,20 @@ class Worfklow:
 
         return ret
 
+    def get_all_workflows(self,):
+        '''
+        '''
+        return [node for node in self.node_iterator() if self.is_workflow(node)]
+
     def node_2_str(self, node):
         '''
         '''
         return json.dumps(node, indent=4)
 
+    def is_workflow(self, node):
+        '''
+        '''
+        return node['type'] == self.WORKFLOW_TYPE
 
     def is_input_output(self, node):
         '''
@@ -324,6 +396,26 @@ class Worfklow:
 
         return ret
 
+    def get_root_step(self,):
+        '''
+        '''
+        ret = None
+        for step in self.get_steps_from_workflow(self.root_workflow):
+            if step['main']:
+                if not ret is None:
+                    message = 'Found more than one main steps in root workflow!'
+                    raise OBC_Executor_Exception(message)
+
+                ret = step
+
+        if ret is None:
+            message = 'Could not find main step in root workflow'
+            raise OBC_Executor_Exception(message)
+
+        return ret
+
+
+
 class BaseExecutor():
     '''
     '''
@@ -350,6 +442,13 @@ class LocalExecutor(BaseExecutor):
 
             # STEP FUNCTIONS BASH
             f.write(self.workflow.get_step_bash_commands())
+
+            # CALL MAIN STEP
+            f.write(self.workflow.get_main_step_bash_commands())
+
+            # PRINT OUTPUT PARAMETERS
+            f.write(self.workflow.get_output_bash_commands())
+
 
         logging.info(f'Created file: {output_filename}')
 
