@@ -435,8 +435,8 @@
                     <i class="material-icons arrow left">keyboard_arrow_right</i>
                     <i class="material-icons left">linear_scale</i>
                     <span class="left" style="margin-right: 10px;">Step</span>
-                    <a id="workflowStepPlusBtn" class="waves-effect btn green plusBtn right tooltipped"
-                        data-position="left" data-tooltip="Add Step" ng-click="workflow_info_add_step_clicked()" ng-show="workflows_info_editable"><i class="material-icons plusIcon">add</i></a>
+                    <!-- <a id="workflowStepPlusBtn" class="waves-effect btn green plusBtn right tooltipped"
+                        data-position="left" data-tooltip="Add Step" ng-click="workflow_info_add_step_clicked()" ng-show="workflows_info_editable"><i class="material-icons plusIcon">add</i></a> -->
                 </div>
                 <div class="collapsible-body">
                     <div class="row">
@@ -446,12 +446,18 @@
                                     <span class="white-text" ng-bind="workflow_step_error_message"></span>
                                 </div>
                             </div>
-                            <div class="input-field col s12">
+                            <div class="input-field col s10">
                                 <input id="editWorkflowName" type="text" class="validate" ng-model="workflows_step_name"
                                     ng-disabled="!workflows_info_editable">
                                 <label for="editWorkflowName">Name</label>
                             </div>
-                            <div id="workflow_step_editor"></div>
+                            <div class="input-field col s2">
+                                <label>
+                                    <input type="checkbox" ng-model="workflows_step_main" ng-disabled="!workflows_info_editable"/>
+                                    <span>Main</span>
+                                </label>
+                            </div>
+                            <div class="row col s12" id="workflow_step_editor"></div>
                             <!-- 
                                 <div class="input-field col s12">
                                     <textarea id="editWorkflowDescription"
@@ -461,7 +467,7 @@
                                 -->
                             <div class="row col s12">
                                 <div class="right-align">
-                                    <a class="waves-effect waves-light btn" style="margin:2px">Cancel</a>
+                                    <a class="waves-effect waves-light btn" style="margin:2px" ng-show="workflows_info_editable" ng-click="workflow_info_add_step_clicked()">Clear</a>
                                     <a class="waves-effect waves-light btn" style="margin:2px"
                                         ng-show="workflows_info_editable" ng-click="workflow_step_delete()">Delete</a>
                                     <a class="waves-effect waves-light btn" style="margin:2px"
@@ -541,6 +547,95 @@
             <!-- ------------------------------ Statistics Workflow ------------------------------------ -->
             <!-- --------------------------------------------------------------------------------------- -->
             <li id="workflowStatistics">
+                <div class="collapsible-header">
+                    <i class="material-icons arrow">keyboard_arrow_right</i>
+                    <i class="material-icons">poll</i>
+                    Statistics
+                </div>
+                <div class="collapsible-body">
+                    <div class="row">
+                        Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry
+                        richardson
+                        ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food
+                        truck
+                        quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a
+                        bird
+                        on
+                        it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim
+                        keffiyeh
+                        helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
+                        Ad
+                        vegan
+                        excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw
+                        denim
+                        aesthetic synth nesciunt you probably haven't heard of them accusamus labore
+                        sustainable VHS.
+                        <table class="highlight centered">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Item Name</th>
+                                    <th>Item Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Alvin</td>
+                                    <td>Eclair</td>
+                                    <td>$0.87</td>
+                                </tr>
+                                <tr>
+                                    <td>Alan</td>
+                                    <td>Jellybean</td>
+                                    <td>$3.76</td>
+                                </tr>
+                                <tr>
+                                    <td>Jonathan</td>
+                                    <td>Lollipop</td>
+                                    <td>$7.00</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+    <!-- ------------------------------------------------------ Reports Right Panel ---------------------------------------------------------------------- -->
+    <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+    <div class="faster" id="reportsRightPanel" style="display: none;">
+        <ul id="reportsRightPanelAccordion" class="collapsible expandable popout faster">
+            <!-- --------------------------------------------------------------------------------------- -->
+            <!-- ------------------------------------ General ------------------------------------------ -->
+            <!-- --------------------------------------------------------------------------------------- -->
+            <li id="reportsGeneral">
+                <div class="collapsible-header">
+                    <i class="material-icons arrow">keyboard_arrow_right</i>
+                    <i class="material-icons">info</i>
+                    General
+                </div>
+                <div class="collapsible-body">
+                    <form class="col s12">
+                        <div class="row">
+
+                            <div class="input-field col s12 m4 grid-s12-m4-l4">
+                                <input id="generalReportsName" type="text" class="validate">
+                                <label for="generalReportsName">Name</label>
+                            </div>
+                            <div class="input-field col s12 m4 grid-s12-m4-l4">
+                                <input id="generalReportsEdit" type="text" class="validate">
+                                <label for="generalReportsEdit">Edit</label>
+                            </div>
+                            <div class="input-field col s12 m4 grid-s12-m4-l4">
+                                <input id="generalReportsRun" type="text" class="validate">
+                                <label for="generalReportsRun">Run</label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </li>
+            <li id="reportsStatistics">
                 <div class="collapsible-header">
                     <i class="material-icons arrow">keyboard_arrow_right</i>
                     <i class="material-icons">poll</i>
