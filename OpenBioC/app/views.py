@@ -1141,17 +1141,33 @@ def set_edit_to_cytoscape_json(cy, edit):
             if '_null' in edge['data']['id']:
                 edge['data']['id'] = create_workflow_edge_id(edge['data']['source'], edge['data']['target'])
 
+def check_workflow_step_main(cy, root_workflow):
+    '''
+    It should be one and only one main step on the main workflow
+    '''
 
+    main_counter = 0
+    for node in cy['elements']['nodes']:
+        if node['data']['type'] == 'step':
+            if node['data']['belongto'] == root_workflow:
+                if node['data']['main']:
+                    main_counter += 1
+
+    return main_counter
 
 @has_data
 def workflows_add(request, **kwargs):
+    '''
+    add workflow, workflow add, save workflow, workflow save
+    '''
+
     if request.user.is_anonymous: # Server should always check..
         return fail('Please login to create new workflow')
 
 
     workflows_search_name = kwargs.get('workflows_search_name', '')
     if not workflows_search_name.strip():
-        return fail('Invalid tool name')
+        return fail('Invalid workflow name')
 
     workflow_info_forked_from = kwargs['workflow_info_forked_from'] # If it does not exist, it should raise an Exception
 
@@ -1184,8 +1200,10 @@ def workflows_add(request, **kwargs):
     #    return fail('Error 28342')
     #workflow_root_node[0]['data']['root'] = False
 
+    #Check that one and only one step is main
 
-    #Get the maximum version. FIXME DUPLIXATE CODE
+
+    #Get the maximum version. FIXME DUPLICATE CODE
     workflow_all = Workflow.objects.filter(name=workflows_search_name)
     if not workflow_all.exists():
         next_edit = 1
@@ -1198,7 +1216,12 @@ def workflows_add(request, **kwargs):
     #Change the edit value in the cytoscape json object
     set_edit_to_cytoscape_json(workflow, next_edit)
 
-    print (simplejson.dumps(workflow, indent=4))
+    #print (simplejson.dumps(workflow, indent=4))
+    main_counter = check_workflow_step_main(workflow, {'name':workflows_search_name, 'edit': next_edit })
+    if main_counter == 0:
+        return fail('Could not find main step. One step needs to be declared as "main"')
+    if main_counter > 1:
+        return fail('Error 49188') # This should never happen
 
     new_workflow = Workflow(
         obc_user=OBC_user.objects.get(user=request.user), 
@@ -1208,7 +1231,7 @@ def workflows_add(request, **kwargs):
         description = workflow_description,
 
         # FIXME !! SERIOUS!
-        # This is redundand. We do json.loads and the json.dumps.
+        # This is redundand. We do json.loads and then json.dumps.
         # On the other hand, how else can we check if elements are not empty? (perhaps on the backend..)
         workflow = simplejson.dumps(workflow),
         forked_from = workflow_forked_from,
