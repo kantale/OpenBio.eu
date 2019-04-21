@@ -1231,7 +1231,7 @@ def workflows_add(request, **kwargs):
         description = workflow_description,
 
         # FIXME !! SERIOUS!
-        # This is redundand. We do json.loads and the json.dumps.
+        # This is redundand. We do json.loads and then json.dumps.
         # On the other hand, how else can we check if elements are not empty? (perhaps on the backend..)
         workflow = simplejson.dumps(workflow),
         forked_from = workflow_forked_from,
