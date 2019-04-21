@@ -1027,9 +1027,14 @@ window.onload = function () {
             tool_re: new RegExp('\\$\\{[\\w]+__[\\w\\.]+__[\\d]+__[\\w]+\\}', 'g'), // ${hello__1__1__exec_path}
             tool_re_id: new RegExp('\\$\\{([\\w]+__[\\w\\.]+__[\\d]+)__([\\w]+)\\}'),
 
-            io_re: new RegExp('\\$\\{(input|output)__[a-zA-Z0-9][\\w]*\\}', 'g'), // [^_\w] Does not work???
-            io_re_id: new RegExp('\\$\\{(input|output)__([\\w]+)\\}'), // TODO: ADD  WHITE SPACEDS JUST LIKE calls
-            io_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('(\\$\\{(input|output)__)' + old_id + '(\\})'), '$1' + new_id + '$3'); }
+//            io_re: new RegExp('\\$\\{(input|output)__[a-zA-Z0-9][\\w]*\\}', 'g'), // [^_\w] Does not work???
+//            io_re_id: new RegExp('\\$\\{(input|output)__([\\w]+)\\}'), // TODO: ADD  WHITE SPACEDS JUST LIKE calls
+//            io_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('(\\$\\{(input|output)__)' + old_id + '(\\})'), '$1' + new_id + '$3'); }
+
+            io_re: new RegExp('(input|output)__[a-zA-Z0-9][\\w]*', 'g'), // [^_\w] Does not work???
+            io_re_id: new RegExp('(input|output)__([\\w]+)'), // TODO: ADD  WHITE SPACEDS JUST LIKE calls
+            io_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('((input|output)__)' + old_id), '$1' + new_id); }
+
         };
 
         /*
