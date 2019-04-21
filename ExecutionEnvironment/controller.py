@@ -37,7 +37,7 @@ import logging
 import requests
 import threading
 import subprocess
-
+import docker
 from queue import Queue as Thread_queue #  
 
 from aiohttp import web
@@ -52,32 +52,32 @@ logging.getLogger('aiohttp').addHandler(logging.StreamHandler(sys.stderr))
 dockerfile_content_template = '''
 #Using ENTRYPOINT
 
-# FROM ubuntu:latest
-
-# RUN  apt-get update \
-#  && apt-get install unzip \ 
-#  && apt-get install -y wget
-
-# ADD bashscript.sh /root/ 
-
-# RUN chmod +x /root/bashscript.sh  
-
-# ENTRYPOINT ["/root/bashscript.sh"]
-
-
-
-#Using CMD
-
 FROM {ostype}
 
 RUN  apt-get update \
-  && apt-get install unzip \ 
-  && apt-get install -y wget
+ && apt-get install unzip \ 
+ && apt-get install -y wget
 
 ADD {bashscript_path} /root/ 
 
+RUN chmod +x /root/{bashscript_filename}  
 
-RUN cd /root; chmod +x {bashscript_filename} ; /bin/bash {bashscript_filename}
+ENTRYPOINT ["/root/{bashscript_filename}"]
+
+
+
+# #Using CMD
+
+# FROM {ostype}
+
+# RUN  apt-get update \
+#   && apt-get install unzip \ 
+#   && apt-get install -y wget
+
+# ADD {bashscript_path} /root/ 
+
+
+# RUN cd /root; chmod +x {bashscript_filename} ; /bin/bash {bashscript_filename}
 '''
 
 execution_directory = 'executions'
@@ -120,7 +120,7 @@ def execute_shell(command):
     (stdout,stderr) = process.communicate()
     timer_e = time.time()
     executionTime = timer_e - timer
-    print(f'[{command!r} exited with {process.returncode}]')
+    print(f'[{command!r} exited with {process.returncode}, Execution time : {executionTime}s]')
     ret = {
         'stdout' : stdout,
         'stderr' : stderr,
@@ -168,6 +168,41 @@ def create_Dockerfile_content(ostype, bashscript_path,bashscript_filename):
         )
 
 
+def docker_build_execution(this_id,Dockerfile_filename,bash_script_path):
+    '''
+    create an environment for docker and make the build ...
+    Problem with return (docker_py return a generator)
+    '''
+    docker_client= docker.from_env()
+    build_starting_at = time.time()
+    builded_image, build_result = docker_client.images.build(path= os.getcwd()+'/'+ executions, 
+        dockerfile=Dockerfile_filename,tag=f'openbioc/' + this_id)
+    for line in build_result: # TODO problem with stdout of build convert the generator asap
+        print(line)
+
+    return docker_run_image(docker_client,f'openbioc/'+this_id,build_starting_at)
+
+def docker_run_the_image(docker_client,image_name,build_starting_at):
+    '''
+    run the image to take the results
+    '''
+    try:
+        docker_run_results = docker_client.containers.run(image=image_name,stdout=True,stderr=True)
+    except docker.errors.ContainerError:
+        build_finished_at = time.time()
+        build_and_run_time = build_finished_at - build_starting_at
+        return {
+            "docker_run_results":docker_run_results,
+            "errcode":1,
+            "execution_time" : build_and_run_time,
+        }
+    build_finished_at = time.time()
+    build_and_run_time = build_finished_at - build_starting_at
+    return {
+        "docker_run_results": docker_run_results,
+        "errcode":0,
+        "execution_time" : build_and_run_time,
+        }
 
 def execute_docker_build(this_id, ostype, bash):
     '''
@@ -192,7 +227,7 @@ def execute_docker_build(this_id, ostype, bash):
     command = docker_build_cmd(this_id, Dockerfile_filename)
     print (f'Executing command: {command}')
 
-    return execute_shell(command)
+    return docker_build_execution(this_id,Dockerfile_filename,bash_script_path)
 
 
 
@@ -432,10 +467,10 @@ def worker(message_queue, w_id):
                 payload['status'] = 'Failed'
                 #execution(this_id,'mpah',False)
 
-            payload['stdout'] = result['stdout'].decode()
-            payload['stderr'] = result['stderr'].decode()
+            payload['stdout'] = result['docker_run_results']
+            # payload['stderr'] = result['stderr'].decode()
             payload['errcode'] = result['errcode']
-            payload['executionTime'] =result['executionTime']
+            payload['executionTime'] =result['execution_time']
             talk_to_server(payload)
 
 
