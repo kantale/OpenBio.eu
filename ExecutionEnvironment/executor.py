@@ -75,6 +75,8 @@ class Worfklow:
         self.root_workflow = self.get_root_workflow()
         self.root_step = self.get_root_step()
         self.root_inputs_outputs = self.get_input_output_from_workflow(self.root_workflow)
+        self.output_parameters = self.root_inputs_outputs['outputs']
+
 
         # Apply some integrity checks
         for node in self.node_iterator():
@@ -175,7 +177,7 @@ class Worfklow:
         ret += '\n'
         ret += '### SETTING TOOL VARIABLES FOR: {}\n'.format(tool['label'])
         for tool_variable in tool['variables']:
-            ret += '{}="{}" # {} \n'.format(tool_variable['name'], tool_variable['value'], tool_variable['description'])
+            ret += '{}__{}="{}" # {} \n'.format(self.get_tool_dash_id(tool), tool_variable['name'], tool_variable['value'], tool_variable['description'])
         ret += '### END OF SETTING TOOL VARIABLES FOR: {}\n\n'.format(tool['label'])
 
         return ret
@@ -186,8 +188,17 @@ class Worfklow:
         '''
         ret = '### SET ROOT WORKFLOW INPUT PARAMETERS\n'
         for variable, data in self.input_parameter_values.items():
-            ret += '{}="{}" #  {}\n'.format(variable, data['value'], data['description'])
+            ret += 'input__{}="{}" #  {}\n'.format(variable, data['value'], data['description'])
         ret += '### END OF SET ROOT WORKFLOW INPUT PARAMETERS'
+
+        return ret
+
+    def get_output_bash_commands(self,):
+        ret = '### PRINT OUTPUT PARAMETERS\n'
+        ret += 'echo "Output Variables:"\n'
+        for output_parameter in self.output_parameters:
+            ret += 'echo "{} = ${{output__{}}}"\n'.format(output_parameter['id'], output_parameter['id'])
+        ret += '### END OF PRINTINT OUTPUT PARAMETERS\n'
 
         return ret
 
@@ -223,6 +234,11 @@ class Worfklow:
         '''
         '''
         return '/'.join([tool['name'], tool['version'], str(tool['edit'])])
+
+    def get_tool_dash_id(self, tool):
+        '''
+        '''
+        return '__'.join([tool['name'], tool['version'], str(tool['edit'])])
 
     def get_tool_installation_order(self, ):
         '''
@@ -429,6 +445,9 @@ class LocalExecutor(BaseExecutor):
 
             # CALL MAIN STEP
             f.write(self.workflow.get_main_step_bash_commands())
+
+            # PRINT OUTPUT PARAMETERS
+            f.write(self.workflow.get_output_bash_commands())
 
 
         logging.info(f'Created file: {output_filename}')

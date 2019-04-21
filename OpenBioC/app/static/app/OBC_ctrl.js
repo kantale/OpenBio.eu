@@ -1902,11 +1902,14 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         if ($scope.workflows_step_main) {
             var selected_nodes = cy.$('node[type="step"][?main]');
             for (var i=0; i<selected_nodes.length; i++) {
-                var current_node_edit = selected_nodes[i].data().belongto.edit;
-                if (current_node_edit === null) {
-                    $scope.toast("There is already a 'main' step for this workflow", "error");
-                    $scope.workflows_step_main = false;
-                    return;                    
+                var current_node = selected_nodes[i];
+    
+                if (current_node.data().belongto.edit === null) {
+                    if (current_node.data().name != $scope.workflows_step_name) {
+                        $scope.toast("There is already a 'main' step for this workflow", "error");
+                        $scope.workflows_step_main = false;
+                        return;
+                    }                    
                 }
             }
         }
