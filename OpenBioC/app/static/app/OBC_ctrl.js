@@ -1728,6 +1728,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 				
                 //Make step editor readonly
                 workflow_step_editor.setReadOnly(true);
+                //Clear all STEP fields
+                $scope.workflow_info_add_step_clicked();
 
                 //Load the input/output variables
                 // $scope.workflow_input_outputs . [{name: '', description: '', out:true}];
@@ -1853,6 +1855,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     /*
     * Workflow --> Info --> Button: Add Step --> Clicked 
+    * Workflow --> Step --> Clear
     */
     $scope.workflow_info_add_step_clicked = function() {
 
@@ -1894,13 +1897,17 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             }
         }
 
-        // Check that ONLY ONE step is declared as "main"
+        // Check that ONLY ONE step is declared as "main" on THAT workflow (nested workflow can have other main steps)
         // If we setting this value to true and there is already a main step, throw an error
         if ($scope.workflows_step_main) {
-            if (cy.$('node[type="step"][?main]').length) {
-                $scope.toast("There is already a 'main' step for this workflow", "error");
-                $scope.workflows_step_main = false;
-                return;
+            var selected_nodes = cy.$('node[type="step"][?main]');
+            for (var i=0; i<selected_nodes.length; i++) {
+                var current_node_edit = selected_nodes[i].data().belongto.edit;
+                if (current_node_edit === null) {
+                    $scope.toast("There is already a 'main' step for this workflow", "error");
+                    $scope.workflows_step_main = false;
+                    return;                    
+                }
             }
         }
 
