@@ -28,6 +28,27 @@ def detect_circles(graph, start, end):
                 continue
             fringe.append((next_state, path+[next_state]))
 
+bash_patterns = {
+    'parse_json' : r'''
+function obc_parse_json()
+{
+    echo $1 \
+    sed -e "s/.*$2\":[ ]*\"\([^\"]*\)\".*/\1/"
+}
+''' + '\n', # https://stackoverflow.com/a/26655887/5626738 
+    'curl_send_json': '''curl -s --header "Content-Type: application/json" --request POST -d '{json}' {url}''',
+    'command_to_variable': '''{variable}=$({command})''',
+    'string_contains': '''
+if [[ ${variable} == *'{string}'* ]]; then
+   {contains_yes}
+else
+   {contains_no}
+fi
+''',
+    'fail': 'echo "{error_message}"\nexit 1\n'
+}
+
+bash_patterns['get_json_value'] = '{variable}=$(obc_parse_json "${json_variable}" "{json_key}")'
 
 class Worfklow:
     '''
@@ -76,6 +97,8 @@ class Worfklow:
         self.root_step = self.get_root_step()
         self.root_inputs_outputs = self.get_input_output_from_workflow(self.root_workflow)
         self.output_parameters = self.root_inputs_outputs['outputs']
+        self.nice_id = self.workflow['nice_id']
+        self.current_token = self.workflow['token']
 
 
         # Apply some integrity checks
@@ -414,6 +437,18 @@ class Worfklow:
 
         return ret
 
+    def bash_workflow_starts(self,):
+        j = json.dumps({'token': self.current_token, 'state': 'workflow started'})
+
+        get_error_message_bash = ""
+
+        bash_patterns['string_contains'].format(variable='c', string='{"success": false}', contains_yes='')
+        generic_error_message = bash_patterns['fail'].format(error_message='Server returned SUCCESS: False!')
+
+        curl_command = bash_patterns['curl_send_json'].format(json=j, url='http://0.0.0.0:8200/report/') 
+        ret = bash_patterns['command_to_variable'].format(variable='c', command=curl_command) + '\n'
+        ret += bash_patterns['string_contains'].format(variable='c', string='{"success": true}', contains_yes='echo "worfklow started"', contains_no=generic_error_message) + '\n'
+        return ret
 
 
 class BaseExecutor():
@@ -421,7 +456,7 @@ class BaseExecutor():
     '''
     def __init__(self, workflow):
         if not isinstance(workflow, Worfklow):
-            raise OBC_Executor_Exception('workflow Unknown ')
+            raise OBC_Executor_Exception('workflow Unknown type: {}'.format(type(workflow).__name__))
         self.workflow = workflow
 
 
@@ -433,6 +468,12 @@ class LocalExecutor(BaseExecutor):
 
     def build(self, output_filename):
         with open(output_filename, 'w') as f:
+
+            #Insert essential functions
+            f.write(bash_patterns['parse_json'])
+
+            f.write(self.workflow.bash_workflow_starts())
+
             # INSTALLATION TOOL BASH
             for tool in self.workflow.tool_bash_script_generator():
                 f.write(self.workflow.get_tool_bash_commands(tool))
@@ -466,7 +507,8 @@ class AmazonExecutor(BaseExecutor):
 
 if __name__ == '__main__':
     '''
-
+    Example:
+    python executor.py -W workflow.json 
     '''
     parser = argparse.ArgumentParser(description='OpenBio-C worfklow execute-or')
 

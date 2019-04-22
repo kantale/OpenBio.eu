@@ -1,11 +1,17 @@
 from django.db import models
 from django.contrib.auth.models import User
+
+import uuid
+import random
+
 '''
 After making changes here run:
 python manage.py makemigrations
 python manage.py migrate;
 
-Important: When adding new fields, declare a default value (null=True ?)
+Important: 
+   * When adding new fields, declare a default value (null=True ?)
+   * Do not use underscore in class names
 '''
 
 class OBC_user(models.Model):
@@ -214,6 +220,46 @@ class Workflow(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#datefield 
 
+class ReportToken(models.Model):
+    '''
+    Each report has multiple Tokens 
+    Each Token represent represent a state of the workflow
+    '''
+
+    token = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) # https://books.agiliq.com/projects/django-orm-cookbook/en/latest/uuid.html
+    status = models.CharField(max_length=255) # The statis of this token
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+def create_nice_id(length=5):
+    '''
+    Create a nice ID for Report class
+    I tried to add it as a static method in Report class (below) but the following happened:
+
+    ValueError: Cannot serialize: <staticmethod object at 0x10a8b4908>
+    There are some values Django cannot serialize into migration files.
+    For more, see https://docs.djangoproject.com/en/2.1/topics/migrations/#migration-serializing
+
+    Any ideas how to fix this?
+
+    '''
+
+    possible_letters = list(range(ord('a'), ord('z')+1)) + list(range(ord('A'), ord('Z')+1)) + list(range(ord('0'), ord('9')+1))
+    return ''.join([chr(random.choice(possible_letters)) for _ in range(length)])
+
+
+class Report(models.Model):
+    '''
+    Describe a Report
+    A Report is an executed workflow
+    '''
+
+
+    obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
+    workflow = models.ForeignKey(Workflow, on_delete=models.CASCADE) # The workflow that it run
+    nice_id = models.CharField(max_length=10, unique=True, default=create_nice_id, editable=False)
+    tokens = models.ManyToManyField(ReportToken, related_name='report_related')
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 
