@@ -108,7 +108,11 @@ def has_data(f):
                             for k in request.POST:
                                 kwargs[k] = request.POST[k]
                     else:
-                            POST = simplejson.loads(request.body)
+                            try:
+                                POST = simplejson.loads(request.body)
+                            except simplejson.errors.JSONDecodeError as e:
+                                return fail('Could not parse JSON data')
+
                             for k in POST:
                                 kwargs[k] = POST[k]
             elif request.method == 'GET':
@@ -1368,6 +1372,8 @@ def report(request, **kwargs):
     '''
     called from executor
     '''
+
+    print (kwargs)
 
     token = kwargs.get('token', None)
     if not token:
