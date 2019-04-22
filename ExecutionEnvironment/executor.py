@@ -32,7 +32,7 @@ bash_patterns = {
     'parse_json' : r'''
 function obc_parse_json()
 {
-    echo $1 \
+    echo $1 | \
     sed -e "s/.*$2\":[ ]*\"\([^\"]*\)\".*/\1/"
 }
 ''' + '\n', # https://stackoverflow.com/a/26655887/5626738 
@@ -187,6 +187,11 @@ class Worfklow:
                 message = 'Found circular tool dependency!'
                 message += '\n' + ' --> '.join(circle)
                 raise OBC_Executor_Exception(message)
+
+    def get_token_set_bash_commands(self, ):
+        '''
+        '''
+        return 'obc_current_token="{}"'.format(self.current_token)
 
     def get_tool_bash_commands(self, tool):
         '''
@@ -437,18 +442,46 @@ class Worfklow:
 
         return ret
 
-    def bash_workflow_starts(self,):
-        j = json.dumps({'token': self.current_token, 'state': 'workflow started'})
+    def update_server_status(self, new_status):
+        '''
+        * Update the serve with a new status
+        * Checks for error messages 
+        * sets the new token
+        '''
+        ret = ''
 
-        get_error_message_bash = ""
 
-        bash_patterns['string_contains'].format(variable='c', string='{"success": false}', contains_yes='')
-        generic_error_message = bash_patterns['fail'].format(error_message='Server returned SUCCESS: False!')
-
+        j = json.dumps({'token': self.current_token, 'status': new_status})
         curl_command = bash_patterns['curl_send_json'].format(json=j, url='http://0.0.0.0:8200/report/') 
-        ret = bash_patterns['command_to_variable'].format(variable='c', command=curl_command) + '\n'
-        ret += bash_patterns['string_contains'].format(variable='c', string='{"success": true}', contains_yes='echo "worfklow started"', contains_no=generic_error_message) + '\n'
+        ret += bash_patterns['command_to_variable'].format(variable='c', command=curl_command) + '\n'
+
+        bash_unknown_error = bash_patterns['fail'].format(error_message='Server does not respond, or unknown error')
+        bash_success_false = bash_patterns['get_json_value'].format(variable='obc_error_message', json_variable='c', json_key='error_message') + '\n'
+        bash_success_false += bash_patterns['fail'].format(error_message='Server Return Error: $obc_error_message')
+
+        bash_get_current_token = bash_patterns['get_json_value'].format(variable='obc_current_token', json_variable='c', json_key='token') + '\n'
+
+        bash_check_for_false = bash_patterns['string_contains'].format(
+            variable='c', 
+            string='"success": false', 
+            contains_yes=bash_success_false, 
+            contains_no=bash_unknown_error
+        )
+
+        bash_check_for_true = bash_patterns['string_contains'].format(
+            variable='c',
+            string='"success": true',
+            contains_yes=bash_get_current_token,
+            contains_no=bash_check_for_false,
+        )
+        ret += bash_check_for_true
+
         return ret
+
+
+
+    def bash_workflow_starts(self,):
+        return self.update_server_status('workflow started')
 
 
 class BaseExecutor():
@@ -468,6 +501,9 @@ class LocalExecutor(BaseExecutor):
 
     def build(self, output_filename):
         with open(output_filename, 'w') as f:
+
+            # Set current token
+            f.write(self.workflow.get_token_set_bash_commands())
 
             #Insert essential functions
             f.write(bash_patterns['parse_json'])
