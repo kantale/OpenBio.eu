@@ -227,7 +227,8 @@ class ReportToken(models.Model):
     '''
 
     token = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) # https://books.agiliq.com/projects/django-orm-cookbook/en/latest/uuid.html
-    status = models.CharField(max_length=255) # The statis of this token
+    status = models.CharField(max_length=255) # The status of this token
+    active = models.BooleanField() # Each token can be used only once. Once used it is set to non active
     created_at = models.DateTimeField(auto_now_add=True)
 
 

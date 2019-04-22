@@ -1332,7 +1332,7 @@ def run_workflow(request, **kwargs):
         # Attach a new report_id to it
         run_report.save()
         nice_id = str(run_report.nice_id)
-        report_token = ReportToken(status='unused')
+        report_token = ReportToken(status='unused', active=True)
         report_token.save()
         #print ('Report ID:')
         #print (report_id)
@@ -1374,13 +1374,16 @@ def report(request, **kwargs):
         return fail('Could not find token field')
 
     print ('token: {}'.format(token))
-    state = kwargs.get('state', None)
-    if not state:
-        return fail('Could not find state field')
+    token = kwargs.get('token', None)
+    if not token:
+        return fail('Could not find token field')
 
     status_received = kwargs.get('status', None)
     if not status_received:
         return fail('Could not find status field')
+
+    if not status_received in ['workflow started']:
+        return fail('Unknown status: {}'.format(status_received))
 
     #Get the ReportToken
     try:
@@ -1388,15 +1391,20 @@ def report(request, **kwargs):
     except ObjectDoesNotExist as e:
         return fail('Could not find entry to this token')
 
+    if not old_report_token.active:
+        return fail('This token has expired')
+
+    #Deactivate it
+    old_report_token.active = False
+    old_report_token.save()
+
     # Get the report
     report_obj = old_report_token.report_related.first()
 
-    print ('OLD STATUS:', report_token.status)
-    if not status in ['workflow started']:
-        return fail('Unknown status: {}'.format(status))
+    print ('OLD STATUS:', old_report_token.status)
 
     #Save the new status and return a new token 
-    new_report_token = ReportToken(status=status)
+    new_report_token = ReportToken(status=status_received, active=True) # Duplicate code
     new_report_token.save()
     report_obj.tokens.add(new_report_token)
     report_obj.save()
