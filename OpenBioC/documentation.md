@@ -23,7 +23,7 @@ STEP1
 
 #####
 ${hello__1__2__exec_path} ${input__input_par__hello__null}
-${output__output_par__hello__null}=output.txt 
+output__output_par__hello__null="output.txt"
 
 #####
 
