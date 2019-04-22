@@ -45,7 +45,31 @@ else
    {contains_no}
 fi
 ''',
-    'fail': 'echo "{error_message}"\nexit 1\n'
+    'fail': 'echo "{error_message}"\nexit 1\n',
+    'update_server_status': r'''
+function update_server_status()
+{
+
+    local command="curl -s --header \"Content-Type: application/json\" --request POST -d '{\"token\": \"$obc_current_token\", \"status\": \"$1\"}' http://0.0.0.0:8200/report/"
+
+    local c=$(eval "$command")
+
+    if [[ $c == *'"success": true'* ]]; then
+        obc_current_token=$(obc_parse_json "$c" "token")
+    else
+       
+        if [[ $c == *'"success": false'* ]]; then
+            obc_error_message=$(obc_parse_json "$c" "error_message")
+            echo "Server Return Error: $obc_error_message"
+            exit 1
+        else
+            echo "Server does not respond, or unknown error"
+            exit 1
+        fi
+    fi
+}
+
+'''
 }
 
 bash_patterns['get_json_value'] = '{variable}=$(obc_parse_json "${json_variable}" "{json_key}")'
@@ -448,37 +472,8 @@ class Worfklow:
         * Checks for error messages 
         * sets the new token
         '''
-        ret = ''
-
-
-        j = json.dumps({'token': self.current_token, 'status': new_status})
-        curl_command = bash_patterns['curl_send_json'].format(json=j, url='http://0.0.0.0:8200/report/') 
-        ret += bash_patterns['command_to_variable'].format(variable='c', command=curl_command) + '\n'
-
-        bash_unknown_error = bash_patterns['fail'].format(error_message='Server does not respond, or unknown error')
-        bash_success_false = bash_patterns['get_json_value'].format(variable='obc_error_message', json_variable='c', json_key='error_message') + '\n'
-        bash_success_false += bash_patterns['fail'].format(error_message='Server Return Error: $obc_error_message')
-
-        bash_get_current_token = bash_patterns['get_json_value'].format(variable='obc_current_token', json_variable='c', json_key='token') + '\n'
-
-        bash_check_for_false = bash_patterns['string_contains'].format(
-            variable='c', 
-            string='"success": false', 
-            contains_yes=bash_success_false, 
-            contains_no=bash_unknown_error
-        )
-
-        bash_check_for_true = bash_patterns['string_contains'].format(
-            variable='c',
-            string='"success": true',
-            contains_yes=bash_get_current_token,
-            contains_no=bash_check_for_false,
-        )
-        ret += bash_check_for_true
-
+        ret = 'update_server_status "{}"\n'.format(new_status)
         return ret
-
-
 
     def bash_workflow_starts(self,):
         return self.update_server_status('workflow started')
@@ -507,6 +502,7 @@ class LocalExecutor(BaseExecutor):
 
             #Insert essential functions
             f.write(bash_patterns['parse_json'])
+            f.write(bash_patterns['update_server_status'])
 
             f.write(self.workflow.bash_workflow_starts())
 
