@@ -37,6 +37,7 @@ import logging
 import requests
 import threading
 import subprocess
+import docker
 
 from queue import Queue as Thread_queue #  
 
@@ -52,17 +53,17 @@ logging.getLogger('aiohttp').addHandler(logging.StreamHandler(sys.stderr))
 dockerfile_content_template = '''
 #Using ENTRYPOINT
 
-# FROM ubuntu:latest
+# FROM {ostype}
 
 # RUN  apt-get update \
 #  && apt-get install unzip \ 
 #  && apt-get install -y wget
 
-# ADD bashscript.sh /root/ 
+# ADD {bashscript_path} /root/ 
 
-# RUN chmod +x /root/bashscript.sh  
+# RUN chmod +x /root/{bashscript_filename}  
 
-# ENTRYPOINT ["/root/bashscript.sh"]
+# ENTRYPOINT ["/root/{bashscript_filename}"]
 
 
 
@@ -89,7 +90,7 @@ class OBC_Controller_Exception(Exception):
     '''
     pass
 
-def execute_shell(command):
+def execute_shell(command,image_name):
 
     '''
     Executes a command in shell
@@ -120,18 +121,47 @@ def execute_shell(command):
     (stdout,stderr) = process.communicate()
     timer_e = time.time()
     executionTime = timer_e - timer
-    print(f'[{command!r} exited with {process.returncode}]')
+    print(f'[{command!r} exited with {process.returncode}, Execution time : {executionTime}s]')
+    # when the build finished take the disk usage from this new image
+    disk_usage = image_disk_usage(image_name)
     ret = {
         'stdout' : stdout,
         'stderr' : stderr,
         'errcode' : process.returncode,
         'executionTime' : executionTime,
+        'disk_usage' :disk_usage,
     }
 
     #print ('EXCUTE SHELL ABOUT TO RETURN:')
     #print (ret)
     return ret
 
+def image_disk_usage(image_name):
+    '''
+    docker.from_env()
+    https://docker-py.readthedocs.io/en/stable/client.html
+    Communicate with docker daemon,
+    Return client configured from environment variables
+
+    df()
+    https://docker-py.readthedocs.io/en/stable/api.html
+    Get data usage information
+    '''
+    docker_client = docker.from_env()
+
+    mem_of_all = docker_client.df()['Images']
+    image_dick_usage = [
+        {
+            'shared_size' : mem_of_all[i]['SharedSize'],
+            'size' : mem_of_all[i]['Size'],
+            'virtual_size' : mem_of_all[i]['VirtualSize'],
+        }
+        for i in range(len(mem_of_all)) 
+        if f'{image_name}:latest' in mem_of_all[i]['RepoTags']]
+    print(image_disk_usage)
+    # print('STDERR :')
+    # print(stderr)
+    return image_disk_usage
 
 
 def docker_build_cmd(this_id, Dockerfile_filename):
@@ -140,7 +170,7 @@ def docker_build_cmd(this_id, Dockerfile_filename):
 
     --file , -f         Name of the Dockerfile (Default is ‘PATH/Dockerfile’)
     '''
-    return f'docker build --no-cache -t openbioc/{this_id} -f {Dockerfile_filename} .'
+    return f'docker build --no-cache -t openbioc/{this_id} -f {Dockerfile_filename} .',f'openbioc/{this_id}'
 
 def docker_remove_failed_builds_cmd():
     '''
@@ -161,6 +191,7 @@ def create_Dockerfile_filename(this_id):
     return os.path.join(execution_directory, f'{this_id}.Dockerfile')
 
 def create_Dockerfile_content(ostype, bashscript_path,bashscript_filename):
+    print ("Bash file path =  = = = = " + bashscript_path)
     return dockerfile_content_template.format(
         ostype= ostype,
         bashscript_path = bashscript_path,
@@ -189,10 +220,10 @@ def execute_docker_build(this_id, ostype, bash):
     print (f'Created Dockerfile: {Dockerfile_filename}')
 
 
-    command = docker_build_cmd(this_id, Dockerfile_filename)
+    command,image_name = docker_build_cmd(this_id, Dockerfile_filename)
     print (f'Executing command: {command}')
 
-    return execute_shell(command)
+    return execute_shell(command,image_name)
 
 
 
