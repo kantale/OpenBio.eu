@@ -1592,7 +1592,9 @@ window.onload = function () {
                 return tippy(node.popperRef(), {
                     content: function () {
                         var div = document.createElement('div');
-                        div.innerHTML = text;
+						
+						text='name : '+node._private.data.label +'<br>'+ 'version : '+node._private.data.version +'<br>'+ 'edit : '+node._private.data.edit +'<br>'+ 'type : '+node._private.data.type+'<br>'+'variables : '+node._private.data.variables +'<br>'+'belongs to : '+node._private.data.belongto +'<br>';
+                        div.innerHTML = text; 
 						div.style.zIndex = "-1000000000000000000000000";	
                         return div;
                     },
@@ -1719,7 +1721,7 @@ window.onload = function () {
 
 
             /* show tooltip */
-            var mytippys = []; // arry for keeping instances of tooltips, needed for destroying all instances on mouse out
+            var mytippys = []; // array for keeping instances of tooltips, needed for destroying all instances on mouse out
             cy.on('mouseover', 'node', function (event) {
 
                 nodeId = this._private.data.id;
@@ -1734,10 +1736,10 @@ window.onload = function () {
 			cy.on('cxttapstart', 'node', function (event){
 				console.log(this._private.data.id);
 				//$('#tippy_div_' + this._private.data.id).remove();
-				  mytippys.forEach(function (mytippy) {
+				mytippys.forEach(function (mytippy) {
 					  //console.log(mytippy);
 						mytippy.destroy(mytippy.popper);
-                });
+				});
 				
 			});
 			
@@ -2091,11 +2093,9 @@ window.onload = function () {
 		window.createRepTree = function(workflowToReport){
 			//function createRepTree(workflowToReport) {
 
-				
 			cy_rep = initializeRepTree();		
 			cy_rep.json({ elements:  workflowToReport});   // Add new data
-					
-				
+
 
 				cy_rep.ready(function () {           // Wait for nodes to be added  
 					cy_rep.layout({                   // Call layout
@@ -2111,8 +2111,7 @@ window.onload = function () {
 			cy_rep.resize();
             //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.	
 			document.getElementById("cyrep").querySelector('canvas[data-id="layer2-node"]').style.position = null;
-
-			
+	
         }
 		
 		/* function for node animation  */ 
@@ -2143,7 +2142,7 @@ window.onload = function () {
 
 					}
 					
-					/* Steps have 3 states :  "not running" (default) "running", "failed". */
+					/* Steps have 3 states :  "not running" (default), "running", "failed". */
 					if(type === 'step'){
 							if(state==="running")  {
 									anim_style = {'background-color': 'yellow'};
