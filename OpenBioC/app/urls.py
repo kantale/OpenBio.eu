@@ -25,4 +25,5 @@ urlpatterns = [
 	path('callback/', views.callback), # Called from controller in order to update validation status
 	path('tool_validation_status/', views.tool_validation_status), # Query validation status if tool
 	re_path(r'^tool_stdout/(?P<tools_info_name>[\w]+)/(?P<tools_info_version>[\w\.]+)/(?P<tools_info_edit>[\d]+)/$', views.tools_show_stdout), # Show stdout of tool
+	path('report/', views.report), # Called from executor.py 
 ]

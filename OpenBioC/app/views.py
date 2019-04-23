@@ -23,7 +23,8 @@ from django.views.decorators.csrf import csrf_exempt # https://stackoverflow.com
 from django.middleware.csrf import get_token 
 
 #Import database objects
-from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations, OS_types, Keyword
+from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations, \
+    OS_types, Keyword, Report, ReportToken
 
 # Email imports
 import smtplib
@@ -37,12 +38,11 @@ import uuid
 
 import logging # https://docs.djangoproject.com/en/2.1/topics/logging/
 
-# Installed packages imports 
-import simplejson
-
 from collections import Counter
 import urllib.parse # https://stackoverflow.com/questions/40557606/how-to-url-encode-in-python-3/40557716 
 
+# Installed packages imports 
+import simplejson
 from ansi2html import Ansi2HTMLConverter # https://github.com/ralphbean/ansi2html/
 
 __version__ = '0.0.4rc'
@@ -108,7 +108,11 @@ def has_data(f):
                             for k in request.POST:
                                 kwargs[k] = request.POST[k]
                     else:
-                            POST = simplejson.loads(request.body)
+                            try:
+                                POST = simplejson.loads(request.body)
+                            except simplejson.errors.JSONDecodeError as e:
+                                return fail('Could not parse JSON data')
+
                             for k in POST:
                                 kwargs[k] = POST[k]
             elif request.method == 'GET':
@@ -1319,9 +1323,32 @@ def run_workflow(request, **kwargs):
         workflow_tool['data']['os_choices'] = [choice.os_choices for choice in workflow_tool_obj.os_choices.all()]
         workflow_tool['data']['dependencies'] = [str(tool) for tool in workflow_tool_obj.dependencies.all()]
 
+    # Create a new Report object
+    if request.user.is_anonymous:
+        run_report = None
+        nice_id = None
+        token = None
+    else:
+        run_report = Report(
+            obc_user = OBC_user.objects.get(user=request.user),
+            workflow = workflow,
+        )
+        # Attach a new report_id to it
+        run_report.save()
+        nice_id = str(run_report.nice_id)
+        report_token = ReportToken(status='unused', active=True)
+        report_token.save()
+        #print ('Report ID:')
+        #print (report_id)
+        run_report.tokens.add(report_token)
+        run_report.save()
+        token = str(report_token.token)
+
     output_object = {
         'arguments': workflow_options_arg,
         'workflow': workflow_cy,
+        'token': token,
+        'nice_id': nice_id,
     }
     #output_object = simplejson.dumps(output_object) # .replace('#', 'aa')
     output_object = urllib.parse.quote(simplejson.dumps(output_object))
@@ -1337,6 +1364,60 @@ def run_workflow(request, **kwargs):
     }
 
     return success(ret)
+
+
+@csrf_exempt
+@has_data
+def report(request, **kwargs):
+    '''
+    called from executor
+    '''
+
+    print (kwargs)
+
+    token = kwargs.get('token', None)
+    if not token:
+        return fail('Could not find token field')
+
+    print ('token: {}'.format(token))
+    token = kwargs.get('token', None)
+    if not token:
+        return fail('Could not find token field')
+
+    status_received = kwargs.get('status', None)
+    if not status_received:
+        return fail('Could not find status field')
+
+    if not status_received in ['workflow started']:
+        return fail('Unknown status: {}'.format(status_received))
+
+    #Get the ReportToken
+    try:
+        old_report_token = ReportToken.objects.get(token=token) 
+    except ObjectDoesNotExist as e:
+        return fail('Could not find entry to this token')
+
+    if not old_report_token.active:
+        return fail('This token has expired')
+
+    #Deactivate it
+    old_report_token.active = False
+    old_report_token.save()
+
+    # Get the report
+    report_obj = old_report_token.report_related.first()
+
+    print ('OLD STATUS:', old_report_token.status)
+
+    #Save the new status and return a new token 
+    new_report_token = ReportToken(status=status_received, active=True) # Duplicate code
+    new_report_token.save()
+    report_obj.tokens.add(new_report_token)
+    report_obj.save()
+
+    return success({'token': str(new_report_token.token)})
+
+
 
 
 ### END OF WORKFLOWS ###
