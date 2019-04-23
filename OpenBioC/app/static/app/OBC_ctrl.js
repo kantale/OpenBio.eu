@@ -115,6 +115,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //The input and output variables of the workflow
         $scope.workflow_input_outputs = [{name: '', description: '', out:true}]; // {name: 'aa', description: 'bb', out:true}, {name: 'cc', description: 'dd', out:false}
 
+        //Report init data:
+        $scope.report_workflow_name = '';
+        $scope.report_workflow_edit = '';
+        $scope.report_workflow_run = '';
 
         $scope.get_init_data();
 
@@ -462,6 +466,38 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             }
         );
     };
+
+    /// ### SEARCH
+    /*
+    * Changed the main search
+    */ 
+    $scope.main_search_changed = function() {
+        $scope.all_search_2();
+    };
+
+    /*
+    * Search on all objects!
+    */
+    $scope.all_search_2 = function() {
+        $scope.ajax(
+            'all_search_2/',
+            {
+                'main_search': $scope.main_search
+            },
+            function(data) {
+                $scope.main_search_reports_number = data['main_search_reports_number'];
+
+            },
+            function(data) {
+
+            },
+            function(statusText) {
+
+            }
+        );
+    };
+
+    /// END OF SEARCH
 
     /// TOOLS 
 
@@ -2305,8 +2341,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     };
 
-
     // WORKFLOWS END 
+
+    // REPORTS START
+
+
+    // REPORTS END 
 
 
 }); 

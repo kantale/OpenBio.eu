@@ -61,10 +61,10 @@ function update_server_status()
         if [[ $c == *'"success": false'* ]]; then
             obc_error_message=$(obc_parse_json "$c" "error_message")
             echo "Server Return Error: $obc_error_message"
-            exit 1
+            # exit 1
         else
             echo "Server does not respond, or unknown error"
-            exit 1
+            # exit 1
         fi
     fi
 }
@@ -124,6 +124,10 @@ class Worfklow:
         self.nice_id = self.workflow['nice_id']
         self.current_token = self.workflow['token']
 
+
+        logging.info('Workflow Name: {}   Edit: {}   Run: {}'.format(
+            self.root_workflow['name'], self.root_workflow['edit'], self.nice_id,
+            ))
 
         # Apply some integrity checks
         for node in self.node_iterator():
@@ -478,6 +482,9 @@ class Worfklow:
     def bash_workflow_starts(self,):
         return self.update_server_status('workflow started')
 
+    def bash_workflow_ends(self,):
+        return self.update_server_status('workflow ended')
+
 
 class BaseExecutor():
     '''
@@ -521,6 +528,8 @@ class LocalExecutor(BaseExecutor):
 
             # PRINT OUTPUT PARAMETERS
             f.write(self.workflow.get_output_bash_commands())
+
+            f.write(self.workflow.bash_workflow_ends())
 
 
         logging.info(f'Created file: {output_filename}')
