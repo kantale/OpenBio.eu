@@ -28,6 +28,51 @@ def detect_circles(graph, start, end):
                 continue
             fringe.append((next_state, path+[next_state]))
 
+bash_patterns = {
+    'parse_json' : r'''
+function obc_parse_json()
+{
+    echo $1 | \
+    sed -e "s/.*$2\":[ ]*\"\([^\"]*\)\".*/\1/"
+}
+''' + '\n', # https://stackoverflow.com/a/26655887/5626738 
+    'curl_send_json': '''curl -s --header "Content-Type: application/json" --request POST -d '{json}' {url}''',
+    'command_to_variable': '''{variable}=$({command})''',
+    'string_contains': '''
+if [[ ${variable} == *'{string}'* ]]; then
+   {contains_yes}
+else
+   {contains_no}
+fi
+''',
+    'fail': 'echo "{error_message}"\nexit 1\n',
+    'update_server_status': r'''
+function update_server_status()
+{
+
+    local command="curl -s --header \"Content-Type: application/json\" --request POST -d '{\"token\": \"$obc_current_token\", \"status\": \"$1\"}' http://0.0.0.0:8200/report/"
+
+    local c=$(eval "$command")
+
+    if [[ $c == *'"success": true'* ]]; then
+        obc_current_token=$(obc_parse_json "$c" "token")
+    else
+       
+        if [[ $c == *'"success": false'* ]]; then
+            obc_error_message=$(obc_parse_json "$c" "error_message")
+            echo "Server Return Error: $obc_error_message"
+            exit 1
+        else
+            echo "Server does not respond, or unknown error"
+            exit 1
+        fi
+    fi
+}
+
+'''
+}
+
+bash_patterns['get_json_value'] = '{variable}=$(obc_parse_json "${json_variable}" "{json_key}")'
 
 class Worfklow:
     '''
@@ -76,6 +121,8 @@ class Worfklow:
         self.root_step = self.get_root_step()
         self.root_inputs_outputs = self.get_input_output_from_workflow(self.root_workflow)
         self.output_parameters = self.root_inputs_outputs['outputs']
+        self.nice_id = self.workflow['nice_id']
+        self.current_token = self.workflow['token']
 
 
         # Apply some integrity checks
@@ -164,6 +211,11 @@ class Worfklow:
                 message = 'Found circular tool dependency!'
                 message += '\n' + ' --> '.join(circle)
                 raise OBC_Executor_Exception(message)
+
+    def get_token_set_bash_commands(self, ):
+        '''
+        '''
+        return 'obc_current_token="{}"'.format(self.current_token)
 
     def get_tool_bash_commands(self, tool):
         '''
@@ -414,6 +466,17 @@ class Worfklow:
 
         return ret
 
+    def update_server_status(self, new_status):
+        '''
+        * Update the serve with a new status
+        * Checks for error messages 
+        * sets the new token
+        '''
+        ret = 'update_server_status "{}"\n'.format(new_status)
+        return ret
+
+    def bash_workflow_starts(self,):
+        return self.update_server_status('workflow started')
 
 
 class BaseExecutor():
@@ -421,7 +484,7 @@ class BaseExecutor():
     '''
     def __init__(self, workflow):
         if not isinstance(workflow, Worfklow):
-            raise OBC_Executor_Exception('workflow Unknown ')
+            raise OBC_Executor_Exception('workflow Unknown type: {}'.format(type(workflow).__name__))
         self.workflow = workflow
 
 
@@ -433,6 +496,16 @@ class LocalExecutor(BaseExecutor):
 
     def build(self, output_filename):
         with open(output_filename, 'w') as f:
+
+            # Set current token
+            f.write(self.workflow.get_token_set_bash_commands())
+
+            #Insert essential functions
+            f.write(bash_patterns['parse_json'])
+            f.write(bash_patterns['update_server_status'])
+
+            f.write(self.workflow.bash_workflow_starts())
+
             # INSTALLATION TOOL BASH
             for tool in self.workflow.tool_bash_script_generator():
                 f.write(self.workflow.get_tool_bash_commands(tool))
@@ -466,7 +539,8 @@ class AmazonExecutor(BaseExecutor):
 
 if __name__ == '__main__':
     '''
-
+    Example:
+    python executor.py -W workflow.json 
     '''
     parser = argparse.ArgumentParser(description='OpenBio-C worfklow execute-or')
 

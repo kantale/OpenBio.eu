@@ -19,6 +19,9 @@ chmod +x runme.sh
 
 ####
 
+tool variable
+exec_path="./runme.sh"
+
 STEP1
 
 #####
@@ -27,6 +30,8 @@ output__output_par__hello__null="output.txt"
 
 #####
 
+input_par
+output_par
 
 ```
 angular.element($('#angular_div')).scope().$apply(function () {
