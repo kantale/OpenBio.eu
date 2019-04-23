@@ -998,10 +998,9 @@ def tools_add(request, **kwargs):
     for variable_name, variable_name_counter in Counter([x['name'] for x in tool_variables]).items():
         if variable_name_counter>1:
             return fail('Two variables cannot have the same name!')
-
     #Create new tool
     new_tool = Tool(
-        obc_user=OBC_user.objects.get(user=request.user), 
+        obc_user= OBC_user.objects.get(user=user), 
         name = tools_search_name,
         version=tools_search_version,
         edit=next_edit,
