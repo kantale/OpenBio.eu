@@ -39,3 +39,11 @@ Test on pappos:
 curl --header "Content-Type: application/json" --request POST -d @test_1.json http://139.91.190.79:8080/post 
 ```
 
+Send json data with curl
+```
+curl --header "Content-Type: application/json" --request POST -d '{"token": "123"}' http://0.0.0.0:8200/report/
+```
+
+
+
+
