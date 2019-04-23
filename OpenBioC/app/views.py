@@ -57,6 +57,7 @@ g = {
     'DEPENDENCY_TOOL_TREE_ID': '2',
     'VARIABLES_TOOL_TREE_ID': '3',
     'SEARCH_WORKFLOW_TREE_ID': '4',
+    'SEARCH_REPORT_TREE_ID': '5',
     'format_time_string' : '%a, %d %b %Y %H:%M:%S', # RFC 2822 Internet email standard. https://docs.python.org/2/library/time.html#time.strftime   # '%Y-%m-%d, %H:%M:%S'
 
     'instance_settings' : {
@@ -343,6 +344,12 @@ def workflow_text_jstree(workflow):
     '''
     return '/'.join(map(str, [workflow.name, workflow.edit]))
 
+def report_text_jstree(report):
+    '''
+    The JS tree report text
+    '''
+    return workflow_text_jstree(report.workflow) + '/' + report.nice_id
+
 def tool_id_jstree(tool, id_):
     '''
     The JS tree tool id
@@ -354,9 +361,17 @@ def tool_id_jstree(tool, id_):
 def workflow_id_jstree(workflow, id_):
     '''
     The JS Tree workflow id
-    Return a JSON string so thaty it can have many fields
+    Return a JSON string so that it can have many fields
     '''
     return simplejson.dumps([workflow.name, str(workflow.edit), str(id_)])
+
+def report_id_jstree(report, id_):
+    '''
+    The JS Tree Report id
+    Return a JSON string so that it can have many fields
+    '''
+
+    return simplejson.dumps([report.workflow.name, str(report.workflow.edit), str(report.nice_id), str(id_)])
 
 def tool_variable_text_jstree(variable):
     '''
@@ -743,6 +758,9 @@ def user_data_set(request, **kwargs):
 
 @has_data
 def tools_search_1(request, **kwargs):
+    '''
+    Get tool counts
+    '''
     queries = []
 
     ret = {
@@ -771,7 +789,7 @@ def tools_search_2(request, **kwargs):
     if tools_search_edit:
         Qs.append(Q(edit = int(tools_search_edit)))
 
-    results = Tool.objects.filter(*Qs)
+    results = Tool.objects.filter(*Qs) # This applies an AND operator. https://docs.djangoproject.com/en/2.2/topics/db/queries/#complex-lookups-with-q-objects 
 
     # { id : 'ajson1', parent : '#', text : 'KARAPIPERIM', state: { opened: true} }
 
@@ -1192,7 +1210,7 @@ def workflows_add(request, **kwargs):
 
     workflow = kwargs.get('workflow_json', '')
     if not workflow:
-        return fail ('worflows json object is empty') # This should never happen!
+        return fail ('workflows json object is empty') # This should never happen!
 
     if not workflow['elements']:
         return fail('workflow graph cannot be empty')
@@ -1551,9 +1569,82 @@ def tools_show_stdout(request, tools_info_name, tools_info_version, tools_info_e
 
     return render(request, 'app/tool_stdout.html', context)
 
-
-
 ### END OF CALL BACK ###
+
+### REPORTS
+
+def reports_search_2(
+    main_search,
+    ):
+    '''
+    '''
+
+    nice_id_Q = Q(nice_id__contains=main_search)
+    workflow_Q = Q(workflow__name__icontains=main_search)
+
+    results = Report.objects.filter(nice_id_Q | workflow_Q)
+
+    # BUILD TREE
+    reports_search_jstree = []
+    workflows_in_tree = set()
+    for report in results:
+
+        # Add the workflow
+        workflow = report.workflow
+        if not workflow in workflows_in_tree:
+
+            workflows_in_tree.add(workflow)
+
+            to_add = {
+                'data': {'name': workflow.name, 'edit': workflow.edit, 'type': 'workflow'},
+                'text': workflow_text_jstree(workflow),
+                'id': workflow_id_jstree(workflow, g['SEARCH_REPORT_TREE_ID']),
+                'parent': workflow_id_jstree(workflow.forked_from, g['SEARCH_REPORT_TREE_ID']) if workflow.forked_from else '#',
+                'state': { 'opened': True},
+            }
+            reports_search_jstree.append(to_add)
+
+        # Add the report
+        to_add = {
+            'data': {'run': report.nice_id, 'type': 'report'},
+            'text': report.nice_id,
+            'id': report_id_jstree(report, g['SEARCH_REPORT_TREE_ID']),
+            'parent': workflow_id_jstree(workflow, g['SEARCH_REPORT_TREE_ID']),
+            'state': { 'opened': True},
+        }
+        reports_search_jstree.append(to_add)
+
+
+    ret = {
+        'main_search_reports_number': results.count(),
+        'reports_search_jstree': reports_search_jstree,
+    }
+
+    return ret
+
+
+### END OF REPORTS 
+
+### SEARCH 
+
+@has_data
+def all_search_2(request, **kwargs):
+    '''
+    Called when there is a key change in main search
+    '''
+    main_search = kwargs['main_search']
+    
+    ret = {}
+
+    #Get reports
+    for key, value in reports_search_2(main_search).items():
+        ret[key] = value
+
+
+    return success(ret)
+
+
+### END OF SEARCH
 
 ### VIEWS END ######
 
