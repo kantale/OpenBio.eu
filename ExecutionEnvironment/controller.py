@@ -124,11 +124,9 @@ def execute_shell(command,image_name):
     timer_e = time.time()
     executionTime = timer_e - timer
     print(f'[{command!r} exited with {process.returncode}, Execution time : {executionTime}s]')
-<<<<<<< HEAD
     # when the build finished take the disk usage from this new image
     disk_usage = image_disk_usage(image_name)
-=======
->>>>>>> 53e1549341acc4ede92ee785d2d44e887d15569d
+
     ret = {
         'stdout' : stdout,
         'stderr' : stderr,
@@ -155,14 +153,21 @@ def image_disk_usage(image_name):
     docker_client = docker.from_env()
 
     mem_of_all = docker_client.df()['Images']
-    image_dick_usage = [
+    # the sizes in bytes , if you like i can change them!
+    image_disk_usage = [
         {
             'shared_size' : mem_of_all[i]['SharedSize'],
             'size' : mem_of_all[i]['Size'],
             'virtual_size' : mem_of_all[i]['VirtualSize'],
         }
         for i in range(len(mem_of_all)) 
-        if f'{image_name}:latest' in mem_of_all[i]['RepoTags']]
+        if f'{image_name}:latest' in mem_of_all[i]['RepoTags']
+    ]
+    if image_disk_usage is None:
+        print('Something goes wrong')
+        print(image_disk_usage)
+        return None
+
     print(image_disk_usage)
     # print('STDERR :')
     # print(stderr)
@@ -263,11 +268,8 @@ def execute_docker_build(this_id, ostype, bash):
     command,image_name = docker_build_cmd(this_id, Dockerfile_filename)
     print (f'Executing command: {command}')
 
-<<<<<<< HEAD
     return execute_shell(command,image_name)
-=======
-    return docker_build_execution(this_id,Dockerfile_filename,bash_script_path)
->>>>>>> 53e1549341acc4ede92ee785d2d44e887d15569d
+
 
 
 
