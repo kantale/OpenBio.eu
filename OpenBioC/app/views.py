@@ -1022,7 +1022,7 @@ def tools_add(request, **kwargs):
             return fail('Two variables cannot have the same name!')
     #Create new tool
     new_tool = Tool(
-        obc_user= OBC_user.objects.get(user=user), 
+        obc_user= OBC_user.objects.get(user=request.user), 
         name = tools_search_name,
         version=tools_search_version,
         edit=next_edit,
