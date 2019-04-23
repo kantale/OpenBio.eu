@@ -56,44 +56,31 @@ logging.getLogger('aiohttp').addHandler(logging.StreamHandler(sys.stderr))
 dockerfile_content_template = '''
 #Using ENTRYPOINT
 
-<<<<<<< HEAD
 # FROM {ostype}
-=======
-FROM {ostype}
->>>>>>> 53e1549341acc4ede92ee785d2d44e887d15569d
 
-RUN  apt-get update \
- && apt-get install unzip \ 
- && apt-get install -y wget
+# RUN  apt-get update \
+#  && apt-get install unzip \ 
+#  && apt-get install -y wget
 
-<<<<<<< HEAD
 # ADD {bashscript_path} /root/ 
 
 # RUN chmod +x /root/{bashscript_filename}  
 
 # ENTRYPOINT ["/root/{bashscript_filename}"]
-=======
+
+
+#Using CMD
+
+FROM {ostype}
+
+RUN  apt-get update \
+  && apt-get install unzip \ 
+  && apt-get install -y wget
+
 ADD {bashscript_path} /root/ 
 
-RUN chmod +x /root/{bashscript_filename}  
 
-ENTRYPOINT ["/root/{bashscript_filename}"]
->>>>>>> 53e1549341acc4ede92ee785d2d44e887d15569d
-
-
-
-# #Using CMD
-
-# FROM {ostype}
-
-# RUN  apt-get update \
-#   && apt-get install unzip \ 
-#   && apt-get install -y wget
-
-# ADD {bashscript_path} /root/ 
-
-
-# RUN cd /root; chmod +x {bashscript_filename} ; /bin/bash {bashscript_filename}
+RUN cd /root; chmod +x {bashscript_filename} ; /bin/bash {bashscript_filename}
 '''
 
 execution_directory = 'executions'
