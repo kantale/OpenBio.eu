@@ -1102,6 +1102,10 @@ def create_workflow_id(workflow):
             return workflow.name + '__' + workflow.edit; //It is ok if this is wf1__null
         }
     '''
+
+    if isinstance(workflow, Workflow):
+        return create_workflow_id({'name': workflow.name, 'edit': workflow.edit})
+
     return workflow['name'] + '__' + str(workflow['edit'])
 
 
@@ -1631,21 +1635,42 @@ def reports_search_3(request, **kwargs):
     '''
     '''
 
+
+
     run = kwargs['run']
 
     report = Report.objects.get(nice_id=run)
+    workflow = report.workflow
+
+    def create_node_anim_id(status):
+        if status in ['workflow started', 'workflow finished']:
+            return create_workflow_id(workflow)
+        else:
+            raise Exception('Unknown status: {}'.format(status))
+
+    def create_node_state(status):
+        if status == 'workflow started':
+            return 'started'
+        elif status == 'workflow finished':
+            return 'finished'
+        else:
+            raise Exception('Unknown status: {}'.format(status))
+
 
     #Get all tokens
     tokens = [{
         'status': token.status,
         'created_at': datetime_to_str(token.created_at),
         'token': str(token.token), 
+        'node_anim_id': create_node_anim_id(token.status),
+        'state': create_node_state(token.status)
     } for token in report.tokens.all().order_by('created_at') if token.status != ReportToken.UNUSED]
 
     ret = {
-        'report_workflow_name': report.workflow.name,
-        'report_workflow_edit': report.workflow.edit,
+        'report_workflow_name': workflow.name,
+        'report_workflow_edit': workflow.edit,
         'report_tokens': tokens,
+        'workflow' : simplejson.loads(workflow.workflow),
     }
 
     return success(ret)

@@ -227,10 +227,10 @@ class ReportToken(models.Model):
     '''
 
     WORKFLOW_STARTED = 'workflow started'
-    WORKFLOW_ENDED = 'workflow ended'
+    WORKFLOW_FINISHED = 'workflow finished'
     UNUSED = 'unused'
 
-    STATUS_CHOICES = (WORKFLOW_STARTED, WORKFLOW_ENDED)
+    STATUS_CHOICES = (WORKFLOW_STARTED, WORKFLOW_FINISHED)
 
     token = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) # https://books.agiliq.com/projects/django-orm-cookbook/en/latest/uuid.html
     status = models.CharField(max_length=255) # The status of this token
