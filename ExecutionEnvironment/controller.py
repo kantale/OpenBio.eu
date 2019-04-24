@@ -39,7 +39,7 @@ import threading
 import subprocess
 import docker
 from queue import Queue as Thread_queue #  
-
+import stats
 from aiohttp import web
 import aiohttp_cors
 #from threading import Thread
@@ -52,32 +52,35 @@ logging.getLogger('aiohttp').addHandler(logging.StreamHandler(sys.stderr))
 dockerfile_content_template = '''
 #Using ENTRYPOINT
 
-# FROM ubuntu:latest
+FROM {ostype}
 
-# RUN  apt-get update \
-#  && apt-get install unzip \ 
-#  && apt-get install -y wget
+RUN  apt-get update \
+  && apt-get install unzip \
+  && apt-get install -y wget
 
-# ADD bashscript.sh /root/ 
+ADD {bashscript_filename} /root/
 
-# RUN chmod +x /root/bashscript.sh  
+RUN chmod +x /root/{bashscript_filename}
 
-# ENTRYPOINT ["/root/bashscript.sh"]
+ENTRYPOINT ["/root/{bashscript_filename}"]
+
+CMD ["./{bashscript_filename}"]
+
 
 
 
 #Using CMD
 
-FROM {ostype}
+# FROM {ostype}
 
-RUN  apt-get update \
-  && apt-get install unzip \ 
-  && apt-get install -y wget
+# RUN  apt-get update \
+#   && apt-get install unzip \ 
+#   && apt-get install -y wget
 
-ADD {bashscript_path} /root/ 
+# ADD {bashscript_path} /root/ 
 
 
-RUN cd /root; chmod +x {bashscript_filename} ; /bin/bash {bashscript_filename}
+# RUN cd /root; chmod +x {bashscript_filename} ; /bin/bash {bashscript_filename}
 '''
 
 execution_directory = 'executions'
@@ -89,53 +92,111 @@ class OBC_Controller_Exception(Exception):
     '''
     pass
 
-def execute_shell(command,image_name):
+def docker_build_image(Dockerfile_filename,image_name):
     '''
     Executes a command in shell
     dummy: Do nothing. Return a success-like message
+    Changed: Build the image using build command from docker_py.
+    When the build finished the run to show the results from image start
     '''
 
     # if dummy:
     #     return {
     #         'stdout' : 'DUMMY STDOUT',
     #         'stderr' : 'DUMMY STDERR',
-    #         'errcode' : 0,
     #     }
 
-    process = subprocess.Popen(
-        command,
-        stdout=subprocess.PIPE, 
-        stderr=subprocess.PIPE, 
-        shell= True)
-    # Read every line in stdout and print in controller
-    '''
-    https://stackoverflow.com/questions/803265/getting-realtime-output-using-subprocess
-    '''
+    # process = subprocess.Popen(
+    #     command,
+    #     stdout=subprocess.PIPE, 
+    #     stderr=subprocess.PIPE, 
+    #     shell= True)
 
-    #for line in iter(process.stdout.readline, b''):
-    #    print(line)
+    docker_client = docker.from_env()
+    # build image usind SDK and take execution time
 
     build_start = time.time()
-    (stdout,stderr) = process.communicate()
-    build_end = time.time()
-    execution_time = build_end - build_start
-    print(f'[{command!r} exited with {process.returncode} in {execution_time}sec]')
-    disk_usage = image_disk_usage(image_name)
+    print(Dockerfile_filename)
+    # (stdout,stderr) = process.communicate()
+    print(os.getcwd()+'/executions')
+    image_build = docker_client.images.build(path=os.getcwd()+'/executions',
+        dockerfile=f'{Dockerfile_filename}' , tag=f'{image_name}')
 
-    ret = {
-        'stdout' : stdout,
-        'stderr' : stderr,
-        'errcode' : process.returncode,
-        'execution_time' : execution_time,
-        'disk_usage' :disk_usage,
-    }
+    build_end = time.time()
+
+    execution_time = build_end - build_start
+    print(f'Image : {image_build} created in {execution_time}sec.')
+    
+    # ret = {
+    #     'stdout' : stdout,
+    #     'stderr' : stderr,
+    #     'errcode' : process.returncode,
+    #     'execution_time' : execution_time,
+    #     'disk_usage' :disk_usage,
+    #     'cpu_usage': stats_usages['cpu_stats'],
+    #     'memory_usage': stats_usages['memory_stats'],
+    #     'networks': stats_usages['network_stats'],
+    # }
 
     #print ('EXCUTE SHELL ABOUT TO RETURN:')
     #print (ret)
-    return ret
+    return docker_run_image(docker_client,image_name,execution_time)
 
+def docker_run_image(docker_client,image_name,execution_time):
+    '''
+    https://github.com/docker/docker-py/blob/master/docker/errors.py
+    Run the builded image
+    if run is failed we use try , except and we take the error code and stderr from the error 
+    '''
+    result={}
+    disk_usage = image_disk_usage(docker_client,image_name)
+    try:
+        result['stderr']= None
+        result['errcode']= 0
+        result['stdout'] = docker_client.containers.run(image_name,stdout=True, stderr=True).decode()
+        return {
+            'stdout' : result['stdout'],
+            'stderr' : result['stderr'],
+            'errcode' : result['errcode'],
+            'execution_time' : execution_time,
+            'disk_usage' :disk_usage,
+            # 'cpu_usage': stats_usages['cpu_stats'],
+            # 'memory_usage': stats_usages['memory_stats'],
+            # 'networks': stats_usages['network_stats'],
+        }
+    # if run failed 
+    except docker.errors.ContainerError as e:
+        print('error')
+        result['stdout'] = None
+        result['errcode']= e.exit_status
+        result['stderr']= e.stderr.decode()
+        return {
+            'stdout' : result['stdout'],
+            'stderr' : result['stderr'],
+            'errcode' : result['errcode'],
+            'execution_time' : execution_time,
+            'disk_usage' : disk_usage,
+            # 'cpu_usage': stats_usages['cpu_stats'],
+            # 'memory_usage': stats_usages['memory_stats'],
+            # 'networks': stats_usages['network_stats'],
+        }
 
-def image_disk_usage(image_name):
+        
+    
+    # stats_usages= check_build_status(True)
+    # print(stats_usages)
+    # return {
+    #     'stdout' : result['stdout'],
+    #     'stderr' : None,
+    #     'errcode' : result['errcode'],
+    #     'execution_time' : execution_time,
+    #     'disk_usage' :disk_usage,
+    #     # 'cpu_usage': stats_usages['cpu_stats'],
+    #     # 'memory_usage': stats_usages['memory_stats'],
+    #     # 'networks': stats_usages['network_stats'],
+    # }
+
+def image_disk_usage(docker_client,image_name):
     '''
     docker.from_env()
     https://docker-py.readthedocs.io/en/stable/client.html
@@ -146,7 +207,7 @@ def image_disk_usage(image_name):
     https://docker-py.readthedocs.io/en/stable/api.html
     Get data usage information
     '''
-    docker_client = docker.from_env()
+    
 
     mem_of_all = docker_client.df()['Images']
     # the sizes in bytes , if you like i can change them!
@@ -183,7 +244,7 @@ def docker_remove_failed_builds_cmd():
 
 
 def create_bash_script_filename(this_id):
-    '''
+    '''d
     '''
     return f'bashscript_{this_id}.sh', os.path.join(execution_directory, f'bashscript_{this_id}.sh')
 
@@ -192,7 +253,7 @@ def create_Dockerfile_filename(this_id):
     '''
     '''
 
-    return os.path.join(execution_directory, f'{this_id}.Dockerfile')
+    return f'{this_id}.Dockerfile',os.path.join(execution_directory, f'{this_id}.Dockerfile')
 
 def create_Dockerfile_content(ostype, bashscript_path,bashscript_filename):
     return dockerfile_content_template.format(
@@ -209,14 +270,14 @@ def execute_docker_build(this_id, ostype, bash):
     '''
 
     bash_script_filename,bash_script_path = create_bash_script_filename(this_id)
-    Dockerfile_filename = create_Dockerfile_filename(this_id)
+    Dockerfile_filename,Dockerfile_path = create_Dockerfile_filename(this_id)
 
     # Save bash_script 
     with open(bash_script_path, 'w') as bash_script_f:
         bash_script_f.write(bash)
 
     # Save Dockerfile
-    with open(Dockerfile_filename, 'w') as Dockerfile_f:
+    with open(Dockerfile_path, 'w') as Dockerfile_f:
         Dockerfile_f.write(create_Dockerfile_content(ostype, bash_script_path,bash_script_filename))
 
     print (f'Created bash file: {bash_script_filename}')
@@ -226,7 +287,7 @@ def execute_docker_build(this_id, ostype, bash):
     command,image_name = docker_build_cmd(this_id, Dockerfile_filename)
     print (f'Executing command: {command}')
 
-    return execute_shell(command,image_name)
+    return docker_build_image(Dockerfile_filename,image_name)
 
 
 
@@ -465,8 +526,8 @@ def worker(message_queue, w_id):
                 payload['status'] = 'Failed'
                 #execution(this_id,'mpah',False)
 
-            payload['stdout'] = result['stdout'].decode()
-            payload['stderr'] = result['stderr'].decode()
+            payload['stdout'] = result['stdout']
+            payload['stderr'] = result['stderr']
             payload['errcode'] = result['errcode']
             talk_to_server(payload)
 

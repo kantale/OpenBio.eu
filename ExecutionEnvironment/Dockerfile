@@ -12,7 +12,7 @@ RUN chmod +x /root/bashfile.sh
 
 ENTRYPOINT ["/root/bashfile.sh"]
 
-#CMD ["./plink --noweb -f test"]
+CMD ["sh","/bashfile.sh"]
 
 #Using CMD
 
