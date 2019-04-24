@@ -119,6 +119,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.report_workflow_name = '';
         $scope.report_workflow_edit = '';
         $scope.report_workflow_run = '';
+        $scope.report_tokens = [];
 
         $scope.get_init_data();
 
@@ -486,7 +487,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             },
             function(data) {
                 $scope.main_search_reports_number = data['main_search_reports_number'];
-
+                angular.copy(data['reports_search_jstree'], $scope.reports_search_jstree_model);
             },
             function(data) {
 
@@ -1393,9 +1394,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
-    * Should the changes on the model be reflected on the tree? 
+    * Should the changes on the model, be reflected on the tree? 
     */
     $scope.tools_search_jstree_config_apply = function() {
+        return true;
+    };
+    $scope.reports_search_jstree_config_apply = function() {
         return true;
     };
 
@@ -1403,6 +1407,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     $scope.tools_search_jstree_model = [];
     angular.copy($scope.tools_search_jstree_model_init, $scope.tools_search_jstree_model);
+
+    $scope.reports_search_jstree_model_init = [];
+
+    $scope.reports_search_jstree_model = [];
+    angular.copy($scope.reports_search_jstree_model_init, $scope.reports_search_jstree_model);
 
 
     /* 
@@ -1426,7 +1435,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //console.log(data.node.data.name);
 
         //Check if the tool pane is editable. If we do not include this check. All edits will be lost!
-        //If it editable show a modal (see function tools_search_jstree_modal_editable)
+        //If it is editable, show a modal (see function tools_search_jstree_modal_editable)
 
         //Save in a variable the data of the item that has been clicked
         $scope.modal_data = data;
@@ -1442,11 +1451,69 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     };
 
+    /*
+    * A node in the reports search js tree is clicked .
+    */
+    $scope.reports_search_jstree_select_node = function(e, data) {
+        console.log('Reports node clicked');
+        console.log(data);
+
+        //The user might have clicked on a workflow node.
+        if (data.node.data.type == 'report') {
+
+            //Open right report panel
+            document.getElementById('reportsRightPanel').style.display = 'block';
+
+            $scope.report_workflow_run = data.node.data.run;
+            $scope.reports_search_3({run: data.node.data.run});
+        }
+    };
+
+    /*
+    * Called from reports_search_jstree_select_node
+    * Show a Report on the UI
+    */
+    $scope.reports_search_3 = function(report) {
+        $scope.ajax(
+            'reports_search_3/',
+            {
+                'run': report.run
+            },
+            function(data) {
+                $scope.report_workflow_name = data['report_workflow_name'];
+                $scope.report_workflow_edit = data['report_workflow_edit'];
+                $scope.report_tokens = data['report_tokens'];
+
+                /* Create the report workflow*/
+                window.createRepTree(data['workflow'].elements);
+
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        )
+    };
+
+    /*
+    * Called from ng-repeat in the list of Report tokens
+    * Called whenever an item is clicked 
+    * Updates the cyrep graph 
+    */
+    $scope.nodeAnimation = function(node_anim_id, state) {
+        console.log('node_anim_id:');
+        console.log(node_anim_id);
+        console.log('state:');
+        console.log(state);
+        window.nodeAnimation(node_anim_id, state);
+    };
 
     /*
     * Called by Yes/No on Modal "All tool edits will be lost!"
     * M.Modal.getInstance($("#warningModal")).open()
-    * tools_search_jstree_modal_editable_response = True // YES IS PRESSED !
+    * tools_search_jstree_modal_editable_response = True // YES IS PRESSED!
     * tools_search_jstree_modal_editable_response = False // NO IS PRESSED!
     * Who called me value: 
     * TOOLS_CANCEL_BUTTON, WORKFLOWS_CANCEL_BUTTON, TOOL_SEARCH_JSTREE, WORKFLOWS_CREATE_BUTTON, TOOLS_CREATE_BUTTON
@@ -1699,6 +1766,58 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     $scope.workflows_search_jstree_model = [];
     angular.copy($scope.workflows_search_jstree_model_init, $scope.workflows_search_jstree_model);
+
+
+    // Report search jstree config
+    $scope.reports_search_jstree_config = {
+            core : {
+                multiple : false,
+                animation: true,
+                error : function(error) {
+                    $log.error('treeCtrl: error from js tree - ' + angular.toJson(error));
+                },
+                check_callback : function(operation, node, node_parent, node_position, more) { //https://stackoverflow.com/a/23486435/5626738
+
+                    console.log('First Tree Operation:', operation);
+
+                    if (operation === "move_node") {
+                        return false;
+                    }
+                    else if (operation === 'copy_node') {
+                        return false;
+                    }
+
+                    return true;
+                },
+                worker : true
+            },
+//            types : {
+//                default : {
+//                    icon : 'fa fa-flash'
+//                },
+//                star : {
+//                    icon : 'fa fa-star'
+//                },
+//                cloud : {
+//                    icon : 'fa fa-cloud'
+//                }
+//            },
+            version : 1,
+            plugins : ['dnd', 'types'],
+            types : {
+                default : {
+                    icon : 'fa fa-sitemap' //
+                }
+            },
+            dnd: {
+                is_draggable : function(node) {
+                    return true;
+                }
+            }
+            //plugins : ['types','checkbox']
+            //plugins : []
+    };
+
 
     /*
     * An item in workflow tree on the search panel is selected
@@ -2338,7 +2457,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.toast('Error: 3811 ' + statusText, 'error');
             }
         );
-
+		
     };
 
     // WORKFLOWS END 

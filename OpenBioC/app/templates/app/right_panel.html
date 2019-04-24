@@ -420,10 +420,6 @@
         <div class="row">
             <div id="cywf"></div>
         </div>
-        <div class="row">
-            <div id="cyrep"></div>
-        </div>
-
         <hr>
         <ul id="editWorkflowAccordion" class="collapsible expandable faster" style="margin-top:0px;">
             <!-- --------------------------------------------------------------------------------------- -->
@@ -620,21 +616,31 @@
                         <div class="row">
 
                             <div class="input-field col s12 m4 grid-s12-m4-l4">
-                                <input id="generalReportsName" type="text" class="validate" ng-model="report_workflow_name">
+                                <input id="generalReportsName" type="text" class="validate" ng-model="report_workflow_name" ng-disabled="true">
                                 <label for="generalReportsName">Workflow Name</label>
                             </div>
                             <div class="input-field col s12 m4 grid-s12-m4-l4">
-                                <input id="generalReportsEdit" type="text" class="validate" ng-model="report_workflow_edit">
+                                <input id="generalReportsEdit" type="text" class="validate" ng-model="report_workflow_edit" ng-disabled="true">
                                 <label for="generalReportsEdit">Edit</label>
                             </div>
                             <div class="input-field col s12 m4 grid-s12-m4-l4">
-                                <input id="generalReportsRun" type="text" class="validate" ng-model="report_workflow_run">
+                                <input id="generalReportsRun" type="text" class="validate" ng-model="report_workflow_run" ng-disabled="true">
                                 <label for="generalReportsRun">Run</label>
                             </div>
+                        </div>
+                        <div class="row left-align">
+                            <ul>
+                                <li ng-repeat="token in report_tokens track by token.token">
+                                    <span ng-bind="token.status"></span>, <span ng-bind="token.created_at"></span><a ng-click="nodeAnimation(token.node_anim_id, token.state)">show</a>
+                                </li>
+                            </ul>
                         </div>
                     </form>
                 </div>
             </li>
+            <div class="row">
+                <div id="cyrep"></div>
+            </div>
             <li id="reportsStatistics">
                 <div class="collapsible-header">
                     <i class="material-icons arrow">keyboard_arrow_right</i>
