@@ -119,6 +119,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.report_workflow_name = '';
         $scope.report_workflow_edit = '';
         $scope.report_workflow_run = '';
+        $scope.report_tokens = [];
 
         $scope.get_init_data();
 
@@ -1455,12 +1456,47 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */
     $scope.reports_search_jstree_select_node = function(e, data) {
         console.log('Reports node clicked');
+        console.log(data);
+
+        //The user might have clicked on a workflow node.
+        if (data.node.data.type == 'report') {
+
+            //Open right report panel
+            document.getElementById('reportsRightPanel').style.display = 'block';
+
+            $scope.report_workflow_run = data.node.data.run;
+            $scope.reports_search_3({run: data.node.data.run});
+        }
+    };
+
+    /*
+    * Called from reports_search_jstree_select_node
+    * Show a Report on the UI
+    */
+    $scope.reports_search_3 = function(report) {
+        $scope.ajax(
+            'reports_search_3/',
+            {
+                'run': report.run
+            },
+            function(data) {
+                $scope.report_workflow_name = data['report_workflow_name'];
+                $scope.report_workflow_edit = data['report_workflow_edit'];
+                $scope.report_tokens = data['report_tokens'];
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        )
     };
 
     /*
     * Called by Yes/No on Modal "All tool edits will be lost!"
     * M.Modal.getInstance($("#warningModal")).open()
-    * tools_search_jstree_modal_editable_response = True // YES IS PRESSED !
+    * tools_search_jstree_modal_editable_response = True // YES IS PRESSED!
     * tools_search_jstree_modal_editable_response = False // NO IS PRESSED!
     * Who called me value: 
     * TOOLS_CANCEL_BUTTON, WORKFLOWS_CANCEL_BUTTON, TOOL_SEARCH_JSTREE, WORKFLOWS_CREATE_BUTTON, TOOLS_CREATE_BUTTON

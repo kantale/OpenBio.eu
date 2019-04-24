@@ -27,4 +27,5 @@ urlpatterns = [
 	re_path(r'^tool_stdout/(?P<tools_info_name>[\w]+)/(?P<tools_info_version>[\w\.]+)/(?P<tools_info_edit>[\d]+)/$', views.tools_show_stdout), # Show stdout of tool
 	path('report/', views.report), # Called from executor.py 
 	path('all_search_2/', views.all_search_2), # Called on main search on-change . Construct jstrees. 
+	path('reports_search_3/', views.reports_search_3), # Search (and get the details) for a specific SINGLE Report. 
 ]
