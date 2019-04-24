@@ -125,6 +125,10 @@ class Worfklow:
         self.current_token = self.workflow['token']
 
 
+        logging.info('Workflow Name: {}   Edit: {}   Run: {}'.format(
+            self.root_workflow['name'], self.root_workflow['edit'], self.nice_id,
+            ))
+
         # Apply some integrity checks
         for node in self.node_iterator():
             # Every node has a type

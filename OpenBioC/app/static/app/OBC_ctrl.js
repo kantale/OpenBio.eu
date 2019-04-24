@@ -115,6 +115,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //The input and output variables of the workflow
         $scope.workflow_input_outputs = [{name: '', description: '', out:true}]; // {name: 'aa', description: 'bb', out:true}, {name: 'cc', description: 'dd', out:false}
 
+        //Report init data:
+        $scope.report_workflow_name = '';
+        $scope.report_workflow_edit = '';
+        $scope.report_workflow_run = '';
 
         $scope.get_init_data();
 
@@ -462,6 +466,38 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             }
         );
     };
+
+    /// ### SEARCH
+    /*
+    * Changed the main search
+    */ 
+    $scope.main_search_changed = function() {
+        $scope.all_search_2();
+    };
+
+    /*
+    * Search on all objects!
+    */
+    $scope.all_search_2 = function() {
+        $scope.ajax(
+            'all_search_2/',
+            {
+                'main_search': $scope.main_search
+            },
+            function(data) {
+                $scope.main_search_reports_number = data['main_search_reports_number'];
+                angular.copy(data['reports_search_jstree'], $scope.reports_search_jstree_model);
+            },
+            function(data) {
+
+            },
+            function(statusText) {
+
+            }
+        );
+    };
+
+    /// END OF SEARCH
 
     /// TOOLS 
 
@@ -1357,9 +1393,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
-    * Should the changes on the model be reflected on the tree? 
+    * Should the changes on the model, be reflected on the tree? 
     */
     $scope.tools_search_jstree_config_apply = function() {
+        return true;
+    };
+    $scope.reports_search_jstree_config_apply = function() {
         return true;
     };
 
@@ -1367,6 +1406,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     $scope.tools_search_jstree_model = [];
     angular.copy($scope.tools_search_jstree_model_init, $scope.tools_search_jstree_model);
+
+    $scope.reports_search_jstree_model_init = [];
+
+    $scope.reports_search_jstree_model = [];
+    angular.copy($scope.reports_search_jstree_model_init, $scope.reports_search_jstree_model);
 
 
     /* 
@@ -1390,7 +1434,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //console.log(data.node.data.name);
 
         //Check if the tool pane is editable. If we do not include this check. All edits will be lost!
-        //If it editable show a modal (see function tools_search_jstree_modal_editable)
+        //If it is editable, show a modal (see function tools_search_jstree_modal_editable)
 
         //Save in a variable the data of the item that has been clicked
         $scope.modal_data = data;
@@ -1406,6 +1450,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     };
 
+    /*
+    * A node in the reports search js tree is clicked .
+    */
+    $scope.reports_search_jstree_select_node = function(e, data) {
+        console.log('Reports node clicked');
+    };
 
     /*
     * Called by Yes/No on Modal "All tool edits will be lost!"
@@ -1663,6 +1713,58 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     $scope.workflows_search_jstree_model = [];
     angular.copy($scope.workflows_search_jstree_model_init, $scope.workflows_search_jstree_model);
+
+
+    // Report search jstree config
+    $scope.reports_search_jstree_config = {
+            core : {
+                multiple : false,
+                animation: true,
+                error : function(error) {
+                    $log.error('treeCtrl: error from js tree - ' + angular.toJson(error));
+                },
+                check_callback : function(operation, node, node_parent, node_position, more) { //https://stackoverflow.com/a/23486435/5626738
+
+                    console.log('First Tree Operation:', operation);
+
+                    if (operation === "move_node") {
+                        return false;
+                    }
+                    else if (operation === 'copy_node') {
+                        return false;
+                    }
+
+                    return true;
+                },
+                worker : true
+            },
+//            types : {
+//                default : {
+//                    icon : 'fa fa-flash'
+//                },
+//                star : {
+//                    icon : 'fa fa-star'
+//                },
+//                cloud : {
+//                    icon : 'fa fa-cloud'
+//                }
+//            },
+            version : 1,
+            plugins : ['dnd', 'types'],
+            types : {
+                default : {
+                    icon : 'fa fa-sitemap' //
+                }
+            },
+            dnd: {
+                is_draggable : function(node) {
+                    return true;
+                }
+            }
+            //plugins : ['types','checkbox']
+            //plugins : []
+    };
+
 
     /*
     * An item in workflow tree on the search panel is selected
@@ -2311,8 +2413,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 		
     };
 
-
     // WORKFLOWS END 
+
+    // REPORTS START
+
+
+    // REPORTS END 
 
 
 }); 
