@@ -281,27 +281,11 @@
                             </div>
                         </form>
                     </div>
-                    <div class="container">
-                        <div class="row">
-                            <a id="toggleReportsBtn" href class="waves-effect waves-teal btn" >Toggle on the right</a>
-                        </div>
-                        <div class="row">
-                            Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry
-                            richardson
-                            ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food
-                            truck
-                            quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a
-                            bird
-                            on
-                            it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim
-                            keffiyeh
-                            helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
-                            Ad
-                            vegan
-                            excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw
-                            denim
-                            aesthetic synth nesciunt you probably haven't heard of them accusamus labore
-                            sustainable VHS.
+                    <div class="row left-align">
+                        <div class="col">
+                            <div js-tree="reports_search_jstree_config" should-apply="reports_search_jstree_config_apply()"
+                                ng-model="reports_search_jstree_model" tree="reports_search_jstree"
+                                tree-events="select_node:reports_search_jstree_select_node"></div>
                         </div>
                     </div>
                 </div>

@@ -13,6 +13,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from django.db.models import Q # https://docs.djangoproject.com/en/2.1/topics/db/queries/#complex-lookups-with-q-objects
 from django.db.models import Max # https://docs.djangoproject.com/en/2.1/topics/db/aggregation/
+from django.db.models import Count # https://stackoverflow.com/questions/7883916/django-filter-the-model-on-manytomany-count 
 
 from django.utils import timezone
 #from django.utils.html import escape # https://docs.djangoproject.com/en/2.2/ref/utils/#module-django.utils.html
@@ -1100,6 +1101,10 @@ def create_workflow_id(workflow):
             return workflow.name + '__' + workflow.edit; //It is ok if this is wf1__null
         }
     '''
+
+    if isinstance(workflow, Workflow):
+        return create_workflow_id({'name': workflow.name, 'edit': workflow.edit})
+
     return workflow['name'] + '__' + str(workflow['edit'])
 
 
@@ -1580,8 +1585,11 @@ def reports_search_2(
 
     nice_id_Q = Q(nice_id__contains=main_search)
     workflow_Q = Q(workflow__name__icontains=main_search)
+    not_unused = Q(tokens__status = ReportToken.UNUSED)
+    count_1 = Q(num_tokens = 1)
 
-    results = Report.objects.filter(nice_id_Q | workflow_Q)
+    # We do not want reports that have only one tokens which is "unused"
+    results = Report.objects.annotate(num_tokens=Count('tokens')).filter( (nice_id_Q | workflow_Q) & (~(not_unused&count_1)) )
 
     # BUILD TREE
     reports_search_jstree = []
@@ -1621,6 +1629,50 @@ def reports_search_2(
 
     return ret
 
+@has_data
+def reports_search_3(request, **kwargs):
+    '''
+    '''
+
+
+
+    run = kwargs['run']
+
+    report = Report.objects.get(nice_id=run)
+    workflow = report.workflow
+
+    def create_node_anim_id(status):
+        if status in ['workflow started', 'workflow finished']:
+            return create_workflow_id(workflow)
+        else:
+            raise Exception('Unknown status: {}'.format(status))
+
+    def create_node_state(status):
+        if status == 'workflow started':
+            return 'started'
+        elif status == 'workflow finished':
+            return 'finished'
+        else:
+            raise Exception('Unknown status: {}'.format(status))
+
+
+    #Get all tokens
+    tokens = [{
+        'status': token.status,
+        'created_at': datetime_to_str(token.created_at),
+        'token': str(token.token), 
+        'node_anim_id': create_node_anim_id(token.status),
+        'state': create_node_state(token.status)
+    } for token in report.tokens.all().order_by('created_at') if token.status != ReportToken.UNUSED]
+
+    ret = {
+        'report_workflow_name': workflow.name,
+        'report_workflow_edit': workflow.edit,
+        'report_tokens': tokens,
+        'workflow' : simplejson.loads(workflow.workflow),
+    }
+
+    return success(ret)
 
 ### END OF REPORTS 
 
