@@ -1483,6 +1483,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.report_workflow_name = data['report_workflow_name'];
                 $scope.report_workflow_edit = data['report_workflow_edit'];
                 $scope.report_tokens = data['report_tokens'];
+
+                /* Create the report workflow*/
+                window.createRepTree(data['workflow'].elements);
+
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');
@@ -1491,6 +1495,19 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.toast(statusText, 'error');
             }
         )
+    };
+
+    /*
+    * Called from ng-repeat in the list of Report tokens
+    * Called whenever an item is clicked 
+    * Updates the cyrep graph 
+    */
+    $scope.nodeAnimation = function(node_anim_id, state) {
+        console.log('node_anim_id:');
+        console.log(node_anim_id);
+        console.log('state:');
+        console.log(state);
+        window.nodeAnimation(node_anim_id, state);
     };
 
     /*
@@ -2440,12 +2457,6 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.toast('Error: 3811 ' + statusText, 'error');
             }
         );
-		
-		
-		/* Create the report workflow*/
-		window.createRepTree(cy.json().elements);
-		
-		
 		
     };
 
