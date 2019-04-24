@@ -2440,7 +2440,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.toast('Error: 3811 ' + statusText, 'error');
             }
         );
-
+		
+		
+		/* Create the report workflow*/
+		window.createRepTree(cy.json().elements);
+		
+		
+		
     };
 
     // WORKFLOWS END 

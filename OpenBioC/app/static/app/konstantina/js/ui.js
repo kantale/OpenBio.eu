@@ -1414,15 +1414,10 @@ window.onload = function () {
         * belongto: the workflow to be added to
         */
         function parseWorkflow(incomingData, belongto) {
-            console.log('parseWorkflow incomingData:');
-            console.log(incomingData);
-
-            console.log('belongto:');
-            console.log(belongto);
 
             var myNodes = [], myEdges = [];
 
-            /*initialize my data object*/
+            /* initialize my data object */
             incomingData.forEach(function (d) {
 
                 var this_node_wf_belong_to = d.belongto ? d.belongto : belongto; // In which worfklow does this node belong to? 
@@ -1436,7 +1431,7 @@ window.onload = function () {
                     var myNode = { data: { id: this_input_output_id, label: d.name, name: d.name, type: d.type, description: d.description, belongto: this_node_wf_belong_to } };
                     myNodes.push(myNode);
                     //Connect with belongto workflow
-                    myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_input_output_id, id: create_workflow_edge_id(this_node_wf_belong_to_id, this_input_output_id) } });
+                    myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_input_output_id, id: create_workflow_edge_id(this_node_wf_belong_to_id, this_input_output_id), edgebelongto: 'true' } });
                 }
 
 
@@ -1542,20 +1537,12 @@ window.onload = function () {
                 }
 
             });
-
-            console.log('NODES:');
-            console.log(myNodes);
-            console.log('EDGES:');
-            console.log(myEdges);
-
-
+			
 
             return {
                 nodes: myNodes,
                 edges: myEdges
             };
-
-
 
         }
 
@@ -1604,7 +1591,9 @@ window.onload = function () {
                 return tippy(node.popperRef(), {
                     content: function () {
                         var div = document.createElement('div');
-                        div.innerHTML = text;
+						
+						text='name : '+node._private.data.label +'<br>'+ 'version : '+node._private.data.version +'<br>'+ 'edit : '+node._private.data.edit +'<br>'+ 'type : '+node._private.data.type+'<br>'+'variables : '+node._private.data.variables +'<br>'+'belongs to : '+node._private.data.belongto +'<br>';
+                        div.innerHTML = text; 
 						div.style.zIndex = "-1000000000000000000000000";	
                         return div;
                     },
@@ -1731,7 +1720,7 @@ window.onload = function () {
 
 
             /* show tooltip */
-            var mytippys = []; // arry for keeping instances of tooltips, needed for destroying all instances on mouse out
+            var mytippys = []; // array for keeping instances of tooltips, needed for destroying all instances on mouse out
             cy.on('mouseover', 'node', function (event) {
 
                 nodeId = this._private.data.id;
@@ -1743,26 +1732,23 @@ window.onload = function () {
             });
 			
 			//on right click close tooltip before menu opens
-			/*
-			cy.on('cxttap', 'node', function (event){
+			cy.on('cxttapstart', 'node', function (event){
 				console.log(this._private.data.id);
 				//$('#tippy_div_' + this._private.data.id).remove();
-				  mytippys.forEach(function (mytippy) {
+				mytippys.forEach(function (mytippy) {
 					  //console.log(mytippy);
 						mytippy.destroy(mytippy.popper);
-                });
+				});
 				
 			});
-			*/
+			
 
-            /* hide tooltip */
+            /* hide tooltip before cxtmenu opens, otherwise they overlap */
             cy.on('mouseout', 'node', function (event) {
                 // destroy all instances
                 mytippys.forEach(function (mytippy) {
                     mytippy.destroy(mytippy.popper);
                 });
-                //myTippy.destroy();
-                //myTippy.hide();
             });
 
 			 // Right-click menu for input nodes 
@@ -1770,6 +1756,8 @@ window.onload = function () {
 								menuRadius: 85, 	
 								//selector: 'node',
 								selector: 'node[type="input"]',
+								//zIndex: 199999999, 
+								openMenuEvents: 'cxttapstart', 
 								commands: [
 									{
 										content: 'Set',
@@ -1824,6 +1812,7 @@ window.onload = function () {
 									menuRadius: 85, 
 									//selector: 'node',
 									selector: 'node[type!="input"]',
+									openMenuEvents: 'cxttapstart', 
 									commands: [
 										{
 											content: 'Edit',
@@ -1918,7 +1907,7 @@ window.onload = function () {
                         "style": {
                             'shape': 'round-rectangle',
                             'border-width': '3',
-                            'border-color': '#43A047',
+                            'border-color': '#43A047', 
                             'background-color': '#AFB4AE',
                             //"height": 15,
                             //"width": 15
@@ -1946,24 +1935,26 @@ window.onload = function () {
                             //"height": 15,
                             //"width": 15
                         }
-                    },/*
+                    },
                     {
-                        selector: 'edge',
+                        selector: 'edge[edgebelongto="true"]',
                         "style": {
+							'opacity': 0.5,
                             'curve-style': 'bezier',
                             'target-arrow-shape': 'triangle',
                             'width': 2,
                             'line-color': '#ddd',
                             'target-arrow-color': '#ddd'
-                        },*/
+						}
+					},
 						{
                         selector: 'edge',
                         "style": {
                             'curve-style': 'bezier',
                             'target-arrow-shape': 'triangle',
                             'width': 2,
-							'line-dash-pattern': [6, 3], 
-							'line-dash-offset': 24,
+							//'line-dash-pattern': [6, 3], 
+							//'line-dash-offset': 24,
                             'line-color': '#ddd',
                             'target-arrow-color': '#ddd'
                         }
@@ -1989,19 +1980,248 @@ window.onload = function () {
         }
 
         /*
-        * Initialize cytoscape graph
+        * Initialize WORKFLOW graph
         */
         function initializeTree() {
 
             cy = createCytoscapeObject();
-            /* add menu on node right click*/
 
             //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.
-            document.querySelector('canvas[data-id="layer2-node"]').style.position = null;
+            //document.querySelector('canvas[data-id="layer2-node"]').style.position = null;
+			document.getElementById("cywf").querySelector('canvas[data-id="layer2-node"]').style.position = null; 
+
 
         }
+		
+		
+		window.initializeRepTree = function () {
+			
+			var cy_rep = cytoscape({
+                container: document.getElementById('cyrep'), // container to render in
+                elements: [],
+                style: [ // the stylesheet for the graph
+					{   // * tool default state : initial state*//
+                        selector: 'node[type="tool"]',  //[state = "pending"]
+                        "style": {
+                            "shape": "round-rectangle",
+                            "background-color": "#AFB4AE",
+                            "label": "data(label)"
+                        }
+                    },
+                    {
+                        selector: 'node[type="step"]',
+                        "style": {
+                            'shape': 'ellipse',
+                            'background-color': '#AFB4AE',
+							"label": "data(label)"
+                        }
+                    },
+					{
+                        selector: 'node[type="input"]',
+                        "style": {
+                            'shape': 'round-rectangle',
+                            'background-color': '#AFB4AE',
+							"label": "data(label)"
+  
+                        }
+                    }, 
+                    {
+                        selector: 'node[type="output"]',
+                        "style": {
+                            'shape': 'round-rectangle',
+                            'background-color': '#AFB4AE',
+							"label": "data(label)"
+
+                        }
+                    },
+                    {
+                        selector: 'node[type="workflow"]',
+                        "style": {
+                            'shape': 'diamond',
+                            //'border-width': '3',
+                            //'border-color': '#E53935',
+                            'background-color': '#AFB4AE',
+							"label": "data(label)"
+
+                        }
+                    },
+                    {
+                        selector: 'edge',
+                        "style": {
+                            'curve-style': 'bezier',
+                            'target-arrow-shape': 'triangle',
+                            'width': 2,
+                            'line-color': '#ddd',
+                            'target-arrow-color': '#ddd'
+                        }
+					}
+						/*,
+						{
+                        selector: 'edge',
+                        "style": {
+                            'curve-style': 'bezier',
+                            'target-arrow-shape': 'triangle',
+                            'width': 2,
+							'line-dash-pattern': [6, 3], 
+							'line-dash-offset': 24,
+                            'line-color': '#AFB4AE',
+                            'target-arrow-color': '#AFB4AE'
+							}
+						*/	
+                ],
+
+					//zoom: 1,
+					pan: { x: 0, y: 0 },
+
+					layout: {
+						name: 'breadthfirst',
+						directed: true,
+						padding: 2
+					}
+            });
+			
+			return cy_rep;
+			
+		}
+		
+			//initializeRepTree();
+		
+		
+		/*
+        * Create REPORT graph
+		*
+        */
+		window.createRepTree = function(workflowToReport){
+			//function createRepTree(workflowToReport) {
+
+			cy_rep = initializeRepTree();		
+			cy_rep.json({ elements:  workflowToReport});   // Add new data
 
 
+				cy_rep.ready(function () {           // Wait for nodes to be added  
+					cy_rep.layout({                   // Call layout
+						name: 'breadthfirst',
+						directed: true,
+						padding: 2
+					}).run();
+
+				
+				});
+			
+
+			cy_rep.resize();
+            //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.	
+			document.getElementById("cyrep").querySelector('canvas[data-id="layer2-node"]').style.position = null;
+	
+        }
+		
+		/* function for node animation  */ 
+				window.nodeAnimation = function(node_anim_id, state){
+					// get node by id
+					var node_anim = cy_rep.$('#' + node_anim_id);
+					var type = node_anim[0]._private.data.type;
+					var label = node_anim[0]._private.data.label;
+					//var state = node_anim[0]._private.data.state;
+					//check given state
+					
+					console.log(type);
+					
+					/* Tools have 4 states :  pending (default), installing, installed, failed. */
+					if(type === 'tool'){
+							if(state==="installing")  {
+									anim_style = {'background-color': 'yellow'};
+									anim_label = label +  "installing";
+								}
+							if(state==="installed")  {
+									anim_style = {'background-color': '#43A047'};
+									anim_label = label + "installed";
+							}
+							if(state==="failed")  {
+									anim_style = {'background-color': '#E53935'};
+									anim_label = label + "failed";
+							}
+
+					}
+					
+					/* Steps have 3 states :  "not running" (default), "running", "failed". */
+					if(type === 'step'){
+							if(state==="running")  {
+									anim_style = {'background-color': 'yellow'};
+									anim_label = label + "running";
+							}
+							if(state==="failed")  {
+									anim_style = {'background-color': '#E53935'};
+									anim_label = label + "failed";
+							}
+
+					}
+					
+					/* Outputs have 2 states :  "Unset" (default), "Set" */
+					if(type === 'output'){
+							if(state==="set")  {
+									anim_style = {'background-color': '#43A047'};
+									anim_label = label + "setted";
+							}
+					}
+					
+					
+					
+					return (node_anim.animation({
+								  style : anim_style, 	//style: { 'background-color': 'red', },
+								  label: anim_label,
+								  duration: 1  			//duration of animation in milliseconds
+								}).play()   			//.promise('complete').then(loopEdgeAnimation(edge_anim)) :TODO fic it so that it can loop
+							);
+					
+					
+				};
+				
+				
+				
+			/* function for edge animation  */ 
+			window.edgeAnimation = function(source_anim_id, target_anim_id, state){
+						// get edge by source / target
+						var edges  = cy_rep.$("edge");
+						var edge_anim=null;
+						
+						edges.forEach(function (edge) {
+
+								if(edge._private.data.source === source_anim_id && edge._private.data.target===target_anim_id){
+									edge_anim = edge;
+								}
+											
+						})
+						
+				
+					if(edge_anim!== null){
+						
+						/* (1) "Never run", (2) Running blinking, (3) "run at least once" */ 
+						var edge_anim_style=null;
+						
+						//if(state==="Never run") edge_anim_style = { 'line-color': 'red', 'target-arrow-color': 'red'};
+						if(state==="Running") {
+								edge_anim_style = { 'line-color': 'red', 'target-arrow-color': '#E53935'};
+						}
+						if(state==="Run") {
+								edge_anim_style = { 'line-color': 'green', 'target-arrow-color': '#43A047'};
+						}else{
+								edge_anim_style = { 'line-color': '#ddd', 'target-arrow-color': '#ddd'};
+						}
+						
+						
+							return (edge_anim.animation({
+										  style: edge_anim_style,
+										  duration: 5000  //duration of animation in milliseconds
+										}).play()         //.promise('complete').then(loopEdgeAnimation(edge_anim)) :TODO fic it so that it can loop
+									);
+									
+								// call the function for specified edges
+								//loopEdgeAnimation(cy_rep.$("edge")[0]);
+					}
+					
+			}	
+		
+		
         initializeTree();
 
 
@@ -2058,8 +2278,8 @@ window.onload = function () {
             initializeTree();
 
             cy.json({ elements: treeData });   // Add new data
-            cy.ready(function () {           // Wait for nodes to be added  
-                cy.layout({                   // Call layout
+            cy.ready(function () {             // Wait for nodes to be added  
+                cy.layout({                    // Call layout
                     name: 'breadthfirst',
                     directed: true,
                     padding: 2
@@ -2073,7 +2293,7 @@ window.onload = function () {
 
             window.cy_setup_events();
             //close successors of tool
-            cy.$('node[type="tool"][root="yes"]').successors().targets().style("display", "none");;
+            cy.$('node[type="tool"][root="yes"]').successors().targets().style("display", "none");
 
         }
 
@@ -2308,24 +2528,16 @@ window.onload = function () {
 		* Fits workflow's content in center
 		*/
         window.fit = function () {
-            cy.reset();
-            cy.center();
-
-        }
-
-		/*
-		* Redraw the graph so that initial  
-		* Re-run the layout of cytoscape
-		*/
-        window.redraw = function () {
-
-            cy.layout({// Call layout
+            //cy.reset();
+            //cy.center();
+			 cy.layout({// Call layout
                 name: 'breadthfirst',
                 directed: true,
                 padding: 2
             }).run();
 
         }
+
     }
 
 
