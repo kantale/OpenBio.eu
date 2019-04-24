@@ -420,10 +420,6 @@
         <div class="row">
             <div id="cywf"></div>
         </div>
-        <div class="row">
-            <div id="cyrep"></div>
-        </div>
-
         <hr>
         <ul id="editWorkflowAccordion" class="collapsible expandable faster" style="margin-top:0px;">
             <!-- --------------------------------------------------------------------------------------- -->
@@ -635,13 +631,16 @@
                         <div class="row left-align">
                             <ul>
                                 <li ng-repeat="token in report_tokens track by token.token">
-                                    <span ng-bind="token.status"></span>, <span ng-bind="token.created_at"></span>
+                                    <span ng-bind="token.status"></span>, <span ng-bind="token.created_at"></span><a ng-click="nodeAnimation(token.node_anim_id, token.state)">show</a>
                                 </li>
                             </ul>
                         </div>
                     </form>
                 </div>
             </li>
+            <div class="row">
+                <div id="cyrep"></div>
+            </div>
             <li id="reportsStatistics">
                 <div class="collapsible-header">
                     <i class="material-icons arrow">keyboard_arrow_right</i>

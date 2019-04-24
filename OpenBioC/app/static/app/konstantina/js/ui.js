@@ -248,15 +248,15 @@ window.onload = function () {
         });
 
 
-        document.getElementById('toggleReportsBtn').addEventListener('click', function(){
-            console.log('show/hide reports right panel');
-            if(document.getElementById('reportsRightPanel').style.display == 'block'){
-                document.getElementById('reportsRightPanel').style.display = 'none';
-            }
-            else{
-                document.getElementById('reportsRightPanel').style.display = 'block';
-            }
-        });
+//        document.getElementById('toggleReportsBtn').addEventListener('click', function(){
+//            console.log('show/hide reports right panel');
+//            if(document.getElementById('reportsRightPanel').style.display == 'block'){
+//                document.getElementById('reportsRightPanel').style.display = 'none';
+//            }
+//            else{
+//                document.getElementById('reportsRightPanel').style.display = 'block';
+//            }
+//        });
 
 
 
@@ -2116,110 +2116,131 @@ window.onload = function () {
         }
 		
 		/* function for node animation  */ 
-				window.nodeAnimation = function(node_anim_id, state){
-					// get node by id
-					var node_anim = cy_rep.$('#' + node_anim_id);
-					var type = node_anim[0]._private.data.type;
-					var label = node_anim[0]._private.data.label;
-					//var state = node_anim[0]._private.data.state;
-					//check given state
-					
-					console.log(type);
-					
-					/* Tools have 4 states :  pending (default), installing, installed, failed. */
-					if(type === 'tool'){
-							if(state==="installing")  {
-									anim_style = {'background-color': 'yellow'};
-									anim_label = label +  "installing";
-								}
-							if(state==="installed")  {
-									anim_style = {'background-color': '#43A047'};
-									anim_label = label + "installed";
-							}
-							if(state==="failed")  {
-									anim_style = {'background-color': '#E53935'};
-									anim_label = label + "failed";
-							}
-
-					}
-					
-					/* Steps have 3 states :  "not running" (default), "running", "failed". */
-					if(type === 'step'){
-							if(state==="running")  {
-									anim_style = {'background-color': 'yellow'};
-									anim_label = label + "running";
-							}
-							if(state==="failed")  {
-									anim_style = {'background-color': '#E53935'};
-									anim_label = label + "failed";
-							}
-
-					}
-					
-					/* Outputs have 2 states :  "Unset" (default), "Set" */
-					if(type === 'output'){
-							if(state==="set")  {
-									anim_style = {'background-color': '#43A047'};
-									anim_label = label + "setted";
-							}
-					}
-					
-					
-					
-					return (node_anim.animation({
-								  style : anim_style, 	//style: { 'background-color': 'red', },
-								  label: anim_label,
-								  duration: 1  			//duration of animation in milliseconds
-								}).play()   			//.promise('complete').then(loopEdgeAnimation(edge_anim)) :TODO fic it so that it can loop
-							);
-					
-					
-				};
-				
-				
-				
-			/* function for edge animation  */ 
-			window.edgeAnimation = function(source_anim_id, target_anim_id, state){
-						// get edge by source / target
-						var edges  = cy_rep.$("edge");
-						var edge_anim=null;
-						
-						edges.forEach(function (edge) {
-
-								if(edge._private.data.source === source_anim_id && edge._private.data.target===target_anim_id){
-									edge_anim = edge;
-								}
-											
-						})
-						
-				
-					if(edge_anim!== null){
-						
-						/* (1) "Never run", (2) Running blinking, (3) "run at least once" */ 
-						var edge_anim_style=null;
-						
-						//if(state==="Never run") edge_anim_style = { 'line-color': 'red', 'target-arrow-color': 'red'};
-						if(state==="Running") {
-								edge_anim_style = { 'line-color': 'red', 'target-arrow-color': '#E53935'};
+		window.nodeAnimation = function(node_anim_id, state){
+			// get node by id
+			var node_anim = cy_rep.$('#' + node_anim_id);
+			var type = node_anim[0]._private.data.type;
+			var label = node_anim[0]._private.data.label;
+			//var state = node_anim[0]._private.data.state;
+			//check given state
+			
+			console.log(type);
+			
+			/* Tools have 4 states :  pending (default), installing, installed, failed. */
+			if(type === 'tool'){
+					if(state==="installing")  {
+							anim_style = {'background-color': 'yellow'};
+							anim_label = label +  "installing";
 						}
-						if(state==="Run") {
-								edge_anim_style = { 'line-color': 'green', 'target-arrow-color': '#43A047'};
-						}else{
-								edge_anim_style = { 'line-color': '#ddd', 'target-arrow-color': '#ddd'};
-						}
-						
-						
-							return (edge_anim.animation({
-										  style: edge_anim_style,
-										  duration: 5000  //duration of animation in milliseconds
-										}).play()         //.promise('complete').then(loopEdgeAnimation(edge_anim)) :TODO fic it so that it can loop
-									);
-									
-								// call the function for specified edges
-								//loopEdgeAnimation(cy_rep.$("edge")[0]);
+					else if(state==="installed")  {
+							anim_style = {'background-color': '#43A047'};
+							anim_label = label + "installed";
+					}
+					else if(state==="failed")  {
+							anim_style = {'background-color': '#E53935'};
+							anim_label = label + "failed";
+					}
+                    else {
+                         console.warn('63245');
+                    }
+
+			}
+			
+			/* Steps have 3 states :  "not running" (default), "running", "failed". */
+			else if(type === 'step'){
+					if(state==="running")  {
+							anim_style = {'background-color': 'yellow'};
+							anim_label = label + "running";
+					}
+					else if(state==="failed")  {
+							anim_style = {'background-color': '#E53935'};
+							anim_label = label + "failed";
+					}
+                    else {
+                        console.warn('63246');
+                    }
+
+
+			}
+			
+			/* Outputs have 2 states :  "Unset" (default), "Set" */
+			else if(type === 'output'){
+					if(state==="set")  {
+							anim_style = {'background-color': '#43A047'};
+							anim_label = label + "setted";
+					}
+                    else {
+                        console.warn('63247');
+                    }
+			}
+			
+            else if (type === 'workflow') {
+                    if (state==='started') {
+                        anim_style = {'background-color': '#43A047'};
+                        anim_label = label + '[started]';
+                    }
+                    else if (state === 'finished') {
+                        anim_style = {'background-color': '#000000'};
+                        anim_label = label + '[finished]';
+                    }
+                    else {
+                        console.warn('63248');
+                    }
+            }
+			
+			
+			return (node_anim.animation({
+						  style : anim_style, 	//style: { 'background-color': 'red', },
+						  label: anim_label,
+						  duration: 1  			//duration of animation in milliseconds
+						}).play()   			//.promise('complete').then(loopEdgeAnimation(edge_anim)) :TODO fic it so that it can loop
+					);
+			
+			
+		};
+				
+		/* function for edge animation  */ 
+		window.edgeAnimation = function(source_anim_id, target_anim_id, state){
+					// get edge by source / target
+					var edges  = cy_rep.$("edge");
+					var edge_anim=null;
+					
+					edges.forEach(function (edge) {
+
+							if(edge._private.data.source === source_anim_id && edge._private.data.target===target_anim_id){
+								edge_anim = edge;
+							}
+										
+					})
+					
+			
+				if(edge_anim!== null){
+					
+					/* (1) "Never run", (2) Running blinking, (3) "run at least once" */ 
+					var edge_anim_style=null;
+					
+					//if(state==="Never run") edge_anim_style = { 'line-color': 'red', 'target-arrow-color': 'red'};
+					if(state==="Running") {
+							edge_anim_style = { 'line-color': 'red', 'target-arrow-color': '#E53935'};
+					}
+					if(state==="Run") {
+							edge_anim_style = { 'line-color': 'green', 'target-arrow-color': '#43A047'};
+					}else{
+							edge_anim_style = { 'line-color': '#ddd', 'target-arrow-color': '#ddd'};
 					}
 					
-			}	
+					
+						return (edge_anim.animation({
+									  style: edge_anim_style,
+									  duration: 5000  //duration of animation in milliseconds
+									}).play()         //.promise('complete').then(loopEdgeAnimation(edge_anim)) :TODO fic it so that it can loop
+								);
+								
+							// call the function for specified edges
+							//loopEdgeAnimation(cy_rep.$("edge")[0]);
+				}
+				
+		}	
 		
 		
         initializeTree();
