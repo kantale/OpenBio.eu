@@ -1417,7 +1417,7 @@ window.onload = function () {
 
             var myNodes = [], myEdges = [];
 
-            /*initialize my data object*/
+            /* initialize my data object */
             incomingData.forEach(function (d) {
 
                 var this_node_wf_belong_to = d.belongto ? d.belongto : belongto; // In which worfklow does this node belong to? 
@@ -1431,7 +1431,7 @@ window.onload = function () {
                     var myNode = { data: { id: this_input_output_id, label: d.name, name: d.name, type: d.type, description: d.description, belongto: this_node_wf_belong_to } };
                     myNodes.push(myNode);
                     //Connect with belongto workflow
-                    myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_input_output_id, id: create_workflow_edge_id(this_node_wf_belong_to_id, this_input_output_id) } });
+                    myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_input_output_id, id: create_workflow_edge_id(this_node_wf_belong_to_id, this_input_output_id), edgebelongto: 'true' } });
                 }
 
 
@@ -1537,13 +1537,12 @@ window.onload = function () {
                 }
 
             });
+			
 
             return {
                 nodes: myNodes,
                 edges: myEdges
             };
-
-
 
         }
 
@@ -1936,24 +1935,26 @@ window.onload = function () {
                             //"height": 15,
                             //"width": 15
                         }
-                    },/*
+                    },
                     {
-                        selector: 'edge',
+                        selector: 'edge[edgebelongto="true"]',
                         "style": {
+							'opacity': 0.5,
                             'curve-style': 'bezier',
                             'target-arrow-shape': 'triangle',
                             'width': 2,
                             'line-color': '#ddd',
                             'target-arrow-color': '#ddd'
-                        },*/
+						}
+					},
 						{
                         selector: 'edge',
                         "style": {
                             'curve-style': 'bezier',
                             'target-arrow-shape': 'triangle',
                             'width': 2,
-							'line-dash-pattern': [6, 3], 
-							'line-dash-offset': 24,
+							//'line-dash-pattern': [6, 3], 
+							//'line-dash-offset': 24,
                             'line-color': '#ddd',
                             'target-arrow-color': '#ddd'
                         }
@@ -2277,8 +2278,8 @@ window.onload = function () {
             initializeTree();
 
             cy.json({ elements: treeData });   // Add new data
-            cy.ready(function () {           // Wait for nodes to be added  
-                cy.layout({                   // Call layout
+            cy.ready(function () {             // Wait for nodes to be added  
+                cy.layout({                    // Call layout
                     name: 'breadthfirst',
                     directed: true,
                     padding: 2
@@ -2292,7 +2293,7 @@ window.onload = function () {
 
             window.cy_setup_events();
             //close successors of tool
-            cy.$('node[type="tool"][root="yes"]').successors().targets().style("display", "none");;
+            cy.$('node[type="tool"][root="yes"]').successors().targets().style("display", "none");
 
         }
 
