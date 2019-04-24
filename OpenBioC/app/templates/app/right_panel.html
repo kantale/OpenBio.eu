@@ -632,6 +632,13 @@
                                 <label for="generalReportsRun">Run</label>
                             </div>
                         </div>
+                        <div class="row left-align">
+                            <ul>
+                                <li ng-repeat="token in report_tokens track by token.token">
+                                    <span ng-bind="token.status"></span>, <span ng-bind="token.created_at"></span>
+                                </li>
+                            </ul>
+                        </div>
                     </form>
                 </div>
             </li>

@@ -13,6 +13,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from django.db.models import Q # https://docs.djangoproject.com/en/2.1/topics/db/queries/#complex-lookups-with-q-objects
 from django.db.models import Max # https://docs.djangoproject.com/en/2.1/topics/db/aggregation/
+from django.db.models import Count # https://stackoverflow.com/questions/7883916/django-filter-the-model-on-manytomany-count 
 
 from django.utils import timezone
 #from django.utils.html import escape # https://docs.djangoproject.com/en/2.2/ref/utils/#module-django.utils.html
@@ -1581,8 +1582,11 @@ def reports_search_2(
 
     nice_id_Q = Q(nice_id__contains=main_search)
     workflow_Q = Q(workflow__name__icontains=main_search)
+    not_unused = Q(tokens__status = ReportToken.UNUSED)
+    count_1 = Q(num_tokens = 1)
 
-    results = Report.objects.filter(nice_id_Q | workflow_Q)
+    # We do not want reports that have only one tokens which is "unused"
+    results = Report.objects.annotate(num_tokens=Count('tokens')).filter( (nice_id_Q | workflow_Q) & (~(not_unused&count_1)) )
 
     # BUILD TREE
     reports_search_jstree = []
@@ -1622,6 +1626,29 @@ def reports_search_2(
 
     return ret
 
+@has_data
+def reports_search_3(request, **kwargs):
+    '''
+    '''
+
+    run = kwargs['run']
+
+    report = Report.objects.get(nice_id=run)
+
+    #Get all tokens
+    tokens = [{
+        'status': token.status,
+        'created_at': datetime_to_str(token.created_at),
+        'token': str(token.token), 
+    } for token in report.tokens.all().order_by('created_at') if token.status != ReportToken.UNUSED]
+
+    ret = {
+        'report_workflow_name': report.workflow.name,
+        'report_workflow_edit': report.workflow.edit,
+        'report_tokens': tokens,
+    }
+
+    return success(ret)
 
 ### END OF REPORTS 
 
