@@ -483,7 +483,7 @@ class Worfklow:
         return self.update_server_status('workflow started')
 
     def bash_workflow_ends(self,):
-        return self.update_server_status('workflow ended')
+        return self.update_server_status('workflow finished')
 
 
 class BaseExecutor():
