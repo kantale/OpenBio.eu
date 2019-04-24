@@ -2177,11 +2177,11 @@ window.onload = function () {
             else if (type === 'workflow') {
                     if (state==='started') {
                         anim_style = {'background-color': '#43A047'};
-                        anim_label = 'started';
+                        anim_label = label + '[started]';
                     }
                     else if (state === 'finished') {
                         anim_style = {'background-color': '#000000'};
-                        anim_label = 'finished';
+                        anim_label = label + '[finished]';
                     }
                     else {
                         console.warn('63248');
