@@ -2467,6 +2467,30 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     // REPORTS END 
 
+    // REFERENCES START
+
+    /*
+    * References --> Generate --> Clicked 
+    */
+    $scope.references_generate_clicked = function() {
+        $scope.ajax(
+            'references_generate/',
+            {
+                'references_BIBTEX': $scope.references_BIBTEX
+            },
+            function(data) {
+                $scope.references_formatted = data['references_formatted'];
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
+    };
+    // REFERENCES END 
+
 
 }); 
 
