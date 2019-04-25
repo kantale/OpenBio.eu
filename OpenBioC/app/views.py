@@ -32,8 +32,10 @@ import smtplib
 from email.message import EmailMessage
 
 # System imports 
+import io
 import os
 import re
+import six
 import uuid
 #import datetime # Use timezone.now()
 
@@ -45,6 +47,11 @@ import urllib.parse # https://stackoverflow.com/questions/40557606/how-to-url-en
 # Installed packages imports 
 import simplejson
 from ansi2html import Ansi2HTMLConverter # https://github.com/ralphbean/ansi2html/
+
+#https://pybtex.org/
+from pybtex.database import parse_string as parse_reference_string
+import pybtex.database.input.bibtex
+import pybtex.plugin
 
 __version__ = '0.0.4rc'
 
@@ -77,6 +84,12 @@ g = {
     },
     'instance_setting_not_found_printed': False,
     'ansi2html_converter': Ansi2HTMLConverter(), # https://github.com/ralphbean/ansi2html/
+
+    'pybtex': {
+        'pybtex_style': pybtex.plugin.find_plugin('pybtex.style.formatting', 'plain')(),
+        'pybtex_html_backend': pybtex.plugin.find_plugin('pybtex.backends', 'html')(),
+        'pybtex_parser': pybtex.database.input.bibtex.Parser()
+    }
 }
 
 ### HELPING FUNCTIONS AND DECORATORS #####
@@ -1675,6 +1688,43 @@ def reports_search_3(request, **kwargs):
     return success(ret)
 
 ### END OF REPORTS 
+
+### REFERENCES 
+
+
+def bibtex_to_html(content):
+    '''
+    Convert bibtex to html
+    Adapted from: http://pybtex-docutils.readthedocs.io/en/latest/quickstart.html#overview 
+    '''
+    data =g['pybtex']['pybtex_parser'].parse_stream(six.StringIO(content))
+    data_formatted = g['pybtex']['pybtex_style'].format_entries(six.itervalues(data.entries))
+
+    output = io.StringIO()
+    g['pybtex']['pybtex_html_backend'].write_to_stream(data_formatted, output)
+    html = output.getvalue()
+
+    html_s = html.split('\n')
+    html_s = html_s[9:-2]
+    new_html = '\n'.join(html_s).replace('<dd>', '').replace('</dd>', '')
+    return new_html
+
+
+@has_data
+def references_generate(request, **kwargs):
+    '''
+    Generate HTML reference from bibtex
+    '''
+
+    references_BIBTEX = kwargs['references_BIBTEX']
+
+    ret = {
+        'references_formatted': bibtex_to_html(references_BIBTEX)
+    }
+
+    return success(ret)
+
+### END OF REFERENCES 
 
 ### SEARCH 
 
