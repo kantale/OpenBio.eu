@@ -72,6 +72,7 @@
                                     <textarea id="generalDescription" class="validate materialize-textarea"
                                         ng-model="tool_description" ng-disabled="!tools_info_editable"></textarea>
                                     <label for="generalDescription">Description</label>
+                                    <span ng-bind-html="tool_description"></span>
                                 </div>
                                 <div class="input-field col s12 grid-s12-m12-l12" ng-show="tools_info_forked_from">
                                     <textarea id="generalEditSummary" class="validate materialize-textarea"
