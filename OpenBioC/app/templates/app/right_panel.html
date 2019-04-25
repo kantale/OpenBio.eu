@@ -72,6 +72,7 @@
                                     <textarea id="generalDescription" class="validate materialize-textarea"
                                         ng-model="tool_description" ng-disabled="!tools_info_editable"></textarea>
                                     <label for="generalDescription">Description</label>
+                                    <span ng-bind-html="tool_description"></span>
                                 </div>
                                 <div class="input-field col s12 grid-s12-m12-l12" ng-show="tools_info_forked_from">
                                     <textarea id="generalEditSummary" class="validate materialize-textarea"
@@ -748,35 +749,32 @@
                     <div class="row">
                         <form class="col s12">
                             <div class="input-field">
+                                <input id="referencesGeneralName" type="text" class="validate" ng-model="references_name">
+                                <label for="referencesGeneralName">Name</label>
+                            </div>
+                            <div class="input-field">
                                 <textarea id="referencesGeneralDescription"
-                                    class="validate materialize-textarea"></textarea>
+                                    class="validate materialize-textarea" ng-model="references_description"></textarea>
                                 <label for="referencesGeneralDescription">Description</label>
                             </div>
                             <div class="input-field">
-                                <input id="referencesGeneralURL" type="text" class="validate">
+                                <input id="referencesGeneralURL" type="text" class="validate" ng-model="references_URL">
                                 <label for="referencesGeneralURL">URL</label>
                             </div>
                             <div class="input-field">
-                                <input id="referencesGeneralDOI" type="text" class="validate">
+                                <input id="referencesGeneralDOI" type="text" class="validate" ng-model="references_DOI">
                                 <label for="referencesGeneralDOI">DOI</label>
                             </div>
                             <div class="input-field" style="margin-bottom: 0px;">
-                                <textarea id="referencesGeneralBIBTEX" class="validate materialize-textarea"></textarea>
+                                <textarea id="referencesGeneralBIBTEX" class="validate materialize-textarea" ng-model="references_BIBTEX"></textarea>
                                 <label for="referencesGeneralBIBTEX">BIBTEX</label>
                             </div>
                             <div class="right-align">
-                                <a class="waves-effect waves-light btn-small">Generate</a>
+                                <a class="waves-effect waves-light btn-small" ng-click="references_generate_clicked()">Generate</a>
                             </div>
-                            <div>
+                            <div class="left-align">
                                 <h5>Formatted References</h5>
-                                <p>
-                                    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry
-                                    richardson
-                                    ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food
-                                    truck
-                                    quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a
-                                    bird
-                                    on
+                                <p><span ng-bind-html="references_formatted"></span>
                                 </p>
                             </div>
                         </form>

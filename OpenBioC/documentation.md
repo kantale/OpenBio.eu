@@ -61,4 +61,20 @@ angular.element($('#angular_div')).scope().$apply(function () {
 
 $scope.tools_search_input_changed(); //Update search results
 
+window.nodeAnimation('hello__1', 'running')
+
+
+@article{purcell2007plink,
+  title={PLINK: a tool set for whole-genome association and population-based linkage analyses},
+  author={Purcell, Shaun and Neale, Benjamin and Todd-Brown, Kathe and Thomas, Lori and Ferreira, Manuel AR and Bender, David and Maller, Julian and Sklar, Pamela and De Bakker, Paul IW and Daly, Mark J and others},
+  journal={The American journal of human genetics},
+  volume={81},
+  number={3},
+  pages={559--575},
+  year={2007},
+  publisher={Elsevier}
+}
+
+
+
 
