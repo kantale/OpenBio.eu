@@ -716,8 +716,8 @@
                                 ng-click="tools_search_show_item(tools_info_forked_from)"><span
                                     ng-bind="tools_info_forked_from | tool_label"></span></a></span>
                         <span>USED IN 86 WFs</span> -->
-                    <span>Username</span>
-                    <span>, created at <span>Tue, 12 Feb 2019 10:23:29</span></span>
+                    <span ng-bind="references_username"></span>
+                    <span>, created at <span ng-bind="references_created_at"></span></span>
                     <span>USED IN 86 WFs</span>
                 </small>
             </p>
