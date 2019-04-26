@@ -2495,6 +2495,56 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             }
         );
     };
+
+    /*
+    * References --> Save --> Pressed
+    */
+    $scope.references_create_save_pressed = function() {
+
+        //Check reference name
+        if ($scope.references_name) {
+            if (!$scope.tools_name_regexp.test($scope.references_name)) {
+                $scope.toast('Invalid References name', 'error');
+                return;
+            }
+        }
+        else {
+           $scope.toast('References Name is required', 'error'); 
+        }
+
+        //Check Title
+        if (!$scope.references_title) {
+            $scope.toast('References Title is required', 'error'); 
+        }
+
+        //Check URL
+        if (!$scope.references_url) {
+            $scope.toast('References url is required', 'error'); 
+        }
+
+        $scope.ajax(
+            'references_add/',
+            {
+                'references_name': $scope.references_name,
+                'references_title': $scope.references_title,
+                'references_url': $scope.references_url,
+                'references_doi': $scope.references_doi,
+                'references_notes': $scope.references_notes,
+                'references_BIBTEX': $scope.references_BIBTEX
+            },
+            function(data) {
+                $scope.toast('Reference successfully saved', 'success');
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
+
+    };
+
     // REFERENCES END 
 
 

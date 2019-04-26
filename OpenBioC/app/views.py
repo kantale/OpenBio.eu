@@ -25,7 +25,7 @@ from django.middleware.csrf import get_token
 
 #Import database objects
 from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations, \
-    OS_types, Keyword, Report, ReportToken
+    OS_types, Keyword, Report, ReportToken, Reference, ReferenceField
 
 # Email imports
 import smtplib
@@ -1763,6 +1763,75 @@ def references_generate(request, **kwargs):
     }
 
     return success(ret)
+
+@has_data
+def references_add(request, **kwargs):
+    '''
+    Add a new reference
+    '''
+
+    # Check user
+    if request.user.is_anonymous:
+        return fail('Please login to create References')
+
+
+    references_name = kwargs.get('references_name', '')
+    if not references_name:
+        return fail('References Name is required')
+    if not re.match(r'\w+', references_name):
+        return fail('Invalid Reference Name. It should contain only letters and numbers')
+
+    references_title = kwargs.get('references_title', '')
+    if not references_title:
+        return fail('References Title is required')
+
+    references_url = kwargs.get('references_url', '')
+    if not references_url:
+        return fail('References URL is required')
+
+    # References are case insensitive!
+    references_name = references_name.lower()
+
+    #Are there any references with this name?
+    if Reference.objects.filter(name=references_name).exists():
+        return fail('A Reference with this name already exists')
+
+    # Check bibtex
+    references_BIBTEX = kwargs.get('references_BIBTEX', '')
+    reference_fields = []
+    html = None
+    if references_BIBTEX:
+        suc, str_response, fields = bibtex_to_html(references_BIBTEX)
+        if not suc:
+            return fail(str_response)
+
+        # It succeeded to parse BIBTEX. Get the html
+        html = str_response
+        name = list(fields.keys())[0] # first key
+
+        #Create (or get) ReferenceFields
+        reference_fields = [ReferenceField.objects.get_or_create(
+            key=reference_key,
+            value=reference_value,
+            )[0] for reference_key, reference_value in fields[name].items()]
+
+    # Create Reference object
+    reference = Reference(
+        obc_user = OBC_user.objects.get(user=request.user),
+        name = references_name,
+        url = references_url,
+        doi = kwargs.get('references_doi', None),
+        bibtex = references_BIBTEX if references_BIBTEX else None,
+        html = html,
+        notes = kwargs.get('references_notes', None),
+    )
+    reference.save()
+
+    # Add fields from BIBTEX
+    reference.fields.add(*reference_fields)
+    reference.save()
+
+    return success()
 
 ### END OF REFERENCES 
 
