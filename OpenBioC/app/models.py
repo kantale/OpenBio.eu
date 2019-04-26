@@ -285,13 +285,13 @@ class Reference(models.Model):
 
     obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
     name = models.CharField(max_length=256, unique=True, editable=False)
-    url = models.URLField(max_length=256, null=True)
+    url = models.URLField(max_length=256, null=False)
     doi = models.URLField(max_length=256, null=True)
-    bibtex = models.TextField()
-    html = models.TextField()
-    notes= models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    bibtex = models.TextField(null=True)
+    html = models.TextField(null=True)
+    notes= models.TextField(null=True)
     fields = models.ManyToManyField(ReferenceField, related_name='reference_related')
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 
