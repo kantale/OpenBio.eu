@@ -486,8 +486,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 'main_search': $scope.main_search
             },
             function(data) {
+                //Reports
                 $scope.main_search_reports_number = data['main_search_reports_number'];
                 angular.copy(data['reports_search_jstree'], $scope.reports_search_jstree_model);
+
+                //References
+                $scope.main_search_references_number = data['main_search_references_number'];
+                angular.copy(data['references_search_jstree'], $scope.references_search_jstree_model);
             },
             function(data) {
 
@@ -574,10 +579,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
             },
             function(data) {
-
+                $scope.toast(data['error_message'], 'error');
             },
             function(statusText) {
-
+                $scope.toast(statusText, 'error');
             }
         );
     };
@@ -1402,16 +1407,21 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     $scope.reports_search_jstree_config_apply = function() {
         return true;
     };
+    $scope.rreference_search_jstree_config_apply = function() {
+        return true;
+    };
 
     $scope.tools_search_jstree_model_init = [];
-
     $scope.tools_search_jstree_model = [];
     angular.copy($scope.tools_search_jstree_model_init, $scope.tools_search_jstree_model);
 
     $scope.reports_search_jstree_model_init = [];
-
     $scope.reports_search_jstree_model = [];
     angular.copy($scope.reports_search_jstree_model_init, $scope.reports_search_jstree_model);
+
+    $scope.references_search_jstree_model_init = [];
+    $scope.references_search_jstree_model = [];
+    angular.copy($scope.references_search_jstree_model_init, $scope.references_search_jstree_model);
 
 
     /* 
@@ -1467,6 +1477,15 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             $scope.report_workflow_run = data.node.data.run;
             $scope.reports_search_3({run: data.node.data.run});
         }
+    };
+
+    /*
+    * A node on the references search js tree is clicked.
+    */
+    $scope.references_search_jstree_select_node = function(e, data) {
+        console.log('References node clicked');
+        console.log(data);
+
     };
 
     /*
@@ -1770,6 +1789,56 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     // Report search jstree config
     $scope.reports_search_jstree_config = {
+            core : {
+                multiple : false,
+                animation: true,
+                error : function(error) {
+                    $log.error('treeCtrl: error from js tree - ' + angular.toJson(error));
+                },
+                check_callback : function(operation, node, node_parent, node_position, more) { //https://stackoverflow.com/a/23486435/5626738
+
+                    console.log('First Tree Operation:', operation);
+
+                    if (operation === "move_node") {
+                        return false;
+                    }
+                    else if (operation === 'copy_node') {
+                        return false;
+                    }
+
+                    return true;
+                },
+                worker : true
+            },
+//            types : {
+//                default : {
+//                    icon : 'fa fa-flash'
+//                },
+//                star : {
+//                    icon : 'fa fa-star'
+//                },
+//                cloud : {
+//                    icon : 'fa fa-cloud'
+//                }
+//            },
+            version : 1,
+            plugins : ['dnd', 'types'],
+            types : {
+                default : {
+                    icon : 'fa fa-sitemap' //
+                }
+            },
+            dnd: {
+                is_draggable : function(node) {
+                    return true;
+                }
+            }
+            //plugins : ['types','checkbox']
+            //plugins : []
+    };
+
+    // References search jstree config
+    $scope.references_search_jstree_config = {
             core : {
                 multiple : false,
                 animation: true,

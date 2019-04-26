@@ -1595,6 +1595,7 @@ def reports_search_2(
     main_search,
     ):
     '''
+    Collect all reports from main search
     '''
 
     nice_id_Q = Q(nice_id__contains=main_search)
@@ -1833,6 +1834,36 @@ def references_add(request, **kwargs):
 
     return success()
 
+def references_search_2(
+    main_search,
+    ):
+    '''
+    Collect all references from main search
+    '''
+
+    name_Q = Q(name__icontains=main_search)
+    html_Q = Q(html__icontains=main_search)
+
+    results = Reference.objects.filter(name_Q | html_Q)
+    references_search_jstree = []
+
+    for result in results:
+        to_add = {
+            'data': {'name': result.name},
+            'text': result.name,
+            'id': result.name,
+            'parent': '#',
+            'state': { 'opened': True},
+        }
+        references_search_jstree.append(to_add)
+
+    ret = {
+        'main_search_references_number': results.count(),
+        'references_search_jstree': references_search_jstree,
+    }
+
+    return ret
+
 ### END OF REFERENCES 
 
 ### SEARCH 
@@ -1848,6 +1879,10 @@ def all_search_2(request, **kwargs):
 
     #Get reports
     for key, value in reports_search_2(main_search).items():
+        ret[key] = value
+
+    #Get references
+    for key, value in references_search_2(main_search).items():
         ret[key] = value
 
 
