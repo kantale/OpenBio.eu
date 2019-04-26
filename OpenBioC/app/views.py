@@ -85,11 +85,11 @@ g = {
     'instance_setting_not_found_printed': False,
     'ansi2html_converter': Ansi2HTMLConverter(), # https://github.com/ralphbean/ansi2html/
 
-    'pybtex': {
-        'pybtex_style': pybtex.plugin.find_plugin('pybtex.style.formatting', 'plain')(),
-        'pybtex_html_backend': pybtex.plugin.find_plugin('pybtex.backends', 'html')(),
-        'pybtex_parser': pybtex.database.input.bibtex.Parser()
-    }
+#    'pybtex': {
+#        'pybtex_style': pybtex.plugin.find_plugin('pybtex.style.formatting', 'plain')(),
+#        'pybtex_html_backend': pybtex.plugin.find_plugin('pybtex.backends', 'html')(),
+#        'pybtex_parser': pybtex.database.input.bibtex.Parser()
+#    }
 }
 
 ### HELPING FUNCTIONS AND DECORATORS #####
@@ -1698,17 +1698,41 @@ def bibtex_to_html(content):
     Convert bibtex to html
     Adapted from: http://pybtex-docutils.readthedocs.io/en/latest/quickstart.html#overview 
     '''
-    data =g['pybtex']['pybtex_parser'].parse_stream(six.StringIO(content))
-    data_formatted = g['pybtex']['pybtex_style'].format_entries(six.itervalues(data.entries))
+    
+    # Ideally we could have these variables set only once,
+    # But it is not allowed to have multiuple entries.
+    pybtex_style = pybtex.plugin.find_plugin('pybtex.style.formatting', 'plain')()
+    pybtex_html_backend = pybtex.plugin.find_plugin('pybtex.backends', 'html')()
+    pybtex_parser = pybtex.database.input.bibtex.Parser()
+
+    try:
+        data = pybtex_parser.parse_stream(six.StringIO(content))
+    except pybtex.scanner.TokenRequired as e:
+        return False, 'Error during parsing BIBTEX: ' + str(e), None
+
+    if len(data.entries) == 0:
+        return False, 'Could not find any BIBTEX entry', None
+
+    if len(data.entries) > 1:
+        return False, 'Detected more than one entries in BIBTEX. Only one is allowed', None
+
+    fields = {}
+    for entry_key, entry_value in data.entries.items():
+        fields[entry_key] = {}
+        for field_key, field_value in entry_value.fields.items():
+            fields[entry_key][field_key] = field_value
+
+    data_formatted = pybtex_style.format_entries(six.itervalues(data.entries))
 
     output = io.StringIO()
-    g['pybtex']['pybtex_html_backend'].write_to_stream(data_formatted, output)
+    pybtex_html_backend.write_to_stream(data_formatted, output)
     html = output.getvalue()
 
     html_s = html.split('\n')
     html_s = html_s[9:-2]
     new_html = '\n'.join(html_s).replace('<dd>', '').replace('</dd>', '')
-    return new_html
+
+    return True, new_html, fields
 
 
 @has_data
@@ -1718,9 +1742,24 @@ def references_generate(request, **kwargs):
     '''
 
     references_BIBTEX = kwargs['references_BIBTEX']
+    suc, str_response, fields = bibtex_to_html(references_BIBTEX)
+
+    if not suc:
+        return fail(str_response)
+
+    name = list(fields.keys())[0] # first key
+    title = fields[name].get('title', '')
+    # check if it is enclised in brackets {title}
+    m = re.match(r'{(.*)}', title)
+    if m:
+        title = m.group(1)
 
     ret = {
-        'references_formatted': bibtex_to_html(references_BIBTEX)
+        'references_name': name,
+        'references_formatted': str_response,
+        'references_title': title,
+        'references_doi': fields[name].get('doi', ''),
+        'references_url': fields[name].get('url', ''),
     }
 
     return success(ret)

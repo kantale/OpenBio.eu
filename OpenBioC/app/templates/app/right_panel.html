@@ -749,21 +749,25 @@
                     <div class="row">
                         <form class="col s12">
                             <div class="input-field">
-                                <input id="referencesGeneralName" type="text" class="validate" ng-model="references_name">
+                                <input id="referencesGeneralName" type="text" class="validate" ng-model="references_name" required>
                                 <label for="referencesGeneralName">Name</label>
                             </div>
                             <div class="input-field">
-                                <textarea id="referencesGeneralDescription"
-                                    class="validate materialize-textarea" ng-model="references_description"></textarea>
-                                <label for="referencesGeneralDescription">Description</label>
+                                <input id="referencesGeneralTitle" type="text" class="validate" ng-model="references_title" required>
+                                <label for="referencesGeneralTitle">Title</label>
                             </div>
                             <div class="input-field">
-                                <input id="referencesGeneralURL" type="text" class="validate" ng-model="references_URL">
-                                <label for="referencesGeneralURL">URL</label>
+                                <input id="referencesGeneralURL" type="text" class="validate" ng-model="references_url" required>
+                                <label for="referencesGeneralURL">URL </label>
                             </div>
                             <div class="input-field">
-                                <input id="referencesGeneralDOI" type="text" class="validate" ng-model="references_DOI">
+                                <input id="referencesGeneralDOI" type="text" class="validate" ng-model="references_doi">
                                 <label for="referencesGeneralDOI">DOI</label>
+                            </div>
+                            <div class="input-field">
+                                <textarea id="referencesGeneralNotes"
+                                    class="validate materialize-textarea" ng-model="references_notes"></textarea>
+                                <label for="referencesGeneralNotes">Notes</label>
                             </div>
                             <div class="input-field" style="margin-bottom: 0px;">
                                 <textarea id="referencesGeneralBIBTEX" class="validate materialize-textarea" ng-model="references_BIBTEX"></textarea>
@@ -773,7 +777,7 @@
                                 <a class="waves-effect waves-light btn-small" ng-click="references_generate_clicked()">Generate</a>
                             </div>
                             <div class="left-align">
-                                <h5>Formatted References</h5>
+                                <h5>Formatted Reference:</h5>
                                 <p><span ng-bind-html="references_formatted"></span>
                                 </p>
                             </div>

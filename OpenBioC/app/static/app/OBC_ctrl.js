@@ -2470,7 +2470,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     // REFERENCES START
 
     /*
-    * References --> Generate --> Clicked 
+    * References --> Insert BIBTEX text --> Generate --> Clicked 
     */
     $scope.references_generate_clicked = function() {
         $scope.ajax(
@@ -2480,6 +2480,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             },
             function(data) {
                 $scope.references_formatted = data['references_formatted'];
+                $scope.references_name = data['references_name'];
+                $scope.references_title = data['references_title'];
+                $scope.references_doi = data['references_doi'];
+                $scope.references_url = data['references_url'];
+
+                $timeout(function(){M.updateTextFields()}, 10);
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');
