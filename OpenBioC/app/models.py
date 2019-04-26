@@ -285,6 +285,7 @@ class Reference(models.Model):
 
     obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
     name = models.CharField(max_length=256, unique=True, editable=False)
+    title = models.CharField(max_length=1000,)
     url = models.URLField(max_length=256, null=False)
     doi = models.URLField(max_length=256, null=True)
     bibtex = models.TextField(null=True)

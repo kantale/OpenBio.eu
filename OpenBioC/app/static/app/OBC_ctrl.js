@@ -1486,6 +1486,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         console.log('References node clicked');
         console.log(data);
 
+        $scope.references_search_3({name: data.node.data.name});
     };
 
     /*
@@ -1514,6 +1515,38 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.toast(statusText, 'error');
             }
         )
+    };
+
+    /*
+    * Called from references_search_jstree_select_node
+    * Call the backend, fetch the data for a unique reference and update the UI
+    */
+    $scope.references_search_3 = function(reference) {
+        $scope.ajax(
+            'references_search_3/',
+            {
+                'name': reference.name
+            },
+            function(data) {
+                $scope.references_name = data['references_name'];
+                $scope.references_title = data['references_title'];
+                $scope.references_doi = data['references_doi'];
+                $scope.references_url = data['references_url'];
+                $scope.references_notes = data['references_notes'];
+                $scope.references_BIBTEX = data['references_BIBTEX'];
+                $scope.references_formatted = data['references_html'];
+                $scope.references_created_at = data['references_created_at']; // We currently do not do anything with this.
+                $scope.references_username = data['references_username']; // We currently do not do anything with this.
+
+                $timeout(function(){M.updateTextFields()}, 10);
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
     };
 
     /*

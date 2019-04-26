@@ -1789,6 +1789,10 @@ def references_add(request, **kwargs):
     references_url = kwargs.get('references_url', '')
     if not references_url:
         return fail('References URL is required')
+    #Is there a reference with the same url?
+    url_ref = Reference.objects.filter(url=references_url)
+    if url_ref.exists():
+        return fail('A Reference with this URL already exists: {}'.format(url_ref.first().name))
 
     # References are case insensitive!
     references_name = references_name.lower()
@@ -1796,6 +1800,14 @@ def references_add(request, **kwargs):
     #Are there any references with this name?
     if Reference.objects.filter(name=references_name).exists():
         return fail('A Reference with this name already exists')
+
+    # Is there a reference with the same SOI?
+    references_doi = kwargs.get('references_doi', None)
+    if references_doi:
+        doi_ref = Reference.objects.filter(doi=references_doi)
+        if doi_ref.exists():
+            return fail('A Reference with this DOI already exists: {}'.format(doi_ref.first().name))
+
 
     # Check bibtex
     references_BIBTEX = kwargs.get('references_BIBTEX', '')
@@ -1821,7 +1833,8 @@ def references_add(request, **kwargs):
         obc_user = OBC_user.objects.get(user=request.user),
         name = references_name,
         url = references_url,
-        doi = kwargs.get('references_doi', None),
+        title = references_title,
+        doi = references_doi,
         bibtex = references_BIBTEX if references_BIBTEX else None,
         html = html,
         notes = kwargs.get('references_notes', None),
@@ -1863,6 +1876,31 @@ def references_search_2(
     }
 
     return ret
+
+@has_data
+def references_search_3(request, **kwargs):
+    '''
+    '''
+
+    name = kwargs.get('name', '')
+    try:
+        reference = Reference.objects.get(name=name)
+    except ObjectDoesNotExist as e:
+        return fail('Could not find Reference') # This should never happen..
+
+    ret = {
+        'references_name': reference.name,
+        'references_title': reference.title,
+        'references_url': reference.url,
+        'references_doi': reference.doi,
+        'references_notes': reference.notes,
+        'references_BIBTEX': reference.bibtex,
+        'references_html': reference.html,
+        'references_created_at': datetime_to_str(reference.created_at),
+        'references_username': reference.obc_user.user.username,
+    }
+
+    return success(ret)
 
 ### END OF REFERENCES 
 

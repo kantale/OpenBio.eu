@@ -30,4 +30,5 @@ urlpatterns = [
 	path('reports_search_3/', views.reports_search_3), # Search (and get the details) for a specific SINGLE Report. 
 	path('references_generate/', views.references_generate), # Generate a HTML reference from BIBTEX 
 	path('references_add/', views.references_add), # Add a new reference
+	path('references_search_3/', views.references_search_3), # Search (and get the details) for a specific SINGLE Reference
 ]
