@@ -268,5 +268,33 @@ class Report(models.Model):
     tokens = models.ManyToManyField(ReportToken, related_name='report_related')
     created_at = models.DateTimeField(auto_now_add=True)
 
+class ReferenceField(models.Model):
+    '''
+    This is a tuple of keys/values that come from parsing the BIBTEX entry
+    For example: 
+    'journal': 'The American journal of human genetics'
+    '''
+
+    key = models.CharField(max_length=255,)
+    value = models.CharField(max_length=1000,)
+
+class Reference(models.Model):
+    '''
+    Describe a reference
+    '''
+
+    obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
+    name = models.CharField(max_length=256, unique=True, editable=False)
+    url = models.URLField(max_length=256, null=True)
+    doi = models.URLField(max_length=256, null=True)
+    bibtex = models.TextField()
+    html = models.TextField()
+    notes= models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    fields = models.ManyToManyField(ReferenceField, related_name='reference_related')
+
+
+
+
 
 
