@@ -228,7 +228,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 'username': $scope.username
             },
             function(data) {
-
+                $scope.profile_firstname = data['profile_firstname'];
+                $scope.profile_lastname = data['profile_lastname'];
+                $scope.profile_website = data['profile_website'];
+                $scope.profile_affiliation = data['profile_affiliation'];
+                $scope.profile_publicinfo = data['profile_publicinfo'];
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');
