@@ -214,9 +214,30 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.main_container_show = true;
     };
 
+    /*
+    * Sidebar user menu --> Profile --> Clicked
+    */
     $scope.navbar_profile_clicked = function() {
         $scope.main_container_show = false;
         $scope.profile_container_show = true;
+
+        //Fetch profile info
+        $scope.ajax(
+            'users_search_3/',
+            {
+                'username': $scope.username
+            },
+            function(data) {
+
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
+
     };
 
     $scope.profile_save_pressed = function() {
@@ -354,62 +375,65 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     /*
     * Navbar -> username (pressed) -> "Update my profile" button pressed
+    * DEPRECATED
     */
-    $scope.user_profile_update_pressed = function() {
-        $scope.ajax(
-            'user_data_set/',
-            {
-                'user_first_name': $scope.user_first_name,
-                'user_last_name': $scope.user_last_name,
-                'user_email': $scope.user_email,
-                'user_website': $scope.user_website,
-                'user_public_info': $scope.user_public_info
-            },
-            function(data) {
-                $scope.user_profile_success_message = 'User\'s profile updated';
-            },
-            function(data) {
-                $scope.user_profile_error_message = data['error_message'];
-            },
-            function(statusText) {
-                $scope.user_profile_error_message = statusText;
-            }
-        );
-    };
+//    $scope.user_profile_update_pressed = function() {
+//        $scope.ajax(
+//            'user_data_set/',
+//            {
+//                'user_first_name': $scope.user_first_name,
+//                'user_last_name': $scope.user_last_name,
+//                'user_email': $scope.user_email,
+//                'user_website': $scope.user_website,
+//                'user_public_info': $scope.user_public_info
+//            },
+//            function(data) {
+//                $scope.user_profile_success_message = 'User\'s profile updated';
+//            },
+//            function(data) {
+//                $scope.user_profile_error_message = data['error_message'];
+//            },
+//            function(statusText) {
+//                $scope.user_profile_error_message = statusText;
+//            }
+//        );
+//    };
 
     /*
     * Fetch user data
+    * DEPRECETATED
     */
-    $scope.inner_fetch_user_data = function() {
-        $scope.ajax(
-            'user_data_get/',
-            { // This is empty deliberately. Get the user data of the logged in user.
-            },
-            function(data) {
-                $scope.user_first_name = $filter('ifNull')(data['user_first_name'], '');
-                $scope.user_last_name = $filter('ifNull')(data['user_last_name'], '');
-                $scope.user_email = data['user_email'];
-                $scope.user_website = $filter('ifNull')(data['user_website'], '');
-                $scope.user_public_info = $filter('ifNull')(data['user_public_info'], '');
-            },
-            function(data) {
-                $scope.user_profile_error_message = data['error_message']; // Never executed
-            },
-            function(statusText) {
-                $scope.user_profile_error_message = statusText;
-            }
-        );
-    };
+    //$scope.inner_fetch_user_data = function() {
+    //    $scope.ajax(
+    //        'user_data_get/',
+    //        { // This is empty deliberately. Get the user data of the logged in user.
+    //        },
+    //        function(data) {
+    //            $scope.user_first_name = $filter('ifNull')(data['user_first_name'], '');
+    //            $scope.user_last_name = $filter('ifNull')(data['user_last_name'], '');
+    //            $scope.user_email = data['user_email'];
+    //            $scope.user_website = $filter('ifNull')(data['user_website'], '');
+    //            $scope.user_public_info = $filter('ifNull')(data['user_public_info'], '');
+    //        },
+    //        function(data) {
+    //            $scope.user_profile_error_message = data['error_message']; // Never executed
+    //        },
+    //        function(statusText) {
+    //            $scope.user_profile_error_message = statusText;
+    //        }
+    //    );
+    //};
 
     /*
     * Navbar (after login) --> username --> pressed
+    * DEPRECETATED
     */
-    $scope.navbar_username_pressed = function() {
-        $scope.inner_hide_all_navbar();
-        $scope.show_user_profile = true;
-        $scope.user_profile_success_message = '';
-        $scope.inner_fetch_user_data();
-    };
+//    $scope.navbar_username_pressed = function() {
+//        $scope.inner_hide_all_navbar();
+//        $scope.show_user_profile = true;
+//        $scope.user_profile_success_message = '';
+//        $scope.inner_fetch_user_data();
+//    };
 
 
     /*
