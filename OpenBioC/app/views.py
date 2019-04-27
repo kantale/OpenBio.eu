@@ -498,7 +498,27 @@ def get_instance_settings():
 
     return g['instance_settings'][this_id]
 
+@has_data
+def users_search_3(request, **kwargs):
+    '''
+    Get profile info for a single user
+    '''
 
+    username = kwargs.get(username, '')
+    if not username:
+        return fail('Could not get username')
+
+    u = OBC_user.objects.get(user=user)
+
+    ret {
+        'profile_firstname': u.first_name,
+        'profile_lastname': u.profile_lastname,
+        'profile_website': u.website,
+        'profile_affiliation': u.affiliation,
+        'profile_publicinfo': u.public_info,
+    }
+
+    return success(ret)
 
 
 def index(request):
@@ -737,38 +757,41 @@ def logout(request):
     django_logout(request)
     return redirect('/')
 
-def user_data_get(request):
-    '''
-    View url: user_data_get
-    GET THE DATA OF THE LOGGED-IN USER
-    It does not have the @has_data decorator because it has.. no data
-    '''
+#def user_data_get(request):
+#    '''
+#    View url: user_data_get
+#    GET THE DATA OF THE LOGGED-IN USER
+#    It does not have the @has_data decorator because it has.. no data
+#    '''
+#
+#    user = request.user
+#    obc_user = OBC_user.objects.get(user=user)
+#    ret = {
+#        'user_first_name': obc_user.first_name,
+#        'user_last_name': obc_user.last_name,
+#        'user_email': user.email,
+#        'user_website': obc_user.website,
+#        'user_public_info': obc_user.public_info,
+#    }
+#
+#    return success(ret)
 
-    user = request.user
-    obc_user = OBC_user.objects.get(user=user)
-    ret = {
-        'user_first_name': obc_user.first_name,
-        'user_last_name': obc_user.last_name,
-        'user_email': user.email,
-        'user_website': obc_user.website,
-        'user_public_info': obc_user.public_info,
-    }
-
-    return success(ret)
-
-@has_data
-def user_data_set(request, **kwargs):
-    user = request.user
-    obc_user = OBC_user.objects.get(user=user)
-
-    obc_user.first_name = None_if_empty_or_nonexisting(kwargs, 'user_first_name')
-    obc_user.last_name = None_if_empty_or_nonexisting(kwargs, 'user_last_name')
-    obc_user.website = None_if_empty_or_nonexisting(kwargs, 'user_website')
-    obc_user.public_info = None_if_empty_or_nonexisting(kwargs, 'user_public_info')
-
-    obc_user.save()
-
-    return success()
+#@has_data
+#def user_data_set(request, **kwargs):
+#    '''
+#    Deprecated
+#    '''
+#    user = request.user
+#    obc_user = OBC_user.objects.get(user=user)
+#
+#    obc_user.first_name = None_if_empty_or_nonexisting(kwargs, 'user_first_name')
+#    obc_user.last_name = None_if_empty_or_nonexisting(kwargs, 'user_last_name')
+#    obc_user.website = None_if_empty_or_nonexisting(kwargs, 'user_website')
+#    obc_user.public_info = None_if_empty_or_nonexisting(kwargs, 'user_public_info')
+#
+#    obc_user.save()
+#
+#    return success()
 
 @has_data
 def tools_search_1(request, **kwargs):
