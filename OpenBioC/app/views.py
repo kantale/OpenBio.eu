@@ -504,15 +504,18 @@ def users_search_3(request, **kwargs):
     Get profile info for a single user
     '''
 
-    username = kwargs.get(username, '')
+    username = kwargs.get('username', '')
     if not username:
         return fail('Could not get username')
 
-    u = OBC_user.objects.get(user=user)
+    try:
+        u = OBC_user.objects.get(user__username=username)
+    except ObjectDoesNotExist as e:
+        return fail('Could not find user with this username')
 
-    ret {
+    ret = {
         'profile_firstname': u.first_name,
-        'profile_lastname': u.profile_lastname,
+        'profile_lastname': u.last_name,
         'profile_website': u.website,
         'profile_affiliation': u.affiliation,
         'profile_publicinfo': u.public_info,
