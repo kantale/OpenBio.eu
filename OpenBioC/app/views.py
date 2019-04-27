@@ -518,11 +518,16 @@ def users_search_3(request, **kwargs):
     ret = {
         'profile_firstname': u.first_name,
         'profile_lastname': u.last_name,
-        'profile_email': u.user.email,
         'profile_website': u.website,
         'profile_affiliation': u.affiliation,
         'profile_publicinfo': u.public_info,
     }
+
+    # We fetch mail only for registered user 
+    if username == request.user.username:
+        ret['profile_email'] = u.user.email
+    else:
+        ret['profile_email'] = ''
 
     return success(ret)
 
