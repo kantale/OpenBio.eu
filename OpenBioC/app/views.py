@@ -498,6 +498,8 @@ def get_instance_settings():
 
     return g['instance_settings'][this_id]
 
+### USERS 
+
 @has_data
 def users_search_3(request, **kwargs):
     '''
@@ -516,6 +518,7 @@ def users_search_3(request, **kwargs):
     ret = {
         'profile_firstname': u.first_name,
         'profile_lastname': u.last_name,
+        'profile_email': u.user.email,
         'profile_website': u.website,
         'profile_affiliation': u.affiliation,
         'profile_publicinfo': u.public_info,
@@ -523,6 +526,67 @@ def users_search_3(request, **kwargs):
 
     return success(ret)
 
+@has_data
+def users_edit_data(request, **kwargs):
+    '''
+    Called by users_edit_data/
+    Edit user's profile data
+    '''
+    username = kwargs.get('username', '')
+    if not username:
+        return fail('Could not get username')
+
+    try:
+        obc_user = OBC_user.objects.get(user__username=username)
+    except ObjectDoesNotExist as e:
+        return fail('Could not find user with this username')
+
+
+    obc_user.first_name = kwargs.get('profile_firstname', '')
+    obc_user.last_name = kwargs.get('profile_lastname', '')
+    obc_user.website = kwargs.get('profile_website', '')
+    obc_user.affiliation = kwargs.get('profile_affiliation', '')
+    obc_user.public_info = kwargs.get('profile_publicinfo', '')
+
+    #Save edits
+    obc_user.save()
+
+    #Confirm by getting new data
+    return users_search_3(request, **kwargs)
+
+def users_search_2(
+    main_search,
+    ):
+    '''
+    Collect all users from main search
+    '''
+
+    username_Q = Q(user__username__icontains=main_search)
+    affiliation_Q = Q(affiliation__icontains=main_search)
+    publicinfo_Q = Q(public_info__icontains=main_search)
+
+    results = OBC_user.objects.filter(username_Q | affiliation_Q | publicinfo_Q)
+
+    users_search_jstree = []
+    for result in results:
+        to_add = {
+            'data': {'username': result.user.username},
+            'text': result.user.username,
+            'id': result.user.username,
+            'parent': '#',
+            'state': { 'opened': True},
+        }
+        users_search_jstree.append(to_add)
+
+    ret = {
+        'main_search_users_number': results.count(),
+        'users_search_jstree': users_search_jstree,
+    }
+
+    return ret
+
+
+### END OF USERS 
 
 def index(request):
     '''
@@ -1949,6 +2013,9 @@ def all_search_2(request, **kwargs):
     for key, value in references_search_2(main_search).items():
         ret[key] = value
 
+    #Get users
+    for key, value in users_search_2(main_search).items():
+        ret[key] = value
 
     return success(ret)
 

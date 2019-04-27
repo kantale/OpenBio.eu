@@ -56,7 +56,7 @@
                                             <label for="profileUsername">Username</label>
                                         </div>
                                         <div class="input-field col s12">
-                                            <input id="profileEmail" type="email" class="validate" disabled>
+                                            <input id="profileEmail" type="email" class="validate" ng-model="profile_email" disabled>
                                             <label for="profileEmail">Email</label>
                                         </div>
                                         <div class="input-field col s12">
@@ -92,7 +92,7 @@
                                 </div>
                             </div>
                             <div class="card-action right-align">
-                                <button class="btn waves-effect waves-light" type="submit" name="action">Update</button>
+                                <button class="btn waves-effect waves-light" name="action" ng-click="profile_update_clicked()">Update</button>
                             </div>
                         </div>
                     </section>
