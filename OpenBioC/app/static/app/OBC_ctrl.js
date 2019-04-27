@@ -230,9 +230,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             function(data) {
                 $scope.profile_firstname = data['profile_firstname'];
                 $scope.profile_lastname = data['profile_lastname'];
+                $scope.profile_email = data['profile_email'];
                 $scope.profile_website = data['profile_website'];
                 $scope.profile_affiliation = data['profile_affiliation'];
                 $scope.profile_publicinfo = data['profile_publicinfo'];
+
+                $timeout(function(){M.updateTextFields()}, 10);
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');
@@ -244,10 +247,40 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     };
 
-    $scope.profile_save_pressed = function() {
-        $scope.main_container_show = true;
-        $scope.profile_container_show = false;
+    /*
+    * profile --> Edits --> update button --> pressed
+    */
+    $scope.profile_update_clicked =  function() {
+        $scope.ajax(
+            'users_edit_data/',
+            {
+                username: $scope.username,
+                profile_firstname: $scope.profile_firstname,
+                profile_lastname: $scope.profile_lastname,
+                profile_website: $scope.profile_website,
+                profile_affiliation: $scope.profile_affiliation,
+                profile_publicinfo: $scope.profile_publicinfo
+            },
+            function(data) {
+                $scope.toast('Profile data succesfully changed', 'success');
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
+
     };
+
+    /*
+    * DEPRECATED
+    */ 
+//    $scope.profile_save_pressed = function() {
+//        $scope.main_container_show = true;
+//        $scope.profile_container_show = false;
+//    };
 
 
     /*
@@ -521,6 +554,14 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 //References
                 $scope.main_search_references_number = data['main_search_references_number'];
                 angular.copy(data['references_search_jstree'], $scope.references_search_jstree_model);
+
+                //Users
+                $scope.main_search_users_number = data['main_search_users_number'];
+                angular.copy(data['users_search_jstree'], $scope.users_search_jstree_model);
+
+                console.log('AQWE');
+                console.log($scope.users_search_jstree);
+
             },
             function(data) {
 
@@ -1435,9 +1476,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     $scope.reports_search_jstree_config_apply = function() {
         return true;
     };
-    $scope.rreference_search_jstree_config_apply = function() {
+    $scope.references_search_jstree_config_apply = function() {
         return true;
     };
+    $scope.users_search_jstree_config_apply = function() {
+        return true;
+    };
+
 
     $scope.tools_search_jstree_model_init = [];
     $scope.tools_search_jstree_model = [];
@@ -1450,6 +1495,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     $scope.references_search_jstree_model_init = [];
     $scope.references_search_jstree_model = [];
     angular.copy($scope.references_search_jstree_model_init, $scope.references_search_jstree_model);
+
+    $scope.users_search_jstree_model_init = [];
+    $scope.users_search_jstree_model = [];
+    angular.copy($scope.users_search_jstree_model_init, $scope.users_search_jstree_model);
 
 
     /* 
@@ -1515,6 +1564,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         console.log(data);
 
         $scope.references_search_3({name: data.node.data.name});
+    };
+
+    /*
+    * A node on the users search js tree is clicked
+    */
+    $scope.users_search_jstree_select_node = function(e, data) {
+        console.log('Users node clicked');
     };
 
     /*
@@ -1900,6 +1956,56 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     // References search jstree config
     $scope.references_search_jstree_config = {
+            core : {
+                multiple : false,
+                animation: true,
+                error : function(error) {
+                    $log.error('treeCtrl: error from js tree - ' + angular.toJson(error));
+                },
+                check_callback : function(operation, node, node_parent, node_position, more) { //https://stackoverflow.com/a/23486435/5626738
+
+                    console.log('First Tree Operation:', operation);
+
+                    if (operation === "move_node") {
+                        return false;
+                    }
+                    else if (operation === 'copy_node') {
+                        return false;
+                    }
+
+                    return true;
+                },
+                worker : true
+            },
+//            types : {
+//                default : {
+//                    icon : 'fa fa-flash'
+//                },
+//                star : {
+//                    icon : 'fa fa-star'
+//                },
+//                cloud : {
+//                    icon : 'fa fa-cloud'
+//                }
+//            },
+            version : 1,
+            plugins : ['dnd', 'types'],
+            types : {
+                default : {
+                    icon : 'fa fa-sitemap' //
+                }
+            },
+            dnd: {
+                is_draggable : function(node) {
+                    return true;
+                }
+            }
+            //plugins : ['types','checkbox']
+            //plugins : []
+    };
+
+    // Users search jstree config
+    $scope.users_search_jstree_config = {
             core : {
                 multiple : false,
                 animation: true,

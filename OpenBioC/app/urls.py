@@ -32,4 +32,6 @@ urlpatterns = [
 	path('references_add/', views.references_add), # Add a new reference
 	path('references_search_3/', views.references_search_3), # Search (and get the details) for a specific SINGLE Reference
 	path('users_search_3/', views.users_search_3), # Search and get the results for a single user
+	path('users_edit_data/', views.users_edit_data), # User changes (edit), profile info data
+
 ]

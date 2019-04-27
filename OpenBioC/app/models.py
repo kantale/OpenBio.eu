@@ -15,6 +15,9 @@ Important:
 '''
 
 class OBC_user(models.Model):
+    '''
+    Note: the email is stored in user.email
+    '''
     user = models.OneToOneField(User, on_delete=models.CASCADE) # Basically we will never delete users ??
     email_validated = models.BooleanField() # Is this user's email validated?
     email_validation_token = models.CharField(max_length=32) # This is a uuid4 . TODO: https://docs.djangoproject.com/en/2.1/ref/models/fields/#uuidfield
