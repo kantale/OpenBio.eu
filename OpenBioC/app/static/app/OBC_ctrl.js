@@ -559,9 +559,6 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.main_search_users_number = data['main_search_users_number'];
                 angular.copy(data['users_search_jstree'], $scope.users_search_jstree_model);
 
-                console.log('AQWE');
-                console.log($scope.users_search_jstree);
-
             },
             function(data) {
 
@@ -1571,6 +1568,35 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */
     $scope.users_search_jstree_select_node = function(e, data) {
         console.log('Users node clicked');
+
+        //Open right panel
+        document.getElementById('userDataDiv').style.display = 'block';
+        M.Collapsible.getInstance($('#userDataAccordion')).open()
+
+        //Fetch user data
+        $scope.ajax(
+            'users_search_3/',
+            {
+                'username': data.node.data.username
+            },
+            function(data) {
+                $scope.user_firstname = data['profile_firstname'];
+                $scope.user_lastname = data['profile_lastname'];
+                $scope.user_email = data['profile_email'];
+                $scope.user_website = data['profile_website'];
+                $scope.user_affiliation = data['profile_affiliation'];
+                $scope.user_publicinfo = data['profile_publicinfo'];
+
+                $timeout(function(){M.updateTextFields()}, 10);
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
+
     };
 
     /*

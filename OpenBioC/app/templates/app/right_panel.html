@@ -80,11 +80,12 @@
                                     <label for="generalEditSummary">Edit Summary</label>
                                 </div>
                                 <div id="toolChips" class="input-field chips left-align col s12 grid-s12-m12-l12"
-                                    ng-disabled="!tools_info_editable"></div>
+                                    ng-disabled="!tools_info_editable">
+                                </div>
+                            </div>
                         </form>
                     </div>
-        </div>
-        </li>
+                </li>
 
         <!-- --------------------------------------------------------------------------------------- -->
         <!-- -------------------------------- Dependencies ----------------------------------------- -->
@@ -839,7 +840,53 @@
                 </div>
             </li>
         </ul>
-
     </div>
+
+    <!-- USERS RIGHT PANEL -->
+
+    <div class="faster" id="userDataDiv" style="display: none;">
+        <ul id="userDataAccordion" class="collapsible expandable popout faster">
+            <!-- --------------------------------------------------------------------------------------- -->
+            <!-- ------------------------------------ General ------------------------------------------ -->
+            <!-- --------------------------------------------------------------------------------------- -->
+            <li id="usersDataGeneral">
+                <div class="collapsible-header">
+                    <i class="material-icons arrow">keyboard_arrow_right</i>
+                    <i class="material-icons">info</i>
+                    General
+                </div>
+                <div class="collapsible-body">
+                    <form class="col s12">
+                        <div class="row left-align">
+                            <div class="col s3"><b>First Name:</b></div>
+                            <div class="col s9"><span ng-bind="user_firstname"></span></div>
+                        </div>
+                        <div class="row left-align">
+                            <div class="col s3"><b>Second Name:</b></div>
+                            <div class="col s9"><span ng-bind="user_lastname"></span></div>
+                        </div>
+                        <div class="row left-align">
+                            <div class="col s3"><b>Website:</b></div>
+                            <div class="col s9"><span ng-bind="user_website"></span></div>
+                        </div>
+                        <div class="row left-align">
+                            <div class="col s3"><b>Affiliation:</b></div>
+                            <div class="col s9"><span ng-bind="user_affiliation"></span></div>
+                        </div>
+                        <div class="row left-align">
+                            <div class="col s3"><b>Info:</b></div>
+                            <div class="col s9"><span ng-bind="user_publicinfo"></span></div>
+                        </div>
+                    </form>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+
+    <!-- END OF USER RIGHT PANEL -->
+
+
+
 </div>
 </div>
