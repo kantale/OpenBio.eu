@@ -34,5 +34,6 @@ urlpatterns = [
 	path('users_search_3/', views.users_search_3), # Search and get the results for a single user
 	path('users_edit_data/', views.users_edit_data), # User changes (edit), profile info data
 	path('qa_add_1/', views.qa_add_1), # Add a new Title and a new comment.
+	path('qa_search_3/', views.qa_search_3), # Get a unique Q&A thread 
 
 ]

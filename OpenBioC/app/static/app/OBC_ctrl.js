@@ -1584,7 +1584,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         //Open right panel
         document.getElementById('userDataDiv').style.display = 'block';
-        M.Collapsible.getInstance($('#userDataAccordion')).open()
+        M.Collapsible.getInstance($('#userDataAccordion')).open();
 
         //Fetch user data
         $scope.ajax(
@@ -1617,6 +1617,29 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */ 
     $scope.qa_search_jstree_select_node = function(e, data) {
         console.log('Q&A node clicked');
+
+        document.getElementById('QARightPanel').style.display = 'block';
+        M.Collapsible.getInstance($('#QARightPanelAccordion')).open();
+
+        // Fetch thread
+        $scope.ajax(
+            'qa_search_3/',
+            {
+                'qa_id': data.node.data.id
+            },
+            function(data) {
+                $scope.qa_title = data['qa_title'];
+                $scope.qa_comment = data['qa_comment'];
+
+                $scope.qa_info_editable = false;
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
     };
 
     /*
@@ -2906,6 +2929,19 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.toast(statusText, 'error');
             }
         );
+    };
+
+    /*
+    * Q&A "+" button clicked (create/add) a new Question
+    */
+    $scope.qa_plus_button_clicked = function() {
+
+        document.getElementById('QARightPanel').style.display = 'block';
+        M.Collapsible.getInstance($('#QARightPanelAccordion')).open();
+
+        $scope.qa_info_editable = true;
+        $scope.qa_title = '';
+        $scope.qa_comment = '';
     };
     // QA END 
 

@@ -2012,9 +2012,9 @@ def qa_search_2(main_search):
             entries_in_tree.add(result_parent.pk)
 
         to_add = {
-            'data': {'title': result.title, 'comment': result.comment},
+            'data': {'id': result.pk},
             'text': result.title,
-            'id': md5(result.title),
+            'id': str(result.pk),
             'parent': '#',
             'state': { 'opened': True},
         }
@@ -2120,6 +2120,29 @@ def qa_add_1(request, **kwargs):
     comment.save()
 
     return success()
+
+@has_data
+def qa_search_3(request, **kwargs):
+    '''
+    path: qa_search_3/
+    Get a unique Q&A thread
+    '''
+
+    id_ = kwargs.get('qa_id', None)
+    if not id_:
+        return fail('Could not find Q&A id')
+
+    try:
+        comment = Comment.objects.get(pk=id_)
+    except ObjectDoesNotExist as e:
+        return fail('Could not find comment database object')
+
+    ret = {
+        'qa_title': comment.title,
+        'qa_comment': comment.comment,
+    }
+
+    return success(ret)
 
 ### END OF Q&A
 
