@@ -298,8 +298,17 @@ class Reference(models.Model):
     fields = models.ManyToManyField(ReferenceField, related_name='reference_related')
     created_at = models.DateTimeField(auto_now_add=True)
 
+class Comment(models.Model):
+    '''
+    Q & As
+    '''
 
-
+    obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
+    comment = models.TextField()
+    title = models.CharField(max_length=1000,)
+    created_at = models.DateTimeField(auto_now_add=True)
+    parent = models.ForeignKey(to='Comment', null=True, on_delete=models.CASCADE, related_name='comment_parent')
+    children =  models.ManyToManyField(to='Comment', related_name='comment_children')
 
 
 

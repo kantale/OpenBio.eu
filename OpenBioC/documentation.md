@@ -101,3 +101,32 @@ window.nodeAnimation('hello__1', 'running')
 </div>
 
 
+
+<div class="faster" id="QARightPanel" style="display: none;">
+    <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
+        <ul id="QARightPanelAccordion" class="collapsible expandable popout faster">
+            <!-- --------------------------------------------------------------------------------------- -->
+            <!-- ------------------------------------ General ------------------------------------------ -->
+            <!-- --------------------------------------------------------------------------------------- -->
+            <li id="QAGeneral">
+                <div class="collapsible-header">
+                    <i class="material-icons arrow">keyboard_arrow_right</i>
+                    <i class="material-icons">info</i>
+                    General
+                </div>
+                <div class="collapsible-body">
+                    <div class="row">
+                        <form class="col s12">
+                            <div class="input-field">
+                                <input id="qwerty" type="text" class="validate">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
+
+
+

@@ -33,5 +33,6 @@ urlpatterns = [
 	path('references_search_3/', views.references_search_3), # Search (and get the details) for a specific SINGLE Reference
 	path('users_search_3/', views.users_search_3), # Search and get the results for a single user
 	path('users_edit_data/', views.users_edit_data), # User changes (edit), profile info data
+	path('qa_add_1/', views.qa_add_1), # Add a new Title and a new comment.
 
 ]
