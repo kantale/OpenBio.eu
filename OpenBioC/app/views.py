@@ -25,7 +25,7 @@ from django.middleware.csrf import get_token
 
 #Import database objects
 from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations, \
-    OS_types, Keyword, Report, ReportToken, Reference, ReferenceField
+    OS_types, Keyword, Report, ReportToken, Reference, ReferenceField, Comment
 
 # Email imports
 import smtplib
@@ -37,6 +37,7 @@ import os
 import re
 import six
 import uuid
+import hashlib
 #import datetime # Use timezone.now()
 
 import logging # https://docs.djangoproject.com/en/2.1/topics/logging/
@@ -93,6 +94,12 @@ g = {
 }
 
 ### HELPING FUNCTIONS AND DECORATORS #####
+
+def md5(t):
+    '''
+    Return the md5 hash of this string
+    '''
+    return hashlib.md5(t.encode("utf-8")).hexdigest()
 
 def fail(error_message=None):
     '''
@@ -1972,6 +1979,55 @@ def references_search_2(
 
     return ret
 
+def qa_get_root_comment(comment):
+    '''
+    Take a comment in a nested thread and get the root comment
+    '''
+
+    if not comment.parent:
+        return comment
+
+    return qa_get_root_comment(comment.parent)
+
+def qa_search_2(main_search):
+    '''
+    Collect all Q&A from main search
+    '''
+    title_Q = Q(title__icontains=main_search)
+    comment_Q = Q(comment__icontains=main_search)
+
+    results = Comment.objects.filter(title_Q | comment_Q)
+
+    qa_search_tree = []
+    entries_in_tree = set()
+    for result in results:
+        # Get the root message
+        result_parent = qa_get_root_comment(result)
+
+        #Is this on the tree?
+        if result_parent.pk in entries_in_tree:
+            # It is already in the tree
+            continue
+        else:
+            entries_in_tree.add(result_parent.pk)
+
+        to_add = {
+            'data': {'title': result.title, 'comment': result.comment},
+            'text': result.title,
+            'id': md5(result.title),
+            'parent': '#',
+            'state': { 'opened': True},
+        }
+        qa_search_tree.append(to_add)
+
+    ret = {
+        'main_search_qa_number': len(qa_search_tree),
+        'qa_search_jstree': qa_search_tree,
+    }
+
+    return ret
+
+
 @has_data
 def references_search_3(request, **kwargs):
     '''
@@ -2022,10 +2078,50 @@ def all_search_2(request, **kwargs):
     for key, value in users_search_2(main_search).items():
         ret[key] = value
 
+    # Get QAs
+    for key, value in qa_search_2(main_search).items():
+        ret[key] = value
+
     return success(ret)
 
 
 ### END OF SEARCH
+
+### Q&A 
+
+@has_data
+def qa_add_1(request, **kwargs):
+    '''
+    Called from qa_add_1/
+    '''
+    qa_title = kwargs.get('qa_title', '')
+    if not qa_title:
+        return fail('Title should not be empty')
+
+    qa_comment = kwargs.get('qa_comment', '')
+    if not qa_comment:
+        return fail('Comment should not be empty')
+
+    if request.user.is_anonymous:
+        return fail('Please login to create a new comment')
+    user = request.user
+
+    # We csannot have the same comment title more than once
+    if Comment.objects.filter(title__iexact=qa_title).exists():
+        return fail('A comment with this title already exists!')
+
+    #Create a new comment
+    comment = Comment(
+        obc_user=OBC_user.objects.get(user=user), 
+        comment=qa_comment,
+        title=qa_title,
+        parent=None,
+    )
+    comment.save()
+
+    return success()
+
+### END OF Q&A
 
 ### VIEWS END ######
 

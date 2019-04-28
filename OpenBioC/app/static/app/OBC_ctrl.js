@@ -559,6 +559,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.main_search_users_number = data['main_search_users_number'];
                 angular.copy(data['users_search_jstree'], $scope.users_search_jstree_model);
 
+                // Q&As
+                $scope.main_search_qa_number = data['main_search_qa_number'];
+                angular.copy(data['qa_search_jstree'], $scope.qa_search_jstree_model);
+
+
             },
             function(data) {
 
@@ -1479,6 +1484,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     $scope.users_search_jstree_config_apply = function() {
         return true;
     };
+    $scope.qa_search_jstree_config_apply = function() {
+        return true;
+    };
+
 
 
     $scope.tools_search_jstree_model_init = [];
@@ -1496,6 +1505,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     $scope.users_search_jstree_model_init = [];
     $scope.users_search_jstree_model = [];
     angular.copy($scope.users_search_jstree_model_init, $scope.users_search_jstree_model);
+
+    $scope.qa_search_jstree_model_init = [];
+    $scope.qa_search_jstree_model = [];
+    angular.copy($scope.qa_search_jstree_model_init, $scope.qa_search_jstree_model);
 
 
     /* 
@@ -1597,6 +1610,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             }
         );
 
+    };
+
+    /*
+    * A node in the Q&A search js tree is clicked
+    */ 
+    $scope.qa_search_jstree_select_node = function(e, data) {
+        console.log('Q&A node clicked');
     };
 
     /*
@@ -2032,6 +2052,56 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     // Users search jstree config
     $scope.users_search_jstree_config = {
+            core : {
+                multiple : false,
+                animation: true,
+                error : function(error) {
+                    $log.error('treeCtrl: error from js tree - ' + angular.toJson(error));
+                },
+                check_callback : function(operation, node, node_parent, node_position, more) { //https://stackoverflow.com/a/23486435/5626738
+
+                    console.log('First Tree Operation:', operation);
+
+                    if (operation === "move_node") {
+                        return false;
+                    }
+                    else if (operation === 'copy_node') {
+                        return false;
+                    }
+
+                    return true;
+                },
+                worker : true
+            },
+//            types : {
+//                default : {
+//                    icon : 'fa fa-flash'
+//                },
+//                star : {
+//                    icon : 'fa fa-star'
+//                },
+//                cloud : {
+//                    icon : 'fa fa-cloud'
+//                }
+//            },
+            version : 1,
+            plugins : ['dnd', 'types'],
+            types : {
+                default : {
+                    icon : 'fa fa-sitemap' //
+                }
+            },
+            dnd: {
+                is_draggable : function(node) {
+                    return true;
+                }
+            }
+            //plugins : ['types','checkbox']
+            //plugins : []
+    };
+
+    // Q&A search jstree config
+    $scope.qa_search_jstree_config = {
             core : {
                 multiple : false,
                 animation: true,
@@ -2809,6 +2879,35 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     // REFERENCES END 
 
+    // QA
+    /*
+    * Q&A --> New Q&A --> Add Title + Comment --> Save button --> pressed 
+    */ 
+    $scope.qa_create_save_pressed = function() {
+
+        if (!$scope.username) {
+            $scope.toast('Plese login to post a new comment', 'error');
+            return;
+        }
+
+        $scope.ajax(
+            'qa_add_1/',
+            {
+                qa_title: $scope.qa_title,
+                qa_comment: $scope.qa_comment
+            },
+            function(data) {
+                $scope.toast('Comment succesfully saved', 'success');
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
+    };
+    // QA END 
 
 }); 
 

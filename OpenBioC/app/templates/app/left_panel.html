@@ -336,12 +336,12 @@
             <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
             <!-- ---------------------------------------------------------- Q&A Left Panel ----------------------------------------------------------------------- -->
             <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
-            <li id="users">
+            <li id="qa">
                 <div class="collapsible-header customCollapsibleHeader">
                     <i class="material-icons arrow left">keyboard_arrow_right</i>
                     <i class="material-icons left">whatshot</i>
                     <span class="left" style="margin-right: 10px;">Q & A</span>
-                    <span class="new badge" data-badge-caption="found" style="margin-left: 5px;">0</span>
+                    <span class="new badge" data-badge-caption="found" style="margin-left: 5px;" ng-bind="main_search_qa_number"></span>
                     <a id="qaPlusBtn" class="waves-effect btn green plusBtn right tooltipped" data-position="left"
                         data-tooltip="create Question"><i class="material-icons plusIcon">add</i></a>
                 </div>
@@ -356,24 +356,11 @@
                             </div>
                         </form>
                     </div>
-                    <div class="container">
-                        <div class="row">
-                            Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry
-                            richardson
-                            ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food
-                            truck
-                            quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a
-                            bird
-                            on
-                            it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim
-                            keffiyeh
-                            helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
-                            Ad
-                            vegan
-                            excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw
-                            denim
-                            aesthetic synth nesciunt you probably haven't heard of them accusamus labore
-                            sustainable VHS.
+                    <div class="row left-align">
+                        <div class="col">
+                            <div js-tree="qa_search_jstree_config" should-apply="qa_search_jstree_config_apply()"
+                                ng-model="qa_search_jstree_model" tree="qa_search_jstree"
+                                tree-events="select_node:qa_search_jstree_select_node"></div>
                         </div>
                     </div>
                 </div>
