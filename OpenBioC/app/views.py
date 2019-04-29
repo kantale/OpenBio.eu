@@ -2012,9 +2012,9 @@ def qa_search_2(main_search):
             entries_in_tree.add(result_parent.pk)
 
         to_add = {
-            'data': {'id': result.pk},
-            'text': result.title,
-            'id': str(result.pk),
+            'data': {'id': result_parent.pk},
+            'text': result_parent.title,
+            'id': str(result_parent.pk),
             'parent': '#',
             'state': { 'opened': True},
         }
