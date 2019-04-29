@@ -2165,6 +2165,8 @@ def qa_search_3(request, **kwargs):
         'qa_thread': qa_create_thread(comment),
     }
 
+    print (simplejson.dumps(ret, indent=4))
+
     return success(ret)
 
 @has_data

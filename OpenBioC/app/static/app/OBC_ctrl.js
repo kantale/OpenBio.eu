@@ -2967,37 +2967,56 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * Q&A --> Show thread --> Reply button --> Clicked 
     */
     $scope.qa_reply_button_clicked = function(id) {
-        for (var i=0; i<$scope.qa_thread.length; i++) {
-            if ($scope.qa_thread[i].id == id) {
-                $scope.qa_thread[i].replying = true;
-                $scope.qa_current_reply = '';
-            }
-            else {
-                $scope.qa_thread[i].replying = false;
+
+        /* 
+        * Recursively search and set replying status
+        */
+        function set_replying(current_scope, current_id) {
+            for (var i=0; i<current_scope.length; i++) {
+                if (current_scope[i].id == current_id) {
+                    current_scope[i].replying = true;
+                }
+                else {
+                    current_scope[i].replying = false;
+                }
+                set_replying(current_scope[i].children, id);
             }
         }
+
+//        for (var i=0; i<$scope.qa_thread.length; i++) {
+//            if ($scope.qa_thread[i].id == id) {
+//                $scope.qa_thread[i].replying = true;
+//                $scope.qa_current_reply = '';
+//            }
+//            else {
+//                $scope.qa_thread[i].replying = false;
+//            }
+//        }
+
+        set_replying($scope.qa_thread, id);
+        $scope.qa_current_reply = '';
+
     };
+
 
     /*
     * Q&A --> Show Thread --> reply to a comment --> add text --> Save button --> Clicked 
     */
-    $scope.qa_reply_save_button_pressed = function(id) {
+    $scope.qa_reply_save_button_pressed = function(id, comment) {
         console.log('Reply to id: ', id);
+        console.log('Comment:', comment);
 
+        $scope.qa_add_comment(id, comment);
+        $scope.qa_current_reply = '';
 
     };
 
-    /*
-    * Q&A --> Show Thread --> Add Comment --> Add text --> Save button --> Clicked 
-    */
-    $scope.qa_comment_save_button_pressed = function() {
-        console.log('Save comment');
-
+    $scope.qa_add_comment = function(id, comment) {
         $scope.ajax(
             'qa_add_comment/',
             {
-                'qa_id': $scope.qa_id,
-                'qa_comment': $scope.qa_current_comment
+                'qa_id': id,
+                'qa_comment': comment
             },
             function(data) {
                 //Update the UI
@@ -3010,6 +3029,16 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.toast(statusText, 'error');
             }
         );
+
+    };
+
+    /*
+    * Q&A --> Show Thread --> Add Comment --> Add text --> Save button --> Clicked 
+    */
+    $scope.qa_comment_save_button_pressed = function() {
+        console.log('Save comment');
+
+        $scope.qa_add_comment($scope.qa_id, $scope.qa_current_comment);
 
         $scope.qa_show_new_comment = false;
     };
