@@ -2971,27 +2971,28 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.qa_comment = '';
     };
 
+    /* 
+    * Recursively search and set replying status
+    */
+    $scope.qa_set_replying = function(current_scope, current_id, value) {
+        for (var i=0; i<current_scope.length; i++) {
+            if (current_scope[i].id == current_id) {
+                current_scope[i].replying = value;
+            }
+            else {
+                current_scope[i].replying = false;
+            }
+            $scope.qa_set_replying(current_scope[i].children, current_id, value);
+        }
+    }
+
+
     /*
     * Q&A --> Show thread --> Reply button --> Clicked 
     */
     $scope.qa_reply_button_clicked = function(id) {
 
-        /* 
-        * Recursively search and set replying status
-        */
-        function set_replying(current_scope, current_id) {
-            for (var i=0; i<current_scope.length; i++) {
-                if (current_scope[i].id == current_id) {
-                    current_scope[i].replying = true;
-                }
-                else {
-                    current_scope[i].replying = false;
-                }
-                set_replying(current_scope[i].children, id);
-            }
-        }
-
-        set_replying($scope.qa_thread, id);
+        $scope.qa_set_replying($scope.qa_thread, id, true);
         $scope.qa_current_reply = '';
 
     };
@@ -3007,6 +3008,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.qa_add_comment(id, comment);
         $scope.qa_current_reply = '';
 
+    };
+
+    /*
+    * Q&A --> Show Thread --> reply to a comment --> add text --> Cancel button --> Clicked 
+    */
+    $scope.qa_reply_cancel_button_pressed = function(id) {
+        $scope.qa_set_replying($scope.qa_thread, id, false);
     };
 
     /*
@@ -3046,6 +3054,14 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.qa_add_comment($scope.qa_comment_id, $scope.qa_current_comment);
 
         $scope.qa_show_new_comment = false;
+    };
+
+    /*
+    * Q&A --> Show Thread --> Add Comment -(!NOT REPLY!) -> Add text --> Cancel button --> Clicked 
+    */
+    $scope.qa_comment_cancel_button_pressed = function() {
+        $scope.qa_show_new_comment = false;
+        $scope.qa_current_comment = '';
     };
 
     /*
