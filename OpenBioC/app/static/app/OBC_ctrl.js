@@ -1625,7 +1625,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             function(data) {
                 $scope.qa_title = data['qa_title'];
                 $scope.qa_comment = data['qa_comment'];
-                $scope.qa_id = data['qa_id']; // The primary key to the Comment object in db
+                $scope.qa_comment_id = data['qa_id']; // The primary key to the Comment object in db
 
                 $scope.qa_info_editable = false;
                 $scope.qa_show_new_comment = false;
@@ -1657,8 +1657,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         document.getElementById('QARightPanel').style.display = 'block';
         M.Collapsible.getInstance($('#QARightPanelAccordion')).open();
 
-        //Fetc h QA data
-        $scope.qa_search_3({id: data.node.data.id});
+        //Fetch a QA data
+        $scope.qa_comment_id = data.node.data.id;
+        console.log('QA node clicked. qa_id:', $scope.qa_comment_id);
+        $scope.qa_search_3({id: $scope.qa_comment_id});
     };
 
     /*
@@ -2939,7 +2941,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 qa_comment: $scope.qa_comment
             },
             function(data) {
-                $scope.toast('Comment succesfully saved', 'success');
+                $scope.toast('Comment successfully saved', 'success');
+                $scope.qa_info_editable = false;
+                $scope.qa_comment_id = data['id'];
+                $scope.qa_thread = [];
+
+                //EXPERIMENTAL!!! UPDATE SEARCH RESULTS
+                $scope.all_search_2();
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');
@@ -2983,16 +2991,6 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             }
         }
 
-//        for (var i=0; i<$scope.qa_thread.length; i++) {
-//            if ($scope.qa_thread[i].id == id) {
-//                $scope.qa_thread[i].replying = true;
-//                $scope.qa_current_reply = '';
-//            }
-//            else {
-//                $scope.qa_thread[i].replying = false;
-//            }
-//        }
-
         set_replying($scope.qa_thread, id);
         $scope.qa_current_reply = '';
 
@@ -3011,6 +3009,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     };
 
+    /*
+    * Called by:
+    * 1. qa_comment_save_button_pressed to save a new comment (not reply)
+    * 2. qa_reply_save_button_pressed to save a REPLY (not comment)
+    */
     $scope.qa_add_comment = function(id, comment) {
         $scope.ajax(
             'qa_add_comment/',
@@ -3020,7 +3023,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             },
             function(data) {
                 //Update the UI
-                $scope.qa_search_3({id: $scope.qa_id});
+                $scope.qa_search_3({id: $scope.qa_comment_id});
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');
@@ -3033,12 +3036,14 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
-    * Q&A --> Show Thread --> Add Comment --> Add text --> Save button --> Clicked 
+    * Q&A --> Show Thread --> Add Comment -(!NOT REPLY!) -> Add text --> Save button --> Clicked 
     */
     $scope.qa_comment_save_button_pressed = function() {
         console.log('Save comment');
+        console.log('QA_COMMENT_ID: ', $scope.qa_comment_id);
+        console.log('Current Comment:', $scope.qa_current_comment);
 
-        $scope.qa_add_comment($scope.qa_id, $scope.qa_current_comment);
+        $scope.qa_add_comment($scope.qa_comment_id, $scope.qa_current_comment);
 
         $scope.qa_show_new_comment = false;
     };

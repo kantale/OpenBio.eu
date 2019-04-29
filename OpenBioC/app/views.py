@@ -2119,7 +2119,11 @@ def qa_add_1(request, **kwargs):
     )
     comment.save()
 
-    return success()
+    ret = {
+        'id': comment.pk
+    }
+
+    return success(ret)
 
 @has_data
 def qa_search_3(request, **kwargs):
@@ -2165,7 +2169,7 @@ def qa_search_3(request, **kwargs):
         'qa_thread': qa_create_thread(comment),
     }
 
-    print (simplejson.dumps(ret, indent=4))
+    #print (simplejson.dumps(ret, indent=4))
 
     return success(ret)
 
@@ -2178,7 +2182,7 @@ def qa_add_comment(request, **kwargs):
         return fail('Please login to add a new comment')
 
     id_ = kwargs.get('qa_id', None)
-    if not id_:
+    if id_ is None:
         return fail('Could not find Q&A id')
 
     current_comment = kwargs.get('qa_comment', None)
@@ -2186,18 +2190,18 @@ def qa_add_comment(request, **kwargs):
         return fail('Could not find Q&A new comment')
 
     try:
-        comment = Comment.objects.get(pk=id_)
+        parent_comment = Comment.objects.get(pk=id_)
     except ObjectDoesNotExist as e:
         return fail('Could not find comment database object')
 
     new_comment = Comment(
         obc_user=OBC_user.objects.get(user=request.user),
         comment = current_comment,
-        parent=comment,
+        parent=parent_comment,
     )
     new_comment.save()
-    comment.children.add(new_comment)
-    comment.save()
+    parent_comment.children.add(new_comment)
+    parent_comment.save()
 
     return success()
 
