@@ -898,7 +898,7 @@
                         General
                     </div>
                     <div class="collapsible-body">
-                        <div class="row">
+                        <div class="row" ng-show="qa_info_editable">
                             <form class="col s12">
                                 <div class="input-field">
                                     <div class="input-field">
@@ -913,7 +913,31 @@
                                 </div>
                             </form>
                         </div>
-                        <div class="row right-align">
+                        <div class="row" ng-show="!qa_info_editable">
+                            <div class="row left-align">
+                                <b><span ng-bind="qa_title"></span></b>
+                            </div>
+                            <div class="row left-align">
+                                <span ng-bind="qa_comment"></span>
+                            </div>
+                            <div class="row right-align">
+                                <button ng-click="qa_add_comment_button_pressed()">Add Comment</button>
+                            </div>
+                            <div class="input-field" ng-show="qa_show_new_comment">
+                                <textarea class="validate" ng-model="qa_current_comment"></textarea>
+                                <button ng-click="qa_comment_save_button_pressed()">Save</button>
+                            </div>
+                            <ul>
+                                <li ng-repeat="post in qa_thread track by post.id">
+                                    <span ng-bind="post.comment"></span><button ng-click="qa_reply_button_clicked(post.id)">Reply</button>
+                                    <div class="input-field" ng-show="post.replying">
+                                        <textarea class="validate" ng-model="qa_current_reply"></textarea>
+                                        <button ng-click="qa_reply_save_button_pressed(post.id)">Save</button>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="row right-align" ng-show="qa_info_editable">
                             <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                                 data-tooltip="Save" ng-click="qa_create_save_pressed()" ng-disabled="(!qa_title) || (!qa_comment)"><i class="material-icons">save</i></a>
                         </div>
