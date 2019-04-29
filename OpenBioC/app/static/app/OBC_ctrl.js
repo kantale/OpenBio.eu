@@ -1613,25 +1613,30 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
-    * A node in the Q&A search js tree is clicked
-    */ 
-    $scope.qa_search_jstree_select_node = function(e, data) {
-        console.log('Q&A node clicked');
-
-        document.getElementById('QARightPanel').style.display = 'block';
-        M.Collapsible.getInstance($('#QARightPanelAccordion')).open();
-
+    * Fetch the data from a single Q&A and update the UI
+    */
+    $scope.qa_search_3 = function(qa) {
         // Fetch thread
         $scope.ajax(
             'qa_search_3/',
             {
-                'qa_id': data.node.data.id
+                'qa_id': qa.id
             },
             function(data) {
                 $scope.qa_title = data['qa_title'];
                 $scope.qa_comment = data['qa_comment'];
+                $scope.qa_id = data['qa_id']; // The primary key to the Comment object in db
 
                 $scope.qa_info_editable = false;
+                $scope.qa_show_new_comment = false;
+
+//                $scope.qa_thread = [
+//                    {'comment': 'comment 1', 'id': 1, 'replying': false},
+//                    {'comment': 'comment 2', 'id': 2, 'replying': false}
+//                ];
+                
+                $scope.qa_thread = data['qa_thread'];
+
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');
@@ -1640,6 +1645,20 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.toast(statusText, 'error');
             }
         );
+
+    };
+
+    /*
+    * A node in the Q&A search js tree is clicked
+    */ 
+    $scope.qa_search_jstree_select_node = function(e, data) {
+        console.log('Q&A node clicked');
+
+        document.getElementById('QARightPanel').style.display = 'block';
+        M.Collapsible.getInstance($('#QARightPanelAccordion')).open();
+
+        //Fetc h QA data
+        $scope.qa_search_3({id: data.node.data.id});
     };
 
     /*
@@ -2943,6 +2962,66 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.qa_title = '';
         $scope.qa_comment = '';
     };
+
+    /*
+    * Q&A --> Show thread --> Reply button --> Clicked 
+    */
+    $scope.qa_reply_button_clicked = function(id) {
+        for (var i=0; i<$scope.qa_thread.length; i++) {
+            if ($scope.qa_thread[i].id == id) {
+                $scope.qa_thread[i].replying = true;
+                $scope.qa_current_reply = '';
+            }
+            else {
+                $scope.qa_thread[i].replying = false;
+            }
+        }
+    };
+
+    /*
+    * Q&A --> Show Thread --> reply to a comment --> add text --> Save button --> Clicked 
+    */
+    $scope.qa_reply_save_button_pressed = function(id) {
+        console.log('Reply to id: ', id);
+
+
+    };
+
+    /*
+    * Q&A --> Show Thread --> Add Comment --> Add text --> Save button --> Clicked 
+    */
+    $scope.qa_comment_save_button_pressed = function() {
+        console.log('Save comment');
+
+        $scope.ajax(
+            'qa_add_comment/',
+            {
+                'qa_id': $scope.qa_id,
+                'qa_comment': $scope.qa_current_comment
+            },
+            function(data) {
+                //Update the UI
+                $scope.qa_search_3({id: $scope.qa_id});
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
+
+        $scope.qa_show_new_comment = false;
+    };
+
+    /*
+    * Q&A --> Show tread --> "Add Comment" button --> pressed
+    */
+    $scope.qa_add_comment_button_pressed = function() {
+        $scope.qa_show_new_comment = true;
+        $scope.qa_current_comment = '';
+    };
+
     // QA END 
 
 }); 

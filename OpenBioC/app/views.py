@@ -2103,7 +2103,7 @@ def qa_add_1(request, **kwargs):
         return fail('Comment should not be empty')
 
     if request.user.is_anonymous:
-        return fail('Please login to create a new comment')
+        return fail('Please login to post a new question')
     user = request.user
 
     # We csannot have the same comment title more than once
@@ -2128,6 +2128,22 @@ def qa_search_3(request, **kwargs):
     Get a unique Q&A thread
     '''
 
+    def qa_create_thread(comment):
+        '''
+        Create the children thread of a comment
+        '''
+        ret = []
+        for child in comment.children.all():
+            to_add = {
+                'comment': child.comment,
+                'id': child.pk,
+                'replying': False,
+                'children': qa_create_thread(child)
+            }
+            ret.append(to_add)
+        return ret
+
+
     id_ = kwargs.get('qa_id', None)
     if not id_:
         return fail('Could not find Q&A id')
@@ -2137,12 +2153,51 @@ def qa_search_3(request, **kwargs):
     except ObjectDoesNotExist as e:
         return fail('Could not find comment database object')
 
+#                $scope.qa_thread = [
+#                    {'comment': 'comment 1', 'id': 1, 'replying': false},
+#                    {'comment': 'comment 2', 'id': 2, 'replying': false}
+#                ];
+
     ret = {
         'qa_title': comment.title,
         'qa_comment': comment.comment,
+        'qa_id': comment.pk,
+        'qa_thread': qa_create_thread(comment),
     }
 
     return success(ret)
+
+@has_data
+def qa_add_comment(request, **kwargs):
+    '''
+    Add a comment at a Q&A question
+    '''
+    if request.user.is_anonymous:
+        return fail('Please login to add a new comment')
+
+    id_ = kwargs.get('qa_id', None)
+    if not id_:
+        return fail('Could not find Q&A id')
+
+    current_comment = kwargs.get('qa_comment', None)
+    if not current_comment:
+        return fail('Could not find Q&A new comment')
+
+    try:
+        comment = Comment.objects.get(pk=id_)
+    except ObjectDoesNotExist as e:
+        return fail('Could not find comment database object')
+
+    new_comment = Comment(
+        obc_user=OBC_user.objects.get(user=request.user),
+        comment = current_comment,
+        parent=comment,
+    )
+    new_comment.save()
+    comment.children.add(new_comment)
+    comment.save()
+
+    return success()
 
 ### END OF Q&A
 
