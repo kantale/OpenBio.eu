@@ -166,15 +166,6 @@
                             <span class="white-text" ng-bind="tools_search_warning"></span>
                         </div>
                     </div>
-                    <!-- Tree list 
-                    <div class="row">
-                        <p>-----------------------------</p>
-                        <p>-----------------------------</p>
-                        <p>----- Tree goes here -----</p>
-                        <p>-----------------------------</p>
-                        <p>-----------------------------</p>
-                    </div>
-                     -->
 
                     <div class="row left-align">
                         <div class="col">
@@ -233,17 +224,6 @@
                         </div>
                     </div>
 
-
-                    <!-- Tree list
-                    <div class="row">
-                        <p>-----------------------------</p>
-                        <p>-----------------------------</p>
-                        <p>----- Tree goes here -----</p>
-                        <p>-----------------------------</p>
-                        <p>-----------------------------</p>
-                    </div>
-                    -->
-
                     <div class="row left-align">
                         <div class="col">
                             <div js-tree="workflows_search_jstree_config"
@@ -298,7 +278,7 @@
                     <i class="material-icons arrow left">keyboard_arrow_right</i>
                     <i class="material-icons left">whatshot</i>
                     <span class="left" style="margin-right: 10px;">References</span>
-                    <span class="new badge" data-badge-caption="found" style="margin-left: 5px;">0</span>
+                    <span class="new badge" data-badge-caption="found" style="margin-left: 5px;" ng-bind="main_search_references_number"></span>
                     <a id="referencesPlusBtn" class="waves-effect btn green plusBtn right tooltipped"
                         data-position="left" data-tooltip="create Reference"><i
                             class="material-icons plusIcon">add</i></a>
@@ -314,24 +294,11 @@
                             </div>
                         </form>
                     </div>
-                    <div class="container">
-                        <div class="row">
-                            Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry
-                            richardson
-                            ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food
-                            truck
-                            quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a
-                            bird
-                            on
-                            it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim
-                            keffiyeh
-                            helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
-                            Ad
-                            vegan
-                            excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw
-                            denim
-                            aesthetic synth nesciunt you probably haven't heard of them accusamus labore
-                            sustainable VHS.
+                    <div class="row left-align">
+                        <div class="col">
+                            <div js-tree="references_search_jstree_config" should-apply="references_search_jstree_config_apply()"
+                                ng-model="references_search_jstree_model" tree="references_search_jstree"
+                                tree-events="select_node:references_search_jstree_select_node"></div>
                         </div>
                     </div>
                 </div>
@@ -344,7 +311,7 @@
                     <i class="material-icons arrow left">keyboard_arrow_right</i>
                     <i class="material-icons left">whatshot</i>
                     <span class="left" style="margin-right: 10px;">Users</span>
-                    <span class="new badge" data-badge-caption="found" style="margin-left: 5px;">0</span>
+                    <span class="new badge" data-badge-caption="found" style="margin-left: 5px;" ng-bind="main_search_users_number"></span>
                 </div>
                 <div class="collapsible-body">
                     <div class="row">
@@ -357,24 +324,11 @@
                             </div>
                         </form>
                     </div>
-                    <div class="container">
-                        <div class="row">
-                            Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry
-                            richardson
-                            ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food
-                            truck
-                            quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a
-                            bird
-                            on
-                            it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim
-                            keffiyeh
-                            helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
-                            Ad
-                            vegan
-                            excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw
-                            denim
-                            aesthetic synth nesciunt you probably haven't heard of them accusamus labore
-                            sustainable VHS.
+                    <div class="row left-align">
+                        <div class="col">
+                            <div js-tree="users_search_jstree_config" should-apply="users_search_jstree_config_apply()"
+                                ng-model="users_search_jstree_model" tree="users_search_jstree"
+                                tree-events="select_node:users_search_jstree_select_node"></div>
                         </div>
                     </div>
                 </div>
@@ -382,14 +336,14 @@
             <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
             <!-- ---------------------------------------------------------- Q&A Left Panel ----------------------------------------------------------------------- -->
             <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
-            <li id="users">
+            <li id="qa">
                 <div class="collapsible-header customCollapsibleHeader">
                     <i class="material-icons arrow left">keyboard_arrow_right</i>
                     <i class="material-icons left">whatshot</i>
                     <span class="left" style="margin-right: 10px;">Q & A</span>
-                    <span class="new badge" data-badge-caption="found" style="margin-left: 5px;">0</span>
+                    <span class="new badge" data-badge-caption="found" style="margin-left: 5px;" ng-bind="main_search_qa_number"></span>
                     <a id="qaPlusBtn" class="waves-effect btn green plusBtn right tooltipped" data-position="left"
-                        data-tooltip="create Question"><i class="material-icons plusIcon">add</i></a>
+                        data-tooltip="create Question" ng-click="qa_plus_button_clicked()"><i class="material-icons plusIcon">add</i></a>
                 </div>
                 <div class="collapsible-body">
                     <div class="row">
@@ -402,24 +356,11 @@
                             </div>
                         </form>
                     </div>
-                    <div class="container">
-                        <div class="row">
-                            Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry
-                            richardson
-                            ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food
-                            truck
-                            quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a
-                            bird
-                            on
-                            it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim
-                            keffiyeh
-                            helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
-                            Ad
-                            vegan
-                            excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw
-                            denim
-                            aesthetic synth nesciunt you probably haven't heard of them accusamus labore
-                            sustainable VHS.
+                    <div class="row left-align">
+                        <div class="col">
+                            <div js-tree="qa_search_jstree_config" should-apply="qa_search_jstree_config_apply()"
+                                ng-model="qa_search_jstree_model" tree="qa_search_jstree"
+                                tree-events="select_node:qa_search_jstree_select_node"></div>
                         </div>
                     </div>
                 </div>

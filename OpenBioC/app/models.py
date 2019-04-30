@@ -15,7 +15,10 @@ Important:
 '''
 
 class OBC_user(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE) # Basically we will never delete users ??
+    '''
+    Note: the email is stored in user.email
+    '''
+    user = models.OneToOneField(User, on_delete=models.CASCADE) # Basically we will never delete users ??
     email_validated = models.BooleanField() # Is this user's email validated?
     email_validation_token = models.CharField(max_length=32) # This is a uuid4 . TODO: https://docs.djangoproject.com/en/2.1/ref/models/fields/#uuidfield
     password_reset_token = models.CharField(max_length=32, null=True) # A token to reset the password . TODO: https://docs.djangoproject.com/en/2.1/ref/models/fields/#uuidfield 
@@ -25,6 +28,7 @@ class OBC_user(models.Model):
     first_name = models.CharField(max_length=256, null=True)
     last_name = models.CharField(max_length=256, null=True)
     website = models.URLField(max_length=256, null=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#urlfield
+    affiliation = models.TextField(null=True)
     public_info = models.TextField(null=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#textfield
 
 class Keyword(models.Model):
@@ -267,6 +271,44 @@ class Report(models.Model):
     nice_id = models.CharField(max_length=10, unique=True, default=create_nice_id, editable=False)
     tokens = models.ManyToManyField(ReportToken, related_name='report_related')
     created_at = models.DateTimeField(auto_now_add=True)
+
+class ReferenceField(models.Model):
+    '''
+    This is a tuple of keys/values that come from parsing the BIBTEX entry
+    For example: 
+    'journal': 'The American journal of human genetics'
+    '''
+
+    key = models.CharField(max_length=255,)
+    value = models.CharField(max_length=1000,)
+
+class Reference(models.Model):
+    '''
+    Describe a reference
+    '''
+
+    obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
+    name = models.CharField(max_length=256, unique=True, editable=False)
+    title = models.CharField(max_length=1000,)
+    url = models.URLField(max_length=256, null=False)
+    doi = models.URLField(max_length=256, null=True)
+    bibtex = models.TextField(null=True)
+    html = models.TextField(null=True)
+    notes= models.TextField(null=True)
+    fields = models.ManyToManyField(ReferenceField, related_name='reference_related')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class Comment(models.Model):
+    '''
+    Q & As
+    '''
+
+    obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
+    comment = models.TextField()
+    title = models.CharField(max_length=1000,)
+    created_at = models.DateTimeField(auto_now_add=True)
+    parent = models.ForeignKey(to='Comment', null=True, on_delete=models.CASCADE, related_name='comment_parent')
+    children =  models.ManyToManyField(to='Comment', related_name='comment_children')
 
 
 
