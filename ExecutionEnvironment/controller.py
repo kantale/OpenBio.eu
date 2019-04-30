@@ -119,6 +119,8 @@ def docker_build_image(Dockerfile_filename,image_name):
     print(Dockerfile_filename)
     # (stdout,stderr) = process.communicate()
     print(os.getcwd()+'/executions')
+    set_worker_for_stats(image_name)
+    # time.sleep(5)
     image_build = docker_client.images.build(path=os.getcwd()+'/executions',
         dockerfile=f'{Dockerfile_filename}' , tag=f'{image_name}')
 
@@ -213,9 +215,9 @@ def image_disk_usage(docker_client,image_name):
     # the sizes in bytes , if you like i can change them!
     image_disk_usage = [
         {
-            'shared_size' : mem_of_all[i]['SharedSize'],
-            'size' : mem_of_all[i]['Size'],
-            'virtual_size' : mem_of_all[i]['VirtualSize'],
+            'shared_size' : mem_of_all[i]['SharedSize']/1024/1024,
+            'size' : mem_of_all[i]['Size']/1024/1024,
+            'virtual_size' : mem_of_all[i]['VirtualSize']/1024/1024,
         }
         for i in range(len(mem_of_all)) 
         if f'{image_name}:latest' in mem_of_all[i]['RepoTags']
@@ -420,19 +422,19 @@ def init_web_app(message_queue, port=8080):
 
     #resource = cors.add(app.router.add_resource("/post"))
     #cors.add(route)
-#    route = cors.add(
-#    resource.add_route("POST", post_handler), {
-#        # "http://client.example.org" 
-#        "*": aiohttp_cors.ResourceOptions(
-#            allow_credentials=True,
-#            expose_headers='*',
-#            allow_headers='*',
-#            #expose_headers=("Access-Control-Allow-Origin",),
-#            #allow_headers=("Access-Control-Allow-Origin", "Content-Type: application/json"),
-#            max_age=3600,
-#        )
-#        }
-#    )
+    #    route = cors.add(
+    #    resource.add_route("POST", post_handler), {
+    #        # "http://client.example.org" 
+    #        "*": aiohttp_cors.ResourceOptions(
+    #            allow_credentials=True,
+    #            expose_headers='*',
+    #            allow_headers='*',
+    #            #expose_headers=("Access-Control-Allow-Origin",),
+    #            #allow_headers=("Access-Control-Allow-Origin", "Content-Type: application/json"),
+    #            max_age=3600,
+    #        )
+    #        }
+    #    )
     
     #After that, run the application by run_app() call:
     web.run_app(app, port=port)
@@ -508,7 +510,6 @@ def worker(message_queue, w_id):
                 'status': 'Running',
             }
             talk_to_server(payload)
-
             result = execute_docker_build(this_id,ostype, bash)
             print ('RESULT FROM execute_docker_build:')
             print (result)
@@ -538,6 +539,18 @@ def worker(message_queue, w_id):
 
         time.sleep(1)
 
+def set_worker_for_stats(image_name):
+    '''
+    Create new worker inside of build-run worker to take the statistics
+    '''
+    stats_thread = threading.Thread(target= worker_for_stats, args=(image_name,))
+    stats_thread.start()
+
+def worker_for_stats(image_name):
+    print('WORKER for docker stats starts....')
+    print(image_name)
+    stats_res = stats.print_stats(image_name)
+    print(stats_res)
 #init_web_app()
 #start_init_web_app_thread()
 
@@ -617,8 +630,6 @@ def get_instance_settings():
 
 if __name__ == '__main__':
     message_queue = Thread_queue()
-#    worker_thread = threading.Thread(target=worker, args=(message_queue, 55),)
-#    worker_thread.start()
     setup_worker_threads(message_queue, 2)
     instance_settings = get_instance_settings()
 
