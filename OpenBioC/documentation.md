@@ -75,6 +75,58 @@ window.nodeAnimation('hello__1', 'running')
   publisher={Elsevier}
 }
 
+<div class="faster" id="userDataDiv" style="display: none;">
+	<ul id="userDataAccordion" class="collapsible expandable popout faster">
+	    <!-- --------------------------------------------------------------------------------------- -->
+	    <!-- ------------------------------------ General ------------------------------------------ -->
+	    <!-- --------------------------------------------------------------------------------------- -->
+		<li id="usersDataGeneral">
+	        <div class="collapsible-header">
+	            <i class="material-icons arrow">keyboard_arrow_right</i>
+	            <i class="material-icons">info</i>
+	            General
+	        </div>
+	        <div class="collapsible-body">
+	            <form class="col s12">
+	                <div class="row">
+	                    <div class="input-field col s12 m4 grid-s12-m4-l4">
+	                        <input id="generalName" type="text" class="validate">
+	                        <label for="generalName">Name</label>
+	                    </div>
+	                </div>
+	            </form>
+	        </div>
+	    </li>
+	</ul>
+</div>
+
+
+
+<div class="faster" id="QARightPanel" style="display: none;">
+    <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
+        <ul id="QARightPanelAccordion" class="collapsible expandable popout faster">
+            <!-- --------------------------------------------------------------------------------------- -->
+            <!-- ------------------------------------ General ------------------------------------------ -->
+            <!-- --------------------------------------------------------------------------------------- -->
+            <li id="QAGeneral">
+                <div class="collapsible-header">
+                    <i class="material-icons arrow">keyboard_arrow_right</i>
+                    <i class="material-icons">info</i>
+                    General
+                </div>
+                <div class="collapsible-body">
+                    <div class="row">
+                        <form class="col s12">
+                            <div class="input-field">
+                                <input id="qwerty" type="text" class="validate">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
 
 
 
