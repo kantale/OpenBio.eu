@@ -603,6 +603,22 @@
     <!-- ------------------------------------------------------ Reports Right Panel ---------------------------------------------------------------------- -->
     <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
     <div class="faster" id="reportsRightPanel" style="display: none;">
+        <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
+            <div class="row left-align">
+                <div class="col s2">
+                    <h5>Workflow:</h5>
+                </div>
+                <div class="col s6">
+                    <h5><span ng-bind="report_workflow_name"></span>/<span ng-bind="report_workflow_edit"></span></h5>
+                </div>
+                <div class="col s4">
+                    <h5>Run:<span ng-bind="report_workflow_run"></span></h5>
+                </div>
+            </div>
+            <small class="form-text text-muted">
+                <span ng-bind="report_username"></span>, created at: <span ng-bind="report_created_at"></span>
+            </small>
+        </div>
         <ul id="reportsRightPanelAccordion" class="collapsible expandable popout faster">
             <!-- --------------------------------------------------------------------------------------- -->
             <!-- ------------------------------------ General ------------------------------------------ -->
@@ -615,21 +631,6 @@
                 </div>
                 <div class="collapsible-body">
                     <form class="col s12">
-                        <div class="row">
-
-                            <div class="input-field col s12 m4 grid-s12-m4-l4">
-                                <input id="generalReportsName" type="text" class="validate" ng-model="report_workflow_name" ng-disabled="true">
-                                <label for="generalReportsName">Workflow Name</label>
-                            </div>
-                            <div class="input-field col s12 m4 grid-s12-m4-l4">
-                                <input id="generalReportsEdit" type="text" class="validate" ng-model="report_workflow_edit" ng-disabled="true">
-                                <label for="generalReportsEdit">Edit</label>
-                            </div>
-                            <div class="input-field col s12 m4 grid-s12-m4-l4">
-                                <input id="generalReportsRun" type="text" class="validate" ng-model="report_workflow_run" ng-disabled="true">
-                                <label for="generalReportsRun">Run</label>
-                            </div>
-                        </div>
                         <div class="row left-align">
                             <ul>
                                 <li ng-repeat="token in report_tokens track by token.token">
