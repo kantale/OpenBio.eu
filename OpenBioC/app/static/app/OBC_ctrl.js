@@ -1558,9 +1558,6 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //The user might have clicked on a workflow node.
         if (data.node.data.type == 'report') {
 
-            //Open right report panel
-            document.getElementById('reportsRightPanel').style.display = 'block';
-
             $scope.report_workflow_run = data.node.data.run;
             $scope.reports_search_3({run: data.node.data.run});
         }
@@ -1679,9 +1676,21 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 'run': report.run
             },
             function(data) {
+
+                //Hide all right accordions
+                $scope.hide_all_right_accordions('reports');
+
+                //Open right report panel
+                document.getElementById('reportsRightPanel').style.display = 'block';
+                M.Collapsible.getInstance($('#reportsRightPanelAccordion')).open();
+
+                //Fill data
                 $scope.report_workflow_name = data['report_workflow_name'];
                 $scope.report_workflow_edit = data['report_workflow_edit'];
+                $scope.report_username = data['report_username'];
+                $scope.report_created_at = data['report_created_at'];
                 $scope.report_tokens = data['report_tokens'];
+
 
                 /* Create the report workflow*/
                 window.createRepTree(data['workflow'].elements);
@@ -3127,7 +3136,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */
     $scope.hide_all_right_accordions = function(except) {
 
+        if (except != 'reports') {
+            document.getElementById('reportsRightPanel').style.display = 'none';
+            M.Collapsible.getInstance($('#reportsRightPanelAccordion')).close();
+        }
+
         if (except != 'references') {
+            //Hide references
             document.getElementById('referencesRightPanel').style.display = 'none';
             M.Collapsible.getInstance($('#referencesRightPanelAccordion')).close();
         }
