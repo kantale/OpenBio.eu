@@ -1947,7 +1947,13 @@ def references_add(request, **kwargs):
     reference.fields.add(*reference_fields)
     reference.save()
 
-    return success()
+    ret = {
+        'references_formatted': html,
+        'references_created_at': datetime_to_str(reference.created_at),
+        'references_username': request.user.username,
+    }
+
+    return success(ret)
 
 def references_search_2(
     main_search,

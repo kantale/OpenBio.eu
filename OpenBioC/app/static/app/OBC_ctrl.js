@@ -1582,10 +1582,6 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     $scope.users_search_jstree_select_node = function(e, data) {
         console.log('Users node clicked');
 
-        //Open right panel
-        document.getElementById('userDataDiv').style.display = 'block';
-        M.Collapsible.getInstance($('#userDataAccordion')).open();
-
         //Fetch user data
         $scope.ajax(
             'users_search_3/',
@@ -1593,12 +1589,19 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 'username': data.node.data.username
             },
             function(data) {
+
+                $scope.hide_all_right_accordions('users'); // Hide everything except users
+
                 $scope.user_firstname = data['profile_firstname'];
                 $scope.user_lastname = data['profile_lastname'];
                 $scope.user_email = data['profile_email'];
                 $scope.user_website = data['profile_website'];
                 $scope.user_affiliation = data['profile_affiliation'];
                 $scope.user_publicinfo = data['profile_publicinfo'];
+
+                //Open right panel
+                document.getElementById('userDataDiv').style.display = 'block';
+                M.Collapsible.getInstance($('#userDataAccordion')).open();
 
                 $timeout(function(){M.updateTextFields()}, 10);
             },
@@ -1653,6 +1656,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */ 
     $scope.qa_search_jstree_select_node = function(e, data) {
         console.log('Q&A node clicked');
+
+        $scope.hide_all_right_accordions('qas'); // Close all right accordions except QAs
 
         document.getElementById('QARightPanel').style.display = 'block';
         M.Collapsible.getInstance($('#QARightPanelAccordion')).open();
@@ -1712,6 +1717,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.references_created_at = data['references_created_at']; // We currently do not do anything with this.
                 $scope.references_username = data['references_username']; // We currently do not do anything with this.
 
+                $scope.hide_all_right_accordions('references');
+                document.getElementById('referencesRightPanel').style.display = 'block';
+                M.Collapsible.getInstance($('#referencesRightPanelAccordion')).open();
+
+                $scope.references_info_editable = false;
+
                 $timeout(function(){M.updateTextFields()}, 10);
             },
             function(data) {
@@ -1721,6 +1732,32 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.toast(statusText, 'error');
             }
         );
+    };
+
+    /*
+    * References "+" button clicked (create/add) a new Reference
+    */
+    $scope.references_plus_button_clicked = function() {
+        $scope.hide_all_right_accordions('references');
+
+        document.getElementById('referencesRightPanel').style.display = 'block';
+        M.Collapsible.getInstance($('#referencesRightPanelAccordion')).open();
+
+        $scope.references_info_editable = true;
+
+        //Empty all fields
+        $scope.references_name = '';
+        $scope.references_title = '';
+        $scope.references_doi = '';
+        $scope.references_url = '';
+        $scope.references_notes = '';
+        $scope.references_BIBTEX = '';
+        $scope.references_formatted = '';
+        $scope.references_created_at = null;
+        $scope.references_username = null;
+
+        $timeout(function(){M.updateTextFields()}, 10);
+
     };
 
     /*
@@ -2886,16 +2923,19 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         }
         else {
            $scope.toast('References Name is required', 'error'); 
+           return;
         }
 
         //Check Title
         if (!$scope.references_title) {
             $scope.toast('References Title is required', 'error'); 
+            return;
         }
 
         //Check URL
         if (!$scope.references_url) {
             $scope.toast('References url is required', 'error'); 
+            return;
         }
 
         $scope.ajax(
@@ -2910,6 +2950,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             },
             function(data) {
                 $scope.toast('Reference successfully saved', 'success');
+                $scope.references_info_editable = false;
+
+                $scope.references_formatted = data['references_formatted'];
+                $scope.references_created_at = data['references_created_at'];
+                $scope.references_username = data['references_username'];
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');
@@ -2962,6 +3007,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * Q&A "+" button clicked (create/add) a new Question
     */
     $scope.qa_plus_button_clicked = function() {
+
+        $scope.hide_all_right_accordions('qas');
 
         document.getElementById('QARightPanel').style.display = 'block';
         M.Collapsible.getInstance($('#QARightPanelAccordion')).open();
@@ -3073,6 +3120,31 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     // QA END 
+
+    /*
+    * Hide all right accordions except from a single one
+    * except: The right panel not to close
+    */
+    $scope.hide_all_right_accordions = function(except) {
+
+        if (except != 'references') {
+            document.getElementById('referencesRightPanel').style.display = 'none';
+            M.Collapsible.getInstance($('#referencesRightPanelAccordion')).close();
+        }
+
+        if (except != 'users') {
+            //Hide Users
+            document.getElementById('userDataDiv').style.display = 'none';
+            M.Collapsible.getInstance($('#userDataAccordion')).close();
+        }
+
+        if (except != 'qas') {
+            //Hide Q&A
+            document.getElementById('QARightPanel').style.display = 'none';
+            M.Collapsible.getInstance($('#QARightPanelAccordion')).close();
+        }
+
+    }
 
 }); 
 
