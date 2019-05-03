@@ -58,6 +58,7 @@ pip install Django==2.1.5
 
 ```
 pip install simplejson
+pip install pybtex
 ```
 
 * Build database

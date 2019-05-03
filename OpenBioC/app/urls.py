@@ -9,8 +9,8 @@ urlpatterns = [
 	path('logout/', views.logout), # Logout a user
 	path('reset_password_email/', views.reset_password_email), # Reset password email
 	path('password_reset/', views.password_reset), # Reset user password 
-	path('user_data_get/', views.user_data_get), # Get data from a LOGGED IN user
-	path('user_data_set/', views.user_data_set), # Set data for a LOGGED IN user
+#	path('user_data_get/', views.user_data_get), # Get data from a LOGGED IN user
+#	path('user_data_set/', views.user_data_set), # Set data for a LOGGED IN user
 	path('tools_search_1/', views.tools_search_1), # Search tools (get tool number) from sidebar
 	path('tools_search_2/', views.tools_search_2), # icontains search for tools from search
 	path('workflows_search_2/', views.workflows_search_2), # icontains search for workflows from search
@@ -28,4 +28,13 @@ urlpatterns = [
 	path('report/', views.report), # Called from executor.py 
 	path('all_search_2/', views.all_search_2), # Called on main search on-change . Construct jstrees. 
 	path('reports_search_3/', views.reports_search_3), # Search (and get the details) for a specific SINGLE Report. 
+	path('references_generate/', views.references_generate), # Generate a HTML reference from BIBTEX 
+	path('references_add/', views.references_add), # Add a new reference
+	path('references_search_3/', views.references_search_3), # Search (and get the details) for a specific SINGLE Reference
+	path('users_search_3/', views.users_search_3), # Search and get the results for a single user
+	path('users_edit_data/', views.users_edit_data), # User changes (edit), profile info data
+	path('qa_add_1/', views.qa_add_1), # Add a new Title and a new comment.
+	path('qa_search_3/', views.qa_search_3), # Get a unique Q&A thread 
+	path('qa_add_comment/', views.qa_add_comment), # Add a comment to a Q&A
+
 ]

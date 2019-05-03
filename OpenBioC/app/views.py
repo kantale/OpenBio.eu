@@ -25,16 +25,19 @@ from django.middleware.csrf import get_token
 
 #Import database objects
 from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations, \
-    OS_types, Keyword, Report, ReportToken
+    OS_types, Keyword, Report, ReportToken, Reference, ReferenceField, Comment
 
 # Email imports
 import smtplib
 from email.message import EmailMessage
 
 # System imports 
+import io
 import os
 import re
+import six
 import uuid
+import hashlib
 #import datetime # Use timezone.now()
 
 import logging # https://docs.djangoproject.com/en/2.1/topics/logging/
@@ -45,6 +48,11 @@ import urllib.parse # https://stackoverflow.com/questions/40557606/how-to-url-en
 # Installed packages imports 
 import simplejson
 from ansi2html import Ansi2HTMLConverter # https://github.com/ralphbean/ansi2html/
+
+#https://pybtex.org/
+from pybtex.database import parse_string as parse_reference_string
+import pybtex.database.input.bibtex
+import pybtex.plugin
 
 __version__ = '0.0.4rc'
 
@@ -77,9 +85,21 @@ g = {
     },
     'instance_setting_not_found_printed': False,
     'ansi2html_converter': Ansi2HTMLConverter(), # https://github.com/ralphbean/ansi2html/
+
+#    'pybtex': {
+#        'pybtex_style': pybtex.plugin.find_plugin('pybtex.style.formatting', 'plain')(),
+#        'pybtex_html_backend': pybtex.plugin.find_plugin('pybtex.backends', 'html')(),
+#        'pybtex_parser': pybtex.database.input.bibtex.Parser()
+#    }
 }
 
 ### HELPING FUNCTIONS AND DECORATORS #####
+
+def md5(t):
+    '''
+    Return the md5 hash of this string
+    '''
+    return hashlib.md5(t.encode("utf-8")).hexdigest()
 
 def fail(error_message=None):
     '''
@@ -485,8 +505,100 @@ def get_instance_settings():
 
     return g['instance_settings'][this_id]
 
+### USERS 
+
+@has_data
+def users_search_3(request, **kwargs):
+    '''
+    Get profile info for a single user
+    '''
+
+    username = kwargs.get('username', '')
+    if not username:
+        return fail('Could not get username')
+
+    try:
+        u = OBC_user.objects.get(user__username=username)
+    except ObjectDoesNotExist as e:
+        return fail('Could not find user with this username')
+
+    ret = {
+        'profile_firstname': u.first_name,
+        'profile_lastname': u.last_name,
+        'profile_website': u.website,
+        'profile_affiliation': u.affiliation,
+        'profile_publicinfo': u.public_info,
+    }
+
+    # We fetch mail only for registered user 
+    if username == request.user.username:
+        ret['profile_email'] = u.user.email
+    else:
+        ret['profile_email'] = ''
+
+    return success(ret)
+
+@has_data
+def users_edit_data(request, **kwargs):
+    '''
+    Called by users_edit_data/
+    Edit user's profile data
+    '''
+    username = kwargs.get('username', '')
+    if not username:
+        return fail('Could not get username')
+
+    try:
+        obc_user = OBC_user.objects.get(user__username=username)
+    except ObjectDoesNotExist as e:
+        return fail('Could not find user with this username')
 
 
+    obc_user.first_name = kwargs.get('profile_firstname', '')
+    obc_user.last_name = kwargs.get('profile_lastname', '')
+    obc_user.website = kwargs.get('profile_website', '')
+    obc_user.affiliation = kwargs.get('profile_affiliation', '')
+    obc_user.public_info = kwargs.get('profile_publicinfo', '')
+
+    #Save edits
+    obc_user.save()
+
+    #Confirm by getting new data
+    return users_search_3(request, **kwargs)
+
+def users_search_2(
+    main_search,
+    ):
+    '''
+    Collect all users from main search
+    '''
+
+    username_Q = Q(user__username__icontains=main_search)
+    affiliation_Q = Q(affiliation__icontains=main_search)
+    publicinfo_Q = Q(public_info__icontains=main_search)
+
+    results = OBC_user.objects.filter(username_Q | affiliation_Q | publicinfo_Q)
+
+    users_search_jstree = []
+    for result in results:
+        to_add = {
+            'data': {'username': result.user.username},
+            'text': result.user.username,
+            'id': result.user.username,
+            'parent': '#',
+            'state': { 'opened': True},
+        }
+        users_search_jstree.append(to_add)
+
+    ret = {
+        'main_search_users_number': results.count(),
+        'users_search_jstree': users_search_jstree,
+    }
+
+    return ret
+
+
+### END OF USERS 
 
 def index(request):
     '''
@@ -724,38 +836,41 @@ def logout(request):
     django_logout(request)
     return redirect('/')
 
-def user_data_get(request):
-    '''
-    View url: user_data_get
-    GET THE DATA OF THE LOGGED-IN USER
-    It does not have the @has_data decorator because it has.. no data
-    '''
+#def user_data_get(request):
+#    '''
+#    View url: user_data_get
+#    GET THE DATA OF THE LOGGED-IN USER
+#    It does not have the @has_data decorator because it has.. no data
+#    '''
+#
+#    user = request.user
+#    obc_user = OBC_user.objects.get(user=user)
+#    ret = {
+#        'user_first_name': obc_user.first_name,
+#        'user_last_name': obc_user.last_name,
+#        'user_email': user.email,
+#        'user_website': obc_user.website,
+#        'user_public_info': obc_user.public_info,
+#    }
+#
+#    return success(ret)
 
-    user = request.user
-    obc_user = OBC_user.objects.get(user=user)
-    ret = {
-        'user_first_name': obc_user.first_name,
-        'user_last_name': obc_user.last_name,
-        'user_email': user.email,
-        'user_website': obc_user.website,
-        'user_public_info': obc_user.public_info,
-    }
-
-    return success(ret)
-
-@has_data
-def user_data_set(request, **kwargs):
-    user = request.user
-    obc_user = OBC_user.objects.get(user=user)
-
-    obc_user.first_name = None_if_empty_or_nonexisting(kwargs, 'user_first_name')
-    obc_user.last_name = None_if_empty_or_nonexisting(kwargs, 'user_last_name')
-    obc_user.website = None_if_empty_or_nonexisting(kwargs, 'user_website')
-    obc_user.public_info = None_if_empty_or_nonexisting(kwargs, 'user_public_info')
-
-    obc_user.save()
-
-    return success()
+#@has_data
+#def user_data_set(request, **kwargs):
+#    '''
+#    Deprecated
+#    '''
+#    user = request.user
+#    obc_user = OBC_user.objects.get(user=user)
+#
+#    obc_user.first_name = None_if_empty_or_nonexisting(kwargs, 'user_first_name')
+#    obc_user.last_name = None_if_empty_or_nonexisting(kwargs, 'user_last_name')
+#    obc_user.website = None_if_empty_or_nonexisting(kwargs, 'user_website')
+#    obc_user.public_info = None_if_empty_or_nonexisting(kwargs, 'user_public_info')
+#
+#    obc_user.save()
+#
+#    return success()
 
 @has_data
 def tools_search_1(request, **kwargs):
@@ -1582,6 +1697,7 @@ def reports_search_2(
     main_search,
     ):
     '''
+    Collect all reports from main search
     '''
 
     nice_id_Q = Q(nice_id__contains=main_search)
@@ -1633,9 +1749,8 @@ def reports_search_2(
 @has_data
 def reports_search_3(request, **kwargs):
     '''
+    Search for an individual report
     '''
-
-
 
     run = kwargs['run']
 
@@ -1669,6 +1784,8 @@ def reports_search_3(request, **kwargs):
     ret = {
         'report_workflow_name': workflow.name,
         'report_workflow_edit': workflow.edit,
+        'report_username': report.obc_user.user.username,
+        'report_created_at': datetime_to_str(report.created_at),
         'report_tokens': tokens,
         'workflow' : simplejson.loads(workflow.workflow),
     }
@@ -1676,6 +1793,274 @@ def reports_search_3(request, **kwargs):
     return success(ret)
 
 ### END OF REPORTS 
+
+### REFERENCES 
+
+
+def bibtex_to_html(content):
+    '''
+    Convert bibtex to html
+    Adapted from: http://pybtex-docutils.readthedocs.io/en/latest/quickstart.html#overview 
+    '''
+    
+    # Ideally we could have these variables set only once,
+    # But it is not allowed to have multiuple entries.
+    pybtex_style = pybtex.plugin.find_plugin('pybtex.style.formatting', 'plain')()
+    pybtex_html_backend = pybtex.plugin.find_plugin('pybtex.backends', 'html')()
+    pybtex_parser = pybtex.database.input.bibtex.Parser()
+
+    try:
+        data = pybtex_parser.parse_stream(six.StringIO(content))
+    except pybtex.scanner.TokenRequired as e:
+        return False, 'Error during parsing BIBTEX: ' + str(e), None
+
+    if len(data.entries) == 0:
+        return False, 'Could not find any BIBTEX entry', None
+
+    if len(data.entries) > 1:
+        return False, 'Detected more than one entries in BIBTEX. Only one is allowed', None
+
+    fields = {}
+    for entry_key, entry_value in data.entries.items():
+        fields[entry_key] = {}
+        for field_key, field_value in entry_value.fields.items():
+            fields[entry_key][field_key] = field_value
+
+    data_formatted = pybtex_style.format_entries(six.itervalues(data.entries))
+
+    output = io.StringIO()
+    pybtex_html_backend.write_to_stream(data_formatted, output)
+    html = output.getvalue()
+
+    html_s = html.split('\n')
+    html_s = html_s[9:-2]
+    new_html = '\n'.join(html_s).replace('<dd>', '').replace('</dd>', '')
+
+    return True, new_html, fields
+
+
+@has_data
+def references_generate(request, **kwargs):
+    '''
+    Generate HTML reference from bibtex
+    '''
+
+    references_BIBTEX = kwargs['references_BIBTEX']
+    suc, str_response, fields = bibtex_to_html(references_BIBTEX)
+
+    if not suc:
+        return fail(str_response)
+
+    name = list(fields.keys())[0] # first key
+    title = fields[name].get('title', '')
+    # check if it is enclised in brackets {title}
+    m = re.match(r'{(.*)}', title)
+    if m:
+        title = m.group(1)
+
+    ret = {
+        'references_name': name,
+        'references_formatted': str_response,
+        'references_title': title,
+        'references_doi': fields[name].get('doi', ''),
+        'references_url': fields[name].get('url', ''),
+    }
+
+    return success(ret)
+
+@has_data
+def references_add(request, **kwargs):
+    '''
+    Add a new reference
+    '''
+
+    # Check user
+    if request.user.is_anonymous:
+        return fail('Please login to create References')
+
+
+    references_name = kwargs.get('references_name', '')
+    if not references_name:
+        return fail('References Name is required')
+    if not re.match(r'\w+', references_name):
+        return fail('Invalid Reference Name. It should contain only letters and numbers')
+
+    references_title = kwargs.get('references_title', '')
+    if not references_title:
+        return fail('References Title is required')
+
+    references_url = kwargs.get('references_url', '')
+    if not references_url:
+        return fail('References URL is required')
+    #Is there a reference with the same url?
+    url_ref = Reference.objects.filter(url=references_url)
+    if url_ref.exists():
+        return fail('A Reference with this URL already exists: {}'.format(url_ref.first().name))
+
+    # References are case insensitive!
+    references_name = references_name.lower()
+
+    #Are there any references with this name?
+    if Reference.objects.filter(name=references_name).exists():
+        return fail('A Reference with this name already exists')
+
+    # Is there a reference with the same SOI?
+    references_doi = kwargs.get('references_doi', None)
+    if references_doi:
+        doi_ref = Reference.objects.filter(doi=references_doi)
+        if doi_ref.exists():
+            return fail('A Reference with this DOI already exists: {}'.format(doi_ref.first().name))
+
+
+    # Check bibtex
+    references_BIBTEX = kwargs.get('references_BIBTEX', '')
+    reference_fields = []
+    html = None
+    if references_BIBTEX:
+        suc, str_response, fields = bibtex_to_html(references_BIBTEX)
+        if not suc:
+            return fail(str_response)
+
+        # It succeeded to parse BIBTEX. Get the html
+        html = str_response
+        name = list(fields.keys())[0] # first key
+
+        #Create (or get) ReferenceFields
+        reference_fields = [ReferenceField.objects.get_or_create(
+            key=reference_key,
+            value=reference_value,
+            )[0] for reference_key, reference_value in fields[name].items()]
+
+    # Create Reference object
+    reference = Reference(
+        obc_user = OBC_user.objects.get(user=request.user),
+        name = references_name,
+        url = references_url,
+        title = references_title,
+        doi = references_doi,
+        bibtex = references_BIBTEX if references_BIBTEX else None,
+        html = html,
+        notes = kwargs.get('references_notes', None),
+    )
+    reference.save()
+
+    # Add fields from BIBTEX
+    reference.fields.add(*reference_fields)
+    reference.save()
+
+    ret = {
+        'references_formatted': html,
+        'references_created_at': datetime_to_str(reference.created_at),
+        'references_username': request.user.username,
+    }
+
+    return success(ret)
+
+def references_search_2(
+    main_search,
+    ):
+    '''
+    Collect all references from main search
+    '''
+
+    name_Q = Q(name__icontains=main_search)
+    html_Q = Q(html__icontains=main_search)
+
+    results = Reference.objects.filter(name_Q | html_Q)
+    references_search_jstree = []
+
+    for result in results:
+        to_add = {
+            'data': {'name': result.name},
+            'text': result.name,
+            'id': result.name,
+            'parent': '#',
+            'state': { 'opened': True},
+        }
+        references_search_jstree.append(to_add)
+
+    ret = {
+        'main_search_references_number': results.count(),
+        'references_search_jstree': references_search_jstree,
+    }
+
+    return ret
+
+def qa_get_root_comment(comment):
+    '''
+    Take a comment in a nested thread and get the root comment
+    '''
+
+    if not comment.parent:
+        return comment
+
+    return qa_get_root_comment(comment.parent)
+
+def qa_search_2(main_search):
+    '''
+    Collect all Q&A from main search
+    '''
+    title_Q = Q(title__icontains=main_search)
+    comment_Q = Q(comment__icontains=main_search)
+
+    results = Comment.objects.filter(title_Q | comment_Q)
+
+    qa_search_tree = []
+    entries_in_tree = set()
+    for result in results:
+        # Get the root message
+        result_parent = qa_get_root_comment(result)
+
+        #Is this on the tree?
+        if result_parent.pk in entries_in_tree:
+            # It is already in the tree
+            continue
+        else:
+            entries_in_tree.add(result_parent.pk)
+
+        to_add = {
+            'data': {'id': result_parent.pk},
+            'text': result_parent.title,
+            'id': str(result_parent.pk),
+            'parent': '#',
+            'state': { 'opened': True},
+        }
+        qa_search_tree.append(to_add)
+
+    ret = {
+        'main_search_qa_number': len(qa_search_tree),
+        'qa_search_jstree': qa_search_tree,
+    }
+
+    return ret
+
+
+@has_data
+def references_search_3(request, **kwargs):
+    '''
+    '''
+
+    name = kwargs.get('name', '')
+    try:
+        reference = Reference.objects.get(name=name)
+    except ObjectDoesNotExist as e:
+        return fail('Could not find Reference') # This should never happen..
+
+    ret = {
+        'references_name': reference.name,
+        'references_title': reference.title,
+        'references_url': reference.url,
+        'references_doi': reference.doi,
+        'references_notes': reference.notes,
+        'references_BIBTEX': reference.bibtex,
+        'references_html': reference.html,
+        'references_created_at': datetime_to_str(reference.created_at),
+        'references_username': reference.obc_user.user.username,
+    }
+
+    return success(ret)
+
+### END OF REFERENCES 
 
 ### SEARCH 
 
@@ -1692,11 +2077,142 @@ def all_search_2(request, **kwargs):
     for key, value in reports_search_2(main_search).items():
         ret[key] = value
 
+    #Get references
+    for key, value in references_search_2(main_search).items():
+        ret[key] = value
+
+    #Get users
+    for key, value in users_search_2(main_search).items():
+        ret[key] = value
+
+    # Get QAs
+    for key, value in qa_search_2(main_search).items():
+        ret[key] = value
 
     return success(ret)
 
 
 ### END OF SEARCH
+
+### Q&A 
+
+@has_data
+def qa_add_1(request, **kwargs):
+    '''
+    Called from qa_add_1/
+    '''
+    qa_title = kwargs.get('qa_title', '')
+    if not qa_title:
+        return fail('Title should not be empty')
+
+    qa_comment = kwargs.get('qa_comment', '')
+    if not qa_comment:
+        return fail('Comment should not be empty')
+
+    if request.user.is_anonymous:
+        return fail('Please login to post a new question')
+    user = request.user
+
+    # We csannot have the same comment title more than once
+    if Comment.objects.filter(title__iexact=qa_title).exists():
+        return fail('A comment with this title already exists!')
+
+    #Create a new comment
+    comment = Comment(
+        obc_user=OBC_user.objects.get(user=user), 
+        comment=qa_comment,
+        title=qa_title,
+        parent=None,
+    )
+    comment.save()
+
+    ret = {
+        'id': comment.pk
+    }
+
+    return success(ret)
+
+@has_data
+def qa_search_3(request, **kwargs):
+    '''
+    path: qa_search_3/
+    Get a unique Q&A thread
+    '''
+
+    def qa_create_thread(comment):
+        '''
+        Create the children thread of a comment
+        '''
+        ret = []
+        for child in comment.children.all():
+            to_add = {
+                'comment': child.comment,
+                'id': child.pk,
+                'replying': False,
+                'children': qa_create_thread(child)
+            }
+            ret.append(to_add)
+        return ret
+
+
+    id_ = kwargs.get('qa_id', None)
+    if not id_:
+        return fail('Could not find Q&A id')
+
+    try:
+        comment = Comment.objects.get(pk=id_)
+    except ObjectDoesNotExist as e:
+        return fail('Could not find comment database object')
+
+#                $scope.qa_thread = [
+#                    {'comment': 'comment 1', 'id': 1, 'replying': false},
+#                    {'comment': 'comment 2', 'id': 2, 'replying': false}
+#                ];
+
+    ret = {
+        'qa_title': comment.title,
+        'qa_comment': comment.comment,
+        'qa_id': comment.pk,
+        'qa_thread': qa_create_thread(comment),
+    }
+
+    #print (simplejson.dumps(ret, indent=4))
+
+    return success(ret)
+
+@has_data
+def qa_add_comment(request, **kwargs):
+    '''
+    Add a comment at a Q&A question
+    '''
+    if request.user.is_anonymous:
+        return fail('Please login to add a new comment')
+
+    id_ = kwargs.get('qa_id', None)
+    if id_ is None:
+        return fail('Could not find Q&A id')
+
+    current_comment = kwargs.get('qa_comment', None)
+    if not current_comment:
+        return fail('Could not find Q&A new comment')
+
+    try:
+        parent_comment = Comment.objects.get(pk=id_)
+    except ObjectDoesNotExist as e:
+        return fail('Could not find comment database object')
+
+    new_comment = Comment(
+        obc_user=OBC_user.objects.get(user=request.user),
+        comment = current_comment,
+        parent=parent_comment,
+    )
+    new_comment.save()
+    parent_comment.children.add(new_comment)
+    parent_comment.save()
+
+    return success()
+
+### END OF Q&A
 
 ### VIEWS END ######
 
