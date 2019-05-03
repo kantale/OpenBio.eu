@@ -75,6 +75,8 @@ window.nodeAnimation('hello__1', 'running')
   publisher={Elsevier}
 }
 
+@inproceedings{Mislove2007, address = {New York, New York, USA}, author = {Mislove, Alan and Marcon, Massimiliano and Gummadi, Krishna P. and Druschel, Peter and Bhattacharjee, Bobby}, booktitle = {Proceedings of the 7th ACM SIGCOMM conference on Internet measurement - IMC '07}, doi = {10.1145/1298306.1298311}, file = {:Users/alexandroskanterakis/Library/Application Support/Mendeley Desktop/Downloaded/Mislove et al. - 2007 - Measurement and analysis of online social networks.pdf:pdf}, isbn = {9781595939081}, keywords = {analysis,measurement,social networks}, month = oct, pages = {29}, publisher = {ACM Press}, title = {{Measurement and analysis of online social networks}}, url = {http://dl.acm.org/citation.cfm?id=1298306.1298311}, year = {2007} }
+
 <div class="faster" id="userDataDiv" style="display: none;">
 	<ul id="userDataAccordion" class="collapsible expandable popout faster">
 	    <!-- --------------------------------------------------------------------------------------- -->
