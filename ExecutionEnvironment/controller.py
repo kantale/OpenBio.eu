@@ -39,7 +39,7 @@ import threading
 import subprocess
 import docker
 from queue import Queue as Thread_queue #  
-import stats
+# import stats
 from aiohttp import web
 import aiohttp_cors
 #from threading import Thread
@@ -237,12 +237,12 @@ def docker_build_cmd(this_id, Dockerfile_filename):
 
     --file , -f         Name of the Dockerfile (Default is ‘PATH/Dockerfile’)
     '''
-    return f'docker build --no-cache -t openbioc/{this_id} -f {Dockerfile_filename} .' ,f'openbioc/{this_id}'
+    return f'openbioc/{this_id}'
 
-def docker_remove_failed_builds_cmd():
-    '''
-    '''
-    return f'docker rmi -f $(docker images -f "dangling=true" -q)'
+# def docker_remove_failed_builds_cmd():
+#     '''
+#     '''
+#     return f'docker rmi -f $(docker images -f "dangling=true" -q)'
 
 
 def create_bash_script_filename(this_id):
@@ -286,8 +286,8 @@ def execute_docker_build(this_id, ostype, bash):
     print (f'Created Dockerfile: {Dockerfile_filename}')
 
 
-    command,image_name = docker_build_cmd(this_id, Dockerfile_filename)
-    print (f'Executing command: {command}')
+    image_name = docker_build_cmd(this_id, Dockerfile_filename)
+    print (f'Build starts --> {image_name}')
 
     return docker_build_image(Dockerfile_filename,image_name)
 
@@ -539,18 +539,6 @@ def worker(message_queue, w_id):
 
         time.sleep(1)
 
-def set_worker_for_stats(image_name):
-    '''
-    Create new worker inside of build-run worker to take the statistics
-    '''
-    stats_thread = threading.Thread(target= worker_for_stats, args=(image_name,))
-    stats_thread.start()
-
-def worker_for_stats(image_name):
-    print('WORKER for docker stats starts....')
-    print(image_name)
-    stats_res = stats.print_stats(image_name)
-    print(stats_res)
 #init_web_app()
 #start_init_web_app_thread()
 
@@ -565,6 +553,51 @@ def worker_for_stats(image_name):
 #t = threading.Thread(target=thr, args=(message_queue, ),)
 #t.start()
 
+def find_running_container(selected_image):
+    '''
+    Find the selected images which running as container to take the stats
+    '''
+    client = docker.from_env()
+    res = None
+    image=None
+    # image_name = image_name+':latest'
+    for container in client.containers.list():
+        if (container.attrs['Config']['Image'] == selected_image):
+            # If the image is inside of running containers take the res and 
+            # send to print_stats function
+            res = container.stats(stream=False)
+            image = container.attrs['Config']['Image']
+            # image_name = container.attrs['Config']['Image']
+    return res,image
+
+def get_stats(selected_image):
+    '''
+    get a snapshot of stats when the image build 
+    '''
+
+    logs={}
+    while True:
+        res,image = find_running_container(selected_image)
+
+        if res and image is not None: # Useless if
+            # print("Statistical results (JSON) :")
+            # print(container.status)
+            logs.update({'image_name': image})
+            logs.update(res['cpu_stats'])
+            if res['memory_stats'] is None:
+                print("System don't catch memory usages")
+            else:
+                logs.update(res['memory_stats'])
+            # Drop me keyerror if the system don't find networks (this key does not exist blah blah)
+            try:
+                logs.update(res['networks'])
+            except KeyError:
+                pass
+            print(logs)
+            # return logs
+
+
+
 def setup_worker_threads(message_queue, n):
     '''
     n = number of threads
@@ -576,6 +609,20 @@ def setup_worker_threads(message_queue, n):
         thread.start()
 
 import socket, errno
+
+def set_worker_for_stats(image_name):
+    '''
+    Create new worker inside of build-run worker to take the statistics(Only one thread)
+    '''
+    stats_thread = threading.Thread(target= worker_for_stats, args=(image_name,))
+    stats_thread.start()
+
+def worker_for_stats(image_name):
+    '''
+    '''
+    print('SUBWORKER : docker stats starts....')
+    stats_res = get_stats(image_name)
+    print(stats_res)
 
 def check_if_port_is_used(port):
     '''
