@@ -151,9 +151,9 @@ window.onload = function () {
                     // ----------------------------------------------------------------------------------------------
                     // ---------------------------------------- DELETE START ----------------------------------------
                     // ----------------------------------------------------------------------------------------------
-                    if (event.id == 'references') {
-                        document.getElementById('referencesRightPanel').style.display = 'block';
-                    }
+                    //if (event.id == 'references') {
+                    //    document.getElementById('referencesRightPanel').style.display = 'block';
+                    //}
                     //else if (event.id == 'qa') {
                     //    document.getElementById('QARightPanel').style.display = 'block';
                     //}

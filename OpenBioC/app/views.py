@@ -1748,9 +1748,8 @@ def reports_search_2(
 @has_data
 def reports_search_3(request, **kwargs):
     '''
+    Search for an individual report
     '''
-
-
 
     run = kwargs['run']
 
@@ -1784,6 +1783,8 @@ def reports_search_3(request, **kwargs):
     ret = {
         'report_workflow_name': workflow.name,
         'report_workflow_edit': workflow.edit,
+        'report_username': report.obc_user.user.username,
+        'report_created_at': datetime_to_str(report.created_at),
         'report_tokens': tokens,
         'workflow' : simplejson.loads(workflow.workflow),
     }
@@ -1946,7 +1947,13 @@ def references_add(request, **kwargs):
     reference.fields.add(*reference_fields)
     reference.save()
 
-    return success()
+    ret = {
+        'references_formatted': html,
+        'references_created_at': datetime_to_str(reference.created_at),
+        'references_username': request.user.username,
+    }
+
+    return success(ret)
 
 def references_search_2(
     main_search,

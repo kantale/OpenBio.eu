@@ -247,12 +247,10 @@
                     <i class="material-icons left">whatshot</i>
                     <span class="left" style="margin-right: 10px;">Reports</span>
                     <span class="new badge" data-badge-caption="found" style="margin-left: 5px;" ng-bind="main_search_reports_number"></span>
-                    <a id="reportsPlusBtn" class="waves-effect btn green plusBtn right tooltipped" data-position="left"
-                        data-tooltip="create Report"><i class="material-icons plusIcon">add</i></a>
                 </div>
                 <div class="collapsible-body">
+                    <!--
                     <div class="row">
-                        <!-- Form -->
                         <form class="col s12">
                             <div class="input-field col s12">
                                 <i class="material-icons prefix">search</i>
@@ -261,6 +259,7 @@
                             </div>
                         </form>
                     </div>
+                    -->
                     <div class="row left-align">
                         <div class="col">
                             <div js-tree="reports_search_jstree_config" should-apply="reports_search_jstree_config_apply()"
@@ -281,11 +280,11 @@
                     <span class="new badge" data-badge-caption="found" style="margin-left: 5px;" ng-bind="main_search_references_number"></span>
                     <a id="referencesPlusBtn" class="waves-effect btn green plusBtn right tooltipped"
                         data-position="left" data-tooltip="create Reference"><i
-                            class="material-icons plusIcon">add</i></a>
+                            class="material-icons plusIcon" ng-click="references_plus_button_clicked()">add</i></a>
                 </div>
                 <div class="collapsible-body">
+                    <!--
                     <div class="row">
-                        <!-- Form -->
                         <form class="col s12">
                             <div class="input-field col s12">
                                 <i class="material-icons prefix">search</i>
@@ -294,6 +293,7 @@
                             </div>
                         </form>
                     </div>
+                    -->
                     <div class="row left-align">
                         <div class="col">
                             <div js-tree="references_search_jstree_config" should-apply="references_search_jstree_config_apply()"
@@ -314,8 +314,8 @@
                     <span class="new badge" data-badge-caption="found" style="margin-left: 5px;" ng-bind="main_search_users_number"></span>
                 </div>
                 <div class="collapsible-body">
+                    <!-- 
                     <div class="row">
-                        <!-- Form -->
                         <form class="col s12">
                             <div class="input-field col s12">
                                 <i class="material-icons prefix">search</i>
@@ -324,6 +324,7 @@
                             </div>
                         </form>
                     </div>
+                    -->
                     <div class="row left-align">
                         <div class="col">
                             <div js-tree="users_search_jstree_config" should-apply="users_search_jstree_config_apply()"
@@ -346,8 +347,8 @@
                         data-tooltip="create Question" ng-click="qa_plus_button_clicked()"><i class="material-icons plusIcon">add</i></a>
                 </div>
                 <div class="collapsible-body">
+                    <!--
                     <div class="row">
-                        <!-- Form -->
                         <form class="col s12">
                             <div class="input-field col s12">
                                 <i class="material-icons prefix">search</i>
@@ -356,6 +357,7 @@
                             </div>
                         </form>
                     </div>
+                    -->
                     <div class="row left-align">
                         <div class="col">
                             <div js-tree="qa_search_jstree_config" should-apply="qa_search_jstree_config_apply()"
