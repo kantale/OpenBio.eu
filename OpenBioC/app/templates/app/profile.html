@@ -42,36 +42,33 @@
                                             </div>
                                             <div class="col s9">
                                                 <div class="input-field col s12">
-                                                    <input id="profileFirstname" type="text" class="validate">
+                                                    <input id="profileFirstname" type="text" class="validate" ng-model="profile_firstname">
                                                     <label for="profileFirstname">Firstname</label>
                                                 </div>
                                                 <div class="input-field col s12">
-                                                    <input id="profileLastname" type="text" class="validate">
+                                                    <input id="profileLastname" type="text" class="validate" ng-model=profile_lastname>
                                                     <label for="profileLastname">Lastname</label>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="input-field col s12">
-                                            <input id="profileUsername" type="text" class="validate"
-                                                value="username1234" disabled>
+                                            <input id="profileUsername" type="text" class="validate" ng-model="username" disabled>
                                             <label for="profileUsername">Username</label>
                                         </div>
                                         <div class="input-field col s12">
-                                            <input id="profileEmail" type="email" class="validate" value="mail@mail.com"
-                                                disabled>
+                                            <input id="profileEmail" type="email" class="validate" ng-model="profile_email" disabled>
                                             <label for="profileEmail">Email</label>
                                         </div>
                                         <div class="input-field col s12">
-                                            <input id="profileWebsite" type="text" class="validate"
-                                                value="www.blah.com">
+                                            <input id="profileWebsite" type="text" class="validate" ng-model="profile_website">
                                             <label for="profileWebsite">Website</label>
                                         </div>
                                         <div class="input-field col s12">
-                                            <input id="profileAffiliation" type="text" class="validate">
+                                            <input id="profileAffiliation" type="text" class="validate" ng-model="profile_affiliation">
                                             <label for="profileAffiliation">Affiliation</label>
                                         </div>
                                         <div class="input-field col s12">
-                                            <textarea id="profilePublicInfo" class="materialize-textarea"></textarea>
+                                            <textarea id="profilePublicInfo" class="materialize-textarea" ng-model="profile_publicinfo"></textarea>
                                             <label for="profilePublicInfo">Public Information</label>
                                         </div>
                                     </form>
@@ -95,7 +92,7 @@
                                 </div>
                             </div>
                             <div class="card-action right-align">
-                                <button class="btn waves-effect waves-light" type="submit" name="action">Update</button>
+                                <button class="btn waves-effect waves-light" name="action" ng-click="profile_update_clicked()">Update</button>
                             </div>
                         </div>
                     </section>

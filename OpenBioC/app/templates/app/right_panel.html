@@ -72,6 +72,7 @@
                                     <textarea id="generalDescription" class="validate materialize-textarea"
                                         ng-model="tool_description" ng-disabled="!tools_info_editable"></textarea>
                                     <label for="generalDescription">Description</label>
+                                    <span ng-bind-html="tool_description"></span>
                                 </div>
                                 <div class="input-field col s12 grid-s12-m12-l12" ng-show="tools_info_forked_from">
                                     <textarea id="generalEditSummary" class="validate materialize-textarea"
@@ -79,11 +80,12 @@
                                     <label for="generalEditSummary">Edit Summary</label>
                                 </div>
                                 <div id="toolChips" class="input-field chips left-align col s12 grid-s12-m12-l12"
-                                    ng-disabled="!tools_info_editable"></div>
+                                    ng-disabled="!tools_info_editable">
+                                </div>
+                            </div>
                         </form>
                     </div>
-        </div>
-        </li>
+                </li>
 
         <!-- --------------------------------------------------------------------------------------- -->
         <!-- -------------------------------- Dependencies ----------------------------------------- -->
@@ -601,6 +603,22 @@
     <!-- ------------------------------------------------------ Reports Right Panel ---------------------------------------------------------------------- -->
     <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
     <div class="faster" id="reportsRightPanel" style="display: none;">
+        <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
+            <div class="row left-align">
+                <div class="col s2">
+                    <h5>Workflow:</h5>
+                </div>
+                <div class="col s6">
+                    <h5><span ng-bind="report_workflow_name"></span>/<span ng-bind="report_workflow_edit"></span></h5>
+                </div>
+                <div class="col s4">
+                    <h5>Run:<span ng-bind="report_workflow_run"></span></h5>
+                </div>
+            </div>
+            <small class="form-text text-muted">
+                <span ng-bind="report_username"></span>, created at: <span ng-bind="report_created_at"></span>
+            </small>
+        </div>
         <ul id="reportsRightPanelAccordion" class="collapsible expandable popout faster">
             <!-- --------------------------------------------------------------------------------------- -->
             <!-- ------------------------------------ General ------------------------------------------ -->
@@ -613,21 +631,6 @@
                 </div>
                 <div class="collapsible-body">
                     <form class="col s12">
-                        <div class="row">
-
-                            <div class="input-field col s12 m4 grid-s12-m4-l4">
-                                <input id="generalReportsName" type="text" class="validate" ng-model="report_workflow_name" ng-disabled="true">
-                                <label for="generalReportsName">Workflow Name</label>
-                            </div>
-                            <div class="input-field col s12 m4 grid-s12-m4-l4">
-                                <input id="generalReportsEdit" type="text" class="validate" ng-model="report_workflow_edit" ng-disabled="true">
-                                <label for="generalReportsEdit">Edit</label>
-                            </div>
-                            <div class="input-field col s12 m4 grid-s12-m4-l4">
-                                <input id="generalReportsRun" type="text" class="validate" ng-model="report_workflow_run" ng-disabled="true">
-                                <label for="generalReportsRun">Run</label>
-                            </div>
-                        </div>
                         <div class="row left-align">
                             <ul>
                                 <li ng-repeat="token in report_tokens track by token.token">
@@ -701,11 +704,9 @@
     <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
     <div class="faster" id="referencesRightPanel" style="display: none;">
         <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
-            <p>
+            <div ng-show="!references_info_editable">
                 <h5>
-                    <!-- <span ng-bind="tools_info_name"></span>/<span ng-bind="tools_info_version"></span><span
-                            ng-show="!tools_info_editable">/<span ng-bind="tools_info_edit"></span></span> -->
-                    <span>Name</span>/<span>Version</span><span>/<span>Edit</span></span>
+                    <span ng-bind="references_name"></span>
                 </h5>
                 <small class="form-text text-muted">
                     <!-- <span ng-bind="tool_info_username"></span>
@@ -715,11 +716,16 @@
                                 ng-click="tools_search_show_item(tools_info_forked_from)"><span
                                     ng-bind="tools_info_forked_from | tool_label"></span></a></span>
                         <span>USED IN 86 WFs</span> -->
-                    <span>Username</span>
-                    <span>, created at <span>Tue, 12 Feb 2019 10:23:29</span></span>
+                    <span ng-bind="references_username"></span>
+                    <span>, created at <span ng-bind="references_created_at"></span></span>
                     <span>USED IN 86 WFs</span>
                 </small>
-            </p>
+                <div class="card blue-grey darken-1">
+                    <div class="card-content white-text">
+                        <p><span ng-bind-html="references_formatted"></span></p>
+                    </div>
+                </div>
+            </div>
             <!-- Buttons -->
             <div class="row right-align">
                 <a id="expandAllBtn3" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
@@ -730,7 +736,7 @@
                         data-tooltip="Save" ng-click="tool_create_save_pressed()" ng-show="tools_info_editable"><i
                             class="material-icons">save</i></a> -->
                 <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
-                    data-tooltip="Save"><i class="material-icons">save</i></a>
+                    data-tooltip="Save" ng-click="references_create_save_pressed()" ng-show="references_info_editable"><i class="material-icons">save</i></a>
             </div>
         </div>
 
@@ -745,41 +751,70 @@
                     General
                 </div>
                 <div class="collapsible-body">
-                    <div class="row">
+                    <div class="row" ng-show="references_info_editable">
                         <form class="col s12">
                             <div class="input-field">
-                                <textarea id="referencesGeneralDescription"
-                                    class="validate materialize-textarea"></textarea>
-                                <label for="referencesGeneralDescription">Description</label>
+                                <input id="referencesGeneralName" type="text" class="validate" ng-model="references_name" required>
+                                <label for="referencesGeneralName">Name</label>
                             </div>
                             <div class="input-field">
-                                <input id="referencesGeneralURL" type="text" class="validate">
-                                <label for="referencesGeneralURL">URL</label>
+                                <input id="referencesGeneralTitle" type="text" class="validate" ng-model="references_title" required>
+                                <label for="referencesGeneralTitle">Title</label>
                             </div>
                             <div class="input-field">
-                                <input id="referencesGeneralDOI" type="text" class="validate">
+                                <input id="referencesGeneralURL" type="text" class="validate" ng-model="references_url" required>
+                                <label for="referencesGeneralURL">URL </label>
+                            </div>
+                            <div class="input-field">
+                                <input id="referencesGeneralDOI" type="text" class="validate" ng-model="references_doi">
                                 <label for="referencesGeneralDOI">DOI</label>
                             </div>
+                            <div class="input-field">
+                                <textarea id="referencesGeneralNotes"
+                                    class="validate materialize-textarea" ng-model="references_notes"></textarea>
+                                <label for="referencesGeneralNotes">Notes</label>
+                            </div>
                             <div class="input-field" style="margin-bottom: 0px;">
-                                <textarea id="referencesGeneralBIBTEX" class="validate materialize-textarea"></textarea>
+                                <textarea id="referencesGeneralBIBTEX" class="validate materialize-textarea" ng-model="references_BIBTEX"></textarea>
                                 <label for="referencesGeneralBIBTEX">BIBTEX</label>
                             </div>
                             <div class="right-align">
-                                <a class="waves-effect waves-light btn-small">Generate</a>
+                                <a class="waves-effect waves-light btn-small" ng-click="references_generate_clicked()">Generate</a>
                             </div>
-                            <div>
-                                <h5>Formatted References</h5>
-                                <p>
-                                    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry
-                                    richardson
-                                    ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food
-                                    truck
-                                    quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a
-                                    bird
-                                    on
+                            <div class="left-align">
+                                <h5>Formatted Reference:</h5>
+                                <p><span ng-bind-html="references_formatted"></span>
                                 </p>
                             </div>
                         </form>
+                    </div>
+                    <div class="row" ng-show="!references_info_editable">
+                        <div class="col s12">
+                            <div class="row left-align">
+                                <div class="col s3"><b>Name:</b></div>
+                                <div class="col s9"><span ng-bind="references_name"></span></div>
+                            </div>
+                            <div class="row left-align">
+                                <div class="col s3"><b>Title:</b></div>
+                                <div class="col s9"><span ng-bind="references_title"></span></div>
+                            </div>
+                            <div class="row left-align">
+                                <div class="col s3"><b>URL:</b></div>
+                                <div class="col s9"><span ng-bind="references_url"></span></div>
+                            </div>
+                            <div class="row left-align">
+                                <div class="col s3"><b>DOI:</b></div>
+                                <div class="col s9"><span ng-bind="references_doi"></span></div>
+                            </div>
+                            <div class="row left-align">
+                                <div class="col s3"><b>Notes:</b></div>
+                                <div class="col s9"><span ng-bind="references_notes"></span></div>
+                            </div>
+                            <div class="row left-align">
+                                <div class="col s3"><b>BIBTEX:</b></div>
+                                <div class="col s9"><span ng-bind="references_BIBTEX"></span></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </li>
@@ -837,7 +872,162 @@
                 </div>
             </li>
         </ul>
-
     </div>
+
+    <!-- USERS RIGHT PANEL -->
+
+    <div class="faster" id="userDataDiv" style="display: none;">
+        <ul id="userDataAccordion" class="collapsible expandable popout faster">
+            <!-- --------------------------------------------------------------------------------------- -->
+            <!-- ------------------------------------ General ------------------------------------------ -->
+            <!-- --------------------------------------------------------------------------------------- -->
+            <li id="usersDataGeneral">
+                <div class="collapsible-header">
+                    <i class="material-icons arrow">keyboard_arrow_right</i>
+                    <i class="material-icons">info</i>
+                    General
+                </div>
+                <div class="collapsible-body">
+                    <form class="col s12">
+                        <div class="row left-align">
+                            <div class="col s3"><b>First Name:</b></div>
+                            <div class="col s9"><span ng-bind="user_firstname"></span></div>
+                        </div>
+                        <div class="row left-align">
+                            <div class="col s3"><b>Second Name:</b></div>
+                            <div class="col s9"><span ng-bind="user_lastname"></span></div>
+                        </div>
+                        <div class="row left-align">
+                            <div class="col s3"><b>Website:</b></div>
+                            <div class="col s9"><span ng-bind="user_website"></span></div>
+                        </div>
+                        <div class="row left-align">
+                            <div class="col s3"><b>Affiliation:</b></div>
+                            <div class="col s9"><span ng-bind="user_affiliation"></span></div>
+                        </div>
+                        <div class="row left-align">
+                            <div class="col s3"><b>Info:</b></div>
+                            <div class="col s9"><span ng-bind="user_publicinfo"></span></div>
+                        </div>
+                    </form>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <!-- END OF USER RIGHT PANEL -->
+
+    <!-- Q&A RIGHT PANEL -->
+    <div class="faster" id="QARightPanel" style="display: none;">
+        <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
+            <ul id="QARightPanelAccordion" class="collapsible expandable popout faster">
+                <!-- --------------------------------------------------------------------------------------- -->
+                <!-- ------------------------------------ General ------------------------------------------ -->
+                <!-- --------------------------------------------------------------------------------------- -->
+                <li id="QAGeneral">
+                    <div class="collapsible-header">
+                        <i class="material-icons arrow">keyboard_arrow_right</i>
+                        <i class="material-icons">info</i>
+                        General
+                    </div>
+                    <div class="collapsible-body">
+                        <div class="row" ng-show="qa_info_editable">
+                            <form class="col s12">
+                                <div class="input-field">
+                                    <div class="input-field">
+                                        <input id="qatitle" type="text" class="validate" ng-model="qa_title">
+                                        <label for="qatitle">Title</label>
+                                    </div>
+
+                                    <div class="input-field">
+                                        <textarea id="comment" class="validate materialize-textarea" ng-model="qa_comment"></textarea>
+                                        <label for="comment">Comment</label>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="row" ng-show="!qa_info_editable">
+                            <div class="row left-align">
+                                <b><span ng-bind="qa_title"></span></b>
+                            </div>
+                            <div class="row left-align">
+                                <span ng-bind="qa_comment"></span>
+                            </div>
+                            <div class="row right-align">
+                                <button ng-click="qa_add_comment_button_pressed()">Add Comment</button>
+                            </div>
+                            <div class="input-field" ng-show="qa_show_new_comment">
+                                <textarea class="validate" ng-model="qa_current_comment"></textarea>
+                                <button ng-click="qa_comment_save_button_pressed()">Save</button>
+                                <button ng-click="qa_comment_cancel_button_pressed()">Cancel</button>
+
+                            </div>
+                            <ul class="collection">
+                                <li class="collection-item" ng-repeat="post in qa_thread track by post.id">
+                                    <span ng-bind="post.comment"></span>
+                                    <button ng-click="qa_reply_button_clicked(post.id)">Reply</button>
+                                    <div class="input-field" ng-show="post.replying">
+                                        <textarea class="validate" ng-model="qa_current_reply"></textarea>
+                                        <button ng-click="qa_reply_save_button_pressed(post.id, qa_current_reply)">Save</button>
+                                        <button ng-click="qa_reply_cancel_button_pressed(post.id)">Cancel</button>
+                                    </div>
+                                    <ul class="collection">
+                                        <li class="collection-item" ng-repeat="post2 in post.children track by post2.id">
+                                            <span ng-bind="post2.comment"></span><button ng-click="qa_reply_button_clicked(post2.id)">Reply</button>
+                                            <div class="input-field" ng-show="post2.replying">
+                                                <textarea class="validate" ng-model="qa_current_reply"></textarea>
+                                                <button ng-click="qa_reply_save_button_pressed(post2.id, qa_current_reply)">Save</button>
+                                                <button ng-click="qa_reply_cancel_button_pressed(post2.id)">Cancel</button>
+                                            </div>
+                                            <ul class="collection">
+                                                <li class="collection-item" ng-repeat="post3 in post2.children track by post3.id">
+                                                    <span ng-bind="post3.comment"></span><button ng-click="qa_reply_button_clicked(post3.id)">Reply</button>
+                                                    <div class="input-field" ng-show="post3.replying">
+                                                        <textarea class="validate" ng-model="qa_current_reply"></textarea>
+                                                        <button ng-click="qa_reply_save_button_pressed(post3.id, qa_current_reply)">Save</button>
+                                                        <button ng-click="qa_reply_cancel_button_pressed(post3.id)">Cancel</button>
+                                                    </div>
+                                                    <ul class="collection">
+                                                        <li class="collection-item" ng-repeat="post4 in post3.children track by post4.id">
+                                                            <span ng-bind="post4.comment"></span><button ng-click="qa_reply_button_clicked(post4.id)">Reply</button>
+                                                            <div class="input-field" ng-show="post4.replying">
+                                                                <textarea class="validate" ng-model="qa_current_reply"></textarea>
+                                                                <button ng-click="qa_reply_save_button_pressed(post4.id, qa_current_reply)">Save</button>
+                                                                <button ng-click="qa_reply_cancel_button_pressed(post4.id)">Cancel</button>
+                                                            </div>
+                                                            <ul class="collection">
+                                                                <li class="collection-item" ng-repeat="post5 in post4.children track by post5.id">
+                                                                    <span ng-bind="post5.comment"></span>
+                                                                    <!-- We allow for 5 levels of comment nesting -->
+                                                                    <!--
+                                                                    <button ng-click="qa_reply_button_clicked(post5.id)">Reply</button>
+                                                                    <div class="input-field" ng-show="post5.replying">
+                                                                        <textarea class="validate" ng-model="qa_current_reply"></textarea>
+                                                                        <button ng-click="qa_reply_save_button_pressed(post5.id, qa_current_reply)">Save</button>
+                                                                        <button ng-click="qa_reply_cancel_button_pressed(post5.id)">Cancel</button>
+                                                                    </div>
+                                                                    -->
+                                                                </li>
+                                                            </ul>
+                                                        </li>
+                                                    </ul>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="row right-align" ng-show="qa_info_editable">
+                            <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
+                                data-tooltip="Save" ng-click="qa_create_save_pressed()" ng-disabled="(!qa_title) || (!qa_comment)"><i class="material-icons">save</i></a>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <!-- END OF Q&A RIGHT PANEL-->
+
+
 </div>
 </div>

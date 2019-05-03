@@ -214,15 +214,73 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.main_container_show = true;
     };
 
+    /*
+    * Sidebar user menu --> Profile --> Clicked
+    */
     $scope.navbar_profile_clicked = function() {
         $scope.main_container_show = false;
         $scope.profile_container_show = true;
+
+        //Fetch profile info
+        $scope.ajax(
+            'users_search_3/',
+            {
+                'username': $scope.username
+            },
+            function(data) {
+                $scope.profile_firstname = data['profile_firstname'];
+                $scope.profile_lastname = data['profile_lastname'];
+                $scope.profile_email = data['profile_email'];
+                $scope.profile_website = data['profile_website'];
+                $scope.profile_affiliation = data['profile_affiliation'];
+                $scope.profile_publicinfo = data['profile_publicinfo'];
+
+                $timeout(function(){M.updateTextFields()}, 10);
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
+
     };
 
-    $scope.profile_save_pressed = function() {
-        $scope.main_container_show = true;
-        $scope.profile_container_show = false;
+    /*
+    * profile --> Edits --> update button --> pressed
+    */
+    $scope.profile_update_clicked =  function() {
+        $scope.ajax(
+            'users_edit_data/',
+            {
+                username: $scope.username,
+                profile_firstname: $scope.profile_firstname,
+                profile_lastname: $scope.profile_lastname,
+                profile_website: $scope.profile_website,
+                profile_affiliation: $scope.profile_affiliation,
+                profile_publicinfo: $scope.profile_publicinfo
+            },
+            function(data) {
+                $scope.toast('Profile data succesfully changed', 'success');
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
+
     };
+
+    /*
+    * DEPRECATED
+    */ 
+//    $scope.profile_save_pressed = function() {
+//        $scope.main_container_show = true;
+//        $scope.profile_container_show = false;
+//    };
 
 
     /*
@@ -354,62 +412,65 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     /*
     * Navbar -> username (pressed) -> "Update my profile" button pressed
+    * DEPRECATED
     */
-    $scope.user_profile_update_pressed = function() {
-        $scope.ajax(
-            'user_data_set/',
-            {
-                'user_first_name': $scope.user_first_name,
-                'user_last_name': $scope.user_last_name,
-                'user_email': $scope.user_email,
-                'user_website': $scope.user_website,
-                'user_public_info': $scope.user_public_info
-            },
-            function(data) {
-                $scope.user_profile_success_message = 'User\'s profile updated';
-            },
-            function(data) {
-                $scope.user_profile_error_message = data['error_message'];
-            },
-            function(statusText) {
-                $scope.user_profile_error_message = statusText;
-            }
-        );
-    };
+//    $scope.user_profile_update_pressed = function() {
+//        $scope.ajax(
+//            'user_data_set/',
+//            {
+//                'user_first_name': $scope.user_first_name,
+//                'user_last_name': $scope.user_last_name,
+//                'user_email': $scope.user_email,
+//                'user_website': $scope.user_website,
+//                'user_public_info': $scope.user_public_info
+//            },
+//            function(data) {
+//                $scope.user_profile_success_message = 'User\'s profile updated';
+//            },
+//            function(data) {
+//                $scope.user_profile_error_message = data['error_message'];
+//            },
+//            function(statusText) {
+//                $scope.user_profile_error_message = statusText;
+//            }
+//        );
+//    };
 
     /*
     * Fetch user data
+    * DEPRECETATED
     */
-    $scope.inner_fetch_user_data = function() {
-        $scope.ajax(
-            'user_data_get/',
-            { // This is empty deliberately. Get the user data of the logged in user.
-            },
-            function(data) {
-                $scope.user_first_name = $filter('ifNull')(data['user_first_name'], '');
-                $scope.user_last_name = $filter('ifNull')(data['user_last_name'], '');
-                $scope.user_email = data['user_email'];
-                $scope.user_website = $filter('ifNull')(data['user_website'], '');
-                $scope.user_public_info = $filter('ifNull')(data['user_public_info'], '');
-            },
-            function(data) {
-                $scope.user_profile_error_message = data['error_message']; // Never executed
-            },
-            function(statusText) {
-                $scope.user_profile_error_message = statusText;
-            }
-        );
-    };
+    //$scope.inner_fetch_user_data = function() {
+    //    $scope.ajax(
+    //        'user_data_get/',
+    //        { // This is empty deliberately. Get the user data of the logged in user.
+    //        },
+    //        function(data) {
+    //            $scope.user_first_name = $filter('ifNull')(data['user_first_name'], '');
+    //            $scope.user_last_name = $filter('ifNull')(data['user_last_name'], '');
+    //            $scope.user_email = data['user_email'];
+    //            $scope.user_website = $filter('ifNull')(data['user_website'], '');
+    //            $scope.user_public_info = $filter('ifNull')(data['user_public_info'], '');
+    //        },
+    //        function(data) {
+    //            $scope.user_profile_error_message = data['error_message']; // Never executed
+    //        },
+    //        function(statusText) {
+    //            $scope.user_profile_error_message = statusText;
+    //        }
+    //    );
+    //};
 
     /*
     * Navbar (after login) --> username --> pressed
+    * DEPRECETATED
     */
-    $scope.navbar_username_pressed = function() {
-        $scope.inner_hide_all_navbar();
-        $scope.show_user_profile = true;
-        $scope.user_profile_success_message = '';
-        $scope.inner_fetch_user_data();
-    };
+//    $scope.navbar_username_pressed = function() {
+//        $scope.inner_hide_all_navbar();
+//        $scope.show_user_profile = true;
+//        $scope.user_profile_success_message = '';
+//        $scope.inner_fetch_user_data();
+//    };
 
 
     /*
@@ -486,8 +547,23 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 'main_search': $scope.main_search
             },
             function(data) {
+                //Reports
                 $scope.main_search_reports_number = data['main_search_reports_number'];
                 angular.copy(data['reports_search_jstree'], $scope.reports_search_jstree_model);
+
+                //References
+                $scope.main_search_references_number = data['main_search_references_number'];
+                angular.copy(data['references_search_jstree'], $scope.references_search_jstree_model);
+
+                //Users
+                $scope.main_search_users_number = data['main_search_users_number'];
+                angular.copy(data['users_search_jstree'], $scope.users_search_jstree_model);
+
+                // Q&As
+                $scope.main_search_qa_number = data['main_search_qa_number'];
+                angular.copy(data['qa_search_jstree'], $scope.qa_search_jstree_model);
+
+
             },
             function(data) {
 
@@ -574,10 +650,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
             },
             function(data) {
-
+                $scope.toast(data['error_message'], 'error');
             },
             function(statusText) {
-
+                $scope.toast(statusText, 'error');
             }
         );
     };
@@ -1402,16 +1478,37 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     $scope.reports_search_jstree_config_apply = function() {
         return true;
     };
+    $scope.references_search_jstree_config_apply = function() {
+        return true;
+    };
+    $scope.users_search_jstree_config_apply = function() {
+        return true;
+    };
+    $scope.qa_search_jstree_config_apply = function() {
+        return true;
+    };
+
+
 
     $scope.tools_search_jstree_model_init = [];
-
     $scope.tools_search_jstree_model = [];
     angular.copy($scope.tools_search_jstree_model_init, $scope.tools_search_jstree_model);
 
     $scope.reports_search_jstree_model_init = [];
-
     $scope.reports_search_jstree_model = [];
     angular.copy($scope.reports_search_jstree_model_init, $scope.reports_search_jstree_model);
+
+    $scope.references_search_jstree_model_init = [];
+    $scope.references_search_jstree_model = [];
+    angular.copy($scope.references_search_jstree_model_init, $scope.references_search_jstree_model);
+
+    $scope.users_search_jstree_model_init = [];
+    $scope.users_search_jstree_model = [];
+    angular.copy($scope.users_search_jstree_model_init, $scope.users_search_jstree_model);
+
+    $scope.qa_search_jstree_model_init = [];
+    $scope.qa_search_jstree_model = [];
+    angular.copy($scope.qa_search_jstree_model_init, $scope.qa_search_jstree_model);
 
 
     /* 
@@ -1461,12 +1558,111 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //The user might have clicked on a workflow node.
         if (data.node.data.type == 'report') {
 
-            //Open right report panel
-            document.getElementById('reportsRightPanel').style.display = 'block';
-
             $scope.report_workflow_run = data.node.data.run;
             $scope.reports_search_3({run: data.node.data.run});
         }
+    };
+
+    /*
+    * A node on the references search js tree is clicked.
+    */
+    $scope.references_search_jstree_select_node = function(e, data) {
+        console.log('References node clicked');
+        console.log(data);
+
+        $scope.references_search_3({name: data.node.data.name});
+    };
+
+    /*
+    * A node on the users search js tree is clicked
+    */
+    $scope.users_search_jstree_select_node = function(e, data) {
+        console.log('Users node clicked');
+
+        //Fetch user data
+        $scope.ajax(
+            'users_search_3/',
+            {
+                'username': data.node.data.username
+            },
+            function(data) {
+
+                $scope.hide_all_right_accordions('users'); // Hide everything except users
+
+                $scope.user_firstname = data['profile_firstname'];
+                $scope.user_lastname = data['profile_lastname'];
+                $scope.user_email = data['profile_email'];
+                $scope.user_website = data['profile_website'];
+                $scope.user_affiliation = data['profile_affiliation'];
+                $scope.user_publicinfo = data['profile_publicinfo'];
+
+                //Open right panel
+                document.getElementById('userDataDiv').style.display = 'block';
+                M.Collapsible.getInstance($('#userDataAccordion')).open();
+
+                $timeout(function(){M.updateTextFields()}, 10);
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
+
+    };
+
+    /*
+    * Fetch the data from a single Q&A and update the UI
+    */
+    $scope.qa_search_3 = function(qa) {
+        // Fetch thread
+        $scope.ajax(
+            'qa_search_3/',
+            {
+                'qa_id': qa.id
+            },
+            function(data) {
+                $scope.qa_title = data['qa_title'];
+                $scope.qa_comment = data['qa_comment'];
+                $scope.qa_comment_id = data['qa_id']; // The primary key to the Comment object in db
+
+                $scope.qa_info_editable = false;
+                $scope.qa_show_new_comment = false;
+
+//                $scope.qa_thread = [
+//                    {'comment': 'comment 1', 'id': 1, 'replying': false},
+//                    {'comment': 'comment 2', 'id': 2, 'replying': false}
+//                ];
+                
+                $scope.qa_thread = data['qa_thread'];
+
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
+
+    };
+
+    /*
+    * A node in the Q&A search js tree is clicked
+    */ 
+    $scope.qa_search_jstree_select_node = function(e, data) {
+        console.log('Q&A node clicked');
+
+        $scope.hide_all_right_accordions('qas'); // Close all right accordions except QAs
+
+        document.getElementById('QARightPanel').style.display = 'block';
+        M.Collapsible.getInstance($('#QARightPanelAccordion')).open();
+
+        //Fetch a QA data
+        $scope.qa_comment_id = data.node.data.id;
+        console.log('QA node clicked. qa_id:', $scope.qa_comment_id);
+        $scope.qa_search_3({id: $scope.qa_comment_id});
     };
 
     /*
@@ -1480,9 +1676,21 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 'run': report.run
             },
             function(data) {
+
+                //Hide all right accordions
+                $scope.hide_all_right_accordions('reports');
+
+                //Open right report panel
+                document.getElementById('reportsRightPanel').style.display = 'block';
+                M.Collapsible.getInstance($('#reportsRightPanelAccordion')).open();
+
+                //Fill data
                 $scope.report_workflow_name = data['report_workflow_name'];
                 $scope.report_workflow_edit = data['report_workflow_edit'];
+                $scope.report_username = data['report_username'];
+                $scope.report_created_at = data['report_created_at'];
                 $scope.report_tokens = data['report_tokens'];
+
 
                 /* Create the report workflow*/
                 window.createRepTree(data['workflow'].elements);
@@ -1495,6 +1703,70 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.toast(statusText, 'error');
             }
         )
+    };
+
+    /*
+    * Called from references_search_jstree_select_node
+    * Call the backend, fetch the data for a unique reference and update the UI
+    */
+    $scope.references_search_3 = function(reference) {
+        $scope.ajax(
+            'references_search_3/',
+            {
+                'name': reference.name
+            },
+            function(data) {
+                $scope.references_name = data['references_name'];
+                $scope.references_title = data['references_title'];
+                $scope.references_doi = data['references_doi'];
+                $scope.references_url = data['references_url'];
+                $scope.references_notes = data['references_notes'];
+                $scope.references_BIBTEX = data['references_BIBTEX'];
+                $scope.references_formatted = data['references_html'];
+                $scope.references_created_at = data['references_created_at']; // We currently do not do anything with this.
+                $scope.references_username = data['references_username']; // We currently do not do anything with this.
+
+                $scope.hide_all_right_accordions('references');
+                document.getElementById('referencesRightPanel').style.display = 'block';
+                M.Collapsible.getInstance($('#referencesRightPanelAccordion')).open();
+
+                $scope.references_info_editable = false;
+
+                $timeout(function(){M.updateTextFields()}, 10);
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
+    };
+
+    /*
+    * References "+" button clicked (create/add) a new Reference
+    */
+    $scope.references_plus_button_clicked = function() {
+        $scope.hide_all_right_accordions('references');
+
+        document.getElementById('referencesRightPanel').style.display = 'block';
+        M.Collapsible.getInstance($('#referencesRightPanelAccordion')).open();
+
+        $scope.references_info_editable = true;
+
+        //Empty all fields
+        $scope.references_name = '';
+        $scope.references_title = '';
+        $scope.references_doi = '';
+        $scope.references_url = '';
+        $scope.references_notes = '';
+        $scope.references_BIBTEX = '';
+        $scope.references_formatted = '';
+        $scope.references_created_at = null;
+        $scope.references_username = null;
+
+        $timeout(function(){M.updateTextFields()}, 10);
+
     };
 
     /*
@@ -1770,6 +2042,156 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     // Report search jstree config
     $scope.reports_search_jstree_config = {
+            core : {
+                multiple : false,
+                animation: true,
+                error : function(error) {
+                    $log.error('treeCtrl: error from js tree - ' + angular.toJson(error));
+                },
+                check_callback : function(operation, node, node_parent, node_position, more) { //https://stackoverflow.com/a/23486435/5626738
+
+                    console.log('First Tree Operation:', operation);
+
+                    if (operation === "move_node") {
+                        return false;
+                    }
+                    else if (operation === 'copy_node') {
+                        return false;
+                    }
+
+                    return true;
+                },
+                worker : true
+            },
+//            types : {
+//                default : {
+//                    icon : 'fa fa-flash'
+//                },
+//                star : {
+//                    icon : 'fa fa-star'
+//                },
+//                cloud : {
+//                    icon : 'fa fa-cloud'
+//                }
+//            },
+            version : 1,
+            plugins : ['dnd', 'types'],
+            types : {
+                default : {
+                    icon : 'fa fa-sitemap' //
+                }
+            },
+            dnd: {
+                is_draggable : function(node) {
+                    return true;
+                }
+            }
+            //plugins : ['types','checkbox']
+            //plugins : []
+    };
+
+    // References search jstree config
+    $scope.references_search_jstree_config = {
+            core : {
+                multiple : false,
+                animation: true,
+                error : function(error) {
+                    $log.error('treeCtrl: error from js tree - ' + angular.toJson(error));
+                },
+                check_callback : function(operation, node, node_parent, node_position, more) { //https://stackoverflow.com/a/23486435/5626738
+
+                    console.log('First Tree Operation:', operation);
+
+                    if (operation === "move_node") {
+                        return false;
+                    }
+                    else if (operation === 'copy_node') {
+                        return false;
+                    }
+
+                    return true;
+                },
+                worker : true
+            },
+//            types : {
+//                default : {
+//                    icon : 'fa fa-flash'
+//                },
+//                star : {
+//                    icon : 'fa fa-star'
+//                },
+//                cloud : {
+//                    icon : 'fa fa-cloud'
+//                }
+//            },
+            version : 1,
+            plugins : ['dnd', 'types'],
+            types : {
+                default : {
+                    icon : 'fa fa-sitemap' //
+                }
+            },
+            dnd: {
+                is_draggable : function(node) {
+                    return true;
+                }
+            }
+            //plugins : ['types','checkbox']
+            //plugins : []
+    };
+
+    // Users search jstree config
+    $scope.users_search_jstree_config = {
+            core : {
+                multiple : false,
+                animation: true,
+                error : function(error) {
+                    $log.error('treeCtrl: error from js tree - ' + angular.toJson(error));
+                },
+                check_callback : function(operation, node, node_parent, node_position, more) { //https://stackoverflow.com/a/23486435/5626738
+
+                    console.log('First Tree Operation:', operation);
+
+                    if (operation === "move_node") {
+                        return false;
+                    }
+                    else if (operation === 'copy_node') {
+                        return false;
+                    }
+
+                    return true;
+                },
+                worker : true
+            },
+//            types : {
+//                default : {
+//                    icon : 'fa fa-flash'
+//                },
+//                star : {
+//                    icon : 'fa fa-star'
+//                },
+//                cloud : {
+//                    icon : 'fa fa-cloud'
+//                }
+//            },
+            version : 1,
+            plugins : ['dnd', 'types'],
+            types : {
+                default : {
+                    icon : 'fa fa-sitemap' //
+                }
+            },
+            dnd: {
+                is_draggable : function(node) {
+                    return true;
+                }
+            }
+            //plugins : ['types','checkbox']
+            //plugins : []
+    };
+
+    // Q&A search jstree config
+    $scope.qa_search_jstree_config = {
             core : {
                 multiple : false,
                 animation: true,
@@ -2467,6 +2889,277 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     // REPORTS END 
 
+    // REFERENCES START
+
+    /*
+    * References --> Insert BIBTEX text --> Generate --> Clicked 
+    */
+    $scope.references_generate_clicked = function() {
+        $scope.ajax(
+            'references_generate/',
+            {
+                'references_BIBTEX': $scope.references_BIBTEX
+            },
+            function(data) {
+                $scope.references_formatted = data['references_formatted'];
+                $scope.references_name = data['references_name'];
+                $scope.references_title = data['references_title'];
+                $scope.references_doi = data['references_doi'];
+                $scope.references_url = data['references_url'];
+
+                $timeout(function(){M.updateTextFields()}, 10);
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
+    };
+
+    /*
+    * References --> Save --> Pressed
+    */
+    $scope.references_create_save_pressed = function() {
+
+        //Check reference name
+        if ($scope.references_name) {
+            if (!$scope.tools_name_regexp.test($scope.references_name)) {
+                $scope.toast('Invalid References name', 'error');
+                return;
+            }
+        }
+        else {
+           $scope.toast('References Name is required', 'error'); 
+           return;
+        }
+
+        //Check Title
+        if (!$scope.references_title) {
+            $scope.toast('References Title is required', 'error'); 
+            return;
+        }
+
+        //Check URL
+        if (!$scope.references_url) {
+            $scope.toast('References url is required', 'error'); 
+            return;
+        }
+
+        $scope.ajax(
+            'references_add/',
+            {
+                'references_name': $scope.references_name,
+                'references_title': $scope.references_title,
+                'references_url': $scope.references_url,
+                'references_doi': $scope.references_doi,
+                'references_notes': $scope.references_notes,
+                'references_BIBTEX': $scope.references_BIBTEX
+            },
+            function(data) {
+                $scope.toast('Reference successfully saved', 'success');
+                $scope.references_info_editable = false;
+
+                $scope.references_formatted = data['references_formatted'];
+                $scope.references_created_at = data['references_created_at'];
+                $scope.references_username = data['references_username'];
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
+
+    };
+
+    // REFERENCES END 
+
+    // QA
+    /*
+    * Q&A --> New Q&A --> Add Title + Comment --> Save button --> pressed 
+    */ 
+    $scope.qa_create_save_pressed = function() {
+
+        if (!$scope.username) {
+            $scope.toast('Plese login to post a new comment', 'error');
+            return;
+        }
+
+        $scope.ajax(
+            'qa_add_1/',
+            {
+                qa_title: $scope.qa_title,
+                qa_comment: $scope.qa_comment
+            },
+            function(data) {
+                $scope.toast('Comment successfully saved', 'success');
+                $scope.qa_info_editable = false;
+                $scope.qa_comment_id = data['id'];
+                $scope.qa_thread = [];
+
+                //EXPERIMENTAL!!! UPDATE SEARCH RESULTS
+                $scope.all_search_2();
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
+    };
+
+    /*
+    * Q&A "+" button clicked (create/add) a new Question
+    */
+    $scope.qa_plus_button_clicked = function() {
+
+        $scope.hide_all_right_accordions('qas');
+
+        document.getElementById('QARightPanel').style.display = 'block';
+        M.Collapsible.getInstance($('#QARightPanelAccordion')).open();
+
+        $scope.qa_info_editable = true;
+        $scope.qa_title = '';
+        $scope.qa_comment = '';
+    };
+
+    /* 
+    * Recursively search and set replying status
+    */
+    $scope.qa_set_replying = function(current_scope, current_id, value) {
+        for (var i=0; i<current_scope.length; i++) {
+            if (current_scope[i].id == current_id) {
+                current_scope[i].replying = value;
+            }
+            else {
+                current_scope[i].replying = false;
+            }
+            $scope.qa_set_replying(current_scope[i].children, current_id, value);
+        }
+    }
+
+
+    /*
+    * Q&A --> Show thread --> Reply button --> Clicked 
+    */
+    $scope.qa_reply_button_clicked = function(id) {
+
+        $scope.qa_set_replying($scope.qa_thread, id, true);
+        $scope.qa_current_reply = '';
+
+    };
+
+
+    /*
+    * Q&A --> Show Thread --> reply to a comment --> add text --> Save button --> Clicked 
+    */
+    $scope.qa_reply_save_button_pressed = function(id, comment) {
+        console.log('Reply to id: ', id);
+        console.log('Comment:', comment);
+
+        $scope.qa_add_comment(id, comment);
+        $scope.qa_current_reply = '';
+
+    };
+
+    /*
+    * Q&A --> Show Thread --> reply to a comment --> add text --> Cancel button --> Clicked 
+    */
+    $scope.qa_reply_cancel_button_pressed = function(id) {
+        $scope.qa_set_replying($scope.qa_thread, id, false);
+    };
+
+    /*
+    * Called by:
+    * 1. qa_comment_save_button_pressed to save a new comment (not reply)
+    * 2. qa_reply_save_button_pressed to save a REPLY (not comment)
+    */
+    $scope.qa_add_comment = function(id, comment) {
+        $scope.ajax(
+            'qa_add_comment/',
+            {
+                'qa_id': id,
+                'qa_comment': comment
+            },
+            function(data) {
+                //Update the UI
+                $scope.qa_search_3({id: $scope.qa_comment_id});
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
+
+    };
+
+    /*
+    * Q&A --> Show Thread --> Add Comment -(!NOT REPLY!) -> Add text --> Save button --> Clicked 
+    */
+    $scope.qa_comment_save_button_pressed = function() {
+        console.log('Save comment');
+        console.log('QA_COMMENT_ID: ', $scope.qa_comment_id);
+        console.log('Current Comment:', $scope.qa_current_comment);
+
+        $scope.qa_add_comment($scope.qa_comment_id, $scope.qa_current_comment);
+
+        $scope.qa_show_new_comment = false;
+    };
+
+    /*
+    * Q&A --> Show Thread --> Add Comment -(!NOT REPLY!) -> Add text --> Cancel button --> Clicked 
+    */
+    $scope.qa_comment_cancel_button_pressed = function() {
+        $scope.qa_show_new_comment = false;
+        $scope.qa_current_comment = '';
+    };
+
+    /*
+    * Q&A --> Show tread --> "Add Comment" button --> pressed
+    */
+    $scope.qa_add_comment_button_pressed = function() {
+        $scope.qa_show_new_comment = true;
+        $scope.qa_current_comment = '';
+    };
+
+    // QA END 
+
+    /*
+    * Hide all right accordions except from a single one
+    * except: The right panel not to close
+    */
+    $scope.hide_all_right_accordions = function(except) {
+
+        if (except != 'reports') {
+            document.getElementById('reportsRightPanel').style.display = 'none';
+            M.Collapsible.getInstance($('#reportsRightPanelAccordion')).close();
+        }
+
+        if (except != 'references') {
+            //Hide references
+            document.getElementById('referencesRightPanel').style.display = 'none';
+            M.Collapsible.getInstance($('#referencesRightPanelAccordion')).close();
+        }
+
+        if (except != 'users') {
+            //Hide Users
+            document.getElementById('userDataDiv').style.display = 'none';
+            M.Collapsible.getInstance($('#userDataAccordion')).close();
+        }
+
+        if (except != 'qas') {
+            //Hide Q&A
+            document.getElementById('QARightPanel').style.display = 'none';
+            M.Collapsible.getInstance($('#QARightPanelAccordion')).close();
+        }
+
+    }
 
 }); 
 
