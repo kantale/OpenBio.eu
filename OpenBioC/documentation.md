@@ -131,4 +131,54 @@ window.nodeAnimation('hello__1', 'running')
 </div>
 
 
+<div class="faster" id="referencesRightPanel" style="display: none;">
+    <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
+        <div ng-show="!references_info_editable">
+            <h5>
+                <span ng-bind="references_name"></span>
+            </h5>
+            <small class="form-text text-muted">
+                <!-- <span ng-bind="tool_info_username"></span>
+                    <span ng-show="!tools_info_editable">, created at <span
+                            ng-bind="tool_info_created_at"></span></span>
+                    <span ng-show="tools_info_forked_from">, forked from <a href
+                            ng-click="tools_search_show_item(tools_info_forked_from)"><span
+                                ng-bind="tools_info_forked_from | tool_label"></span></a></span>
+                    <span>USED IN 86 WFs</span> -->
+                <span ng-bind="references_username"></span>
+                <span>, created at <span ng-bind="references_created_at"></span></span>
+                <span>USED IN 86 WFs</span>
+            </small>
+            <div class="card blue-grey darken-1">
+                <div class="card-content white-text">
+                    <p><span ng-bind-html="references_formatted"></span></p>
+                </div>
+            </div>
+        </div>
+
+workflows_search_name
+workflows_search_edit
+workflows_search_input_changed()
+
+all_search_2() . VIEWS
+workflows_search_2(). VIEWS
+
+    ret = {
+        'workflows_search_tools_number' : results.count(),
+        'workflows_search_jstree' : workflows_search_jstree,
+    }
+
+553
+
+<div class="row" ng-show="!references_info_editable">
+    <div class="col s12">
+        <div class="row left-align">
+            <div class="col s3"><b>Name:</b></div>
+            <div class="col s9"><span ng-bind="references_name"></span></div>
+        </div>
+
+workflows_search_create_new_pressed()
+tools_search_raise_edit_are_you_sure_modal DELETE IT!
+
+TODO: CHANGE WORKFLOW ROOT NODE ID !!!!!
 
