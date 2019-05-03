@@ -1989,6 +1989,7 @@ window.onload = function () {
 
             cy = createCytoscapeObject();
 
+
             //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.
             //document.querySelector('canvas[data-id="layer2-node"]').style.position = null;
 			document.getElementById("cywf").querySelector('canvas[data-id="layer2-node"]').style.position = null; 
@@ -2192,9 +2193,11 @@ window.onload = function () {
             }
 			
 			
+			//update label
+			node_anim.data('label', anim_label);
+			
 			return (node_anim.animation({
-						  style : anim_style, 	//style: { 'background-color': 'red', },
-						  label: anim_label,
+						  style : anim_style, 	//style: { 'background-color': 'red', 'label':''},
 						  duration: 1  			//duration of animation in milliseconds
 						}).play()   			//.promise('complete').then(loopEdgeAnimation(edge_anim)) :TODO fic it so that it can loop
 					);
@@ -2205,7 +2208,7 @@ window.onload = function () {
 		/* function for edge animation  */ 
 		window.edgeAnimation = function(source_anim_id, target_anim_id, state){
 					// get edge by source / target
-					var edges  = cy_rep.$("edge");
+					var edges  = cy_rep.$("edge"); 
 					var edge_anim=null;
 					
 					edges.forEach(function (edge) {
@@ -2221,17 +2224,23 @@ window.onload = function () {
 					
 					/* (1) "Never run", (2) Running blinking, (3) "run at least once" */ 
 					var edge_anim_style=null;
+					var edge_anim_label=null;
 					
 					//if(state==="Never run") edge_anim_style = { 'line-color': 'red', 'target-arrow-color': 'red'};
 					if(state==="Running") {
-							edge_anim_style = { 'line-color': 'red', 'target-arrow-color': '#E53935'};
+							edge_anim_style = { 'line-color': 'red', 'target-arrow-color': '#E53935', 'label': 'running'};
+							edge_anim_label='running';
 					}
 					if(state==="Run") {
-							edge_anim_style = { 'line-color': 'green', 'target-arrow-color': '#43A047'};
+							edge_anim_style = { 'line-color': 'green', 'target-arrow-color': '#43A047', 'label': 'run'};
+							edge_anim_label = 'run';
 					}else{
 							edge_anim_style = { 'line-color': '#ddd', 'target-arrow-color': '#ddd'};
 					}
 					
+					
+					//update label
+					edge_anim.data('label', edge_anim_label);
 					
 						return (edge_anim.animation({
 									  style: edge_anim_style,
