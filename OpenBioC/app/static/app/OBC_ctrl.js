@@ -1013,7 +1013,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         $scope.ajax(
             'tools_add/',
-            {
+            {   'username':$scope.username,
                 'tools_search_name': $scope.tools_info_name,
                 'tools_search_version': $scope.tools_info_version,
                 'tool_website': $scope.tool_website,

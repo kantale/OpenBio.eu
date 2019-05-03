@@ -37,9 +37,9 @@ import logging
 import requests
 import threading
 import subprocess
-
+import docker
 from queue import Queue as Thread_queue #  
-
+# import stats
 from aiohttp import web
 import aiohttp_cors
 #from threading import Thread
@@ -52,32 +52,35 @@ logging.getLogger('aiohttp').addHandler(logging.StreamHandler(sys.stderr))
 dockerfile_content_template = '''
 #Using ENTRYPOINT
 
-# FROM ubuntu:latest
+FROM {ostype}
 
-# RUN  apt-get update \
-#  && apt-get install unzip \ 
-#  && apt-get install -y wget
+RUN  apt-get update \
+  && apt-get install unzip \
+  && apt-get install -y wget
 
-# ADD bashscript.sh /root/ 
+ADD {bashscript_filename} /root/
 
-# RUN chmod +x /root/bashscript.sh  
+RUN chmod +x /root/{bashscript_filename}
 
-# ENTRYPOINT ["/root/bashscript.sh"]
+ENTRYPOINT ["/root/{bashscript_filename}"]
+
+CMD ["./{bashscript_filename}"]
+
 
 
 
 #Using CMD
 
-FROM {ostype}
+# FROM {ostype}
 
-RUN  apt-get update \
-  && apt-get install unzip \ 
-  && apt-get install -y wget
+# RUN  apt-get update \
+#   && apt-get install unzip \ 
+#   && apt-get install -y wget
 
-ADD {bashscript_path} /root/ 
+# ADD {bashscript_path} /root/ 
 
 
-RUN cd /root; chmod +x {bashscript_filename} ; /bin/bash {bashscript_filename}
+# RUN cd /root; chmod +x {bashscript_filename} ; /bin/bash {bashscript_filename}
 '''
 
 execution_directory = 'executions'
@@ -89,46 +92,143 @@ class OBC_Controller_Exception(Exception):
     '''
     pass
 
-def execute_shell(command):
+def docker_build_image(Dockerfile_filename,image_name):
     '''
     Executes a command in shell
     dummy: Do nothing. Return a success-like message
+    Changed: Build the image using build command from docker_py.
+    When the build finished the run to show the results from image start
     '''
 
     # if dummy:
     #     return {
     #         'stdout' : 'DUMMY STDOUT',
     #         'stderr' : 'DUMMY STDERR',
-    #         'errcode' : 0,
     #     }
 
-    process = subprocess.Popen(
-        command,
-        stdout=subprocess.PIPE, 
-        stderr=subprocess.PIPE, 
-        shell= True)
-    # Read every line in stdout and print in controller
-    '''
-    https://stackoverflow.com/questions/803265/getting-realtime-output-using-subprocess
-    '''
+    # process = subprocess.Popen(
+    #     command,
+    #     stdout=subprocess.PIPE, 
+    #     stderr=subprocess.PIPE, 
+    #     shell= True)
 
-    #for line in iter(process.stdout.readline, b''):
-    #    print(line)
+    docker_client = docker.from_env()
+    # build image usind SDK and take execution time
 
+    build_start = time.time()
+    print(Dockerfile_filename)
+    # (stdout,stderr) = process.communicate()
+    print(os.getcwd()+'/executions')
+    set_worker_for_stats(image_name)
+    # time.sleep(5)
+    image_build = docker_client.images.build(path=os.getcwd()+'/executions',
+        dockerfile=f'{Dockerfile_filename}' , tag=f'{image_name}')
+
+    build_end = time.time()
+
+    execution_time = build_end - build_start
+    print(f'Image : {image_build} created in {execution_time}sec.')
     
-    (stdout,stderr) = process.communicate()
-
-    print(f'[{command!r} exited with {process.returncode}]')
-    ret = {
-        'stdout' : stdout,
-        'stderr' : stderr,
-        'errcode' : process.returncode,
-    }
+    # ret = {
+    #     'stdout' : stdout,
+    #     'stderr' : stderr,
+    #     'errcode' : process.returncode,
+    #     'execution_time' : execution_time,
+    #     'disk_usage' :disk_usage,
+    #     'cpu_usage': stats_usages['cpu_stats'],
+    #     'memory_usage': stats_usages['memory_stats'],
+    #     'networks': stats_usages['network_stats'],
+    # }
 
     #print ('EXCUTE SHELL ABOUT TO RETURN:')
     #print (ret)
-    return ret
+    return docker_run_image(docker_client,image_name,execution_time)
 
+def docker_run_image(docker_client,image_name,execution_time):
+    '''
+    https://github.com/docker/docker-py/blob/master/docker/errors.py
+    Run the builded image
+    if run is failed we use try , except and we take the error code and stderr from the error 
+    '''
+    result={}
+    disk_usage = image_disk_usage(docker_client,image_name)
+    try:
+        result['stderr']= None
+        result['errcode']= 0
+        result['stdout'] = docker_client.containers.run(image_name,stdout=True, stderr=True).decode()
+        return {
+            'stdout' : result['stdout'],
+            'stderr' : result['stderr'],
+            'errcode' : result['errcode'],
+            'execution_time' : execution_time,
+            'disk_usage' :disk_usage,
+            # 'cpu_usage': stats_usages['cpu_stats'],
+            # 'memory_usage': stats_usages['memory_stats'],
+            # 'networks': stats_usages['network_stats'],
+        }
+    # if run failed 
+    except docker.errors.ContainerError as e:
+        print('error')
+        result['stdout'] = None
+        result['errcode']= e.exit_status
+        result['stderr']= e.stderr.decode()
+        return {
+            'stdout' : result['stdout'],
+            'stderr' : result['stderr'],
+            'errcode' : result['errcode'],
+            'execution_time' : execution_time,
+            'disk_usage' : disk_usage,
+            # 'cpu_usage': stats_usages['cpu_stats'],
+            # 'memory_usage': stats_usages['memory_stats'],
+            # 'networks': stats_usages['network_stats'],
+        }
+
+        
+    
+    # stats_usages= check_build_status(True)
+    # print(stats_usages)
+    # return {
+    #     'stdout' : result['stdout'],
+    #     'stderr' : None,
+    #     'errcode' : result['errcode'],
+    #     'execution_time' : execution_time,
+    #     'disk_usage' :disk_usage,
+    #     # 'cpu_usage': stats_usages['cpu_stats'],
+    #     # 'memory_usage': stats_usages['memory_stats'],
+    #     # 'networks': stats_usages['network_stats'],
+    # }
+
+def image_disk_usage(docker_client,image_name):
+    '''
+    docker.from_env()
+    https://docker-py.readthedocs.io/en/stable/client.html
+    Communicate with docker daemon,
+    Return client configured from environment variables
+
+    df()
+    https://docker-py.readthedocs.io/en/stable/api.html
+    Get data usage information
+    '''
+    
+
+    mem_of_all = docker_client.df()['Images']
+    # the sizes in bytes , if you like i can change them!
+    image_disk_usage = [
+        {
+            'shared_size' : mem_of_all[i]['SharedSize']/1024/1024,
+            'size' : mem_of_all[i]['Size']/1024/1024,
+            'virtual_size' : mem_of_all[i]['VirtualSize']/1024/1024,
+        }
+        for i in range(len(mem_of_all)) 
+        if f'{image_name}:latest' in mem_of_all[i]['RepoTags']
+    ]
+    if image_disk_usage is None:
+        print('Something goes wrong')
+        print(image_disk_usage)
+        return None
+
+    print(image_disk_usage)
+    return image_disk_usage.pop()
 
 
 def docker_build_cmd(this_id, Dockerfile_filename):
@@ -137,16 +237,16 @@ def docker_build_cmd(this_id, Dockerfile_filename):
 
     --file , -f         Name of the Dockerfile (Default is ‘PATH/Dockerfile’)
     '''
-    return f'docker build --no-cache -t openbioc/{this_id} -f {Dockerfile_filename} .'
+    return f'openbioc/{this_id}'
 
-def docker_remove_failed_builds_cmd():
-    '''
-    '''
-    return f'docker rmi -f $(docker images -f "dangling=true" -q)'
+# def docker_remove_failed_builds_cmd():
+#     '''
+#     '''
+#     return f'docker rmi -f $(docker images -f "dangling=true" -q)'
 
 
 def create_bash_script_filename(this_id):
-    '''
+    '''d
     '''
     return f'bashscript_{this_id}.sh', os.path.join(execution_directory, f'bashscript_{this_id}.sh')
 
@@ -155,7 +255,7 @@ def create_Dockerfile_filename(this_id):
     '''
     '''
 
-    return os.path.join(execution_directory, f'{this_id}.Dockerfile')
+    return f'{this_id}.Dockerfile',os.path.join(execution_directory, f'{this_id}.Dockerfile')
 
 def create_Dockerfile_content(ostype, bashscript_path,bashscript_filename):
     return dockerfile_content_template.format(
@@ -172,24 +272,24 @@ def execute_docker_build(this_id, ostype, bash):
     '''
 
     bash_script_filename,bash_script_path = create_bash_script_filename(this_id)
-    Dockerfile_filename = create_Dockerfile_filename(this_id)
+    Dockerfile_filename,Dockerfile_path = create_Dockerfile_filename(this_id)
 
     # Save bash_script 
     with open(bash_script_path, 'w') as bash_script_f:
         bash_script_f.write(bash)
 
     # Save Dockerfile
-    with open(Dockerfile_filename, 'w') as Dockerfile_f:
+    with open(Dockerfile_path, 'w') as Dockerfile_f:
         Dockerfile_f.write(create_Dockerfile_content(ostype, bash_script_path,bash_script_filename))
 
     print (f'Created bash file: {bash_script_filename}')
     print (f'Created Dockerfile: {Dockerfile_filename}')
 
 
-    command = docker_build_cmd(this_id, Dockerfile_filename)
-    print (f'Executing command: {command}')
+    image_name = docker_build_cmd(this_id, Dockerfile_filename)
+    print (f'Build starts --> {image_name}')
 
-    return execute_shell(command)
+    return docker_build_image(Dockerfile_filename,image_name)
 
 
 
@@ -322,19 +422,19 @@ def init_web_app(message_queue, port=8080):
 
     #resource = cors.add(app.router.add_resource("/post"))
     #cors.add(route)
-#    route = cors.add(
-#    resource.add_route("POST", post_handler), {
-#        # "http://client.example.org" 
-#        "*": aiohttp_cors.ResourceOptions(
-#            allow_credentials=True,
-#            expose_headers='*',
-#            allow_headers='*',
-#            #expose_headers=("Access-Control-Allow-Origin",),
-#            #allow_headers=("Access-Control-Allow-Origin", "Content-Type: application/json"),
-#            max_age=3600,
-#        )
-#        }
-#    )
+    #    route = cors.add(
+    #    resource.add_route("POST", post_handler), {
+    #        # "http://client.example.org" 
+    #        "*": aiohttp_cors.ResourceOptions(
+    #            allow_credentials=True,
+    #            expose_headers='*',
+    #            allow_headers='*',
+    #            #expose_headers=("Access-Control-Allow-Origin",),
+    #            #allow_headers=("Access-Control-Allow-Origin", "Content-Type: application/json"),
+    #            max_age=3600,
+    #        )
+    #        }
+    #    )
     
     #After that, run the application by run_app() call:
     web.run_app(app, port=port)
@@ -410,7 +510,6 @@ def worker(message_queue, w_id):
                 'status': 'Running',
             }
             talk_to_server(payload)
-
             result = execute_docker_build(this_id,ostype, bash)
             print ('RESULT FROM execute_docker_build:')
             print (result)
@@ -428,8 +527,8 @@ def worker(message_queue, w_id):
                 payload['status'] = 'Failed'
                 #execution(this_id,'mpah',False)
 
-            payload['stdout'] = result['stdout'].decode()
-            payload['stderr'] = result['stderr'].decode()
+            payload['stdout'] = result['stdout']
+            payload['stderr'] = result['stderr']
             payload['errcode'] = result['errcode']
             talk_to_server(payload)
 
@@ -454,6 +553,51 @@ def worker(message_queue, w_id):
 #t = threading.Thread(target=thr, args=(message_queue, ),)
 #t.start()
 
+def find_running_container(selected_image):
+    '''
+    Find the selected images which running as container to take the stats
+    '''
+    client = docker.from_env()
+    res = None
+    image=None
+    # image_name = image_name+':latest'
+    for container in client.containers.list():
+        if (container.attrs['Config']['Image'] == selected_image):
+            # If the image is inside of running containers take the res and 
+            # send to print_stats function
+            res = container.stats(stream=False)
+            image = container.attrs['Config']['Image']
+            # image_name = container.attrs['Config']['Image']
+    return res,image
+
+def get_stats(selected_image):
+    '''
+    get a snapshot of stats when the image build 
+    '''
+
+    logs={}
+    while True:
+        res,image = find_running_container(selected_image)
+
+        if res and image is not None: # Useless if
+            # print("Statistical results (JSON) :")
+            # print(container.status)
+            logs.update({'image_name': image})
+            logs.update(res['cpu_stats'])
+            if res['memory_stats'] is None:
+                print("System don't catch memory usages")
+            else:
+                logs.update(res['memory_stats'])
+            # Drop me keyerror if the system don't find networks (this key does not exist blah blah)
+            try:
+                logs.update(res['networks'])
+            except KeyError:
+                pass
+            print(logs)
+            # return logs
+
+
+
 def setup_worker_threads(message_queue, n):
     '''
     n = number of threads
@@ -465,6 +609,20 @@ def setup_worker_threads(message_queue, n):
         thread.start()
 
 import socket, errno
+
+def set_worker_for_stats(image_name):
+    '''
+    Create new worker inside of build-run worker to take the statistics(Only one thread)
+    '''
+    stats_thread = threading.Thread(target= worker_for_stats, args=(image_name,))
+    stats_thread.start()
+
+def worker_for_stats(image_name):
+    '''
+    '''
+    print('SUBWORKER : docker stats starts....')
+    stats_res = get_stats(image_name)
+    print(stats_res)
 
 def check_if_port_is_used(port):
     '''
@@ -519,8 +677,6 @@ def get_instance_settings():
 
 if __name__ == '__main__':
     message_queue = Thread_queue()
-#    worker_thread = threading.Thread(target=worker, args=(message_queue, 55),)
-#    worker_thread.start()
     setup_worker_threads(message_queue, 2)
     instance_settings = get_instance_settings()
 
