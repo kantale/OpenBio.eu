@@ -328,14 +328,14 @@
     <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
     <div id="workflowsRightPanel" class="faster" style="display: none;">
         <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
-            <p>
+            <p ng-show="!workflows_info_editable">
                 <h5>
                     <span ng-bind="workflow_info_name"></span><span ng-show="!workflows_info_editable">/<span
                             ng-bind="workflow_info_edit"></span></span>
                 </h5>
-                <small class="form-text text-muted">
+                <small class="form-text text-muted" ng-show="!workflows_info_editable">
                     <span ng-bind="workflows_info_username"></span>
-                    <span ng-show="!workflows_info_editable">, created at <span
+                    <span>, created at <span
                             ng-bind="workflow_info_created_at"></span></span>
                     <span ng-show="workflow_info_forked_from">, forked from <a href
                             ng-click="workflows_search_show_item(workflow_info_forked_from)"><span
@@ -368,7 +368,7 @@
         <!-- --------------------------------------------------------------------------------------- -->
         <!-- ---------------------------------- General -------------------------------------------- -->
         <!-- --------------------------------------------------------------------------------------- -->
-        <ul class="collapsible expandable faster" style="margin-top:0px;">
+        <ul id="workflowsRightPanelGeneralAccordion" class="collapsible expandable faster" style="margin-top:0px;">
             <li id="workflowRightPanelGeneral">
                 <div class="collapsible-header">
                     <i class="material-icons arrow">keyboard_arrow_right</i>
@@ -377,36 +377,44 @@
                 </div>
                 <div class="collapsible-body">
                     <form class="col s12">
-                        <div class="row">
+                        <div class="row" ng-show="workflows_info_editable">
                             <div class="input-field col s12 m6 grid-s12-m6-l6">
-                                <input id="generalWorkflowName" type="text" class="validate">
-                                <label for="generalWorkflowName">Name</label>
-                            </div>
-
-                            <div class="input-field col s12 m6 grid-s12-m6-l6">
-                                <input id="generalWorkflowEdit" type="text" class="validate">
-                                <label for="generalWorkflowEdit">Edit</label>
+                                <input id="generalWorkflowName" type="text" class="validate" ng-model="workflow_info_name" ng-change="workflow_info_name_changed()" ng-disabled="workflow_info_forked_from">
+                                <label for="generalWorkflowName" required>Name</label>
                             </div>
                             <div class="input-field col s12 grid-s12-m12-l12">
                                 <input id="workflowsGeneralWebsite" type="text" class="validate"
-                                    ng-model="workflow_website" ng-disabled="!workflows_info_editable">
+                                    ng-model="workflow_website">
                                 <label for="workflowsGeneralWebsite">Website</label>
                             </div>
                             <div class="input-field col s12 grid-s12-m12-l12">
                                 <textarea id="workflowsGeneralDescription" class="validate materialize-textarea"
-                                    ng-model="workflow_description" ng-disabled="!workflows_info_editable"></textarea>
+                                    ng-model="workflow_description"></textarea>
                                 <label for="workflowsGeneralDescription">Description</label>
                             </div>
 
 
                             <div class="input-field col s12 grid-s12-m12-l12" ng-show="workflow_info_forked_from">
                                 <textarea id="workflowsGeneralEditSummary" class="validate materialize-textarea"
-                                    ng-model="workflow_changes" ng-disabled="!workflows_info_editable"></textarea>
+                                    ng-model="workflow_changes" required></textarea>
                                 <label for="workflowsGeneralEditSummary">Edit Summary</label>
                             </div>
-                            <div id="workflowChips" class="input-field chips left-align col s12 grid-s12-m12-l12"
-                                ng-disabled="!tools_info_editable"></div>
                         </div>
+                        <div class="row" ng-show="!workflows_info_editable">
+                            <div class="row left-align">
+                                <div class="col s3"><b>Website:</b></div>
+                                <div class="col s9"><span ng-bind="workflow_website"></span></div>
+                            </div>
+                            <div class="row left-align">
+                                <div class="col s3"><b>Description:</b></div>
+                                <div class="col s9"><span ng-bind="workflow_description"></span></div>
+                            </div>
+                            <div class="row left-align" ng-show="workflow_changes">
+                                <div class="col s3"><b>Edit Summary:</b></div>
+                                <div class="col s9"><span ng-bind="workflow_changes"></span></div>
+                            </div>
+                        </div>
+                        <div id="workflowChips" class="input-field chips left-align col s12 grid-s12-m12-l12" ng-disabled="!workflows_info_editable"></div>
                     </form>
                 </div>
             </li>
