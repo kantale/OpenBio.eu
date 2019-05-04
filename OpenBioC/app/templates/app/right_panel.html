@@ -452,16 +452,21 @@
                                     <span class="white-text" ng-bind="workflow_step_error_message"></span>
                                 </div>
                             </div>
-                            <div class="input-field col s10">
-                                <input id="editWorkflowName" type="text" class="validate" ng-model="workflows_step_name"
-                                    ng-disabled="!workflows_info_editable">
+                            <div class="input-field col s10" ng-show="workflows_info_editable">
+                                <input id="editWorkflowName" type="text" class="validate" ng-model="workflows_step_name">
                                 <label for="editWorkflowName">Name</label>
                             </div>
-                            <div class="input-field col s2">
+                            <div class="input-field col s10 left-align" ng-show="!workflows_info_editable">
+                                <b>Name: </b><span ng-bind="workflows_step_name"></span>
+                            </div>
+                            <div class="input-field col s2" ng-show="workflows_info_editable">
                                 <label>
                                     <input type="checkbox" ng-model="workflows_step_main" ng-disabled="!workflows_info_editable"/>
                                     <span>Main</span>
                                 </label>
+                            </div>
+                            <div class="input-field col s2" ng-show="!workflows_info_editable">
+                                <b>Main:</b><span ng-show="workflows_step_main">Yes</span><span ng-show="!workflows_step_main">No</span>
                             </div>
                             <div class="row col s12" id="workflow_step_editor"></div>
                             <!-- 
