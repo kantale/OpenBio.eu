@@ -2726,6 +2726,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     /*
     * Workflows --> Save button --> pressed 
     * See also: tool_create_save_pressed 
+    * add workflow add save workflow save 
     */
     $scope.workflows_create_save_pressed = function() {
 
@@ -2759,6 +2760,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 //When we save a workflow, the UI keeps the cy version that has not been processed by the server
                 //This version contains "null" values for the root id. Do we fetch it from the server.
                 $scope.workflows_search_3({name: $scope.workflow_info_name, edit:data['edit']});
+
+                //EXPERIMENTAL. UPDATE SEARCH RESULTS
+                $scope.all_search_2();
             },
             function(data) {
                 $scope.workflows_info_error_message = data['error_message'];
@@ -2773,6 +2777,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     /*
     * Workflows --> Fork Icon --> Pressed
+    * workflow fork workflow 
     */
     $scope.workflows_info_fork_pressed = function() {
         if (!$scope.username) {
