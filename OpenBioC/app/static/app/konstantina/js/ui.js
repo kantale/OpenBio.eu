@@ -2351,6 +2351,7 @@ window.onload = function () {
                     node.data.id = new_root_id;
                     // Update edit. edit = null
                     node.data.edit = null;
+                    node.data.name = 'root';
 
                 }
 
@@ -2376,7 +2377,8 @@ window.onload = function () {
                 // Making sure that the order is correct
                 var node_root_belong_ordered = { name: node.data.belongto.name, edit: node.data.belongto.edit };
                 if (JSON.stringify(node_root_belong_ordered) === JSON.stringify(old_root_belong)) {
-                    node.data.belongto = { name: old_root_name, edit: null };
+                    //node.data.belongto = { name: old_root_name, edit: null };
+                    node.data.belongto = { name: 'root', edit: null };
                     if (['step', 'input', 'output'].indexOf(node.data.type) >= 0) {
                         node.data.id = create_step_id(node.data, new_root);
                         //node.data.id = node.data.id.substr(0, node.data.id.lastIndexOf(window.OBCUI.sep))+'__null';
