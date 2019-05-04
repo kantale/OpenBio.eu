@@ -886,22 +886,19 @@ def tools_search_1(request, **kwargs):
 
     return success(ret)
 
-@has_data
-def tools_search_2(request, **kwargs):
+
+def tools_search_2(tools_search_name, tools_search_version, tools_search_edit):
     '''
-    This is triggered when there is a key-change on the tool-search pane 
+    This is triggered when there is a key-change on the main-search
     '''
 
     Qs = []
-    tools_search_name = kwargs.get('tools_search_name', '')
     if tools_search_name:
         Qs.append(Q(name__icontains=tools_search_name))
 
-    tools_search_version = kwargs.get('tools_search_version', '')
     if tools_search_version:
         Qs.append(Q(version__icontains=tools_search_version))
 
-    tools_search_edit = kwargs.get('tools_search_edit', '')
     if tools_search_edit:
         Qs.append(Q(edit = int(tools_search_edit)))
 
@@ -928,7 +925,7 @@ def tools_search_2(request, **kwargs):
         'tools_search_jstree' : tools_search_jstree,
     }
 
-    return success(ret)
+    return ret
 
 def workflows_search_2(workflows_search_name, workflows_search_edit):
     '''
@@ -2086,20 +2083,57 @@ def all_search_2(request, **kwargs):
     '''
     main_search = kwargs.get('main_search', '')
 
+    main_search_slash_count = main_search.count('/')
+
     # Check for slashes
-    if main_search.count('/') == 0:
+    if main_search_slash_count == 0:
+
+        tools_search_name = main_search
+        tools_search_version = ''
+        tools_search_edit = ''
+
         workflows_search_name = main_search
         workflows_search_edit = ''
-    elif main_search.count('/') == 1:
+
+    elif main_search_slash_count == 1:
+
+        tools_search_name, tools_search_version = main_search.split('/')
+        tools_search_name = tools_search_name.strip()
+        tools_search_version = tools_search_version.strip()
+        tools_search_edit = 0 # Do not apply search
+
         workflows_search_name, workflows_search_edit = main_search.split('/')
         workflows_search_name = workflows_search_name.strip()
         workflows_search_edit = workflows_search_edit.strip()
         try:
             workflows_search_edit = int(workflows_search_edit)
-        except ValueError as e:
-            workflows_search_edit = 0 # There is no workflow with 0 edit
-    
+        except ValueError:
+            workflows_search_edit = 0 # do not apply search on workflow edit
+    elif main_search_slash_count == 2:
+        # Practically apply only tool search
+        tools_search_name, tools_search_version, tools_search_edit = main_search.split('/')
+        tools_search_name = tools_search_name.strip()
+        tools_search_version = tools_search_version.strip()
+        try:
+            tools_search_edit = int(tools_search_edit)
+        except ValueError:
+            tools_search_edit = 0 # Do not apply search no tool edit
+
+        workflows_search_name = ''
+        workflows_search_edit = -1
+    else:
+        tools_search_name = ''
+        tools_search_version = ''
+        tools_search_edit = -1
+
+        workflows_search_name = ''
+        workflows_search_edit = -1
+
     ret = {}
+
+    #Get tools
+    for key, value in tools_search_2(tools_search_name, tools_search_version, tools_search_edit).items():
+        ret[key] = value
 
     #Get workflowws
     for key, value in workflows_search_2(workflows_search_name, workflows_search_edit).items():
