@@ -721,6 +721,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.tool_info_validation_created_at = data.validation_created_at;
 
                 $timeout(function(){M.updateTextFields()}, 10); //Update text fields so that we don't get a crumbled text input
+
+                $scope.tool_keywords = data['tool_keywords'];
             },
             function (data) {
                 $scope.toast('Error 5429', 'error');
@@ -1070,6 +1072,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                 //Disable chip
                 window.OBCUI.chip_disable('toolChips');
+
+                //EXPERIMENTAL. UPDATE SEARCH RESULTS
+                $scope.all_search_2();
             },
             function(data) {
                 $scope.tools_info_error_message = data['error_message'];
