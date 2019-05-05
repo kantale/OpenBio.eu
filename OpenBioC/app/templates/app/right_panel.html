@@ -71,6 +71,9 @@
                                         ng-model="tool_changes"></textarea>
                                     <label for="generalEditSummary">Edit Summary</label>
                                 </div>
+                                <div class="row">
+                                    <div id="toolChips" class="input-field chips left-align col s12 grid-s12-m12-l12"></div>
+                                </div>
                             </div>
                         </form>
                         <div ng-show="!tools_info_editable">
@@ -86,9 +89,10 @@
                                 <div class="col s3"><b>Edit Summary:</b></div>
                                 <div class="col s9"><span ng-bind="tool_changes"></span></div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div id="toolChips" class="input-field chips left-align col s12 grid-s12-m12-l12"></div>
+                            <div class="row left-align">
+                                <div class="col s3"><b>Tags:</b></div>
+                                <span class="new badge left" data-badge-caption="" style="margin-left: 5px;" ng-repeat="keyword in tool_keywords"><span ng-bind="keyword"></span></span>
+                            </div>
                         </div>
                     </div>
                 </li>
