@@ -1073,6 +1073,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 //Disable chip
                 window.OBCUI.chip_disable('toolChips');
 
+                //Load Chips
+                $scope.tool_keywords = window.OBCUI.get_chip_data('toolChips');
+
                 //EXPERIMENTAL. UPDATE SEARCH RESULTS
                 $scope.all_search_2();
             },
@@ -2364,6 +2367,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 window.OBCUI.set_chip_data('workflowChips', data['keywords']);
                 window.OBCUI.chip_disable('workflowChips');
 
+                $scope.workflow_keywords = data['keywords'];
+
                 //Update text fields
                 $timeout(function(){M.updateTextFields()}, 10);
 
@@ -2775,6 +2780,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 //When we save a workflow, the UI keeps the cy version that has not been processed by the server
                 //This version contains "null" values for the root id. Do we fetch it from the server.
                 $scope.workflows_search_3({name: $scope.workflow_info_name, edit:data['edit']});
+
+                $scope.workflow_keywords = window.OBCUI.get_chip_data('workflowChips');
 
                 //EXPERIMENTAL. UPDATE SEARCH RESULTS
                 $scope.all_search_2();

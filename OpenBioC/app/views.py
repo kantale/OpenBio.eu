@@ -1361,13 +1361,13 @@ def workflows_add(request, **kwargs):
         max_edit = workflow_all.aggregate(Max('edit'))
         next_edit = max_edit['edit__max'] + 1
 
-    print ('BEFORE')
-    print (simplejson.dumps(workflow, indent=4))
-    print ('=====')
+#    print ('BEFORE')
+#    print (simplejson.dumps(workflow, indent=4))
+#    print ('=====')
     #Change the edit value in the cytoscape json object
     set_edit_to_cytoscape_json(workflow, next_edit, workflow_info_name)
-    print ('AFTER')
-    print (simplejson.dumps(workflow, indent=4))
+#    print ('AFTER')
+#    print (simplejson.dumps(workflow, indent=4))
 
     #print (simplejson.dumps(workflow, indent=4))
     main_counter = check_workflow_step_main(workflow, {'name':workflow_info_name, 'edit': next_edit })
