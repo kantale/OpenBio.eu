@@ -547,6 +547,15 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 'main_search': $scope.main_search
             },
             function(data) {
+
+                //Tools
+                $scope.tools_search_tools_number = data['tools_search_tools_number'];
+                angular.copy(data['tools_search_jstree'], $scope.tools_search_jstree_model);
+
+                //Workflows
+                $scope.workflows_search_tools_number = data['workflows_search_tools_number'];
+                angular.copy(data['workflows_search_jstree'], $scope.workflows_search_jstree_model);  
+
                 //Reports
                 $scope.main_search_reports_number = data['main_search_reports_number'];
                 angular.copy(data['reports_search_jstree'], $scope.reports_search_jstree_model);
@@ -612,51 +621,51 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     /*
     *  Search tools after search items changed
     */
-    $scope.tools_search_2 = function() {
-        $scope.ajax(
-            'tools_search_2/',
-            {
-                'tools_search_name': $scope.tools_search_name,
-                'tools_search_version': $scope.tools_search_version,
-                'tools_search_edit': $scope.tools_search_edit
-            },
-            function(data) {
-                $scope.tools_search_tools_number = data['tools_search_tools_number'];
-                angular.copy(data['tools_search_jstree'], $scope.tools_search_jstree_model);
-
-            },
-            function(data) {
-
-            },
-            function(statusText) {
-
-            }
-        );
-    };
+//    $scope.tools_search_2 = function() {
+//        $scope.ajax(
+//            'tools_search_2/',
+//            {
+//                'tools_search_name': $scope.tools_search_name,
+//                'tools_search_version': $scope.tools_search_version,
+//                'tools_search_edit': $scope.tools_search_edit
+//            },
+//            function(data) {
+//                $scope.tools_search_tools_number = data['tools_search_tools_number'];
+//                angular.copy(data['tools_search_jstree'], $scope.tools_search_jstree_model);
+//
+//            },
+//            function(data) {
+//
+//            },
+//            function(statusText) {
+//
+//            }
+//        );
+//    };
 
     /*
     *  Search workflows after search items changed
     */
-    $scope.workflows_search_2 = function() {
-        $scope.ajax(
-            'workflows_search_2/',
-            {
-                'workflows_search_name': $scope.workflows_search_name,
-                'workflows_search_edit': $scope.workflows_search_edit
-            },
-            function(data) {
-                $scope.workflows_search_tools_number = data['workflows_search_tools_number'];
-                angular.copy(data['workflows_search_jstree'], $scope.workflows_search_jstree_model);  
-
-            },
-            function(data) {
-                $scope.toast(data['error_message'], 'error');
-            },
-            function(statusText) {
-                $scope.toast(statusText, 'error');
-            }
-        );
-    };
+//    $scope.workflows_search_2 = function() {
+//        $scope.ajax(
+//            'workflows_search_2/',
+//            {
+//                'workflows_search_name': $scope.workflows_search_name,
+//                'workflows_search_edit': $scope.workflows_search_edit
+//            },
+//            function(data) {
+//                $scope.workflows_search_tools_number = data['workflows_search_tools_number'];
+//                angular.copy(data['workflows_search_jstree'], $scope.workflows_search_jstree_model);  
+//
+//            },
+//            function(data) {
+//                $scope.toast(data['error_message'], 'error');
+//            },
+//            function(statusText) {
+//                $scope.toast(statusText, 'error');
+//            }
+//        );
+//    };
 
 
     /*
@@ -712,6 +721,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.tool_info_validation_created_at = data.validation_created_at;
 
                 $timeout(function(){M.updateTextFields()}, 10); //Update text fields so that we don't get a crumbled text input
+
+                $scope.tool_keywords = data['tool_keywords'];
             },
             function (data) {
                 $scope.toast('Error 5429', 'error');
@@ -726,86 +737,86 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     *   navbar --> Tools --> Search sidebar --> Name or Version or Name Change
     *   See also: workflows_search_input_changed 
     */
-    $scope.tools_search_input_changed = function() {
-
-//        if ((!$scope.tools_search_name) && (!$scope.tools_search_version) && (!$scope.tools_search_edit)) {
-//            $scope.tools_search_warning = '';
-//            return;
+//    $scope.tools_search_input_changed = function() {
+//
+//        //if ((!$scope.tools_search_name) && (!$scope.tools_search_version) && (!$scope.tools_search_edit)) {
+//        //    $scope.tools_search_warning = '';
+//        //    return;
+//        //}
+//
+//        //if (!$scope.username) {
+//        //    $scope.tools_search_warning = 'Login to create new tools';
+//        //    return;
+//        //}
+//
+//        //Check tool name
+//        if ($scope.tools_search_name) {
+//            if (!$scope.tools_name_regexp.test($scope.tools_search_name)) {
+//                $scope.tools_search_warning = 'Invalid Tool name';
+//                return;
+//            }
 //        }
-
-        //if (!$scope.username) {
-        //    $scope.tools_search_warning = 'Login to create new tools';
-        //    return;
-        //}
-
-        //Check tool name
-        if ($scope.tools_search_name) {
-            if (!$scope.tools_name_regexp.test($scope.tools_search_name)) {
-                $scope.tools_search_warning = 'Invalid Tool name';
-                return;
-            }
-        }
-
-        //Check tool version
-        if ($scope.tools_search_version) {
-            if (!$scope.tools_version_regexp.test($scope.tools_search_version)) {
-                $scope.tools_search_warning = 'Invalid Version value';
-                return;
-            }
-        }
-
-
-        //Check edit version
-        //if (!$scope.tools_edit_regexp.test($scope.tools_search_edit)) {
-        //    $scope.tools_search_warning = 'Invalid Edit value';
-        //    return;
-        //};
-
-        //Check edit version
-        if ($scope.tools_search_edit) {
-            if (!$scope.tools_edit_regexp.test($scope.tools_search_edit)) {
-                $scope.tools_search_warning = 'Invalid Edit value';
-                return;
-            }
-            $scope.tools_search_warning = 'Edit value should be empty to create new tools';
-            $scope.tools_search_2();
-            return; 
-        }
-
-        //Everything seems to be ok
-        $scope.tools_search_warning = '';
-        $scope.tools_search_2();
-    };
+//
+//        //Check tool version
+//        if ($scope.tools_search_version) {
+//            if (!$scope.tools_version_regexp.test($scope.tools_search_version)) {
+//                $scope.tools_search_warning = 'Invalid Version value';
+//                return;
+//            }
+//        }
+//
+//
+//        //Check edit version
+//        //if (!$scope.tools_edit_regexp.test($scope.tools_search_edit)) {
+//        //    $scope.tools_search_warning = 'Invalid Edit value';
+//        //    return;
+//        //};
+//
+//        //Check edit version
+//        if ($scope.tools_search_edit) {
+//            if (!$scope.tools_edit_regexp.test($scope.tools_search_edit)) {
+//                $scope.tools_search_warning = 'Invalid Edit value';
+//                return;
+//            }
+//            $scope.tools_search_warning = 'Edit value should be empty to create new tools';
+//            $scope.tools_search_2();
+//            return; 
+//        }
+//
+//        //Everything seems to be ok
+//        $scope.tools_search_warning = '';
+//        $scope.tools_search_2();
+//    };
 
     /*
     *   navbar --> Tools --> Search sidebar --> Combobox Workflows --> Name or Version or Name Change
     *   See also tools_search_input_changed
     */
-    $scope.workflows_search_input_changed = function() {
-        //Check workflow name
-        if ($scope.workflows_search_name) {
-            if (!$scope.tools_name_regexp.test($scope.workflows_search_name)) {
-                $scope.workflows_search_warning = 'Invalid Workflow name';
-                return;
-            }
-        }
-
-        //Check edit value
-        if ($scope.workflows_search_edit) {
-            if (!$scope.tools_edit_regexp.test($scope.workflows_search_edit)) {
-                $scope.workflows_search_warning = 'Invalid Edit value';
-                return;
-            }
-            $scope.workflows_search_warning = 'Edit value should be empty to create new Workflows';
-            $scope.workflows_search_2(); 
-            return; 
-        }
-
-        //Everything seems to be ok
-        $scope.workflows_search_warning = '';
-        $scope.workflows_search_2();
-
-    };
+//    $scope.workflows_search_input_changed = function() {
+//        //Check workflow name
+//        if ($scope.workflows_search_name) {
+//            if (!$scope.tools_name_regexp.test($scope.workflows_search_name)) {
+//                $scope.workflows_search_warning = 'Invalid Workflow name';
+//                return;
+//            }
+//        }
+//
+//        //Check edit value
+//        if ($scope.workflows_search_edit) {
+//            if (!$scope.tools_edit_regexp.test($scope.workflows_search_edit)) {
+//                $scope.workflows_search_warning = 'Invalid Edit value';
+//                return;
+//            }
+//            $scope.workflows_search_warning = 'Edit value should be empty to create new Workflows';
+//            $scope.workflows_search_2(); 
+//            return; 
+//        }
+//
+//        //Everything seems to be ok
+//        $scope.workflows_search_warning = '';
+//        $scope.workflows_search_2();
+//
+//    };
 
 
     /*
@@ -816,10 +827,17 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tools_search_warning = '';
 
         //Close Workflow right panel
-        window.cancelWorkflowBtn_click();
+        //window.cancelWorkflowBtn_click();
 
         //Triggers animation to open right window
-        window.createToolDataBtn_click();
+        //window.createToolDataBtn_click();
+
+        //Hide all right panel accordions
+        $scope.hide_all_right_accordions('tools');
+
+        //Open tool right panel windows
+        document.getElementById('createToolDataDiv').style.display = 'block';
+        M.Collapsible.getInstance($('#createToolDataAccordion')).open();
 
 
         $scope.show_tools_info = true;
@@ -875,36 +893,43 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     /*
     * Navbar -> Tools/Data --> Appropriate input --> "Create New" button --> Pressed
     */
-    $scope.tools_search_create_new_pressed = function() {
+//    $scope.tools_search_create_new_pressed = function() {
+//
+//        if (!$scope.username) {
+//            //$scope.tools_info_error_message = 'Login to create new tools';
+//            $scope.tools_search_warning = 'Login to create new tools';
+//            return;
+//        }
+//
+//        //Check if tool search name and version are non empty 
+//        if (!($scope.tools_search_name && $scope.tools_search_version)) {
+//            $scope.tools_search_warning = 'Name and Version should not be empty';
+//            return;
+//        }
+//
+//        //Edit SHOULD BE EMPTY!
+//        if ($scope.tools_search_edit) {
+//            $scope.tools_search_warning = 'An edit number will be assigned after you save your tool (leave it empty)';
+//            return;
+//        }
+//
+//        //If workflows are editable then raise a modal to ask user if she want to lose all edits.
+//        if ($scope.workflows_info_editable) {
+//            $scope.tools_search_raise_edit_are_you_sure_modal('TOOLS_CREATE_BUTTON');
+//            return;
+//        }
+//
+//        // Everything seems ok.
+//        $scope.tools_search_create_new_pressed_ok();
+//
+//    };
 
-        if (!$scope.username) {
-            //$scope.tools_info_error_message = 'Login to create new tools';
-            $scope.tools_search_warning = 'Login to create new tools';
-            return;
-        }
-
-        //Check if tool search name and version are non empty 
-        if (!($scope.tools_search_name && $scope.tools_search_version)) {
-            $scope.tools_search_warning = 'Name and Version should not be empty';
-            return;
-        }
-
-        //Edit SHOULD BE EMPTY!
-        if ($scope.tools_search_edit) {
-            $scope.tools_search_warning = 'An edit number will be assigned after you save your tool (leave it empty)';
-            return;
-        }
-
-        //If workflows are editable then raise a modal to ask user if she want to lose all edits.
-        if ($scope.workflows_info_editable) {
-            $scope.tools_search_raise_edit_are_you_sure_modal('TOOLS_CREATE_BUTTON');
-            return;
-        }
-
-        // Everything seems ok.
-        $scope.tools_search_create_new_pressed_ok();
-
-
+    /*
+    * The name of the workflow has changed
+    * The variable workflow_info_name has changed
+    */
+    $scope.workflow_info_name_changed = function() {
+        cy.$('node[type="workflow"][!belongto]').data('label', $scope.workflow_info_name);
     };
 
     /*
@@ -914,12 +939,20 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //Close tool accordion
         $scope.set_tools_info_editable(false);
         //$scope.tools_info_editable = false;
-        window.cancelToolDataBtn_click();
+        //window.cancelToolDataBtn_click();
 
         //Open Workflows accordion
-        window.createWorkflowBtn_click();
+        //window.createWorkflowBtn_click();
 
-        $scope.workflow_info_name = $scope.workflows_search_name;
+        //Hide all other right panel components
+        $scope.hide_all_right_accordions('workflows');
+
+        //Show workflows accordion
+        document.getElementById('workflowsRightPanel').style.display = 'block';
+        M.Collapsible.getInstance($('#workflowsRightPanelGeneralAccordion')).open();
+
+
+        $scope.workflow_info_name = '';
         $scope.workflows_info_username = $scope.username;
         $scope.workflows_info_editable = true;
         $scope.workflow_info_created_at = null;
@@ -961,16 +994,16 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         }
 
         //Check if worfklows search name are empty 
-        if (!$scope.workflows_search_name) {
-            $scope.workflows_search_warning = 'Name should not be empty';
-            return;
-        }
+//        if (!$scope.workflows_search_name) {
+//            $scope.workflows_search_warning = 'Name should not be empty';
+//            return;
+//        }
 
         //Edit SHOULD BE EMPTY!
-        if ($scope.workflows_search_edit) {
-            $scope.worfflows_search_warning = 'An edit number will be assigned after you save your workflow (leave it empty)';
-            return;
-        }
+//        if ($scope.workflows_search_edit) {
+//            $scope.worfflows_search_warning = 'An edit number will be assigned after you save your workflow (leave it empty)';
+//            return;
+//        }
 
         //If tools are editable then raise a modal to ask user if she want to lose all edits.
         if ($scope.tools_info_editable) {
@@ -995,7 +1028,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     /*
     * Navbar --> Tools/data --> Appropriate input --> "Create New" button --> Pressed --> Filled input --> Save (button) --> Pressed
     * See also: workflows_create_save_pressed 
-    * 
+    * save tool save add tool add 
     */
     $scope.tool_create_save_pressed = function() {
 
@@ -1035,10 +1068,16 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 //$scope.tools_info_editable = false;
                 $scope.tool_info_created_at = data['created_at'];
                 $scope.tools_info_edit = data['edit'];
-                $scope.tools_search_input_changed(); //Update search results
+                //$scope.tools_search_input_changed(); //Update search results
 
                 //Disable chip
                 window.OBCUI.chip_disable('toolChips');
+
+                //Load Chips
+                $scope.tool_keywords = window.OBCUI.get_chip_data('toolChips');
+
+                //EXPERIMENTAL. UPDATE SEARCH RESULTS
+                $scope.all_search_2();
             },
             function(data) {
                 $scope.tools_info_error_message = data['error_message'];
@@ -1404,7 +1443,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                         data['dependencies_jstree'][i].belongto = null;
                     }
 
-                    window.buildTree(data['dependencies_jstree'], {name: $scope.workflow_info_name, edit: null}); //FIXME SEE A46016A6E393 
+                    //window.buildTree(data['dependencies_jstree'], {name: $scope.workflow_info_name, edit: null}); //FIXME SEE A46016A6E393
+                    window.buildTree(data['dependencies_jstree'], {name: 'root', edit: null}); //FIXME SEE A46016A6E393 
                     $scope.workflow_update_tab_completion_info_to_step(); 
 
 
@@ -2295,6 +2335,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.workflow_website = data['website'];
                 $scope.workflow_description = data['description'];
                 $scope.workflow_info_forked_from = data['forked_from'];
+                $scope.workflow_changes = data['changes'];
 
                 //Load the graph. TODO: WHAT HAPPENS WHEN WE CLICK TO NODE? IT IS NOT REGISTERED
                 cy.json(data['workflow']);
@@ -2325,6 +2366,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 //Set keyowords to chips
                 window.OBCUI.set_chip_data('workflowChips', data['keywords']);
                 window.OBCUI.chip_disable('workflowChips');
+
+                $scope.workflow_keywords = data['keywords'];
+
+                //Update text fields
+                $timeout(function(){M.updateTextFields()}, 10);
 
             },
             function(data) {
@@ -2518,7 +2564,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         }];
 
         //Always when updating the graph, update also tab completion data for step editor! FIXME!! (bundle these things together!) A46016A6E393
-        window.buildTree(step_node, {name: $scope.workflow_info_name, edit: null});
+        //window.buildTree(step_node, {name: $scope.workflow_info_name, edit: null});
+        window.buildTree(step_node, {name: 'root', edit: null});
         $scope.workflow_update_tab_completion_info_to_step();
 
         //Empty STEP fields
@@ -2690,7 +2737,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //console.log(nodes_to_add);
 
         if (nodes_to_add.length) {
-            window.buildTree(nodes_to_add, {name: $scope.workflow_info_name, edit: null}); // FIXME. SEE A46016A6E393 
+            //window.buildTree(nodes_to_add, {name: $scope.workflow_info_name, edit: null}); // FIXME. SEE A46016A6E393
+            window.buildTree(nodes_to_add, {name: 'root', edit: null}); // FIXME. SEE A46016A6E393 
             $scope.workflow_update_tab_completion_info_to_step();
         }
     };
@@ -2698,14 +2746,20 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     /*
     * Workflows --> Save button --> pressed 
     * See also: tool_create_save_pressed 
+    * add workflow add save workflow save 
     */
     $scope.workflows_create_save_pressed = function() {
 
+        //Check workflow name
+        if (!$scope.tools_name_regexp.test($scope.workflow_info_name)) {
+            $scope.toast('Invalid Workflow name', 'error');
+            return;
+        }
 
         $scope.ajax(
             'workflows_add/',
             {
-                workflows_search_name: $scope.workflow_info_name,
+                workflow_info_name: $scope.workflow_info_name,
                 workflow_info_forked_from : $scope.workflow_info_forked_from,
 
                 workflow_website : $scope.workflow_website,
@@ -2721,11 +2775,16 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 workflow_step_editor.setReadOnly(true);
 
                 $scope.toast('Workflow successfully saved', 'success');
-                $scope.workflows_search_input_changed(); //Update search results
+                //$scope.workflows_search_input_changed(); //Update search results
 
                 //When we save a workflow, the UI keeps the cy version that has not been processed by the server
                 //This version contains "null" values for the root id. Do we fetch it from the server.
                 $scope.workflows_search_3({name: $scope.workflow_info_name, edit:data['edit']});
+
+                $scope.workflow_keywords = window.OBCUI.get_chip_data('workflowChips');
+
+                //EXPERIMENTAL. UPDATE SEARCH RESULTS
+                $scope.all_search_2();
             },
             function(data) {
                 $scope.workflows_info_error_message = data['error_message'];
@@ -2740,6 +2799,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     /*
     * Workflows --> Fork Icon --> Pressed
+    * workflow fork workflow 
     */
     $scope.workflows_info_fork_pressed = function() {
         if (!$scope.username) {
@@ -2802,7 +2862,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 //We do not have to pass the complete worfklow, or edge information.
                 var nodes_to_add = []
                 workflow_cytoscape.elements.nodes.forEach(function(node){ nodes_to_add.push(node.data) });
-                window.buildTree(nodes_to_add, {name: $scope.workflow_info_name, edit: null});  
+                //window.buildTree(nodes_to_add, {name: $scope.workflow_info_name, edit: null});
+                window.buildTree(nodes_to_add, {name: 'root', edit: null});
 				
 				//TODO  check if it is correct (added by Galateia)
 				window.cy_close_successors();
@@ -2820,7 +2881,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * worfklows --> info (right panel) --> button "Clear" --> Pressed
     */
     $scope.workflow_info_clear_pressed = function() {
-        window.clear($scope.workflow_info_name);
+        // All root workflows have id: root!
+        window.clear('root');
     };
 
     /*
@@ -3136,7 +3198,18 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */
     $scope.hide_all_right_accordions = function(except) {
 
+        if (except != 'tools') {
+            document.getElementById('createToolDataDiv').style.display = 'none';
+            M.Collapsible.getInstance($('#createToolDataAccordion')).close();
+        }
+
+        if (except != 'workflows') {
+            document.getElementById('workflowsRightPanel').style.display = 'none';
+            M.Collapsible.getInstance($('#workflowsRightPanelGeneralAccordion')).close();
+        }
+
         if (except != 'reports') {
+            // Hide reports
             document.getElementById('reportsRightPanel').style.display = 'none';
             M.Collapsible.getInstance($('#reportsRightPanelAccordion')).close();
         }
