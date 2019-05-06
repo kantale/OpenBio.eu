@@ -1355,6 +1355,8 @@ def workflows_add(request, **kwargs):
     if not workflow_description.strip():
         return fail('Description cannot be empty')
 
+    workflow_description_html = markdown(workflow_description)
+
     workflow = kwargs.get('workflow_json', '')
     if not workflow:
         return fail ('workflows json object is empty') # This should never happen!
@@ -1401,6 +1403,7 @@ def workflows_add(request, **kwargs):
         edit = next_edit,
         website = workflow_website,
         description = workflow_description,
+        description_html = workflow_description_html,
 
         # FIXME !! SERIOUS!
         # This is redundand. We do json.loads and then json.dumps.
@@ -1427,6 +1430,7 @@ def workflows_add(request, **kwargs):
     new_workflow.save();
 
     ret = {
+        'description_html': workflow_description_html, 
         'edit': next_edit,
         'created_at': datetime_to_str(new_workflow.created_at)
     }
@@ -1453,6 +1457,7 @@ def workflows_search_3(request, **kwargs):
         'username': workflow.obc_user.user.username,
         'website': workflow.website,
         'description': workflow.description,
+        'description_html': workflow.description_html,
         'created_at': datetime_to_str(workflow.created_at),
         'forked_from': workflow_to_json(workflow.forked_from),
         'keywords': [keyword.keyword for keyword in workflow.keywords.all()],

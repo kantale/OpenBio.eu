@@ -2338,6 +2338,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.workflow_info_created_at = data['created_at'];
                 $scope.workflow_website = data['website'];
                 $scope.workflow_description = data['description'];
+                $scope.workflow_description_html = data['description_html'];
                 $scope.workflow_info_forked_from = data['forked_from'];
                 $scope.workflow_changes = data['changes'];
 
@@ -2775,6 +2776,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             function(data) {
                 $scope.workflow_info_created_at = data['created_at'];
                 $scope.workflow_info_edit = data['edit'];
+                $scope.workflow_description_html = data['description_html'];
                 $scope.workflows_info_editable = false;
                 workflow_step_editor.setReadOnly(true);
 

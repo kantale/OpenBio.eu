@@ -209,6 +209,7 @@ class Workflow(models.Model):
 
     website = models.URLField(max_length=256, null=True)
     description = models.TextField(null=False) # Unlike tools description cannot be empty
+    description_html = models.TextField(null=False)
     keywords = models.ManyToManyField(Keyword)
 
     # JSON serialized,  The workflow cytoscape graph , cy.json. 
