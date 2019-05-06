@@ -2345,18 +2345,22 @@ window.onload = function () {
             currentElements.nodes.forEach(function (node) {
                 if (node.data.belongto === null) {
 
-                    // Finds the root workflow					
+                    // Find the root workflow					
                     old_root_id = node.data.id;
                     old_root_name = node.data.name;
                     old_root_edit = node.data.edit;
                     old_root_belong = { name: old_root_name, edit: old_root_edit };
 
                     // Updated id
-                    new_root = { name: node.data.name, edit: null };
-                    new_root_id = create_workflow_id(new_root);
+                    //new_root = { name: node.data.name, edit: null };
+                    new_root = { name: 'root', edit: null };
+
+                    //new_root_id = create_workflow_id(new_root);
+                    new_root_id = 'root__null';
                     node.data.id = new_root_id;
                     // Update edit. edit = null
                     node.data.edit = null;
+                    node.data.name = 'root';
 
                 }
 
@@ -2382,7 +2386,8 @@ window.onload = function () {
                 // Making sure that the order is correct
                 var node_root_belong_ordered = { name: node.data.belongto.name, edit: node.data.belongto.edit };
                 if (JSON.stringify(node_root_belong_ordered) === JSON.stringify(old_root_belong)) {
-                    node.data.belongto = { name: old_root_name, edit: null };
+                    //node.data.belongto = { name: old_root_name, edit: null };
+                    node.data.belongto = { name: 'root', edit: null };
                     if (['step', 'input', 'output'].indexOf(node.data.type) >= 0) {
                         node.data.id = create_step_id(node.data, new_root);
                         //node.data.id = node.data.id.substr(0, node.data.id.lastIndexOf(window.OBCUI.sep))+'__null';
@@ -2441,15 +2446,12 @@ window.onload = function () {
                     //window.OBCUI.edit_steps_from_bash_scripts(node.data.bash, old_root_id, new_root);
 
                 }
-            }
-
-
-            );
+            });
 
 
             // change all edges that connect to root.  
             if ('edges' in currentElements) { 
-                // There is a extreme case where a workflow may not have any edge! The line above checks for this case.
+                // There is an extreme case where a workflow may not have any edge! The line above checks for this case.
                 currentElements.edges.forEach(function (edge) {
 
                     /* EDGE SOURCES */
@@ -2555,7 +2557,7 @@ window.onload = function () {
             cy.reset();
             cy.center();
 
-        }
+        };
 
 		/*
 		* Fits workflow's content in center
@@ -2569,7 +2571,7 @@ window.onload = function () {
                 padding: 2
             }).run();
 
-        }
+        };
 
     }
 

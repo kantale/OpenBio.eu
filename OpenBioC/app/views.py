@@ -886,22 +886,19 @@ def tools_search_1(request, **kwargs):
 
     return success(ret)
 
-@has_data
-def tools_search_2(request, **kwargs):
+
+def tools_search_2(tools_search_name, tools_search_version, tools_search_edit):
     '''
-    This is triggered when there is a key-change on the tool-search pane 
+    This is triggered when there is a key-change on the main-search
     '''
 
     Qs = []
-    tools_search_name = kwargs.get('tools_search_name', '')
     if tools_search_name:
         Qs.append(Q(name__icontains=tools_search_name))
 
-    tools_search_version = kwargs.get('tools_search_version', '')
     if tools_search_version:
         Qs.append(Q(version__icontains=tools_search_version))
 
-    tools_search_edit = kwargs.get('tools_search_edit', '')
     if tools_search_edit:
         Qs.append(Q(edit = int(tools_search_edit)))
 
@@ -928,20 +925,19 @@ def tools_search_2(request, **kwargs):
         'tools_search_jstree' : tools_search_jstree,
     }
 
-    return success(ret)
+    return ret
 
-@has_data
-def workflows_search_2(request, **kwargs):
+def workflows_search_2(workflows_search_name, workflows_search_edit):
     '''
-    This is triggered when there is a key-change on the workflows-search pane 
+    Called by all_search_2
     '''
 
     Qs = []
-    workflows_search_name = kwargs.get('workflows_search_name', '')
+    #workflows_search_name = kwargs.get('workflows_search_name', '')
     if workflows_search_name:
         Qs.append(Q(name__icontains=workflows_search_name))
 
-    workflows_search_edit = kwargs.get('workflows_search_edit', '')
+    #workflows_search_edit = kwargs.get('workflows_search_edit', '')
     if workflows_search_edit:
         Qs.append(Q(edit = int(workflows_search_edit)))
 
@@ -967,7 +963,7 @@ def workflows_search_2(request, **kwargs):
         'workflows_search_jstree' : workflows_search_jstree,
     }
 
-    return success(ret)
+    return ret
 
 @has_data
 def tools_search_3(request, **kwargs):
@@ -1223,21 +1219,23 @@ def create_workflow_id(workflow):
     return workflow['name'] + '__' + str(workflow['edit'])
 
 
-def set_edit_to_cytoscape_json(cy, edit):
+def set_edit_to_cytoscape_json(cy, edit, workflow_info_name):
     '''
-    Set the edit number of the workflow to all nodes/edges
+    Perform the following tasks:
+    * Set the edit number of the workflow to all nodes/edges
+    * Change the id of the root workflow from "root" to workflow_info_name
     '''
 
     # Get the root workflow node
     new_worfklow_node = [x for x in cy['elements']['nodes'] if x['data']['type']=='workflow' and not x['data']['edit']]
     assert len(new_worfklow_node) == 1
-    name = new_worfklow_node[0]['data']['name']
+    assert new_worfklow_node[0]['data']['name'] == 'root'
 
     # Set the edit value
     new_worfklow_node[0]['data']['edit'] = edit
 
     belongto = {
-        'name': name,
+        'name': workflow_info_name,
         'edit': edit,
     }
     belongto_id = create_workflow_id(belongto)
@@ -1247,8 +1245,15 @@ def set_edit_to_cytoscape_json(cy, edit):
             if not node['data']['belongto']['edit']:
                 node['data']['belongto'] = belongto
 
+        if 'name' in node['data']:
+            if node['data']['name'] == 'root':
+                node['data']['name'] = workflow_info_name
+
         if '__null'  in node['data']['id']:
             node['data']['id'] = node['data']['id'].replace('__null', '__' + str(edit))
+
+        if 'root__' in node['data']['id']:
+            node['data']['id'] = node['data']['id'].replace('root__', workflow_info_name + '__')
 
         #Change the bash
         if 'bash' in node['data']:
@@ -1277,9 +1282,13 @@ def set_edit_to_cytoscape_json(cy, edit):
         for edge in cy['elements']['edges']:
             if '__null' in edge['data']['source']:
                 edge['data']['source'] = edge['data']['source'].replace('__null', '__' + str(edit))
+            if 'root__' in edge['data']['source']:
+                edge['data']['source'] = edge['data']['source'].replace('root__', workflow_info_name + '__')
             if '__null' in edge['data']['target']:
                 edge['data']['target'] = edge['data']['target'].replace('__null', '__' + str(edit))
-            if '_null' in edge['data']['id']:
+            if 'root__' in edge['data']['target']:
+                edge['data']['target'] = edge['data']['target'].replace('root__', workflow_info_name + '__')
+            if '__null' in edge['data']['id']:
                 edge['data']['id'] = create_workflow_edge_id(edge['data']['source'], edge['data']['target'])
 
 def check_workflow_step_main(cy, root_workflow):
@@ -1306,8 +1315,8 @@ def workflows_add(request, **kwargs):
         return fail('Please login to create new workflow')
 
 
-    workflows_search_name = kwargs.get('workflows_search_name', '')
-    if not workflows_search_name.strip():
+    workflow_info_name = kwargs.get('workflow_info_name', '')
+    if not workflow_info_name.strip():
         return fail('Invalid workflow name')
 
     workflow_info_forked_from = kwargs['workflow_info_forked_from'] # If it does not exist, it should raise an Exception
@@ -1345,20 +1354,23 @@ def workflows_add(request, **kwargs):
 
 
     #Get the maximum version. FIXME DUPLICATE CODE
-    workflow_all = Workflow.objects.filter(name=workflows_search_name)
+    workflow_all = Workflow.objects.filter(name=workflow_info_name)
     if not workflow_all.exists():
         next_edit = 1
     else:
         max_edit = workflow_all.aggregate(Max('edit'))
         next_edit = max_edit['edit__max'] + 1
 
-    #print (simplejson.dumps(workflow, indent=4))
-    print ('=====')
+#    print ('BEFORE')
+#    print (simplejson.dumps(workflow, indent=4))
+#    print ('=====')
     #Change the edit value in the cytoscape json object
-    set_edit_to_cytoscape_json(workflow, next_edit)
+    set_edit_to_cytoscape_json(workflow, next_edit, workflow_info_name)
+#    print ('AFTER')
+#    print (simplejson.dumps(workflow, indent=4))
 
     #print (simplejson.dumps(workflow, indent=4))
-    main_counter = check_workflow_step_main(workflow, {'name':workflows_search_name, 'edit': next_edit })
+    main_counter = check_workflow_step_main(workflow, {'name':workflow_info_name, 'edit': next_edit })
     if main_counter == 0:
         return fail('Could not find main step. One step needs to be declared as "main"')
     if main_counter > 1:
@@ -1366,7 +1378,7 @@ def workflows_add(request, **kwargs):
 
     new_workflow = Workflow(
         obc_user=OBC_user.objects.get(user=request.user), 
-        name = workflows_search_name,
+        name = workflow_info_name,
         edit = next_edit,
         website = workflow_website,
         description = workflow_description,
@@ -1426,6 +1438,7 @@ def workflows_search_3(request, **kwargs):
         'forked_from': workflow_to_json(workflow.forked_from),
         'keywords': [keyword.keyword for keyword in workflow.keywords.all()],
         'workflow' : simplejson.loads(workflow.workflow),
+        'changes': workflow.changes,
     }
 
     return success(ret)
@@ -2068,9 +2081,63 @@ def all_search_2(request, **kwargs):
     '''
     Called when there is a key change in main search
     '''
-    main_search = kwargs['main_search']
-    
+    main_search = kwargs.get('main_search', '')
+
+    main_search_slash_count = main_search.count('/')
+
+    # Check for slashes
+    if main_search_slash_count == 0:
+
+        tools_search_name = main_search
+        tools_search_version = ''
+        tools_search_edit = ''
+
+        workflows_search_name = main_search
+        workflows_search_edit = ''
+
+    elif main_search_slash_count == 1:
+
+        tools_search_name, tools_search_version = main_search.split('/')
+        tools_search_name = tools_search_name.strip()
+        tools_search_version = tools_search_version.strip()
+        tools_search_edit = 0 # Do not apply search
+
+        workflows_search_name, workflows_search_edit = main_search.split('/')
+        workflows_search_name = workflows_search_name.strip()
+        workflows_search_edit = workflows_search_edit.strip()
+        try:
+            workflows_search_edit = int(workflows_search_edit)
+        except ValueError:
+            workflows_search_edit = 0 # do not apply search on workflow edit
+    elif main_search_slash_count == 2:
+        # Practically apply only tool search
+        tools_search_name, tools_search_version, tools_search_edit = main_search.split('/')
+        tools_search_name = tools_search_name.strip()
+        tools_search_version = tools_search_version.strip()
+        try:
+            tools_search_edit = int(tools_search_edit)
+        except ValueError:
+            tools_search_edit = 0 # Do not apply search no tool edit
+
+        workflows_search_name = ''
+        workflows_search_edit = -1
+    else:
+        tools_search_name = ''
+        tools_search_version = ''
+        tools_search_edit = -1
+
+        workflows_search_name = ''
+        workflows_search_edit = -1
+
     ret = {}
+
+    #Get tools
+    for key, value in tools_search_2(tools_search_name, tools_search_version, tools_search_edit).items():
+        ret[key] = value
+
+    #Get workflowws
+    for key, value in workflows_search_2(workflows_search_name, workflows_search_edit).items():
+        ret[key] = value
 
     #Get reports
     for key, value in reports_search_2(main_search).items():
