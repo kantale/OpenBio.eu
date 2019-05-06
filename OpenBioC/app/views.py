@@ -2198,6 +2198,7 @@ def qa_add_1(request, **kwargs):
     qa_comment = kwargs.get('qa_comment', '')
     if not qa_comment:
         return fail('Comment should not be empty')
+    qa_comment_html = markdown(qa_comment)
 
     if request.user.is_anonymous:
         return fail('Please login to post a new question')
@@ -2211,13 +2212,15 @@ def qa_add_1(request, **kwargs):
     comment = Comment(
         obc_user=OBC_user.objects.get(user=user), 
         comment=qa_comment,
+        comment_html = qa_comment_html,
         title=qa_title,
         parent=None,
     )
     comment.save()
 
     ret = {
-        'id': comment.pk
+        'id': comment.pk,
+        'comment_html': qa_comment_html,
     }
 
     return success(ret)
@@ -2237,6 +2240,7 @@ def qa_search_3(request, **kwargs):
         for child in comment.children.all():
             to_add = {
                 'comment': child.comment,
+                'comment_html': child.comment_html,
                 'id': child.pk,
                 'replying': False,
                 'children': qa_create_thread(child)
@@ -2262,6 +2266,7 @@ def qa_search_3(request, **kwargs):
     ret = {
         'qa_title': comment.title,
         'qa_comment': comment.comment,
+        'qa_comment_html': comment.comment_html,
         'qa_id': comment.pk,
         'qa_thread': qa_create_thread(comment),
     }
@@ -2286,6 +2291,8 @@ def qa_add_comment(request, **kwargs):
     if not current_comment:
         return fail('Could not find Q&A new comment')
 
+    current_comment_html = markdown(current_comment)
+
     try:
         parent_comment = Comment.objects.get(pk=id_)
     except ObjectDoesNotExist as e:
@@ -2294,13 +2301,18 @@ def qa_add_comment(request, **kwargs):
     new_comment = Comment(
         obc_user=OBC_user.objects.get(user=request.user),
         comment = current_comment,
+        comment_html = current_comment_html,
         parent=parent_comment,
     )
     new_comment.save()
     parent_comment.children.add(new_comment)
     parent_comment.save()
 
-    return success()
+    ret = {
+        'comment_html': current_comment_html,
+    }
+
+    return success(ret)
 
 ### END OF Q&A
 

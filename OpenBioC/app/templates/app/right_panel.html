@@ -982,7 +982,7 @@
                                     <b><span ng-bind="qa_title"></span></b>
                                 </div>
                                 <div class="row left-align">
-                                    <span ng-bind="qa_comment"></span>
+                                    <span ng-bind-html="qa_comment_html"></span>
                                 </div>
                                 <div class="row right-align">
                                     <button ng-click="qa_add_comment_button_pressed()">Add Comment</button>
@@ -995,7 +995,7 @@
                                 </div>
                                 <ul class="collection">
                                     <li class="collection-item" ng-repeat="post in qa_thread track by post.id">
-                                        <span ng-bind="post.comment"></span>
+                                        <span ng-bind-html="post.comment_html"></span>
                                         <button ng-click="qa_reply_button_clicked(post.id)">Reply</button>
                                         <div class="input-field" ng-show="post.replying">
                                             <textarea class="validate" ng-model="qa_current_reply"></textarea>
@@ -1004,7 +1004,7 @@
                                         </div>
                                         <ul class="collection">
                                             <li class="collection-item" ng-repeat="post2 in post.children track by post2.id">
-                                                <span ng-bind="post2.comment"></span><button ng-click="qa_reply_button_clicked(post2.id)">Reply</button>
+                                                <span ng-bind-html="post2.comment_html"></span><button ng-click="qa_reply_button_clicked(post2.id)">Reply</button>
                                                 <div class="input-field" ng-show="post2.replying">
                                                     <textarea class="validate" ng-model="qa_current_reply"></textarea>
                                                     <button ng-click="qa_reply_save_button_pressed(post2.id, qa_current_reply)">Save</button>
@@ -1012,7 +1012,7 @@
                                                 </div>
                                                 <ul class="collection">
                                                     <li class="collection-item" ng-repeat="post3 in post2.children track by post3.id">
-                                                        <span ng-bind="post3.comment"></span><button ng-click="qa_reply_button_clicked(post3.id)">Reply</button>
+                                                        <span ng-bind-html="post3.comment_html"></span><button ng-click="qa_reply_button_clicked(post3.id)">Reply</button>
                                                         <div class="input-field" ng-show="post3.replying">
                                                             <textarea class="validate" ng-model="qa_current_reply"></textarea>
                                                             <button ng-click="qa_reply_save_button_pressed(post3.id, qa_current_reply)">Save</button>
@@ -1020,7 +1020,7 @@
                                                         </div>
                                                         <ul class="collection">
                                                             <li class="collection-item" ng-repeat="post4 in post3.children track by post4.id">
-                                                                <span ng-bind="post4.comment"></span><button ng-click="qa_reply_button_clicked(post4.id)">Reply</button>
+                                                                <span ng-bind-html="post4.comment_html"></span><button ng-click="qa_reply_button_clicked(post4.id)">Reply</button>
                                                                 <div class="input-field" ng-show="post4.replying">
                                                                     <textarea class="validate" ng-model="qa_current_reply"></textarea>
                                                                     <button ng-click="qa_reply_save_button_pressed(post4.id, qa_current_reply)">Save</button>
@@ -1028,7 +1028,7 @@
                                                                 </div>
                                                                 <ul class="collection">
                                                                     <li class="collection-item" ng-repeat="post5 in post4.children track by post5.id">
-                                                                        <span ng-bind="post5.comment"></span>
+                                                                        <span ng-bind-html="post5.comment_html"></span>
                                                                         <!-- We allow for 5 levels of comment nesting -->
                                                                         <!--
                                                                         <button ng-click="qa_reply_button_clicked(post5.id)">Reply</button>
