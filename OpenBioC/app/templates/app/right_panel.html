@@ -50,11 +50,11 @@
                         <form class="col s12" ng-show="tools_info_editable">
                             <div class="row">
                                 <div class="input-field col s12 m4 grid-s12-m4-l4">
-                                    <input id="generalName" type="text" class="validate" ng-model="tools_info_name">
+                                    <input id="generalName" type="text" class="validate" ng-model="tools_info_name" ng-disabled="tools_info_forked_from">
                                     <label for="generalName">Name</label>
                                 </div>
                                 <div class="input-field col s12 m4 grid-s12-m4-l4">
-                                    <input id="generalVersion" type="text" class="validate" ng-model="tools_info_version">
+                                    <input id="generalVersion" type="text" class="validate" ng-model="tools_info_version" ng-disabled="tools_info_forked_from">
                                     <label for="generalVersion">Version</label>
                                 </div>
                                 <div class="input-field col s12 grid-s12-m12-l12">
