@@ -684,6 +684,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.tool_info_username = data['username'];
                 $scope.tool_website = data['website'];
                 $scope.tool_description = data['description'];
+                $scope.tool_description_html = data['description_html'];
                 $scope.tool_changes = data['changes'];
                 $scope.tool_info_created_at = data['created_at'];
                 $scope.tools_info_forked_from = data['forked_from'];
@@ -1075,6 +1076,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                 //Load Chips
                 $scope.tool_keywords = window.OBCUI.get_chip_data('toolChips');
+
+                //Get markdown
+                $scope.tool_description_html = data['description_html'];
 
                 //EXPERIMENTAL. UPDATE SEARCH RESULTS
                 $scope.all_search_2();
