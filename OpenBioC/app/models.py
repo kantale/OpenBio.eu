@@ -307,6 +307,7 @@ class Comment(models.Model):
 
     obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
     comment = models.TextField()
+    comment_html = models.TextField()
     title = models.CharField(max_length=1000,)
     created_at = models.DateTimeField(auto_now_add=True)
     parent = models.ForeignKey(to='Comment', null=True, on_delete=models.CASCADE, related_name='comment_parent')

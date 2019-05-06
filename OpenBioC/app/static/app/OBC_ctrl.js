@@ -1669,6 +1669,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             function(data) {
                 $scope.qa_title = data['qa_title'];
                 $scope.qa_comment = data['qa_comment'];
+                $scope.qa_comment_html = data['qa_comment_html'];
                 $scope.qa_comment_id = data['qa_id']; // The primary key to the Comment object in db
 
                 $scope.qa_info_editable = false;
@@ -3066,6 +3067,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.toast('Comment successfully saved', 'success');
                 $scope.qa_info_editable = false;
                 $scope.qa_comment_id = data['id'];
+                $scope.qa_comment_html = data['comment_html'];
                 $scope.qa_thread = [];
 
                 //EXPERIMENTAL!!! UPDATE SEARCH RESULTS
