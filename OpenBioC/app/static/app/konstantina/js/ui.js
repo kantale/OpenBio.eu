@@ -1931,7 +1931,7 @@ window.onload = function () {
                     {
                         selector: 'node[type="workflow"]',
                         "style": {
-                            'shape': 'diamond',
+                            'shape': 'octagon',
                             'border-width': '3',
                             'border-color': '#E53935',
                             'background-color': '#AFB4AE',
@@ -1942,10 +1942,12 @@ window.onload = function () {
                     {
                         selector: 'edge[edgebelongto="true"]',
                         "style": {
-							'opacity': 0.5,
-                            'curve-style': 'bezier',
+							'curve-style': 'bezier',
                             'target-arrow-shape': 'triangle',
                             'width': 2,
+							'line-style': 'dashed',
+							'line-dash-pattern': [6, 3], 
+							'line-dash-offset': 24,
                             'line-color': '#ddd',
                             'target-arrow-color': '#ddd'
 						}
@@ -1956,8 +1958,6 @@ window.onload = function () {
                             'curve-style': 'bezier',
                             'target-arrow-shape': 'triangle',
                             'width': 2,
-							//'line-dash-pattern': [6, 3], 
-							//'line-dash-offset': 24,
                             'line-color': '#ddd',
                             'target-arrow-color': '#ddd'
                         }
@@ -2041,7 +2041,7 @@ window.onload = function () {
                     {
                         selector: 'node[type="workflow"]',
                         "style": {
-                            'shape': 'diamond',
+                            'shape': 'octagon',
                             //'border-width': '3',
                             //'border-color': '#E53935',
                             'background-color': '#AFB4AE',
