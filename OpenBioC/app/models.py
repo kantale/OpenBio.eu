@@ -146,7 +146,8 @@ class Tool(models.Model):
     obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE) # Never delete users..
 
     website = models.URLField(max_length=256, null=True)
-    description = models.TextField(null=True) 
+    description = models.TextField(null=True)
+    description_html = models.TextField(null=True)
     keywords = models.ManyToManyField(Keyword)
     forked_from = models.ForeignKey(to="Tool", null=True, on_delete=models.CASCADE, related_name='forked_from_related') #Is this forked from another tool? Also Never delete tools
     changes = models.TextField(null=True) # What changes have been made from forked tool?
@@ -208,6 +209,7 @@ class Workflow(models.Model):
 
     website = models.URLField(max_length=256, null=True)
     description = models.TextField(null=False) # Unlike tools description cannot be empty
+    description_html = models.TextField(null=False)
     keywords = models.ManyToManyField(Keyword)
 
     # JSON serialized,  The workflow cytoscape graph , cy.json. 
@@ -305,6 +307,7 @@ class Comment(models.Model):
 
     obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
     comment = models.TextField()
+    comment_html = models.TextField()
     title = models.CharField(max_length=1000,)
     created_at = models.DateTimeField(auto_now_add=True)
     parent = models.ForeignKey(to='Comment', null=True, on_delete=models.CASCADE, related_name='comment_parent')

@@ -684,6 +684,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.tool_info_username = data['username'];
                 $scope.tool_website = data['website'];
                 $scope.tool_description = data['description'];
+                $scope.tool_description_html = data['description_html'];
                 $scope.tool_changes = data['changes'];
                 $scope.tool_info_created_at = data['created_at'];
                 $scope.tools_info_forked_from = data['forked_from'];
@@ -1075,6 +1076,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                 //Load Chips
                 $scope.tool_keywords = window.OBCUI.get_chip_data('toolChips');
+
+                //Get markdown
+                $scope.tool_description_html = data['description_html'];
 
                 //EXPERIMENTAL. UPDATE SEARCH RESULTS
                 $scope.all_search_2();
@@ -1665,6 +1669,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             function(data) {
                 $scope.qa_title = data['qa_title'];
                 $scope.qa_comment = data['qa_comment'];
+                $scope.qa_comment_html = data['qa_comment_html'];
                 $scope.qa_comment_id = data['qa_id']; // The primary key to the Comment object in db
 
                 $scope.qa_info_editable = false;
@@ -2334,6 +2339,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.workflow_info_created_at = data['created_at'];
                 $scope.workflow_website = data['website'];
                 $scope.workflow_description = data['description'];
+                $scope.workflow_description_html = data['description_html'];
                 $scope.workflow_info_forked_from = data['forked_from'];
                 $scope.workflow_changes = data['changes'];
 
@@ -2771,6 +2777,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             function(data) {
                 $scope.workflow_info_created_at = data['created_at'];
                 $scope.workflow_info_edit = data['edit'];
+                $scope.workflow_description_html = data['description_html'];
                 $scope.workflows_info_editable = false;
                 workflow_step_editor.setReadOnly(true);
 
@@ -3060,6 +3067,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.toast('Comment successfully saved', 'success');
                 $scope.qa_info_editable = false;
                 $scope.qa_comment_id = data['id'];
+                $scope.qa_comment_html = data['comment_html'];
                 $scope.qa_thread = [];
 
                 //EXPERIMENTAL!!! UPDATE SEARCH RESULTS

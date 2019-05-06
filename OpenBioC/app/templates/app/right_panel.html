@@ -50,11 +50,11 @@
                         <form class="col s12" ng-show="tools_info_editable">
                             <div class="row">
                                 <div class="input-field col s12 m4 grid-s12-m4-l4">
-                                    <input id="generalName" type="text" class="validate" ng-model="tools_info_name">
+                                    <input id="generalName" type="text" class="validate" ng-model="tools_info_name" ng-disabled="tools_info_forked_from">
                                     <label for="generalName">Name</label>
                                 </div>
                                 <div class="input-field col s12 m4 grid-s12-m4-l4">
-                                    <input id="generalVersion" type="text" class="validate" ng-model="tools_info_version">
+                                    <input id="generalVersion" type="text" class="validate" ng-model="tools_info_version" ng-disabled="tools_info_forked_from">
                                     <label for="generalVersion">Version</label>
                                 </div>
                                 <div class="input-field col s12 grid-s12-m12-l12">
@@ -83,7 +83,7 @@
                             </div>
                             <div class="row left-align">
                                 <div class="col s3"><b>Description:</b></div>
-                                <div class="col s9"><span ng-bind="tool_description"></span></div>
+                                <div class="col s9"><span ng-bind-html="tool_description_html"></span></div>
                             </div>
                             <div class="row left-align" ng-show="tool_changes">
                                 <div class="col s3"><b>Edit Summary:</b></div>
@@ -423,7 +423,7 @@
                                 </div>
                                 <div class="row left-align">
                                     <div class="col s3"><b>Description:</b></div>
-                                    <div class="col s9"><span ng-bind="workflow_description"></span></div>
+                                    <div class="col s9"><span ng-bind-html="workflow_description_html"></span></div>
                                 </div>
                                 <div class="row left-align" ng-show="workflow_changes">
                                     <div class="col s3"><b>Edit Summary:</b></div>
@@ -982,7 +982,7 @@
                                     <b><span ng-bind="qa_title"></span></b>
                                 </div>
                                 <div class="row left-align">
-                                    <span ng-bind="qa_comment"></span>
+                                    <span ng-bind-html="qa_comment_html"></span>
                                 </div>
                                 <div class="row right-align">
                                     <button ng-click="qa_add_comment_button_pressed()">Add Comment</button>
@@ -995,7 +995,7 @@
                                 </div>
                                 <ul class="collection">
                                     <li class="collection-item" ng-repeat="post in qa_thread track by post.id">
-                                        <span ng-bind="post.comment"></span>
+                                        <span ng-bind-html="post.comment_html"></span>
                                         <button ng-click="qa_reply_button_clicked(post.id)">Reply</button>
                                         <div class="input-field" ng-show="post.replying">
                                             <textarea class="validate" ng-model="qa_current_reply"></textarea>
@@ -1004,7 +1004,7 @@
                                         </div>
                                         <ul class="collection">
                                             <li class="collection-item" ng-repeat="post2 in post.children track by post2.id">
-                                                <span ng-bind="post2.comment"></span><button ng-click="qa_reply_button_clicked(post2.id)">Reply</button>
+                                                <span ng-bind-html="post2.comment_html"></span><button ng-click="qa_reply_button_clicked(post2.id)">Reply</button>
                                                 <div class="input-field" ng-show="post2.replying">
                                                     <textarea class="validate" ng-model="qa_current_reply"></textarea>
                                                     <button ng-click="qa_reply_save_button_pressed(post2.id, qa_current_reply)">Save</button>
@@ -1012,7 +1012,7 @@
                                                 </div>
                                                 <ul class="collection">
                                                     <li class="collection-item" ng-repeat="post3 in post2.children track by post3.id">
-                                                        <span ng-bind="post3.comment"></span><button ng-click="qa_reply_button_clicked(post3.id)">Reply</button>
+                                                        <span ng-bind-html="post3.comment_html"></span><button ng-click="qa_reply_button_clicked(post3.id)">Reply</button>
                                                         <div class="input-field" ng-show="post3.replying">
                                                             <textarea class="validate" ng-model="qa_current_reply"></textarea>
                                                             <button ng-click="qa_reply_save_button_pressed(post3.id, qa_current_reply)">Save</button>
@@ -1020,7 +1020,7 @@
                                                         </div>
                                                         <ul class="collection">
                                                             <li class="collection-item" ng-repeat="post4 in post3.children track by post4.id">
-                                                                <span ng-bind="post4.comment"></span><button ng-click="qa_reply_button_clicked(post4.id)">Reply</button>
+                                                                <span ng-bind-html="post4.comment_html"></span><button ng-click="qa_reply_button_clicked(post4.id)">Reply</button>
                                                                 <div class="input-field" ng-show="post4.replying">
                                                                     <textarea class="validate" ng-model="qa_current_reply"></textarea>
                                                                     <button ng-click="qa_reply_save_button_pressed(post4.id, qa_current_reply)">Save</button>
@@ -1028,7 +1028,7 @@
                                                                 </div>
                                                                 <ul class="collection">
                                                                     <li class="collection-item" ng-repeat="post5 in post4.children track by post5.id">
-                                                                        <span ng-bind="post5.comment"></span>
+                                                                        <span ng-bind-html="post5.comment_html"></span>
                                                                         <!-- We allow for 5 levels of comment nesting -->
                                                                         <!--
                                                                         <button ng-click="qa_reply_button_clicked(post5.id)">Reply</button>

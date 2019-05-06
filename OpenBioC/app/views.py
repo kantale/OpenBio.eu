@@ -54,6 +54,9 @@ from pybtex.database import parse_string as parse_reference_string
 import pybtex.database.input.bibtex
 import pybtex.plugin
 
+# https://github.com/lepture/mistune
+import mistune
+
 __version__ = '0.0.4rc'
 
 # Get an instance of a logger
@@ -85,6 +88,7 @@ g = {
     },
     'instance_setting_not_found_printed': False,
     'ansi2html_converter': Ansi2HTMLConverter(), # https://github.com/ralphbean/ansi2html/
+    'markdown': mistune.Markdown(), # If you care about performance, it is better to re-use the Markdown instance: 
 
 #    'pybtex': {
 #        'pybtex_style': pybtex.plugin.find_plugin('pybtex.style.formatting', 'plain')(),
@@ -100,6 +104,12 @@ def md5(t):
     Return the md5 hash of this string
     '''
     return hashlib.md5(t.encode("utf-8")).hexdigest()
+
+def markdown(t):
+    '''
+    https://github.com/lepture/mistune 
+    '''
+    return g['markdown'](t)
 
 def fail(error_message=None):
     '''
@@ -1002,6 +1012,7 @@ def tools_search_3(request, **kwargs):
     ret = {
         'website': tool.website,
         'description': tool.description,
+        'description_html': tool.description_html,
         'username': tool.obc_user.user.username,
         'created_at': datetime_to_str(tool.created_at),
         'forked_from': tool_to_json(tool.forked_from),
@@ -1068,6 +1079,10 @@ def tool_get_dependencies(request, **kwargs):
 
 @has_data
 def tools_add(request, **kwargs):
+    '''
+    Add a new tool
+    tool add tool save tool
+    '''
 
     if request.user.is_anonymous: # Server should always check..
         return fail('Please login to create new tools')
@@ -1079,6 +1094,8 @@ def tools_add(request, **kwargs):
     tool_description = kwargs.get('tool_description', '')
     if not tool_description:
         return fail('Description cannot be empty')
+
+    tool_description_html = markdown(tool_description)
 
     tools_search_name = kwargs.get('tools_search_name', '') 
     if not tools_search_name:
@@ -1140,6 +1157,7 @@ def tools_add(request, **kwargs):
         edit=next_edit,
         website = tool_website,
         description = tool_description,
+        description_html = tool_description_html,
         forked_from = tool_forked_from,
         changes = tool_changes,
         installation_commands=tool_installation_commands,
@@ -1178,6 +1196,7 @@ def tools_add(request, **kwargs):
     new_tool.save()
 
     ret = {
+        'description_html': tool_description_html, 
         'edit': next_edit,
         'created_at': datetime_to_str(new_tool.created_at)
     }
@@ -1336,6 +1355,8 @@ def workflows_add(request, **kwargs):
     if not workflow_description.strip():
         return fail('Description cannot be empty')
 
+    workflow_description_html = markdown(workflow_description)
+
     workflow = kwargs.get('workflow_json', '')
     if not workflow:
         return fail ('workflows json object is empty') # This should never happen!
@@ -1382,6 +1403,7 @@ def workflows_add(request, **kwargs):
         edit = next_edit,
         website = workflow_website,
         description = workflow_description,
+        description_html = workflow_description_html,
 
         # FIXME !! SERIOUS!
         # This is redundand. We do json.loads and then json.dumps.
@@ -1408,6 +1430,7 @@ def workflows_add(request, **kwargs):
     new_workflow.save();
 
     ret = {
+        'description_html': workflow_description_html, 
         'edit': next_edit,
         'created_at': datetime_to_str(new_workflow.created_at)
     }
@@ -1434,6 +1457,7 @@ def workflows_search_3(request, **kwargs):
         'username': workflow.obc_user.user.username,
         'website': workflow.website,
         'description': workflow.description,
+        'description_html': workflow.description_html,
         'created_at': datetime_to_str(workflow.created_at),
         'forked_from': workflow_to_json(workflow.forked_from),
         'keywords': [keyword.keyword for keyword in workflow.keywords.all()],
@@ -2174,6 +2198,7 @@ def qa_add_1(request, **kwargs):
     qa_comment = kwargs.get('qa_comment', '')
     if not qa_comment:
         return fail('Comment should not be empty')
+    qa_comment_html = markdown(qa_comment)
 
     if request.user.is_anonymous:
         return fail('Please login to post a new question')
@@ -2187,13 +2212,15 @@ def qa_add_1(request, **kwargs):
     comment = Comment(
         obc_user=OBC_user.objects.get(user=user), 
         comment=qa_comment,
+        comment_html = qa_comment_html,
         title=qa_title,
         parent=None,
     )
     comment.save()
 
     ret = {
-        'id': comment.pk
+        'id': comment.pk,
+        'comment_html': qa_comment_html,
     }
 
     return success(ret)
@@ -2213,6 +2240,7 @@ def qa_search_3(request, **kwargs):
         for child in comment.children.all():
             to_add = {
                 'comment': child.comment,
+                'comment_html': child.comment_html,
                 'id': child.pk,
                 'replying': False,
                 'children': qa_create_thread(child)
@@ -2238,6 +2266,7 @@ def qa_search_3(request, **kwargs):
     ret = {
         'qa_title': comment.title,
         'qa_comment': comment.comment,
+        'qa_comment_html': comment.comment_html,
         'qa_id': comment.pk,
         'qa_thread': qa_create_thread(comment),
     }
@@ -2262,6 +2291,8 @@ def qa_add_comment(request, **kwargs):
     if not current_comment:
         return fail('Could not find Q&A new comment')
 
+    current_comment_html = markdown(current_comment)
+
     try:
         parent_comment = Comment.objects.get(pk=id_)
     except ObjectDoesNotExist as e:
@@ -2270,13 +2301,18 @@ def qa_add_comment(request, **kwargs):
     new_comment = Comment(
         obc_user=OBC_user.objects.get(user=request.user),
         comment = current_comment,
+        comment_html = current_comment_html,
         parent=parent_comment,
     )
     new_comment.save()
     parent_comment.children.add(new_comment)
     parent_comment.save()
 
-    return success()
+    ret = {
+        'comment_html': current_comment_html,
+    }
+
+    return success(ret)
 
 ### END OF Q&A
 
