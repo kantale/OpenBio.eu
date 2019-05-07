@@ -886,6 +886,7 @@ def logout(request):
 def tools_search_1(request, **kwargs):
     '''
     Get tool counts
+    NOT CURRENTLY USED!
     '''
     queries = []
 
