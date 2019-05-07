@@ -1981,6 +1981,7 @@ window.onload = function () {
             return cy_object;
 
         }
+		
 
         /*
         * Initialize WORKFLOW graph
@@ -1988,7 +1989,6 @@ window.onload = function () {
         function initializeTree() {
 
             cy = createCytoscapeObject();
-
 
             //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.
             //document.querySelector('canvas[data-id="layer2-node"]').style.position = null;
@@ -2223,33 +2223,69 @@ window.onload = function () {
 				if(edge_anim!== null){
 					
 					/* (1) "Never run", (2) Running blinking, (3) "run at least once" */ 
-					var edge_anim_style=null;
+					//var edge_anim_style=null;
 					var edge_anim_label=null;
 					
 					//if(state==="Never run") edge_anim_style = { 'line-color': 'red', 'target-arrow-color': 'red'};
 					if(state==="Running") {
-							edge_anim_style = { 'line-color': 'red', 'target-arrow-color': '#E53935', 'label': 'running'};
+							//edge_anim_style = { 'line-color': 'red', 'target-arrow-color': '#E53935', 'label': 'running'};
 							edge_anim_label='running';
 					}
 					if(state==="Run") {
-							edge_anim_style = { 'line-color': 'green', 'target-arrow-color': '#43A047', 'label': 'run'};
+							//edge_anim_style = { 'line-color': 'green', 'target-arrow-color': '#43A047', 'label': 'run'};
 							edge_anim_label = 'run';
 					}else{
-							edge_anim_style = { 'line-color': '#ddd', 'target-arrow-color': '#ddd'};
+							edge_anim_label = '';
+							//edge_anim_style = { 'line-color': '#ddd', 'target-arrow-color': '#ddd'};
 					}
 					
 					
 					//update label
 					edge_anim.data('label', edge_anim_label);
 					
+					
+					//make edges blinking
+					var jAni = edge_anim.animation({
+									style: {
+										'opacity': 0.1
+									},
+									duration: 200
+								});
+
+					//create time interval for continous looping of the animation				
+					var myVar = setInterval(myTimer, 200);
+
+					
+					function myTimer() {
+
+						jAni
+						  .play() // start
+						  .promise('completed').then(
+								function(){ // on next completed
+									jAni
+									  .reverse() // switch animation direction
+									  .rewind() // optional but makes intent clear
+									  .play() // start again
+									;
+						  });
+
+					}
+
+					myTimer();
+					
+					
+					/*
 						return (edge_anim.animation({
 									  style: edge_anim_style,
 									  duration: 5000  //duration of animation in milliseconds
 									}).play()         //.promise('complete').then(loopEdgeAnimation(edge_anim)) :TODO fic it so that it can loop
 								);
 								
-							// call the function for specified edges
-							//loopEdgeAnimation(cy_rep.$("edge")[0]);
+					*/
+							
+							
+							
+							
 				}
 				
 		}	
@@ -2553,9 +2589,9 @@ window.onload = function () {
                 }
             });
 
-            cy.resize();
-            cy.reset();
-            cy.center();
+				cy.resize();
+				cy.reset();
+				cy.center();
 
         };
 
