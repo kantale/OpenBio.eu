@@ -681,6 +681,15 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 "tool_edit": item.edit
             },
             function (data) {
+
+                //Hide all right panel accordions
+                $scope.hide_all_right_accordions('tools');
+
+                //Open tool right panel windows
+                document.getElementById('createToolDataDiv').style.display = 'block';
+                M.Collapsible.getInstance($('#createToolDataAccordion')).open();
+
+
                 $scope.tool_info_username = data['username'];
                 $scope.tool_website = data['website'];
                 $scope.tool_description = data['description'];
@@ -1096,6 +1105,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     /*
     * Navbar --> tools/data --> Appropriate Input --> List Item --> clicked
+    * tool node clicked tool clicked 
     */
     $scope.tools_search_show_item = function(item) {
         $scope.show_tools_info = true;
