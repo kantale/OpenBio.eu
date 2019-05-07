@@ -1434,7 +1434,7 @@ window.onload = function () {
                     var myNode = { data: { id: this_input_output_id, label: d.name, name: d.name, type: d.type, description: d.description, belongto: this_node_wf_belong_to } };
                     myNodes.push(myNode);
                     //Connect with belongto workflow
-                    myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_input_output_id, id: create_workflow_edge_id(this_node_wf_belong_to_id, this_input_output_id) } });
+                    myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_input_output_id, id: create_workflow_edge_id(this_node_wf_belong_to_id, this_input_output_id), edgebelongto: 'true' } });
                 }
 
 
@@ -1471,7 +1471,7 @@ window.onload = function () {
                         //var myNode = { data: { id: d.id, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'yes', variables: d.variables } };
                         var myNode = { data: { id: d.id, text: d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'yes', dep_id: d.dep_id, variables: d.variables, belongto: this_node_wf_belong_to } };
                         myNodes.push(myNode);
-                        myEdges.push({ data: { source: this_node_wf_belong_to_id, target: d.id, id: create_workflow_edge_id(this_node_wf_belong_to_id, d.id) } });
+                        myEdges.push({ data: { source: this_node_wf_belong_to_id, target: d.id, id: create_workflow_edge_id(this_node_wf_belong_to_id, d.id), edgebelongto: 'true' } });
                     }
 
                 }
@@ -1497,7 +1497,7 @@ window.onload = function () {
                     myNodes.push(myNode);
 
                     //Connect with belong workflow
-                    myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_step_id, id: create_workflow_edge_id(this_node_wf_belong_to_id, this_step_id) } });
+                    myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_step_id, id: create_workflow_edge_id(this_node_wf_belong_to_id, this_step_id), edgebelongto: 'true' } });
 
                     //create edges to tools and/or steps
                     if (typeof d.tools !== "undefined") {
