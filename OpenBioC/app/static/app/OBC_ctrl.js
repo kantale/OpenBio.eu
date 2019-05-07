@@ -120,7 +120,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.report_workflow_edit = '';
         $scope.report_workflow_run = '';
         $scope.report_tokens = [];
-
+ 
         $scope.get_init_data();
 
 
@@ -541,6 +541,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * Search on all objects!
     */
     $scope.all_search_2 = function() {
+
+        //If search criteria are empty do not perform any search
+        if (!$.trim($scope.main_search).length) {
+            $scope.init_search_results(); //Remove every counter
+            return;
+        }
+
         $scope.ajax(
             'all_search_2/',
             {
@@ -592,13 +599,49 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * Fetch init data from server. 
     */
     $scope.get_init_data = function() {
-        $scope.inner_hide_all_navbar();
-        $scope.show_tools = true;
-        $scope.tools_search_1();
+        //$scope.inner_hide_all_navbar();
+        //$scope.show_tools = true;
+        //$scope.tools_search_1();
+
+        
+        $scope.init_search_results();
     };
 
     /*
+    * Initialize Research Objkect counters
+    */
+    $scope.init_search_results = function() {
+
+        //-1 values mean: DO NOT SHOW
+
+        $scope.tools_search_tools_number = -1
+        angular.copy([], $scope.tools_search_jstree_model);
+
+        //Workflows
+        $scope.workflows_search_tools_number = -1
+        angular.copy([], $scope.workflows_search_jstree_model);  
+
+        //Reports
+        $scope.main_search_reports_number = -1
+        angular.copy([], $scope.reports_search_jstree_model);
+
+        //References
+        $scope.main_search_references_number = -1
+        angular.copy([], $scope.references_search_jstree_model);
+
+        //Users
+        $scope.main_search_users_number = -1
+        angular.copy([], $scope.users_search_jstree_model);
+
+        // Q&As
+        $scope.main_search_qa_number = -1
+        angular.copy([], $scope.qa_search_jstree_model);
+
+    }
+
+    /*
     *  Get the number of all tools
+    * NOT USED !
     */
     $scope.tools_search_1 = function() {
         $scope.ajax(
