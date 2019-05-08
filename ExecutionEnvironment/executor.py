@@ -1,6 +1,7 @@
 
 import os
 import json
+import base64
 import logging
 import argparse 
 
@@ -69,10 +70,28 @@ function update_server_status()
     fi
 }
 
+''',
+  'base64_decode': r'''
+function obc_base64_decode() {
+    echo $1 | base64 --decode
+}
+''',
+'validate': r'''
+function obc_validate() {
+    local command="$(obc_base64_decode $1)"
+    eval $command
+}
 '''
 }
 
 bash_patterns['get_json_value'] = '{variable}=$(obc_parse_json "${json_variable}" "{json_key}")'
+
+## Helper functions
+def base64_encode(s):
+    '''
+    Takes a string and converts it to a base64 string
+    '''
+    return base64.b64encode(s.encode()).decode('ascii')
 
 class Worfklow:
     '''
@@ -221,19 +240,41 @@ class Worfklow:
         '''
         return 'obc_current_token="{}"'.format(self.current_token)
 
-    def get_tool_bash_commands(self, tool):
+    def get_tool_bash_commands(self, tool, validation=True):
         '''
         '''
 
         # Add Bash commands
-        ret =  '### BASH COMMANDS FOR TOOL: {}\n'.format(tool['label'])
+        ret =  '### BASH INSTALLATION COMMANDS FOR TOOL: {}\n'.format(tool['label'])
+        ret += 'echo "OBC: INSTALLING TOOL: {}"\n'.format(tool['label'])
         ret += tool['installation_commands'] + '\n'
-        ret += '### END OF {}\n'.format(tool['label'])
+        ret += 'echo "OBC: INSTALLATION OF TOOL: {} . COMPLETED"\n'.format(tool['label'])
+        ret += '### END OF INSTALLATION COMMANDS FOR TOOL: {}\n\n'.format(tool['label'])
+
+        if validation:
+            # Add Bash validation commands
+            ret +=  '### BASH VALIDATION COMMANDS FOR TOOL: {}\n'.format(tool['label'])
+            ret += 'echo "OBC: VALIDATING THE INSTALLATION OF THE TOOL: {}"\n'.format(tool['label'])
+            #ret += tool['validation_commands'] + '\n'
+            validation_script_filename = tool['label'].replace('/', '__') + '__validation.sh'
+            ret += "cat > {} << 'ENDOFFILE'\n".format(validation_script_filename)
+            ret += tool['validation_commands']
+            ret += 'ENDOFFILE\n\n'
+            ret += 'chmod +x {}\n'.format(validation_script_filename)
+            #ret +=  "mitsos="+base64_encode(tool['validation_commands']) + '\n'
+            ret += './{}\n'.format(validation_script_filename)
+            ret += 'if [ $? -eq 0 ] ; then\n'
+            ret += '   echo "OBC: VALIDATION FOR TOOL: {} SUCCEEDED"\n'.format(tool['label'])
+            ret += 'else\n'
+            ret += '   echo "OBC: VALIDATION FOR TOOL: {} FAILED"\n'.format(tool['label'])
+            ret += 'fi\n\n'
+            ret += '### END OF VALIDATION COMMANDS FOR TOOL: {}\n\n'.format(tool['label'])
+
 
         ret += '\n'
         ret += '### SETTING TOOL VARIABLES FOR: {}\n'.format(tool['label'])
         for tool_variable in tool['variables']:
-            ret += '{}__{}="{}" # {} \n'.format(self.get_tool_dash_id(tool), tool_variable['name'], tool_variable['value'], tool_variable['description'])
+            ret += 'export {}__{}="{}" # {} \n'.format(self.get_tool_dash_id(tool), tool_variable['name'], tool_variable['value'], tool_variable['description'])
         ret += '### END OF SETTING TOOL VARIABLES FOR: {}\n\n'.format(tool['label'])
 
         return ret
@@ -269,6 +310,7 @@ class Worfklow:
 
             ret += '# STEP: {}\n'.format(a_node['id'])
             ret += '{} () {{\n'.format(a_node['id'])
+            ret += ':\n' # No op in case a_node['bash'] is empty 
             ret += a_node['bash'] + '\n'
             ret += '}\n'
 
@@ -510,6 +552,8 @@ class LocalExecutor(BaseExecutor):
             #Insert essential functions
             f.write(bash_patterns['parse_json'])
             f.write(bash_patterns['update_server_status'])
+            f.write(bash_patterns['base64_decode'])
+            f.write(bash_patterns['validate'])
 
             f.write(self.workflow.bash_workflow_starts())
 
