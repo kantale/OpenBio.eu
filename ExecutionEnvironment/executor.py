@@ -169,17 +169,21 @@ class Worfklow:
 
         # Check that all root input are set
         self.input_parameter_values = {}
+        logging.info('Checking for input values:')
         for root_input_node in self.root_inputs_outputs['inputs']:
-            logging.info('The following input values have been set:')
+            var_set = False
             for arg_input_name, arg_input_value in self.input_parameters.items():
+                if arg_input_value is None:
+                    break
                 if arg_input_name == root_input_node['id']:
                     logging.info('  {}={}'.format(root_input_node['id'], arg_input_value))
                     self.input_parameter_values[root_input_node['id']] = {'value': arg_input_value, 'description': root_input_node['description']}
+                    var_set = True
                     break
-            else:
+            if not var_set:
                 #message = 'Input parameter: {} has not been set!'.format(root_input_node['id'])
                 #raise OBC_Executor_Exception(message)
-                local_input_parameter = input('Input parameter: {} has not been set. Enter value:'.format(root_input_node['id']))
+                local_input_parameter = input('Input parameter: {} ({}) has not been set. Enter value: '.format(root_input_node['id'], root_input_node['description']))
                 self.input_parameter_values[root_input_node['id']] = {'value': local_input_parameter, 'description': root_input_node['description']}
 
         # Check that all outpus will be eventually set
@@ -201,7 +205,7 @@ class Worfklow:
                     found_output_filling_step = True
 
             if not found_output_filling_step:
-                message = 'Output {} is not set by any step!'.format(root_output_node['id'])
+                message = 'Output {} ({}) is not set by any step!'.format(root_output_node['id'], root_output_node['description'])
                 raise OBC_Executor_Exception(message)
 
         # Confirm that all workflows have exactly one main step

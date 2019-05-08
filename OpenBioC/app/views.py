@@ -1281,24 +1281,31 @@ def set_edit_to_cytoscape_json(cy, edit, workflow_info_name):
         #Change the bash
         if 'bash' in node['data']:
             node['data']['bash'] = node['data']['bash'].replace('__null', '__' + str(edit))
+            node['data']['bash'] = node['data']['bash'].replace('root__', workflow_info_name + '__')
 
         # Set to step-->Step
         if 'steps' in node['data']:
             for step_i, _ in enumerate(node['data']['steps']):
                 if '__null' in node['data']['steps'][step_i]:
                     node['data']['steps'][step_i] = node['data']['steps'][step_i].replace('__null', '__' + str(edit))
+                if 'root__' in node['data']['steps'][step_i]:
+                    node['data']['steps'][step_i] = node['data']['steps'][step_i].replace('root__', workflow_info_name + '__')
 
         # Set to step-->inputs
         if 'inputs' in node['data']:
             for input_i, _ in enumerate(node['data']['inputs']):
                 if '__null' in node['data']['inputs'][input_i]:
                     node['data']['inputs'][input_i] = node['data']['inputs'][input_i].replace('__null', '__' + str(edit))
+                if 'root__' in node['data']['inputs'][input_i]:
+                    node['data']['inputs'][input_i] = node['data']['inputs'][input_i].replace('root__', workflow_info_name + '__')
 
         # Set to step->outputs
         if 'outputs' in node['data']:
             for output_i, _ in enumerate(node['data']['outputs']):
                 if '__null' in node['data']['outputs'][output_i]:
                     node['data']['outputs'][output_i] = node['data']['outputs'][output_i].replace('__null', '__' + str(edit))
+                if 'root__' in node['data']['outputs'][output_i]:
+                    node['data']['outputs'][output_i] = node['data']['outputs'][output_i].replace('root__', workflow_info_name + '__')
 
 
     if 'edges' in cy['elements']:

@@ -116,11 +116,52 @@ else
 fi
 ########################
 wget https://mathgen.stats.ox.ac.uk/wtccc-software/HM3.tgz
-tar zxvf https://mathgen.stats.ox.ac.uk/wtccc-software/HM3.tgz
+tar zxvf HM3.tgz
 
 ########################
 
 
+v="md5checkdir.sh"
+
+command="./$v HM3/ 35f3dc6a51f47ade371e932ce275cc23"
+eval $command
+
+if [ $? -eq 0 ] ; then
+        exit 0
+else
+        exit 1
+fi
+################
+```
+# Insert the BASH commands for this step
+
+# /hapgen2 -h HM3/CEU.chr6.hap -l HM3/hapmap3.r2.b36.chr6.legend -m HM3/genetic_map_chr6_combined_b36.txt -o chr6 -dl 16199621 1 3 6 -n 100 100 -int 15199621 17199621
+
+${hapgen2__macosx_intel__1__exec} \
+ -h ${hapmap2__1__2__install_path}/CEU.chr${input__chromosome__artificialsignal__1}.hap \
+ -l ${hapmap2__1__2__install_path}/hapmap3.r2.b36.chr${input__chromosome__artificialsignal__1}.legend \
+ -m ${hapmap2__1__2__install_path}/genetic_map_chr${input__chromosome__artificialsignal__1}_combined_b36.txt \
+ -o chr${input__chromosome__artificialsignal__1} \
+ -dl ${input__location__artificialsignal__1} ${input__odds_ratio_ref_ref__artificialsignal__1} ${input__odds_ratio_ref_alt__artificialsignal__1} ${input__odds_ratio_alt_alt__artificialsignal__1} \
+ -n ${input__cases__artificialsignal__1} ${input__controls__artificialsignal__1} \
+ -int ${input__location_from__artificialsignal__1} ${input__location_to__artificialsignal__1}
+ 
+output__out__artificialsignal__4=chr${input__chromosome__artificialsignal__1} 
+```
+
+```
+${hapgen2__macosx_intel__1__exec} \
+-h ${hapmap2__1__2__install_path}/CEU.chr${input__chromosome__root__null}.hap \
+-l ${hapmap2__1__2__install_path}/hapmap3.r2.b36.chr${input__chromosome__root__null}.legend \
+-m ${hapmap2__1__2__install_path}/genetic_map_chr${input__chromosome__root__null}_combined_b36.txt \
+-o chr${input__chromosome__root__null} \
+-dl ${input__location__root__null} ${input__odds_ratio_ref_ref__root__null} ${input__odds_ratio_alt_ref__root__null} ${input__odds_ratio_alt_alt__root__null} \
+-n ${input__cases__root__null} ${input__controls__root__null} \
+-int ${input__location_from__root__null} ${input__location_to__root__null}
+
+output__out__root__null=chr${input__chromosome__root__null}
+
+```
 
 
 

@@ -2517,7 +2517,7 @@ window.onload = function () {
             var workflow_options = {}
 
             cy.json().elements.nodes.forEach(function (node) {
-                if (node.data.type === "input") {  //if node is inout check if has value
+                if (node.data.type === "input") {  //if node is input check if has value
                     if (typeof node.data.value === 'undefined') {
                         workflow_options[node.data.id] = null;
                     }
