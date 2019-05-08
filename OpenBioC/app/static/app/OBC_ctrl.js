@@ -2959,16 +2959,18 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         var workflow_options = window.OBCUI.get_workflow_options();
 
         // Check for uncheck options
-        var unset_options = [];
-        for (var option in workflow_options) {
-            if (workflow_options[option] === null) {
-                unset_options.push(option);
+        if (false) { // WE ARE DISABLING THIS! Users can set them in executor
+            var unset_options = [];
+            for (var option in workflow_options) {
+                if (workflow_options[option] === null) {
+                    unset_options.push(option);
+                }
             }
-        }
 
-        if (unset_options.length) {
-            $scope.toast('Please set all input variables. Unset variables: ' + unset_options.join(', '), 'error');
-            return;
+            if (unset_options.length) {
+                $scope.toast('Please set all input variables. Unset variables: ' + unset_options.join(', '), 'error');
+                return;
+            }
         }
 
         $scope.ajax(

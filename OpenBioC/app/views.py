@@ -410,15 +410,18 @@ def tool_variable_text_jstree(variable):
     '''
     return '{}:{}'.format(variable.name, variable.description)
 
-def tool_variable_id_jstree(variable, id_):
+def tool_variable_id_jstree(variable, tool, id_):
     '''
     The JSTree variable id
-    The id should have 4 fields
     Returns a JSON string, so that it can have many fields.
+    It also contains information from the tool
     '''
 
     #return variable.name + '/' + variable.value + '/' + variable.description + '/' + str(id_)
-    return simplejson.dumps([variable.name, variable.value, variable.description, str(id_)])
+    return simplejson.dumps([
+        variable.name, variable.value, variable.description, 
+        str(id_), 
+        tool.name, tool.version, tool.edit])
 
 def tool_get_dependencies_internal(tool, include_as_root=False):
     '''
@@ -483,7 +486,7 @@ def tool_build_dependencies_jstree(tool_dependencies, add_variables=False):
                         'description': variable.description,
                     },
                     'text': tool_variable_text_jstree(variable),
-                    'id': tool_variable_id_jstree(variable, g['VARIABLES_TOOL_TREE_ID']),
+                    'id': tool_variable_id_jstree(variable, tool_dependency['dependency'], g['VARIABLES_TOOL_TREE_ID']),
                     'parent': tool_id_jstree(tool_dependency['dependency'], g['DEPENDENCY_TOOL_TREE_ID']),
                     'type': 'variable', # TODO: FIX REDUNDANCY WITH ['data']['type']
                 })
