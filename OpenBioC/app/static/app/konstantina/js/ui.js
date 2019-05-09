@@ -1048,9 +1048,9 @@ window.onload = function () {
 //            io_re_id: new RegExp('\\$\\{(input|output)__([\\w]+)\\}'), // TODO: ADD  WHITE SPACEDS JUST LIKE calls
 //            io_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('(\\$\\{(input|output)__)' + old_id + '(\\})'), '$1' + new_id + '$3'); }
 
-            io_re: new RegExp('(input|output)__[a-zA-Z0-9][\\w]*', 'g'), // [^_\w] Does not work???
+            io_re: new RegExp('(input|output)__[a-zA-Z0-9_][\\w]*', 'g'), // [^_\w] Does not work???
             io_re_id: new RegExp('(input|output)__([\\w]+)'), // TODO: ADD  WHITE SPACEDS JUST LIKE calls
-            io_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('((input|output)__)' + old_id), '$1' + new_id); }
+            io_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('((input|output)__)' + old_id, 'g'), '$1' + new_id); }
 
         };
 

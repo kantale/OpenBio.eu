@@ -2776,13 +2776,42 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     /*
     * Workflows --> Input/Outputs --> (Alter Input / Output variables) --> Update button --> pressed
+    * input update input output update output
     */
     $scope.workflow_step_input_output_update_pressed = function() {
 
         var nodes_to_add = [];
+        var error_message = '';
+        var nodes_names = [];
 
         $scope.workflow_input_outputs.forEach(function(input_output){
             if (input_output.name && input_output.description) {
+
+                //Check that variables are ok
+
+                if (!$scope.tools_name_regexp.test(input_output.name)) {
+                    error_message = 'Variable: "' + input_output.name + '" has an invalid name (allowed characters:a-zA-Z0-9 and _)';
+                    return;
+                }
+                if (input_output.name.includes('__')) {
+                    error_message = 'Variable "' + input_output.name + '" contains "__". This is not allowed.';
+                    return;
+                }
+
+                if (input_output.name == 'output') {
+                    error_message = 'Variable cannot have the name "output"';
+                    return;
+                }
+                else if (input_output.name == 'input') {
+                    error_message = 'Variable cannot have the name "input"';
+                    return;
+                }
+                if (nodes_names.indexOf(input_output.name) > -1) {
+                    error_message = 'Variable: "' + input_output.name + '" exists more than once';
+                    return;
+                }
+                nodes_names.push(input_output.name);
+
                 nodes_to_add.push({
                     name: input_output.name,
                     description: input_output.description,
@@ -2791,6 +2820,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 })
             }
         });
+
+
+        if (error_message) {
+            $scope.toast(error_message, 'error');
+            return;
+        }
 
         //console.log('Input / Output Variable to add:');
         //console.log(nodes_to_add);
@@ -2879,7 +2914,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             'edit': $scope.workflow_info_edit
         }
         $scope.workflow_changes = '';
+
+        //Initialize step editor
         workflow_step_editor.setReadOnly(false);
+        $scope.workflows_step_name = '';
+        $scope.workflows_step_main = false;
+        workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1);
 
         //Make Chips editable
         window.OBCUI.chip_enable('workflowChips');
