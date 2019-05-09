@@ -14,7 +14,8 @@
                             ng-show="!tools_info_editable">/<span ng-bind="tools_info_edit"></span></span>
                     </h5>
                     <small class="form-text text-muted" ng-show="!tools_info_editable">
-                        <span ng-bind="tool_info_username"></span>, created at <span ng-bind="tool_info_created_at"></span>
+                        <span ng-bind="tool_info_username"></span>, created at <span
+                            ng-bind="tool_info_created_at"></span>
                         <span ng-show="tools_info_forked_from">, forked from <a href
                                 ng-click="tools_search_show_item(tools_info_forked_from)"><span
                                     ng-bind="tools_info_forked_from | tool_label"></span></a></span>
@@ -50,11 +51,13 @@
                         <form class="col s12" ng-show="tools_info_editable">
                             <div class="row">
                                 <div class="input-field col s12 m4 grid-s12-m4-l4">
-                                    <input id="generalName" type="text" class="validate" ng-model="tools_info_name" ng-disabled="tools_info_forked_from">
+                                    <input id="generalName" type="text" class="validate" ng-model="tools_info_name"
+                                        ng-disabled="tools_info_forked_from">
                                     <label for="generalName">Name</label>
                                 </div>
                                 <div class="input-field col s12 m4 grid-s12-m4-l4">
-                                    <input id="generalVersion" type="text" class="validate" ng-model="tools_info_version" ng-disabled="tools_info_forked_from">
+                                    <input id="generalVersion" type="text" class="validate"
+                                        ng-model="tools_info_version" ng-disabled="tools_info_forked_from">
                                     <label for="generalVersion">Version</label>
                                 </div>
                                 <div class="input-field col s12 grid-s12-m12-l12">
@@ -72,7 +75,8 @@
                                     <label for="generalEditSummary">Edit Summary</label>
                                 </div>
                                 <div class="row">
-                                    <div id="toolChips" class="input-field chips left-align col s12 grid-s12-m12-l12"></div>
+                                    <div id="toolChips" class="input-field chips left-align col s12 grid-s12-m12-l12">
+                                    </div>
                                 </div>
                             </div>
                         </form>
@@ -91,17 +95,15 @@
                             </div>
                             <div class="row left-align">
                                 <div class="col s3"><b>Tags:</b></div>
-                                <span class="new badge left" data-badge-caption="" style="margin-left: 5px;" ng-repeat="keyword in tool_keywords"><span ng-bind="keyword"></span></span>
+                                <span class="new badge left" data-badge-caption="" style="margin-left: 5px;"
+                                    ng-repeat="keyword in tool_keywords"><span ng-bind="keyword"></span></span>
                             </div>
                         </div>
                     </div>
                 </li>
-            </ul>
-
-            <!-- --------------------------------------------------------------------------------------- -->
-            <!-- -------------------------------- Dependencies ----------------------------------------- -->
-            <!-- --------------------------------------------------------------------------------------- -->
-            <ul id="toolsDataDependenciesAccordion" class="collapsible expandable faster" style="margin-top:0px;margin-bottom:0px;">
+                <!-- --------------------------------------------------------------------------------------- -->
+                <!-- -------------------------------- Dependencies ----------------------------------------- -->
+                <!-- --------------------------------------------------------------------------------------- -->
                 <li id="toolsDataDependencies">
                     <div class="collapsible-header">
                         <i class="material-icons arrow">keyboard_arrow_right</i>
@@ -109,37 +111,23 @@
                         Dependencies
                     </div>
                     <div class="collapsible-body">
-
-
                         <div class="row" ng-show="tools_info_editable">
-
                             <strong>Drop here a tool from the search tree, to add it as a dependency. Right click to
                                 delete it.</strong>
-
                         </div>
                         <div class="row" ng-show="!tools_info_editable">
-
                             <strong>Tool Dependency Tree</strong>
-
                         </div>
-
                         <div class="row left-align">
-
                             <div id="tools_dep_jstree_id" js-tree="tools_dep_jstree_config"
                                 should-apply="tools_search_jstree_config_apply()" ng-model="tools_dep_jstree_model"
                                 tree="tools_dep_jstree"></div>
-
                         </div>
-
-
-
                     </div>
                 </li>
-            </ul>
-            <!-- --------------------------------------------------------------------------------------- -->
-            <!-- -------------------------------- Installation ----------------------------------------- -->
-            <!-- --------------------------------------------------------------------------------------- -->
-            <ul id="toolsDataInstallationAccordion" class="collapsible expandable faster" style="margin-top:0px;margin-bottom:0px;">
+                <!-- --------------------------------------------------------------------------------------- -->
+                <!-- -------------------------------- Installation ----------------------------------------- -->
+                <!-- --------------------------------------------------------------------------------------- -->
                 <li id="toolsDataInstallation">
                     <div class="collapsible-header customCollapsibleHeader">
                         <i class="material-icons arrow left">keyboard_arrow_right</i>
@@ -270,7 +258,8 @@
                                             <td>
                                                 <a class="waves-effect waves-light btn-small tooltipped red darken-1"
                                                     style="padding-left: 7px; padding-right:7px" data-position="bottom"
-                                                    data-tooltip="Remove variable" ng-click="tools_info_remove_variable($index)"
+                                                    data-tooltip="Remove variable"
+                                                    ng-click="tools_info_remove_variable($index)"
                                                     ng-if="(!$first) && tools_info_editable"><i
                                                         class="material-icons">remove</i></a>
                                             </td>
@@ -281,8 +270,9 @@
                         </div>
                     </div>
                 </li>
-            </ul>
-            <ul id="toolsDataStatisticsAccordion" class="collapsible expandable faster" style="margin-top:0px;">
+                <!-- --------------------------------------------------------------------------------------- -->
+                <!-- ---------------------------------- Statistics ----------------------------------------- -->
+                <!-- --------------------------------------------------------------------------------------- -->
                 <li id="toolsDataStatistics">
                     <div class="collapsible-header">
                         <i class="material-icons arrow">keyboard_arrow_right</i>
@@ -336,9 +326,39 @@
                         </div>
                     </div>
                 </li>
+                <!-- --------------------------------------------------------------------------------------- -->
+                <!-- ---------------------------------- Discussion ----------------------------------------- -->
+                <!-- --------------------------------------------------------------------------------------- -->
+                <li id="toolsDataDiscussion">
+                    <div class="collapsible-header">
+                        <i class="material-icons arrow">keyboard_arrow_right</i>
+                        <i class="material-icons">forum</i>
+                        Discussion
+                    </div>
+                    <div class="collapsible-body">
+                        <div class="row">
+                            Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry
+                            richardson
+                            ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food
+                            truck
+                            quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a
+                            bird
+                            on
+                            it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim
+                            keffiyeh
+                            helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
+                            Ad
+                            vegan
+                            excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw
+                            denim
+                            aesthetic synth nesciunt you probably haven't heard of them accusamus labore
+                            sustainable VHS.
+                        </div>
+                    </div>
+                </li>
             </ul>
         </div>
-    
+
 
         <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
         <!-- --------------------------------------------------- Edit Workflow Right Panel ------------------------------------------------------------------- -->
@@ -352,8 +372,7 @@
                     </h5>
                     <small class="form-text text-muted" ng-show="!workflows_info_editable">
                         <span ng-bind="workflows_info_username"></span>
-                        <span>, created at <span
-                                ng-bind="workflow_info_created_at"></span></span>
+                        <span>, created at <span ng-bind="workflow_info_created_at"></span></span>
                         <span ng-show="workflow_info_forked_from">, forked from <a href
                                 ng-click="workflows_search_show_item(workflow_info_forked_from)"><span
                                     ng-bind="workflow_info_forked_from | workflow_label"></span></a></span>
@@ -374,8 +393,8 @@
                     <a id="collapseAllBtn2" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
                         data-position="bottom" data-tooltip="Collapse All"><i class="material-icons">unfold_less</i></a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
-                        data-tooltip="Save" ng-click="workflows_create_save_pressed()" ng-show="workflows_info_editable"><i
-                            class="material-icons">save</i></a>
+                        data-tooltip="Save" ng-click="workflows_create_save_pressed()"
+                        ng-show="workflows_info_editable"><i class="material-icons">save</i></a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fork" ng-click="workflows_info_fork_pressed()" ng-show="!workflows_info_editable"
                         ng-class="{'disabled': !username}"><i class="material-icons">call_split</i></a>
@@ -396,7 +415,9 @@
                         <form class="col s12">
                             <div class="row" ng-show="workflows_info_editable">
                                 <div class="input-field col s12 m6 grid-s12-m6-l6">
-                                    <input id="generalWorkflowName" type="text" class="validate" ng-model="workflow_info_name" ng-change="workflow_info_name_changed()" ng-disabled="workflow_info_forked_from">
+                                    <input id="generalWorkflowName" type="text" class="validate"
+                                        ng-model="workflow_info_name" ng-change="workflow_info_name_changed()"
+                                        ng-disabled="workflow_info_forked_from">
                                     <label for="generalWorkflowName" required>Name</label>
                                 </div>
                                 <div class="input-field col s12 grid-s12-m12-l12">
@@ -409,7 +430,8 @@
                                         ng-model="workflow_description"></textarea>
                                     <label for="workflowsGeneralDescription">Description</label>
                                 </div>
-                                <div id="workflowChips" class="input-field chips left-align col s12 grid-s12-m12-l12"></div>
+                                <div id="workflowChips" class="input-field chips left-align col s12 grid-s12-m12-l12">
+                                </div>
                                 <div class="input-field col s12 grid-s12-m12-l12" ng-show="workflow_info_forked_from">
                                     <textarea id="workflowsGeneralEditSummary" class="validate materialize-textarea"
                                         ng-model="workflow_changes" required></textarea>
@@ -431,7 +453,8 @@
                                 </div>
                                 <div class="row left-align">
                                     <div class="col s3"><b>Tags:</b></div>
-                                    <span class="new badge left" data-badge-caption="" style="margin-left: 5px;" ng-repeat="keyword in workflow_keywords"><span ng-bind="keyword"></span></span>
+                                    <span class="new badge left" data-badge-caption="" style="margin-left: 5px;"
+                                        ng-repeat="keyword in workflow_keywords"><span ng-bind="keyword"></span></span>
                                 </div>
                             </div>
                         </form>
@@ -472,7 +495,8 @@
                                     </div>
                                 </div>
                                 <div class="input-field col s10" ng-show="workflows_info_editable">
-                                    <input id="editWorkflowName" type="text" class="validate" ng-model="workflows_step_name">
+                                    <input id="editWorkflowName" type="text" class="validate"
+                                        ng-model="workflows_step_name">
                                     <label for="editWorkflowName">Name</label>
                                 </div>
                                 <div class="input-field col s10 left-align" ng-show="!workflows_info_editable">
@@ -480,12 +504,14 @@
                                 </div>
                                 <div class="input-field col s2" ng-show="workflows_info_editable">
                                     <label>
-                                        <input type="checkbox" ng-model="workflows_step_main" ng-disabled="!workflows_info_editable"/>
+                                        <input type="checkbox" ng-model="workflows_step_main"
+                                            ng-disabled="!workflows_info_editable" />
                                         <span>Main</span>
                                     </label>
                                 </div>
                                 <div class="input-field col s2" ng-show="!workflows_info_editable">
-                                    <b>Main:</b><span ng-show="workflows_step_main">Yes</span><span ng-show="!workflows_step_main">No</span>
+                                    <b>Main:</b><span ng-show="workflows_step_main">Yes</span><span
+                                        ng-show="!workflows_step_main">No</span>
                                 </div>
                                 <div class="row col s12" id="workflow_step_editor"></div>
                                 <!-- 
@@ -497,9 +523,12 @@
                                     -->
                                 <div class="row col s12">
                                     <div class="right-align">
-                                        <a class="waves-effect waves-light btn" style="margin:2px" ng-show="workflows_info_editable" ng-click="workflow_info_add_step_clicked()">Clear</a>
                                         <a class="waves-effect waves-light btn" style="margin:2px"
-                                            ng-show="workflows_info_editable" ng-click="workflow_step_delete()">Delete</a>
+                                            ng-show="workflows_info_editable"
+                                            ng-click="workflow_info_add_step_clicked()">Clear</a>
+                                        <a class="waves-effect waves-light btn" style="margin:2px"
+                                            ng-show="workflows_info_editable"
+                                            ng-click="workflow_step_delete()">Delete</a>
                                         <a class="waves-effect waves-light btn" style="margin:2px"
                                             ng-click="workflow_step_add()" ng-show="workflows_info_editable"><span
                                                 ng-bind="workflow_step_add_update_label"></span></a>
@@ -629,6 +658,36 @@
                         </div>
                     </div>
                 </li>
+                <!-- --------------------------------------------------------------------------------------- -->
+                <!-- ---------------------------------- Discussion ----------------------------------------- -->
+                <!-- --------------------------------------------------------------------------------------- -->
+                <li id="workflowDiscussion">
+                    <div class="collapsible-header">
+                        <i class="material-icons arrow">keyboard_arrow_right</i>
+                        <i class="material-icons">forum</i>
+                        Discussion
+                    </div>
+                    <div class="collapsible-body">
+                        <div class="row">
+                            Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry
+                            richardson
+                            ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food
+                            truck
+                            quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a
+                            bird
+                            on
+                            it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim
+                            keffiyeh
+                            helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
+                            Ad
+                            vegan
+                            excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw
+                            denim
+                            aesthetic synth nesciunt you probably haven't heard of them accusamus labore
+                            sustainable VHS.
+                        </div>
+                    </div>
+                </li>
             </ul>
         </div>
         <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
@@ -641,7 +700,8 @@
                         <h5>Workflow:</h5>
                     </div>
                     <div class="col s6">
-                        <h5><span ng-bind="report_workflow_name"></span>/<span ng-bind="report_workflow_edit"></span></h5>
+                        <h5><span ng-bind="report_workflow_name"></span>/<span ng-bind="report_workflow_edit"></span>
+                        </h5>
                     </div>
                     <div class="col s4">
                         <h5>Run:<span ng-bind="report_workflow_run"></span></h5>
@@ -666,7 +726,8 @@
                             <div class="row left-align">
                                 <ul>
                                     <li ng-repeat="token in report_tokens track by token.token">
-                                        <span ng-bind="token.status"></span>, <span ng-bind="token.created_at"></span><a ng-click="nodeAnimation(token.node_anim_id, token.state)">show</a>
+                                        <span ng-bind="token.status"></span>, <span ng-bind="token.created_at"></span><a
+                                            ng-click="nodeAnimation(token.node_anim_id, token.state)">show</a>
                                     </li>
                                 </ul>
                             </div>
@@ -676,6 +737,9 @@
                 <div class="row">
                     <div id="cyrep"></div>
                 </div>
+                <!-- --------------------------------------------------------------------------------------- -->
+                <!-- ------------------------------------ Statistics ------------------------------------------ -->
+                <!-- --------------------------------------------------------------------------------------- -->
                 <li id="reportsStatistics">
                     <div class="collapsible-header">
                         <i class="material-icons arrow">keyboard_arrow_right</i>
@@ -732,7 +796,7 @@
             </ul>
         </div>
         <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
-        <!-- ---------------------------------------------- References Right Panel ------------------------------------------------------------------- -->
+        <!-- ------------------------------------------------- References Right Panel ------------------------------------------------------------------------ -->
         <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
         <div class="faster" id="referencesRightPanel" style="display: none;">
             <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
@@ -768,7 +832,8 @@
                             data-tooltip="Save" ng-click="tool_create_save_pressed()" ng-show="tools_info_editable"><i
                                 class="material-icons">save</i></a> -->
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
-                        data-tooltip="Save" ng-click="references_create_save_pressed()" ng-show="references_info_editable"><i class="material-icons">save</i></a>
+                        data-tooltip="Save" ng-click="references_create_save_pressed()"
+                        ng-show="references_info_editable"><i class="material-icons">save</i></a>
                 </div>
             </div>
 
@@ -786,32 +851,38 @@
                         <div class="row" ng-show="references_info_editable">
                             <form class="col s12">
                                 <div class="input-field">
-                                    <input id="referencesGeneralName" type="text" class="validate" ng-model="references_name" required>
+                                    <input id="referencesGeneralName" type="text" class="validate"
+                                        ng-model="references_name" required>
                                     <label for="referencesGeneralName">Name</label>
                                 </div>
                                 <div class="input-field">
-                                    <input id="referencesGeneralTitle" type="text" class="validate" ng-model="references_title" required>
+                                    <input id="referencesGeneralTitle" type="text" class="validate"
+                                        ng-model="references_title" required>
                                     <label for="referencesGeneralTitle">Title</label>
                                 </div>
                                 <div class="input-field">
-                                    <input id="referencesGeneralURL" type="text" class="validate" ng-model="references_url" required>
+                                    <input id="referencesGeneralURL" type="text" class="validate"
+                                        ng-model="references_url" required>
                                     <label for="referencesGeneralURL">URL </label>
                                 </div>
                                 <div class="input-field">
-                                    <input id="referencesGeneralDOI" type="text" class="validate" ng-model="references_doi">
+                                    <input id="referencesGeneralDOI" type="text" class="validate"
+                                        ng-model="references_doi">
                                     <label for="referencesGeneralDOI">DOI</label>
                                 </div>
                                 <div class="input-field">
-                                    <textarea id="referencesGeneralNotes"
-                                        class="validate materialize-textarea" ng-model="references_notes"></textarea>
+                                    <textarea id="referencesGeneralNotes" class="validate materialize-textarea"
+                                        ng-model="references_notes"></textarea>
                                     <label for="referencesGeneralNotes">Notes</label>
                                 </div>
                                 <div class="input-field" style="margin-bottom: 0px;">
-                                    <textarea id="referencesGeneralBIBTEX" class="validate materialize-textarea" ng-model="references_BIBTEX"></textarea>
+                                    <textarea id="referencesGeneralBIBTEX" class="validate materialize-textarea"
+                                        ng-model="references_BIBTEX"></textarea>
                                     <label for="referencesGeneralBIBTEX">BIBTEX</label>
                                 </div>
                                 <div class="right-align">
-                                    <a class="waves-effect waves-light btn-small" ng-click="references_generate_clicked()">Generate</a>
+                                    <a class="waves-effect waves-light btn-small"
+                                        ng-click="references_generate_clicked()">Process BIBTEX</a>
                                 </div>
                                 <div class="left-align">
                                     <h5>Formatted Reference:</h5>
@@ -850,6 +921,9 @@
                         </div>
                     </div>
                 </li>
+                <!-- --------------------------------------------------------------------------------------- -->
+                <!-- ---------------------------------- Statistics ----------------------------------------- -->
+                <!-- --------------------------------------------------------------------------------------- -->
                 <li id="referencesStatistics">
                     <div class="collapsible-header">
                         <i class="material-icons arrow">keyboard_arrow_right</i>
@@ -907,7 +981,9 @@
         </div>
 
         <!-- USERS RIGHT PANEL -->
-
+        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+        <!-- ------------------------------------------------- Users Right Panel ----------------------------------------------------------------------------- -->
+        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
         <div class="faster" id="userDataDiv" style="display: none;">
             <ul id="userDataAccordion" class="collapsible expandable popout faster">
                 <!-- --------------------------------------------------------------------------------------- -->
@@ -949,88 +1025,127 @@
         <!-- END OF USER RIGHT PANEL -->
 
         <!-- Q&A RIGHT PANEL -->
+        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+        <!-- ------------------------------------------------- Q & A Right Panel ----------------------------------------------------------------------------- -->
+        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
         <div class="faster" id="QARightPanel" style="display: none;">
+
+            <!-- TEMPLATE START -->
+            <div class="row" style="margin-left: 10px; margin-right: 15px;">
+                <div class="row card-panel left-align" style="padding:5px; margin-bottom: 2px;">
+                    <div class="valign-wrapper">
+                        <img src="/static/app/images/konstantina/img_avatar.png" alt="" class="circle imgAvatar">
+                        <small>asked by <a href="#">Kona</a> on April 19 at 18:40</small>
+                    </div>
+                    <div>
+                        <h5 style="margin-top:9px; margin-bottom:9px;">lskaflafkalfksdlfklfkf sldfksldfkslfks
+                            sflskflkfslfklf lsfslfkslfkl
+                            adkadkjdksajdkad?
+                        </h5>
+                        <p>ksdjkfjfkjskfjkfjdfk fksjfksjfkfksfjskfj dksksjfkdjf dfkdfjdkfj kfdkfjdkfj dkfdjdkfjdkf
+                            sfksdjksjdkfdkfd fdkfdkfjdfkdjfk</p>
+                    </div>
+                </div>
+                <div class="row right-align">
+                    <a class="waves-effect waves-light btn-small" href="">Add Comment</a>
+                </div>
+            </div>
+            <!-- TEMPLATE END -->
+
+
             <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
-                <ul id="QARightPanelAccordion" class="collapsible expandable popout faster">
-                    <!-- --------------------------------------------------------------------------------------- -->
-                    <!-- ------------------------------------ General ------------------------------------------ -->
-                    <!-- --------------------------------------------------------------------------------------- -->
-                    <li id="QAGeneral">
-                        <div class="collapsible-header">
-                            <i class="material-icons arrow">keyboard_arrow_right</i>
-                            <i class="material-icons">info</i>
-                            General
-                        </div>
-                        <div class="collapsible-body">
-                            <div class="row" ng-show="qa_info_editable">
-                                <form class="col s12">
-                                    <div class="input-field">
-                                        <div class="input-field">
-                                            <input id="qatitle" type="text" class="validate" ng-model="qa_title">
-                                            <label for="qatitle">Title</label>
-                                        </div>
-
-                                        <div class="input-field">
-                                            <textarea id="comment" class="validate materialize-textarea" ng-model="qa_comment"></textarea>
-                                            <label for="comment">Comment</label>
-                                        </div>
-                                    </div>
-                                </form>
+                <div class="row" ng-show="qa_info_editable">
+                    <form class="col s12">
+                        <div class="input-field">
+                            <div class="input-field">
+                                <input id="qatitle" type="text" class="validate" ng-model="qa_title">
+                                <label for="qatitle">Title</label>
                             </div>
-                            <div class="row" ng-show="!qa_info_editable">
-                                <div class="row left-align">
-                                    <b><span ng-bind="qa_title"></span></b>
-                                </div>
-                                <div class="row left-align">
-                                    <span ng-bind-html="qa_comment_html"></span>
-                                </div>
-                                <div class="row right-align">
-                                    <button ng-click="qa_add_comment_button_pressed()">Add Comment</button>
-                                </div>
-                                <div class="input-field" ng-show="qa_show_new_comment">
-                                    <textarea class="validate" ng-model="qa_current_comment"></textarea>
-                                    <button ng-click="qa_comment_save_button_pressed()">Save</button>
-                                    <button ng-click="qa_comment_cancel_button_pressed()">Cancel</button>
 
-                                </div>
-                                <ul class="collection">
-                                    <li class="collection-item" ng-repeat="post in qa_thread track by post.id">
-                                        <span ng-bind-html="post.comment_html"></span>
-                                        <button ng-click="qa_reply_button_clicked(post.id)">Reply</button>
-                                        <div class="input-field" ng-show="post.replying">
-                                            <textarea class="validate" ng-model="qa_current_reply"></textarea>
-                                            <button ng-click="qa_reply_save_button_pressed(post.id, qa_current_reply)">Save</button>
-                                            <button ng-click="qa_reply_cancel_button_pressed(post.id)">Cancel</button>
-                                        </div>
-                                        <ul class="collection">
-                                            <li class="collection-item" ng-repeat="post2 in post.children track by post2.id">
-                                                <span ng-bind-html="post2.comment_html"></span><button ng-click="qa_reply_button_clicked(post2.id)">Reply</button>
-                                                <div class="input-field" ng-show="post2.replying">
-                                                    <textarea class="validate" ng-model="qa_current_reply"></textarea>
-                                                    <button ng-click="qa_reply_save_button_pressed(post2.id, qa_current_reply)">Save</button>
-                                                    <button ng-click="qa_reply_cancel_button_pressed(post2.id)">Cancel</button>
-                                                </div>
-                                                <ul class="collection">
-                                                    <li class="collection-item" ng-repeat="post3 in post2.children track by post3.id">
-                                                        <span ng-bind-html="post3.comment_html"></span><button ng-click="qa_reply_button_clicked(post3.id)">Reply</button>
-                                                        <div class="input-field" ng-show="post3.replying">
-                                                            <textarea class="validate" ng-model="qa_current_reply"></textarea>
-                                                            <button ng-click="qa_reply_save_button_pressed(post3.id, qa_current_reply)">Save</button>
-                                                            <button ng-click="qa_reply_cancel_button_pressed(post3.id)">Cancel</button>
-                                                        </div>
-                                                        <ul class="collection">
-                                                            <li class="collection-item" ng-repeat="post4 in post3.children track by post4.id">
-                                                                <span ng-bind-html="post4.comment_html"></span><button ng-click="qa_reply_button_clicked(post4.id)">Reply</button>
-                                                                <div class="input-field" ng-show="post4.replying">
-                                                                    <textarea class="validate" ng-model="qa_current_reply"></textarea>
-                                                                    <button ng-click="qa_reply_save_button_pressed(post4.id, qa_current_reply)">Save</button>
-                                                                    <button ng-click="qa_reply_cancel_button_pressed(post4.id)">Cancel</button>
-                                                                </div>
-                                                                <ul class="collection">
-                                                                    <li class="collection-item" ng-repeat="post5 in post4.children track by post5.id">
-                                                                        <span ng-bind-html="post5.comment_html"></span>
-                                                                        <!-- We allow for 5 levels of comment nesting -->
-                                                                        <!--
+                            <div class="input-field">
+                                <textarea id="comment" class="validate materialize-textarea"
+                                    ng-model="qa_comment"></textarea>
+                                <label for="comment">Comment</label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="row" ng-show="!qa_info_editable">
+                    <div class="row left-align">
+                        <b><span ng-bind="qa_title"></span></b>
+                    </div>
+                    <div class="row left-align">
+                        <span ng-bind-html="qa_comment_html"></span>
+                    </div>
+                    <div class="row right-align">
+                        <a class="waves-effect waves-light btn-small" href=""
+                            ng-click="qa_add_comment_button_pressed()">Add Comment</a>
+                    </div>
+                    <div class="input-field" ng-show="qa_show_new_comment">
+                        <textarea class="validate" ng-model="qa_current_comment"></textarea>
+                        <a class="waves-effect waves-light btn-small" href=""
+                            ng-click="qa_comment_save_button_pressed()">Save</a>
+                        <a class="waves-effect waves-light btn-small" href=""
+                            ng-click="qa_comment_cancel_button_pressed()">Cancel</a>
+
+                    </div>
+                    <ul class="collection">
+                        <li class="collection-item" ng-repeat="post in qa_thread track by post.id">
+                            <span ng-bind-html="post.comment_html"></span>
+                            <a class="waves-effect waves-light btn-small" href=""
+                                ng-click="qa_reply_button_clicked(post.id)">Reply</a>
+                            <div class="input-field" ng-show="post.replying">
+                                <textarea class="validate" ng-model="qa_current_reply"></textarea>
+                                <a class="waves-effect waves-light btn-small" href=""
+                                    ng-click="qa_reply_save_button_pressed(post.id, qa_current_reply)">Save</a>
+                                <a class="waves-effect waves-light btn-small" href=""
+                                    ng-click="qa_reply_cancel_button_pressed(post.id)">Cancel</a>
+                            </div>
+                            <ul class="collection">
+                                <li class="collection-item" ng-repeat="post2 in post.children track by post2.id">
+                                    <span ng-bind-html="post2.comment_html"></span>
+                                    <a class="waves-effect waves-light btn-small" href=""
+                                        ng-click="qa_reply_button_clicked(post2.id)">Reply</a>
+                                    <div class="input-field" ng-show="post2.replying">
+                                        <textarea class="validate" ng-model="qa_current_reply"></textarea>
+                                        <a class="waves-effect waves-light btn-small" href=""
+                                            ng-click="qa_reply_save_button_pressed(post2.id, qa_current_reply)">Save</a>
+                                        <a class="waves-effect waves-light btn-small" href=""
+                                            ng-click="qa_reply_cancel_button_pressed(post2.id)">Cancel</a>
+                                    </div>
+                                    <ul class="collection">
+                                        <li class="collection-item"
+                                            ng-repeat="post3 in post2.children track by post3.id">
+                                            <span ng-bind-html="post3.comment_html"></span>
+                                            <a class="waves-effect waves-light btn-small" href=""
+                                                ng-click="qa_reply_button_clicked(post3.id)">Reply</a>
+                                            <div class="input-field" ng-show="post3.replying">
+                                                <textarea class="validate" ng-model="qa_current_reply"></textarea>
+                                                <a class="waves-effect waves-light btn-small" href=""
+                                                    ng-click="qa_reply_save_button_pressed(post3.id, qa_current_reply)">Save</a>
+                                                <a class="waves-effect waves-light btn-small" href=""
+                                                    ng-click="qa_reply_cancel_button_pressed(post3.id)">Cancel</a>
+                                            </div>
+                                            <ul class="collection">
+                                                <li class="collection-item"
+                                                    ng-repeat="post4 in post3.children track by post4.id">
+                                                    <span ng-bind-html="post4.comment_html"></span>
+                                                    <a class="waves-effect waves-light btn-small" href=""
+                                                        ng-click="qa_reply_button_clicked(post4.id)">Reply</a>
+                                                    <div class="input-field" ng-show="post4.replying">
+                                                        <textarea class="validate"
+                                                            ng-model="qa_current_reply"></textarea>
+                                                        <a class="waves-effect waves-light btn-small" href=""
+                                                            ng-click="qa_reply_save_button_pressed(post4.id, qa_current_reply)">Save</a>
+                                                        <a class="waves-effect waves-light btn-small" href=""
+                                                            ng-click="qa_reply_cancel_button_pressed(post4.id)">Cancel</a>
+                                                    </div>
+                                                    <ul class="collection">
+                                                        <li class="collection-item"
+                                                            ng-repeat="post5 in post4.children track by post5.id">
+                                                            <span ng-bind-html="post5.comment_html"></span>
+                                                            <!-- We allow for 5 levels of comment nesting -->
+                                                            <!--
                                                                         <button ng-click="qa_reply_button_clicked(post5.id)">Reply</button>
                                                                         <div class="input-field" ng-show="post5.replying">
                                                                             <textarea class="validate" ng-model="qa_current_reply"></textarea>
@@ -1038,24 +1153,22 @@
                                                                             <button ng-click="qa_reply_cancel_button_pressed(post5.id)">Cancel</button>
                                                                         </div>
                                                                         -->
-                                                                    </li>
-                                                                </ul>
-                                                            </li>
-                                                        </ul>
-                                                    </li>
-                                                </ul>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="row right-align" ng-show="qa_info_editable">
-                                <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
-                                    data-tooltip="Save" ng-click="qa_create_save_pressed()" ng-disabled="(!qa_title) || (!qa_comment)"><i class="material-icons">save</i></a>
-                            </div>
-                        </div>
-                    </li>
-                </ul>
+                                                        </li>
+                                                    </ul>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <div class="row right-align" ng-show="qa_info_editable">
+                    <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
+                        data-tooltip="Save" ng-click="qa_create_save_pressed()"
+                        ng-disabled="(!qa_title) || (!qa_comment)"><i class="material-icons">save</i></a>
+                </div>
             </div>
         </div>
         <!-- END OF Q&A RIGHT PANEL-->
