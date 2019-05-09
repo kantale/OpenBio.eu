@@ -59,9 +59,7 @@ angular.element($('#angular_div')).scope().$apply(function () {
 
 ```
 
-$scope.tools_search_input_changed(); //Update search results
 
-window.nodeAnimation('hello__1', 'running')
 
 
 @article{purcell2007plink,
@@ -77,108 +75,93 @@ window.nodeAnimation('hello__1', 'running')
 
 @inproceedings{Mislove2007, address = {New York, New York, USA}, author = {Mislove, Alan and Marcon, Massimiliano and Gummadi, Krishna P. and Druschel, Peter and Bhattacharjee, Bobby}, booktitle = {Proceedings of the 7th ACM SIGCOMM conference on Internet measurement - IMC '07}, doi = {10.1145/1298306.1298311}, file = {:Users/alexandroskanterakis/Library/Application Support/Mendeley Desktop/Downloaded/Mislove et al. - 2007 - Measurement and analysis of online social networks.pdf:pdf}, isbn = {9781595939081}, keywords = {analysis,measurement,social networks}, month = oct, pages = {29}, publisher = {ACM Press}, title = {{Measurement and analysis of online social networks}}, url = {http://dl.acm.org/citation.cfm?id=1298306.1298311}, year = {2007} }
 
-<div class="faster" id="userDataDiv" style="display: none;">
-	<ul id="userDataAccordion" class="collapsible expandable popout faster">
-	    <!-- --------------------------------------------------------------------------------------- -->
-	    <!-- ------------------------------------ General ------------------------------------------ -->
-	    <!-- --------------------------------------------------------------------------------------- -->
-		<li id="usersDataGeneral">
-	        <div class="collapsible-header">
-	            <i class="material-icons arrow">keyboard_arrow_right</i>
-	            <i class="material-icons">info</i>
-	            General
-	        </div>
-	        <div class="collapsible-body">
-	            <form class="col s12">
-	                <div class="row">
-	                    <div class="input-field col s12 m4 grid-s12-m4-l4">
-	                        <input id="generalName" type="text" class="validate">
-	                        <label for="generalName">Name</label>
-	                    </div>
-	                </div>
-	            </form>
-	        </div>
-	    </li>
-	</ul>
-</div>
+md5 check osx
+a=$(find -s HM3/ -type f -exec md5 {} \; | md5)
+
+HapMap
+wget https://mathgen.stats.ox.ac.uk/wtccc-software/HM3.tgz
+tar zxvf HM3.tgz 
 
 
+a=$(find -s HM3/ -type f -exec md5 {} \; | md5)
+  
+if [ "$a" == "35f3dc6a51f47ade371e932ce275cc23" ]; then
+    echo "ok"
+else
+    echo "not ok"
+fi
 
-<div class="faster" id="QARightPanel" style="display: none;">
-    <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
-        <ul id="QARightPanelAccordion" class="collapsible expandable popout faster">
-            <!-- --------------------------------------------------------------------------------------- -->
-            <!-- ------------------------------------ General ------------------------------------------ -->
-            <!-- --------------------------------------------------------------------------------------- -->
-            <li id="QAGeneral">
-                <div class="collapsible-header">
-                    <i class="material-icons arrow">keyboard_arrow_right</i>
-                    <i class="material-icons">info</i>
-                    General
-                </div>
-                <div class="collapsible-body">
-                    <div class="row">
-                        <form class="col s12">
-                            <div class="input-field">
-                                <input id="qwerty" type="text" class="validate">
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </li>
-        </ul>
-    </div>
-</div>
+###############################
+cat > md5checkdir.sh << ENDOFFILE
+
+echo "Checking md5sum of \$1"
+result=\$(find -s \$1 -type f -exec md5 {} \; | md5)
+  
+if [ "\$result" == "\$2" ]; then
+    echo "checksum ok"
+    exit 0
+else
+    echo "checksum check failed"
+    exit 1
+fi
+
+ENDOFFILE
+chmod +x md5checkdir.sh
+
+###########################
+if test -f "$FILE"; then
+    exit 0
+else
+    exit 1
+fi
+########################
+wget https://mathgen.stats.ox.ac.uk/wtccc-software/HM3.tgz
+tar zxvf HM3.tgz
+
+########################
 
 
-<div class="faster" id="referencesRightPanel" style="display: none;">
-    <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
-        <div ng-show="!references_info_editable">
-            <h5>
-                <span ng-bind="references_name"></span>
-            </h5>
-            <small class="form-text text-muted">
-                <!-- <span ng-bind="tool_info_username"></span>
-                    <span ng-show="!tools_info_editable">, created at <span
-                            ng-bind="tool_info_created_at"></span></span>
-                    <span ng-show="tools_info_forked_from">, forked from <a href
-                            ng-click="tools_search_show_item(tools_info_forked_from)"><span
-                                ng-bind="tools_info_forked_from | tool_label"></span></a></span>
-                    <span>USED IN 86 WFs</span> -->
-                <span ng-bind="references_username"></span>
-                <span>, created at <span ng-bind="references_created_at"></span></span>
-                <span>USED IN 86 WFs</span>
-            </small>
-            <div class="card blue-grey darken-1">
-                <div class="card-content white-text">
-                    <p><span ng-bind-html="references_formatted"></span></p>
-                </div>
-            </div>
-        </div>
+v="md5checkdir.sh"
 
-workflows_search_name
-workflows_search_edit
-workflows_search_input_changed()
+command="./$v HM3/ 35f3dc6a51f47ade371e932ce275cc23"
+eval $command
 
-all_search_2() . VIEWS
-workflows_search_2(). VIEWS
+if [ $? -eq 0 ] ; then
+        exit 0
+else
+        exit 1
+fi
+################
+```
+# Insert the BASH commands for this step
 
-    ret = {
-        'workflows_search_tools_number' : results.count(),
-        'workflows_search_jstree' : workflows_search_jstree,
-    }
+# /hapgen2 -h HM3/CEU.chr6.hap -l HM3/hapmap3.r2.b36.chr6.legend -m HM3/genetic_map_chr6_combined_b36.txt -o chr6 -dl 16199621 1 3 6 -n 100 100 -int 15199621 17199621
 
-553
+${hapgen2__macosx_intel__1__exec} \
+ -h ${hapmap2__1__2__install_path}/CEU.chr${input__chromosome__artificialsignal__1}.hap \
+ -l ${hapmap2__1__2__install_path}/hapmap3.r2.b36.chr${input__chromosome__artificialsignal__1}.legend \
+ -m ${hapmap2__1__2__install_path}/genetic_map_chr${input__chromosome__artificialsignal__1}_combined_b36.txt \
+ -o chr${input__chromosome__artificialsignal__1} \
+ -dl ${input__location__artificialsignal__1} ${input__odds_ratio_ref_ref__artificialsignal__1} ${input__odds_ratio_ref_alt__artificialsignal__1} ${input__odds_ratio_alt_alt__artificialsignal__1} \
+ -n ${input__cases__artificialsignal__1} ${input__controls__artificialsignal__1} \
+ -int ${input__location_from__artificialsignal__1} ${input__location_to__artificialsignal__1}
+ 
+output__out__artificialsignal__4=chr${input__chromosome__artificialsignal__1} 
+```
 
-<div class="row" ng-show="!references_info_editable">
-    <div class="col s12">
-        <div class="row left-align">
-            <div class="col s3"><b>Name:</b></div>
-            <div class="col s9"><span ng-bind="references_name"></span></div>
-        </div>
+```
+${hapgen2__macosx_intel__1__exec} \
+-h ${hapmap2__1__2__install_path}/CEU.chr${input__chromosome__root__null}.hap \
+-l ${hapmap2__1__2__install_path}/hapmap3.r2.b36.chr${input__chromosome__root__null}.legend \
+-m ${hapmap2__1__2__install_path}/genetic_map_chr${input__chromosome__root__null}_combined_b36.txt \
+-o chr${input__chromosome__root__null} \
+-dl ${input__location__root__null} ${input__odds_ratio_ref_ref__root__null} ${input__odds_ratio_alt_ref__root__null} ${input__odds_ratio_alt_alt__root__null} \
+-n ${input__cases__root__null} ${input__controls__root__null} \
+-int ${input__location_from__root__null} ${input__location_to__root__null}
 
-workflows_search_create_new_pressed()
-tools_search_raise_edit_are_you_sure_modal DELETE IT!
+output__out__root__null=chr${input__chromosome__root__null}
 
-TODO: CHANGE WORKFLOW ROOT NODE ID !!!!!
+```
+
+
 

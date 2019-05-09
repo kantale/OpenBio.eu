@@ -410,15 +410,18 @@ def tool_variable_text_jstree(variable):
     '''
     return '{}:{}'.format(variable.name, variable.description)
 
-def tool_variable_id_jstree(variable, id_):
+def tool_variable_id_jstree(variable, tool, id_):
     '''
     The JSTree variable id
-    The id should have 4 fields
     Returns a JSON string, so that it can have many fields.
+    It also contains information from the tool
     '''
 
     #return variable.name + '/' + variable.value + '/' + variable.description + '/' + str(id_)
-    return simplejson.dumps([variable.name, variable.value, variable.description, str(id_)])
+    return simplejson.dumps([
+        variable.name, variable.value, variable.description, 
+        str(id_), 
+        tool.name, tool.version, tool.edit])
 
 def tool_get_dependencies_internal(tool, include_as_root=False):
     '''
@@ -483,7 +486,7 @@ def tool_build_dependencies_jstree(tool_dependencies, add_variables=False):
                         'description': variable.description,
                     },
                     'text': tool_variable_text_jstree(variable),
-                    'id': tool_variable_id_jstree(variable, g['VARIABLES_TOOL_TREE_ID']),
+                    'id': tool_variable_id_jstree(variable, tool_dependency['dependency'], g['VARIABLES_TOOL_TREE_ID']),
                     'parent': tool_id_jstree(tool_dependency['dependency'], g['DEPENDENCY_TOOL_TREE_ID']),
                     'type': 'variable', # TODO: FIX REDUNDANCY WITH ['data']['type']
                 })
@@ -1278,24 +1281,31 @@ def set_edit_to_cytoscape_json(cy, edit, workflow_info_name):
         #Change the bash
         if 'bash' in node['data']:
             node['data']['bash'] = node['data']['bash'].replace('__null', '__' + str(edit))
+            node['data']['bash'] = node['data']['bash'].replace('root__', workflow_info_name + '__')
 
         # Set to step-->Step
         if 'steps' in node['data']:
             for step_i, _ in enumerate(node['data']['steps']):
                 if '__null' in node['data']['steps'][step_i]:
                     node['data']['steps'][step_i] = node['data']['steps'][step_i].replace('__null', '__' + str(edit))
+                if 'root__' in node['data']['steps'][step_i]:
+                    node['data']['steps'][step_i] = node['data']['steps'][step_i].replace('root__', workflow_info_name + '__')
 
         # Set to step-->inputs
         if 'inputs' in node['data']:
             for input_i, _ in enumerate(node['data']['inputs']):
                 if '__null' in node['data']['inputs'][input_i]:
                     node['data']['inputs'][input_i] = node['data']['inputs'][input_i].replace('__null', '__' + str(edit))
+                if 'root__' in node['data']['inputs'][input_i]:
+                    node['data']['inputs'][input_i] = node['data']['inputs'][input_i].replace('root__', workflow_info_name + '__')
 
         # Set to step->outputs
         if 'outputs' in node['data']:
             for output_i, _ in enumerate(node['data']['outputs']):
                 if '__null' in node['data']['outputs'][output_i]:
                     node['data']['outputs'][output_i] = node['data']['outputs'][output_i].replace('__null', '__' + str(edit))
+                if 'root__' in node['data']['outputs'][output_i]:
+                    node['data']['outputs'][output_i] = node['data']['outputs'][output_i].replace('root__', workflow_info_name + '__')
 
 
     if 'edges' in cy['elements']:

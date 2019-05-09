@@ -933,15 +933,19 @@ window.onload = function () {
 
         }
         else if (this_id_array[3] == "3") { // We are moving a variable from the dependency + variable tree
+            // This id array = [ name, value, description, "3" ]
+            console.log(this_id_array);
+            var var_to_show = this_id_array[4] + '__' + this_id_array[5] + '__' + this_id_array[6] + '__' + this_id_array[0];
+
             if (target.closest('#tool_installation_editor').length) { // Adding to installation bash editor
                 // https://stackoverflow.com/a/42797383/5626738 
                 if (!tool_installation_editor.getReadOnly()) {
-                    tool_installation_editor.session.insert(tool_installation_editor.getCursorPosition(), '$' + this_id_array[0]);
+                    tool_installation_editor.session.insert(tool_installation_editor.getCursorPosition(), '$' + var_to_show);
                 }
             }
             else if (target.closest('#tool_validation_editor').length) { // Adding to validation bash editor
                 if (!tool_validation_editor.getReadOnly()) {
-                    tool_validation_editor.session.insert(tool_validation_editor.getCursorPosition(), '$' + this_id_array[0]);
+                    tool_validation_editor.session.insert(tool_validation_editor.getCursorPosition(), '$' + var_to_show);
                 }
             }
         }
@@ -1044,9 +1048,9 @@ window.onload = function () {
 //            io_re_id: new RegExp('\\$\\{(input|output)__([\\w]+)\\}'), // TODO: ADD  WHITE SPACEDS JUST LIKE calls
 //            io_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('(\\$\\{(input|output)__)' + old_id + '(\\})'), '$1' + new_id + '$3'); }
 
-            io_re: new RegExp('(input|output)__[a-zA-Z0-9][\\w]*', 'g'), // [^_\w] Does not work???
+            io_re: new RegExp('(input|output)__[a-zA-Z0-9_][\\w]*', 'g'), // [^_\w] Does not work???
             io_re_id: new RegExp('(input|output)__([\\w]+)'), // TODO: ADD  WHITE SPACEDS JUST LIKE calls
-            io_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('((input|output)__)' + old_id), '$1' + new_id); }
+            io_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('((input|output)__)' + old_id, 'g'), '$1' + new_id); }
 
         };
 
@@ -2542,7 +2546,7 @@ window.onload = function () {
             var workflow_options = {}
 
             cy.json().elements.nodes.forEach(function (node) {
-                if (node.data.type === "input") {  //if node is inout check if has value
+                if (node.data.type === "input") {  //if node is input check if has value
                     if (typeof node.data.value === 'undefined') {
                         workflow_options[node.data.id] = null;
                     }
