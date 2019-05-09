@@ -1411,10 +1411,12 @@ window.onload = function () {
         };
 
         /*
+		*
         * parse data from openbioc to meet the cytoscape.js requirements
         * Create cytoscape nodes and edges
         * incomingData: List of nodes to add
         * belongto: the workflow to be added to
+		*
         */
         function parseWorkflow(incomingData, belongto) {
 
@@ -1428,63 +1430,64 @@ window.onload = function () {
 
 
                 //INPUTS/OUTPUTS
-                if (d.type === 'input' || d.type === 'output') {
-                    var this_input_output_id = create_input_output_id(d, this_node_wf_belong_to);
+                if ( d.type === 'input' || d.type === 'output' ) {
+						var this_input_output_id = create_input_output_id(d, this_node_wf_belong_to);
 
-                    var myNode = { data: { id: this_input_output_id, label: d.name, name: d.name, type: d.type, description: d.description, belongto: this_node_wf_belong_to } };
-                    myNodes.push(myNode);
-                    //Connect with belongto workflow
-                    myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_input_output_id, id: create_workflow_edge_id(this_node_wf_belong_to_id, this_input_output_id), edgebelongto: 'true' } });
+						var myNode = { data: { id: this_input_output_id, label: d.name, name: d.name, type: d.type, description: d.description, belongto: this_node_wf_belong_to }};
+						myNodes.push(myNode);
+						//Connect with belongto workflow
+						myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_input_output_id, id: create_workflow_edge_id(this_node_wf_belong_to_id, this_input_output_id), edgebelongto: 'true' }});
                 }
 
 
                 //TOOLS 
                 if (d.type === "tool") {
 
-                    //If d.id is a JSON string parse it. d.id might come either from jstree (needs parsing) or cytoscape (does not need parsing)
-                    if (d.id.indexOf('[') > -1) {
-                        d.id = JSON.parse(d.id).join(window.OBCUI.sep);
-                        /*remove special characters*/
-                        //d.id = d.id.replace(/\./g,''); // CYTOSCAPE ALLOWS . IN IDS
-                    }
+						//If d.id is a JSON string parse it. d.id might come either from jstree (needs parsing) or cytoscape (does not need parsing)
+						if (d.id.indexOf('[') > -1) {
+							d.id = JSON.parse(d.id).join(window.OBCUI.sep);
+							/*remove special characters*/
+							//d.id = d.id.replace(/\./g,''); // CYTOSCAPE ALLOWS . IN IDS
+						}
 
-                    if ("parent" in d) {
-                        d.dep_id = d.parent;
-                        d.parent = '#';
-                    }
+						if ("parent" in d) {
+							d.dep_id = d.parent;
+							d.parent = '#';
+						}
 
-                    if (d.dep_id != "#") {
-                        if (d.dep_id.indexOf('[') > -1) { // Parse it if this is JSON. 
-                            d.dep_id = JSON.parse(d.dep_id).join(window.OBCUI.sep);
-                            /*remove special characters*/
-                            // d.dep_id = d.dep_id.replace(/\./g,''); //CYTOSCAPE ALLOWS . IN IDS
-                        }
+						if (d.dep_id != "#") {
+							if (d.dep_id.indexOf('[') > -1) { // Parse it if this is JSON. 
+								d.dep_id = JSON.parse(d.dep_id).join(window.OBCUI.sep);
+								/*remove special characters*/
+								// d.dep_id = d.dep_id.replace(/\./g,''); //CYTOSCAPE ALLOWS . IN IDS
+							}
 
-                        //var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'no', variables: d.variables } };
-                        var myNode = { data: { id: d.id, text: d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'no', dep_id: d.dep_id, variables: d.variables, belongto: this_node_wf_belong_to } };
+							//var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'no', variables: d.variables } };
+							var myNode = { data: { id: d.id, text: d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'no', dep_id: d.dep_id, variables: d.variables, belongto: this_node_wf_belong_to }};
 
-                        myNodes.push(myNode);
-                        var myEdge = { data: { id: create_workflow_edge_id(d.dep_id, d.id), weight: 1, source: d.dep_id, target: d.id } };
-                        myEdges.push(myEdge);
+							myNodes.push(myNode);
+							var myEdge = { data: { id: create_workflow_edge_id(d.dep_id, d.id), weight: 1, source: d.dep_id, target: d.id } };
+							myEdges.push(myEdge);
 
-                    } else {
-                        //var myNode = { data: { id: d.id, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'yes', variables: d.variables } };
-                        var myNode = { data: { id: d.id, text: d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'yes', dep_id: d.dep_id, variables: d.variables, belongto: this_node_wf_belong_to } };
-                        myNodes.push(myNode);
-                        myEdges.push({ data: { source: this_node_wf_belong_to_id, target: d.id, id: create_workflow_edge_id(this_node_wf_belong_to_id, d.id), edgebelongto: 'true' } });
-                    }
+						} else {
+							//var myNode = { data: { id: d.id, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'yes', variables: d.variables } };
+							var myNode = { data: { id: d.id, text: d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'yes', dep_id: d.dep_id, variables: d.variables, belongto: this_node_wf_belong_to } };
+							myNodes.push(myNode);
+							myEdges.push({ data: { source: this_node_wf_belong_to_id, target: d.id, id: create_workflow_edge_id(this_node_wf_belong_to_id, d.id), edgebelongto: 'true' } });
+						}
 
                 }
 
                 //WORKFLOWS
                 if (d.type === "workflow") {
+					
                     //TODO add root feature (different than tools): wfroot:yes
-
                     var this_workflow_id = create_workflow_id(d);
 
                     var myNode = { data: { id: this_workflow_id, name: d.name, edit: d.edit, label: create_workflow_label(d), type: 'workflow', belongto: this_node_wf_belong_to } };
                     myNodes.push(myNode);
                     myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_workflow_id, id: create_workflow_edge_id(this_node_wf_belong_to_id, this_workflow_id), edgebelongto: 'true' } });
+					
                 }
 
 
@@ -1688,34 +1691,38 @@ window.onload = function () {
         */
         window.cy_setup_events = function () {
 			
-				
+			//initializeTree();
+			
             // collapse - expand nodes
             cy.on('click', 'node', function (event) {
-                //connectedEdges: next level
-                //successors: next levels recursively
+						//connectedEdges: next level
+						//successors: next levels recursively
+			
+						// inputs and outpus never collapse
+				//if (this['_private'].data.type !== "step" && this['_private'].data.type !== "input" && this['_private'].data.type !== "output") { //steps should never collapse
+							console.log( this['_private'].data.name + " HAS TARGETS : " );
+							console.log(this.successors().targets());
+							
+							if (this.successors().targets().style("display") == "none") {
+								this.connectedEdges().targets().style("display", "element");
+							} else {
+								//hide the children nodes and edges recursively  
+								this.successors().targets().forEach(function (element) {
+									//check if node has flag(open)								
+									if (typeof element['_private'].data.flag === 'undefined' || element['_private'].data.flag !== 'open') {
+										element.style("display", "none");
+									}
 
-                // inputs and outpus never collapse
-                if (this['_private'].data.type !== "step" && this['_private'].data.type !== "input" && this['_private'].data.type !== "output") { //steps should never collapse
-                    if (this.successors().targets().style("display") == "none") {
-                        this.connectedEdges().targets().style("display", "element");
-                    } else {
-                        //hide the children nodes and edges recursively  
-                        this.successors().targets().forEach(function (element) {
-                            //check if node has flag(open)								
-                            if (typeof element['_private'].data.flag === 'undefined' || element['_private'].data.flag !== 'open') {
-                                element.style("display", "none");
-                            }
-
-                        });
-                    }
-                }
-                if (this['_private'].data.type == "step") { // Click at a step node
-                    //Call angular function
-                    var this_data = this['_private'].data;
-                    angular.element($('#angular_div')).scope().$apply(function () {
-                        angular.element($('#angular_div')).scope().workflop_step_node_clicked(this_data);
-                    });
-                }
+								});
+							}
+				//}
+						if (this['_private'].data.type == "step") { // Click at a step node
+							//Call angular function
+							var this_data = this['_private'].data;
+							angular.element($('#angular_div')).scope().$apply(function () {
+								angular.element($('#angular_div')).scope().workflop_step_node_clicked(this_data);
+							});
+						}
 
             });
 
@@ -1748,10 +1755,10 @@ window.onload = function () {
 
             /* hide tooltip before cxtmenu opens, otherwise they overlap */
             cy.on('mouseout', 'node', function (event) {
-                // destroy all instances
-                mytippys.forEach(function (mytippy) {
-                    mytippy.destroy(mytippy.popper);
-                });
+					// destroy all instances
+					mytippys.forEach(function (mytippy) {
+						mytippy.destroy(mytippy.popper);
+					});
             });
 
 			 // Right-click menu for input nodes 
@@ -1819,8 +1826,8 @@ window.onload = function () {
 									commands: [
 										{
 											content: 'Edit',
-											select: function (ele) {
-											//menu.destroy();	
+												select: function (ele) {
+												//menu.destroy();	
 											}
 										},
 										{
@@ -1860,28 +1867,17 @@ window.onload = function () {
 	
         }
 
-		/*
-		* This function initialize cytoscape with an empty list of elements and the 
-		* style needed for the graphs
-		*
-		*/
-        function createCytoscapeObject() {
+			
 
-            var cy_object = cytoscape({
+        /*
+        * Initialize WORKFLOW graph
+        */
+        //function initializeTree() {
+		window.initializeTree = function () {
+			
+            cy = cytoscape({
                 container: document.getElementById('cywf'), // container to render in
                 elements: [],
-
-                //elements: [ // list of graph elements to start with
-                //      { // node a
-                //        data: { id: 'a' }
-                //      },
-                //      { // node b
-                //        data: { id: 'b' }
-                //      },
-                //      { // edge ab
-                //        data: { id: 'ab', source: 'a', target: 'b' }
-                //      }
-                //],
 
                 style: [ // the stylesheet for the graph
                     {
@@ -1932,8 +1928,8 @@ window.onload = function () {
                         selector: 'node[type="workflow"]',
                         "style": {
                             'shape': 'octagon',
-                            'border-width': '3',
-                            'border-color': '#E53935',
+                            //'border-width': '3',
+                            //'border-color': '#AFB4AE',
                             'background-color': '#AFB4AE',
                             //"height": 15,
                             //"width": 15
@@ -1977,25 +1973,14 @@ window.onload = function () {
 
             });
 
-
-            return cy_object;
-
-        }
-		
-
-        /*
-        * Initialize WORKFLOW graph
-        */
-        function initializeTree() {
-
-            cy = createCytoscapeObject();
-
             //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.
             //document.querySelector('canvas[data-id="layer2-node"]').style.position = null;
 			document.getElementById("cywf").querySelector('canvas[data-id="layer2-node"]').style.position = null; 
 
-
         }
+		
+		// cy should be initialize so that angular can access it
+		window.initializeTree();
 		
 		
 		window.initializeRepTree = function () {
@@ -2004,7 +1989,7 @@ window.onload = function () {
                 container: document.getElementById('cyrep'), // container to render in
                 elements: [],
                 style: [ // the stylesheet for the graph
-					{   // * tool default state : initial state*//
+					{   // * tool default state : initial state * //
                         selector: 'node[type="tool"]',  //[state = "pending"]
                         "style": {
                             "shape": "round-rectangle",
@@ -2290,8 +2275,7 @@ window.onload = function () {
 				
 		}	
 		
-		
-        initializeTree();
+     
 
 
         /* 
@@ -2344,7 +2328,7 @@ window.onload = function () {
             }
 
             // this is needed because cy.add() causes multiple instances of layout
-            initializeTree();
+            window.initializeTree();
 
             cy.json({ elements: treeData });   // Add new data
             cy.ready(function () {             // Wait for nodes to be added  
@@ -2529,7 +2513,7 @@ window.onload = function () {
 
             /** re run layout **/
             // this initialization is needed because cy.add() causes multiple instances of layout
-            initializeTree();
+            window.initializeTree();
 
             cy.json({ elements: currentElements });   // Add updated data
             cy.ready(function () {          		 // Wait for nodes to be added  

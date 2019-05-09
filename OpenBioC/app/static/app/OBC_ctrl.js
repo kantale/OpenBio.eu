@@ -2396,19 +2396,20 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.workflow_info_forked_from = data['forked_from'];
                 $scope.workflow_changes = data['changes'];
 
-                //Load the graph. TODO: WHAT HAPPENS WHEN WE CLICK TO NODE? IT IS NOT REGISTERED
-                cy.json(data['workflow']);
+                // Load the graph. TODO: WHAT HAPPENS WHEN WE CLICK TO NODE? IT IS NOT REGISTERED
+				window.initializeTree();
+				cy.json(data['workflow']);
                 cy.resize();
 				if(window.menu!==null) window.menu.destroy();
 				if(window.input_menu!==null) window.input_menu.destroy();
                 window.cy_setup_events();
 				
-                //Make step editor readonly
+                // Make step editor readonly
                 workflow_step_editor.setReadOnly(true);
-                //Clear all STEP fields
+                // Clear all STEP fields
                 $scope.workflow_info_add_step_clicked();
 
-                //Load the input/output variables
+                // Load the input/output variables
                 // $scope.workflow_input_outputs . [{name: '', description: '', out:true}];
                 $scope.workflow_input_outputs = [];
                 if (cy.$('node[type="input"] , node[type="output"]').length) {
@@ -2422,13 +2423,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                     $scope.workflow_input_outputs = [{name: '', description: '', out:true}];
                 }
 
-                //Set keyowords to chips
+                // Set keyowords to chips
                 window.OBCUI.set_chip_data('workflowChips', data['keywords']);
                 window.OBCUI.chip_disable('workflowChips');
 
                 $scope.workflow_keywords = data['keywords'];
 
-                //Update text fields
+                // Update text fields
                 $timeout(function(){M.updateTextFields()}, 10);
 
             },
