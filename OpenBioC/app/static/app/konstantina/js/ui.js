@@ -2184,13 +2184,44 @@ window.onload = function () {
 			
 			//update label
 			node_anim.data('label', anim_label);
+			node_anim.data('style', anim_style);
 			
+			//make edges blinking
+					var nodeAni = node_anim.animation({
+									style: {
+										'opacity': 0.1
+									},
+									duration: 200
+								});
+
+					//create time interval for continous looping of the animation				
+					var myVar = setInterval(myTimer, 200);
+
+					
+					function nodeTimer() {
+
+						nodeAni
+						  .play() // start
+						  .promise('completed').then(
+								function(){ // on next completed
+									nodeAni
+									  .reverse() // switch animation direction
+									  .rewind() // optional but makes intent clear
+									  .play() // start again
+									;
+						  });
+
+					}
+
+					nodeTimer();
+			
+			/*
 			return (node_anim.animation({
 						  style : anim_style, 	//style: { 'background-color': 'red', 'label':''},
 						  duration: 1  			//duration of animation in milliseconds
 						}).play()   			//.promise('complete').then(loopEdgeAnimation(edge_anim)) :TODO fic it so that it can loop
 					);
-			
+			*/
 			
 		};
 				
@@ -2234,7 +2265,7 @@ window.onload = function () {
 					
 					
 					//make edges blinking
-					var jAni = edge_anim.animation({
+					var edgeAni = edge_anim.animation({
 									style: {
 										'opacity': 0.1
 									},
@@ -2245,13 +2276,13 @@ window.onload = function () {
 					var myVar = setInterval(myTimer, 200);
 
 					
-					function myTimer() {
+					function edgeTimer() {
 
-						jAni
+						edgeAni
 						  .play() // start
 						  .promise('completed').then(
 								function(){ // on next completed
-									jAni
+									edgeAni
 									  .reverse() // switch animation direction
 									  .rewind() // optional but makes intent clear
 									  .play() // start again
@@ -2260,7 +2291,7 @@ window.onload = function () {
 
 					}
 
-					myTimer();
+					edgeTimer();
 					
 					
 					/*
