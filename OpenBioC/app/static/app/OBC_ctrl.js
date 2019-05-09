@@ -730,7 +730,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                 //Open tool right panel windows
                 document.getElementById('createToolDataDiv').style.display = 'block';
-                M.Collapsible.getInstance($('#createToolDataAccordion')).open();
+                M.Collapsible.getInstance($('#createToolDataAccordion')).open(0);
 
 
                 $scope.tool_info_username = data['username'];
@@ -890,7 +890,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         //Open tool right panel windows
         document.getElementById('createToolDataDiv').style.display = 'block';
-        M.Collapsible.getInstance($('#createToolDataAccordion')).open();
+        M.Collapsible.getInstance($('#createToolDataAccordion')).open(0);
 
 
         $scope.show_tools_info = true;
@@ -1755,7 +1755,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.hide_all_right_accordions('qas'); // Close all right accordions except QAs
 
         document.getElementById('QARightPanel').style.display = 'block';
-        M.Collapsible.getInstance($('#QARightPanelAccordion')).open();
+        // M.Collapsible.getInstance($('#QARightPanelAccordion')).open();
 
         //Fetch a QA data
         $scope.qa_comment_id = data.node.data.id;
@@ -3145,7 +3145,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.hide_all_right_accordions('qas');
 
         document.getElementById('QARightPanel').style.display = 'block';
-        M.Collapsible.getInstance($('#QARightPanelAccordion')).open();
+        // M.Collapsible.getInstance($('#QARightPanelAccordion')).open();
 
         $scope.qa_info_editable = true;
         $scope.qa_title = '';
@@ -3292,7 +3292,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         if (except != 'qas') {
             //Hide Q&A
             document.getElementById('QARightPanel').style.display = 'none';
-            M.Collapsible.getInstance($('#QARightPanelAccordion')).close();
+            // M.Collapsible.getInstance($('#QARightPanelAccordion')).close();
         }
 
     }
