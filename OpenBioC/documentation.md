@@ -178,3 +178,31 @@ tar zxvf snptest_v2.5.2_MacOSX_x86_64.tgz
 ```
 ../snptest_v2.5.2_MacOSX_x86_64/snptest_v2.5.2 -data chr6.cases.gen chr6.cases.sample chr6.controls.gen chr6.controls.sample -frequentist 1   -method score -pheno pheno -o res
 ```
+
+#############################
+```
+# Insert the BASH commands for this step
+
+# Insert the BASH commands for this step
+
+input__chromosome__artificialsignal__8=${input__chromosome__root__null}
+input__location__artificialsignal__8=${input__location__root__null}
+input__location_from__artificialsignal__8=${input__location_from__root__null}
+input__location_to__artificialsignal__8=${input__location_to__root__null}
+input__cases__artificialsignal__8=${input__cases__root__null}
+input__controls__artificialsignal__8=${input__controls__root__null}
+input__odds_ratio_ref_ref__artificialsignal__8=${input__odds_ratio_ref_ref__root__null}
+input__odds_ratio_alt_ref__artificialsignal__8=${input__odds_ratio_ref_alt__root__null}
+input__odds_ratio_alt_alt__artificialsignal__8=${input__odds_ratio_alt_alt__root__null}
+
+step__st1__artificialsignal__8
+
+input__dataset__frequentistadditive__1=${output__out__artificialsignal__8}
+
+step__main__frequentistadditive__1
+
+output__result__root__null=${output__result__frequentistadditive__1}
+
+
+#############################
+```
