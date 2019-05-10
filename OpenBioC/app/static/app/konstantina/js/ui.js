@@ -2157,7 +2157,9 @@ window.onload = function () {
 	
         }
 		
-		/* function for node animation  */ 
+		/* function for node animation
+        * window.nodeAnimation('frequentistadditive__3', 'started') 
+        */ 
 		window.nodeAnimation = function(node_anim_id, state){
 			// get node by id
 			var node_anim = cy_rep.$('#' + node_anim_id);
@@ -2232,7 +2234,7 @@ window.onload = function () {
 			
 			
 			//update label
-			node_anim.data('label', anim_label);
+			node_anim.data('style', anim_label);
 			node_anim.data('style', anim_style);
 			
 			//make edges blinking
@@ -2244,7 +2246,7 @@ window.onload = function () {
 								});
 
 					//create time interval for continous looping of the animation				
-					var myVar = setInterval(myTimer, 200);
+					var myVar = setInterval(nodeTimer, 200);
 
 					
 					function nodeTimer() {
@@ -2274,7 +2276,9 @@ window.onload = function () {
 			
 		};
 				
-		/* function for edge animation  */ 
+		/* function for edge animation 
+        * window.edgeAnimation('hapmap2__1__2__2', 'md5checkdir__1__2__2', "Running")    63Lf7 
+        */ 
 		window.edgeAnimation = function(source_anim_id, target_anim_id, state){
 					// get edge by source / target
 					var edges  = cy_rep.$("edge"); 
@@ -2310,7 +2314,7 @@ window.onload = function () {
 					
 					
 					//update label
-					edge_anim.data('label', edge_anim_label);
+					edge_anim.data('style', edge_anim_label);
 					
 					
 					//make edges blinking
@@ -2321,25 +2325,26 @@ window.onload = function () {
 									duration: 200
 								});
 
+                    function edgeTimer() {
+
+                        edgeAni
+                          .play() // start
+                          .promise('completed').then(
+                                function(){ // on next completed
+                                    edgeAni
+                                      .reverse() // switch animation direction
+                                      .rewind() // optional but makes intent clear
+                                      .play() // start again
+                                    ;
+                          });
+
+                    }
+
+
 					//create time interval for continous looping of the animation				
-					var myVar = setInterval(myTimer, 200);
+					var myVar = setInterval(edgeTimer, 200);
 
 					
-					function edgeTimer() {
-
-						edgeAni
-						  .play() // start
-						  .promise('completed').then(
-								function(){ // on next completed
-									edgeAni
-									  .reverse() // switch animation direction
-									  .rewind() // optional but makes intent clear
-									  .play() // start again
-									;
-						  });
-
-					}
-
 					edgeTimer();
 					
 					
