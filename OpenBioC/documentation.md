@@ -163,5 +163,18 @@ output__out__root__null=chr${input__chromosome__root__null}
 
 ```
 
+##############################
+```
+wget http://www.well.ox.ac.uk/~gav/resources/snptest_v2.5.2_MacOSX_x86_64.tgz
+tar zxvf snptest_v2.5.2_MacOSX_x86_64.tgz 
+```
 
-
+```
+./snptest_v2.5.2_MacOSX_x86_64/snptest_v2.5.2 -help
+```
+```
+./snptest_v2.5.2_MacOSX_x86_64/snptest_v2.5.2 -data chr6.cases.gen chr6.cases.sample chr6.controls.gen chr6.controls.sample -frequentist 1 -method score -pheno pheno -o res
+```
+```
+../snptest_v2.5.2_MacOSX_x86_64/snptest_v2.5.2 -data chr6.cases.gen chr6.cases.sample chr6.controls.gen chr6.controls.sample -frequentist 1   -method score -pheno pheno -o res
+```
