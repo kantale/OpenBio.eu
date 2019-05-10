@@ -2391,11 +2391,20 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //console.log(item);
 
         //FIX: Do this according to tools_search_show_item
-        window.cancelToolDataBtn_click();
-        window.createWorkflowBtn_click();
+        //window.cancelToolDataBtn_click();
+        //window.createWorkflowBtn_click();
+
+        //Hide all right panel accordions
+        $scope.hide_all_right_accordions('workflows');
+
+        //Show right panel accordion
+        document.getElementById('workflowsRightPanel').style.display = 'block';
+        M.Collapsible.getInstance($('#workflowsRightPanelGeneralAccordion')).open();
+
+
         $scope.workflows_info_editable = false;
         $scope.workflows_search_3(item);
-        M.updateTextFields();
+        //M.updateTextFields();
     };
 
     /*
@@ -2421,8 +2430,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.workflow_changes = data['changes'];
 
                 // Load the graph. TODO: WHAT HAPPENS WHEN WE CLICK TO NODE? IT IS NOT REGISTERED
-				window.initializeTree();
-				cy.json(data['workflow']);
+                window.initializeTree();
+                cy.json(data['workflow']);
                 cy.resize();
 				if(window.menu!==null) window.menu.destroy();
 				if(window.input_menu!==null) window.input_menu.destroy();
