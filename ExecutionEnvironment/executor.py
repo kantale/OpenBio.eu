@@ -314,7 +314,8 @@ class Worfklow:
 
             ret += '# STEP: {}\n'.format(a_node['id'])
             ret += '{} () {{\n'.format(a_node['id'])
-            ret += ':\n' # No op in case a_node['bash'] is empty 
+            #ret += ':\n' # No op in case a_node['bash'] is empty 
+            ret += 'echo "OBC: CALLING STEP: {}"\n'.format(a_node['id'])
             ret += a_node['bash'] + '\n'
             ret += '}\n'
 

@@ -1085,8 +1085,32 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */
     $scope.tool_create_save_pressed = function() {
 
-//        console.log("$scope.tools_dep_jstree_model:");
-//        console.log($scope.tools_dep_jstree_model);
+        //Check if tool name and version are valid
+        if (!$scope.tools_name_regexp.test($scope.tools_info_name)) {
+            $scope.toast('Invalid tool name. Allowed characters are: a-z, A-Z, 0-9, _', 'error');
+            return;
+        }
+
+        if ($scope.tools_info_name.includes('__')) {
+            $scope.toast('Tool name cannot include __', 'error');
+            return;            
+        }
+
+        if (!$scope.tools_version_regexp.test($scope.tools_info_version)) {
+            $scope.toast('Invalid tool version. Allowed characters are: a-z, A-Z, 0-9, _, .', 'error');
+            return;
+        }
+
+        if ($scope.tools_info_version.includes('__')) {
+            $scope.toast('Tool version cannot contain "__"', 'error');
+            return;
+        }
+
+        if ($scope.tools_info_version.includes('..')) {
+            $scope.toast('Tool version cannot contain ".."', 'error');
+            return;
+        }
+
 
         //Get the dependencies
         var tool_dependencies = [];
@@ -2480,7 +2504,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 this_data.variables.forEach(function(variable) {
                     completion_info.push({
                         caption: 'tool/' + this_data.name + '/' + this_data.version + '/' + this_data.edit + '/' +  variable.name,
-                        value: '${' + this_data.name + '__' + this_data.version + '__' + this_data.edit + '__' + variable.name + '}',
+                        value: '${' + this_data.name.replace(/\./g, '_') + '__' + this_data.version.replace(/\./g, '_') + '__' + this_data.edit + '__' + variable.name + '}',
                         meta: variable.description
                     });
                 });
@@ -2560,10 +2584,21 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */
     $scope.workflow_step_add = function() {
 
-        if (!$scope.tools_name_regexp.test($scope.workflows_step_name)) {
-            $scope.workflow_step_error_message = 'Invalid step name';
+        if (!$scope.tools_version_regexp.test($scope.workflows_step_name)) {
+            $scope.workflow_step_error_message = 'Invalid step name. Allowed characters are: a-z, A-Z, 0-9, ., _';
             return;
         }
+
+        if ($scope.workflows_step_name.includes('__')) {
+            $scope.workflow_step_error_message = 'Step name cannot contain "__"';
+            return;
+        }
+
+        if ($scope.workflows_step_name.includes('..')) {
+            $scope.workflow_step_error_message = 'Step name cannot contain ".."';
+            return;
+        }
+
 
         //Is this an UPDATE or an ADD?
         if ($scope.workflow_step_add_update_label == 'Update') {
@@ -2788,7 +2823,6 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             if (input_output.name && input_output.description) {
 
                 //Check that variables are ok
-
                 if (!$scope.tools_name_regexp.test(input_output.name)) {
                     error_message = 'Variable: "' + input_output.name + '" has an invalid name (allowed characters:a-zA-Z0-9 and _)';
                     return;
@@ -2846,9 +2880,20 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         //Check workflow name
         if (!$scope.tools_name_regexp.test($scope.workflow_info_name)) {
-            $scope.toast('Invalid Workflow name', 'error');
+            $scope.toast('Invalid Workflow name. Allowed characters: a-z, A-Z, 0-9, _, .', 'error');
             return;
         }
+
+        if (!scope.workflow_info_name.include('__')) {
+            $scope.toast('Workflow name cannot contain "__"', 'error');
+            return;
+        }
+
+        if (!scope.workflow_info_name.include('..')) {
+            $scope.toast('Workflow name cannot contain ".."', 'error');
+            return;
+        }
+
 
         $scope.ajax(
             'workflows_add/',
