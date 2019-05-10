@@ -1037,12 +1037,17 @@ window.onload = function () {
         // TODO : Change NAMES NAMESPACE UI
         window.OBCUI = {
             sep: '__',
-            call_re: new RegExp('((^call)|([\\s]+call))\\([\\w]+\\)', 'g'), // Matches: "call(a)" , "  call(a)", "ABC call(a)", "ABC   call(a)"
-            call_re_id: new RegExp('call\\(([\\w]+)\\)'), // 
-            call_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('(call[\\s]*\\([\\s]*)' + old_id + '([\\s]*\\))', 'g'), '$1' + new_id + '$2'); },
+            //call_re: new RegExp('((^call)|([\\s]+call))\\([\\w]+\\)', 'g'), // Matches: "call(a)" , "  call(a)", "ABC call(a)", "ABC   call(a)"
+            call_re: new RegExp('step__[\\w]+' ,'g'), 
+            //call_re_id: new RegExp('call\\(([\\w]+)\\)'), //
+            call_re_id: new RegExp('step__([\\w]+)'), 
+            //call_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('(call[\\s]*\\([\\s]*)' + old_id + '([\\s]*\\))', 'g'), '$1' + new_id + '$2'); },
+            call_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('step__' + old_id, 'g'),  'step__' + new_id); },
 
-            tool_re: new RegExp('\\$\\{[\\w]+__[\\w\\.]+__[\\d]+__[\\w]+\\}', 'g'), // ${hello__1__1__exec_path}
-            tool_re_id: new RegExp('\\$\\{([\\w]+__[\\w\\.]+__[\\d]+)__([\\w]+)\\}'),
+            //tool_re: new RegExp('\\$\\{[\\w]+__[\\w\\.]+__[\\d]+__[\\w]+\\}', 'g'), // ${hello__1__1__exec_path}
+            tool_re: new RegExp('\\$\\{[\\w]+__[\\w]+__[\\d]+__[\\w]+\\}', 'g'), // ${hello__1__1__exec_path}
+            //tool_re_id: new RegExp('\\$\\{([\\w]+__[\\w\\.]+__[\\d]+)__([\\w]+)\\}'),
+            tool_re_id: new RegExp('\\$\\{([\\w]+__[\\w]+__[\\d]+)__([\\w]+)\\}'),
 
 //            io_re: new RegExp('\\$\\{(input|output)__[a-zA-Z0-9][\\w]*\\}', 'g'), // [^_\w] Does not work???
 //            io_re_id: new RegExp('\\$\\{(input|output)__([\\w]+)\\}'), // TODO: ADD  WHITE SPACEDS JUST LIKE calls
@@ -1242,23 +1247,67 @@ window.onload = function () {
                         var splitted_ids = result.match(window.OBCUI.tool_re_id);
                         var tool_id = splitted_ids[1] + '__2';
                         var variable_id = splitted_ids[2];
-                        //Does this tool_id exist?
-                        var cy_tool_node = cy.$("node[type='tool'][id='" + tool_id + "']");
-                        if (cy_tool_node.length) {
-                            //IT EXISTS!
 
-                            //Does this tool has a variable with name: variable_id ?
-                            var tool_tool_variables = cy_tool_node.data().variables;
-                            tool_tool_variables.forEach(function (variable) {
-                                if (variable.name == variable_id) {
-                                    //Add it if it not already there
-                                    if (!tools.includes(tool_id)) {
-                                        tools.push(tool_id);
-                                    }
-                                }
-                            });
+                        //Does tool_id matches any of ids of tool nodes in cytoscape ?
+                        //Idially we would only have to do a:
+                        //cy.$("node[type='tool'][id='" + tool_id + "']").length > 0  
+                        //Unfortunately tool_id might be different than the id of the tool in cytoscape
+                        //tool_id is extracted from bash script and we replace dots with _ whereas dots are allowed as tool ids in cytoscape
+                        console.log('tool_id:', tool_id);
 
+                        //Create a new regular expression from the bash tool id, that will match all possible similar tool ids
+                        var tool_id_replace_meta = new RegExp(/([a-zA-Z0-9]+)_([a-zA-Z0-9]+?)/, 'g');
+                        var tool_id_re_str = tool_id.replace(tool_id_replace_meta, '$1[\\._]$2');  // new RegExp();
+                        while (tool_id_replace_meta.test(tool_id_re_str)) {
+                            tool_id_re_str =  tool_id_re_str.replace(tool_id_replace_meta, '$1[\\._]$2');
                         }
+                        tool_id_re = new RegExp(tool_id_re_str);
+
+                        //console.log('tool_id_re:', tool_id_re);
+
+                        //Get the ids of all tools.
+                        cy.$('node[type="tool"]').forEach(function(cy_tool_node){
+                            var cy_node_id = cy_tool_node.data('id');
+                            console.log('cy_node_id:', cy_node_id);
+                            if (tool_id_re.test(cy_node_id)) {
+                                console.log('MATCHED');
+                                //This cytoscape node id has matched the reg exp from bash
+
+                                //Does this tool has a variable with name: variable_id ?
+                                var tool_tool_variables = cy_tool_node.data().variables;
+                                tool_tool_variables.forEach(function (variable) {
+                                    if (variable.name == variable_id) {
+                                        //Add it if it is not already there
+                                        if (!tools.includes(cy_node_id)) {
+                                            tools.push(cy_node_id);
+                                        }
+                                    }
+                                });
+                            }
+                            else {
+                                console.log('NOT MATCHED');
+                            }
+                        });
+
+
+
+                        // //Does this tool_id exist?
+                        // var cy_tool_node = cy.$("node[type='tool'][id='" + tool_id + "']");
+                        // if (cy_tool_node.length) {
+                        //     //IT EXISTS!
+
+                        //     //Does this tool has a variable with name: variable_id ?
+                        //     var tool_tool_variables = cy_tool_node.data().variables;
+                        //     tool_tool_variables.forEach(function (variable) {
+                        //         if (variable.name == variable_id) {
+                        //             //Add it if it is not already there
+                        //             if (!tools.includes(tool_id)) {
+                        //                 tools.push(tool_id);
+                        //             }
+                        //         }
+                        //     });
+
+                        // }
 
                     });
                 }
