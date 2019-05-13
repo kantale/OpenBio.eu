@@ -299,6 +299,12 @@ nav {
     margin-right: 0px !important;
 }
 
+.qaReplyBtn {
+    padding: 4px;
+    height: 19px;
+    line-height: 12px;
+}
+
 /* .fixed-action-btn {
     float: right;
     position: relative;

@@ -1082,8 +1082,8 @@
                     <ul class="collection">
                         <li class="collection-item" ng-repeat="post in qa_thread track by post.id">
                             <span ng-bind-html="post.comment_html"></span>
-                            <a class="waves-effect waves-light btn-small" href=""
-                                ng-click="qa_reply_button_clicked(post.id)">Reply</a>
+                            <a class="waves-effect btn-flat qaReplyBtn" href=""
+                                ng-click="qa_reply_button_clicked(post.id)"><u>Reply</u></a>
                             <div class="input-field" ng-show="post.replying">
                                 <textarea class="validate" ng-model="qa_current_reply"></textarea>
                                 <a class="waves-effect waves-light btn-small" href=""
@@ -1094,8 +1094,8 @@
                             <ul class="collection">
                                 <li class="collection-item" ng-repeat="post2 in post.children track by post2.id">
                                     <span ng-bind-html="post2.comment_html"></span>
-                                    <a class="waves-effect waves-light btn-small" href=""
-                                        ng-click="qa_reply_button_clicked(post2.id)">Reply</a>
+                                    <a class="waves-effect btn-flat qaReplyBtn" href=""
+                                        ng-click="qa_reply_button_clicked(post2.id)"><u>Reply</u></a>
                                     <div class="input-field" ng-show="post2.replying">
                                         <textarea class="validate" ng-model="qa_current_reply"></textarea>
                                         <a class="waves-effect waves-light btn-small" href=""
@@ -1107,8 +1107,8 @@
                                         <li class="collection-item"
                                             ng-repeat="post3 in post2.children track by post3.id">
                                             <span ng-bind-html="post3.comment_html"></span>
-                                            <a class="waves-effect waves-light btn-small" href=""
-                                                ng-click="qa_reply_button_clicked(post3.id)">Reply</a>
+                                            <a class="waves-effect btn-flat qaReplyBtn" href=""
+                                                ng-click="qa_reply_button_clicked(post3.id)"><u>Reply</u></a>
                                             <div class="input-field" ng-show="post3.replying">
                                                 <textarea class="validate" ng-model="qa_current_reply"></textarea>
                                                 <a class="waves-effect waves-light btn-small" href=""
@@ -1120,8 +1120,8 @@
                                                 <li class="collection-item"
                                                     ng-repeat="post4 in post3.children track by post4.id">
                                                     <span ng-bind-html="post4.comment_html"></span>
-                                                    <a class="waves-effect waves-light btn-small" href=""
-                                                        ng-click="qa_reply_button_clicked(post4.id)">Reply</a>
+                                                    <a class="waves-effect btn-flat qaReplyBtn" href=""
+                                                        ng-click="qa_reply_button_clicked(post4.id)"><u>Reply</u></a>
                                                     <div class="input-field" ng-show="post4.replying">
                                                         <textarea class="validate"
                                                             ng-model="qa_current_reply"></textarea>
