@@ -1002,7 +1002,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         //Show workflows accordion
         document.getElementById('workflowsRightPanel').style.display = 'block';
-        M.Collapsible.getInstance($('#workflowsRightPanelGeneralAccordion')).open();
+        M.Collapsible.getInstance($('#workflowsRightPanelGeneralAccordion')).open(0);
 
 
         $scope.workflow_info_name = '';
@@ -1719,7 +1719,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                 //Open right panel
                 document.getElementById('userDataDiv').style.display = 'block';
-                M.Collapsible.getInstance($('#userDataAccordion')).open();
+                M.Collapsible.getInstance($('#userDataAccordion')).open(0);
 
                 $timeout(function(){M.updateTextFields()}, 10);
             },
@@ -1804,7 +1804,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                 //Open right report panel
                 document.getElementById('reportsRightPanel').style.display = 'block';
-                M.Collapsible.getInstance($('#reportsRightPanelAccordion')).open();
+                M.Collapsible.getInstance($('#reportsRightPanelAccordion')).open(0);
 
                 //Fill data
                 $scope.report_workflow_name = data['report_workflow_name'];
@@ -1850,7 +1850,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                 $scope.hide_all_right_accordions('references');
                 document.getElementById('referencesRightPanel').style.display = 'block';
-                M.Collapsible.getInstance($('#referencesRightPanelAccordion')).open();
+                M.Collapsible.getInstance($('#referencesRightPanelAccordion')).open(0);
 
                 $scope.references_info_editable = false;
 
@@ -1872,7 +1872,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.hide_all_right_accordions('references');
 
         document.getElementById('referencesRightPanel').style.display = 'block';
-        M.Collapsible.getInstance($('#referencesRightPanelAccordion')).open();
+        M.Collapsible.getInstance($('#referencesRightPanelAccordion')).open(0);
 
         $scope.references_info_editable = true;
 
@@ -2399,7 +2399,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         //Show right panel accordion
         document.getElementById('workflowsRightPanel').style.display = 'block';
-        M.Collapsible.getInstance($('#workflowsRightPanelGeneralAccordion')).open();
+        M.Collapsible.getInstance($('#workflowsRightPanelGeneralAccordion')).open(0);
 
 
         $scope.workflows_info_editable = false;
