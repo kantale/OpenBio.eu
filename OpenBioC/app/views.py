@@ -109,7 +109,13 @@ def markdown(t):
     '''
     https://github.com/lepture/mistune 
     '''
-    return g['markdown'](t)
+    md = g['markdown'](t)
+    # Remove <p> at the start and </p> at the end 
+    s =  re.search(r'^<p>(.*)</p>\n$', md, re.M | re.S)
+    if s:
+        return s.group(1)
+    else:
+        return md
 
 def fail(error_message=None):
     '''
