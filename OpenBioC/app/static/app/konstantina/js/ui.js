@@ -2062,6 +2062,8 @@ window.onload = function () {
                         selector: 'node[type="input"]',
                         "style": {
                             'shape': 'round-rectangle',
+							'border-width': '3',
+                            'border-color': '#43A047',
                             'background-color': '#AFB4AE',
 							"label": "data(label)"
   
@@ -2071,6 +2073,8 @@ window.onload = function () {
                         selector: 'node[type="output"]',
                         "style": {
                             'shape': 'round-rectangle',
+							'border-width': '3',
+                            'border-color': '#E53935',
                             'background-color': '#AFB4AE',
 							"label": "data(label)"
 
