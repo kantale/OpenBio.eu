@@ -121,10 +121,9 @@ wget -O "v0.0.10.tar.gz" https://github.com/ezraroi/ngJsTree/archive/v0.0.10.tar
 tar zxvf v0.0.10.tar.gz
 ```
 
-### Font awesome 4.7.0 (glyphicons) . REQUIRED 
+### Font awesome 4.7.0 (glyphicons) . NOT REQUIRED 
 https://fontawesome.com/v4.7.0/
 
-<!-- run -->
 ```
 mkdir fontawesome
 wget -O "fontawesome/font-awesome-4.7.0.zip" https://fontawesome.com/v4.7.0/assets/font-awesome-4.7.0.zip
