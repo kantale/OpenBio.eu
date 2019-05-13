@@ -95,6 +95,15 @@ g = {
 #        'pybtex_html_backend': pybtex.plugin.find_plugin('pybtex.backends', 'html')(),
 #        'pybtex_parser': pybtex.database.input.bibtex.Parser()
 #    }
+    # materialize js tree icons
+    'jstree_icons': {
+        'tools': 'settings',
+        'workflows': 'device_hub',
+        'reports': 'description',
+        'references': 'format_quote',
+        'users': 'people',
+        'qas': 'forum',
+    }
 }
 
 ### HELPING FUNCTIONS AND DECORATORS #####
@@ -116,6 +125,12 @@ def markdown(t):
         return s.group(1)
     else:
         return md
+
+def jstree_icon_html(t):
+    '''
+    Create a html tags for materialize icon
+    '''
+    return '<i class="material-icons left md-18">{}</i>'.format(g['jstree_icons'][t])
 
 def fail(error_message=None):
     '''
@@ -602,7 +617,7 @@ def users_search_2(
     for result in results:
         to_add = {
             'data': {'username': result.user.username},
-            'text': result.user.username,
+            'text': result.user.username + jstree_icon_html('users'),
             'id': result.user.username,
             'parent': '#',
             'state': { 'opened': True},
@@ -932,7 +947,7 @@ def tools_search_2(tools_search_name, tools_search_version, tools_search_edit):
     for x in results:
         to_add = {
             'data': {'name': x.name, 'version': x.version, 'edit': x.edit},
-            'text': tool_text_jstree(x),
+            'text': tool_text_jstree(x) + jstree_icon_html('tools'),
             'id': tool_id_jstree(x, g['SEARCH_TOOL_TREE_ID']),
             'parent': tool_id_jstree(x.forked_from, g['SEARCH_TOOL_TREE_ID']) if x.forked_from else '#',
             'state': { 'opened': True},
@@ -970,7 +985,7 @@ def workflows_search_2(workflows_search_name, workflows_search_edit):
     for x in results:
         to_add = {
             'data': {'name': x.name, 'edit': x.edit},
-            'text': workflow_text_jstree(x),
+            'text': workflow_text_jstree(x) + jstree_icon_html('workflows'),
             'id': workflow_id_jstree(x, g['SEARCH_WORKFLOW_TREE_ID']),
             'parent': workflow_id_jstree(x.forked_from, g['SEARCH_WORKFLOW_TREE_ID']) if x.forked_from else '#',
             'state': { 'opened': True},
@@ -1774,7 +1789,7 @@ def reports_search_2(
 
             to_add = {
                 'data': {'name': workflow.name, 'edit': workflow.edit, 'type': 'workflow'},
-                'text': workflow_text_jstree(workflow),
+                'text': workflow_text_jstree(workflow) + jstree_icon_html('workflows'),
                 'id': workflow_id_jstree(workflow, g['SEARCH_REPORT_TREE_ID']),
                 'parent': workflow_id_jstree(workflow.forked_from, g['SEARCH_REPORT_TREE_ID']) if workflow.forked_from else '#',
                 'state': { 'opened': True},
@@ -1784,7 +1799,7 @@ def reports_search_2(
         # Add the report
         to_add = {
             'data': {'run': report.nice_id, 'type': 'report'},
-            'text': report.nice_id,
+            'text': report.nice_id + jstree_icon_html('reports'),
             'id': report_id_jstree(report, g['SEARCH_REPORT_TREE_ID']),
             'parent': workflow_id_jstree(workflow, g['SEARCH_REPORT_TREE_ID']),
             'state': { 'opened': True},
@@ -2025,7 +2040,7 @@ def references_search_2(
     for result in results:
         to_add = {
             'data': {'name': result.name},
-            'text': result.name,
+            'text': result.name + jstree_icon_html('references'),
             'id': result.name,
             'parent': '#',
             'state': { 'opened': True},
@@ -2073,7 +2088,7 @@ def qa_search_2(main_search):
 
         to_add = {
             'data': {'id': result_parent.pk},
-            'text': result_parent.title,
+            'text': result_parent.title + jstree_icon_html('qas'),
             'id': str(result_parent.pk),
             'parent': '#',
             'state': { 'opened': True},

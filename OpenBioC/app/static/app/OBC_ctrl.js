@@ -1561,7 +1561,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                     return true;
                 },
-                worker : true
+                worker : true,
+                themes: {
+                    "icons": false
+                }
             },
 //            types : {
 //                default : {
@@ -1575,12 +1578,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 //                }
 //            },
             version : 1,
-            plugins : ['dnd', 'types'],
-                        types : {
-                default : {
-                    icon : 'fa fa-cog'
-                }
-            },
+            //plugins : ['dnd', 'types'],
+            plugins: ['dnd'],
+            //types : {default : {icon : 'fa fa-cog'}},
             dnd: {
                 is_draggable : function(node) {
                     return true;
@@ -2127,7 +2127,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                     return true;
                 },
-                worker : true
+                worker : true,
+                themes: {"icons": false}
             },
 //            types : {
 //                default : {
@@ -2141,12 +2142,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 //                }
 //            },
             version : 1,
-            plugins : ['dnd', 'types'],
-            types : {
-                default : {
-                    icon : 'fa fa-sitemap' //
-                }
-            },
+            //plugins : ['dnd', 'types'],
+            plugins: ['dnd'],
+            types : {default : {icon : 'fa fa-sitemap' }},
             dnd: {
                 is_draggable : function(node) {
                     return true;
@@ -2183,7 +2181,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                     return true;
                 },
-                worker : true
+                worker : true,
+                themes: {"icons": false}
             },
 //            types : {
 //                default : {
@@ -2197,12 +2196,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 //                }
 //            },
             version : 1,
-            plugins : ['dnd', 'types'],
-            types : {
-                default : {
-                    icon : 'fa fa-sitemap' //
-                }
-            },
+            //plugins : ['dnd', 'types'],
+            plugins : ['dnd'],
+            //types : {default : {icon : 'fa fa-sitemap'}},
             dnd: {
                 is_draggable : function(node) {
                     return true;
@@ -2233,7 +2229,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                     return true;
                 },
-                worker : true
+                worker : true,
+                themes: {"icons": false}
             },
 //            types : {
 //                default : {
@@ -2247,12 +2244,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 //                }
 //            },
             version : 1,
-            plugins : ['dnd', 'types'],
-            types : {
-                default : {
-                    icon : 'fa fa-sitemap' //
-                }
-            },
+            //plugins : ['dnd', 'types'],
+            plugins : ['dnd'],
+            //types : {default : {icon : 'fa fa-sitemap'}},
             dnd: {
                 is_draggable : function(node) {
                     return true;
@@ -2283,7 +2277,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                     return true;
                 },
-                worker : true
+                worker : true,
+                themes: {"icons": false}
             },
 //            types : {
 //                default : {
@@ -2297,12 +2292,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 //                }
 //            },
             version : 1,
-            plugins : ['dnd', 'types'],
-            types : {
-                default : {
-                    icon : 'fa fa-sitemap' //
-                }
-            },
+            //plugins : ['dnd', 'types'],
+            plugins : ['dnd'],
+            //types : {default : {icon : 'fa fa-sitemap'}},
             dnd: {
                 is_draggable : function(node) {
                     return true;
@@ -2333,7 +2325,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                     return true;
                 },
-                worker : true
+                worker : true,
+                themes: {"icons": false}
             },
 //            types : {
 //                default : {
@@ -2347,12 +2340,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 //                }
 //            },
             version : 1,
-            plugins : ['dnd', 'types'],
-            types : {
-                default : {
-                    icon : 'fa fa-sitemap' //
-                }
-            },
+            //plugins : ['dnd', 'types'],
+            plugins : ['dnd'],
+            //types : {default : {icon : 'fa fa-sitemap'}},
             dnd: {
                 is_draggable : function(node) {
                     return true;
