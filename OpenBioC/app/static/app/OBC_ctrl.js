@@ -1085,8 +1085,32 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */
     $scope.tool_create_save_pressed = function() {
 
-//        console.log("$scope.tools_dep_jstree_model:");
-//        console.log($scope.tools_dep_jstree_model);
+        //Check if tool name and version are valid
+        if (!$scope.tools_name_regexp.test($scope.tools_info_name)) {
+            $scope.toast('Invalid tool name. Allowed characters are: a-z, A-Z, 0-9, _', 'error');
+            return;
+        }
+
+        if ($scope.tools_info_name.includes('__')) {
+            $scope.toast('Tool name cannot include __', 'error');
+            return;            
+        }
+
+        if (!$scope.tools_version_regexp.test($scope.tools_info_version)) {
+            $scope.toast('Invalid tool version. Allowed characters are: a-z, A-Z, 0-9, _, .', 'error');
+            return;
+        }
+
+        if ($scope.tools_info_version.includes('__')) {
+            $scope.toast('Tool version cannot contain "__"', 'error');
+            return;
+        }
+
+        if ($scope.tools_info_version.includes('..')) {
+            $scope.toast('Tool version cannot contain ".."', 'error');
+            return;
+        }
+
 
         //Get the dependencies
         var tool_dependencies = [];
@@ -2367,11 +2391,20 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //console.log(item);
 
         //FIX: Do this according to tools_search_show_item
-        window.cancelToolDataBtn_click();
-        window.createWorkflowBtn_click();
+        //window.cancelToolDataBtn_click();
+        //window.createWorkflowBtn_click();
+
+        //Hide all right panel accordions
+        $scope.hide_all_right_accordions('workflows');
+
+        //Show right panel accordion
+        document.getElementById('workflowsRightPanel').style.display = 'block';
+        M.Collapsible.getInstance($('#workflowsRightPanelGeneralAccordion')).open();
+
+
         $scope.workflows_info_editable = false;
         $scope.workflows_search_3(item);
-        M.updateTextFields();
+        //M.updateTextFields();
     };
 
     /*
@@ -2396,19 +2429,20 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.workflow_info_forked_from = data['forked_from'];
                 $scope.workflow_changes = data['changes'];
 
-                //Load the graph. TODO: WHAT HAPPENS WHEN WE CLICK TO NODE? IT IS NOT REGISTERED
+                // Load the graph. TODO: WHAT HAPPENS WHEN WE CLICK TO NODE? IT IS NOT REGISTERED
+                window.initializeTree();
                 cy.json(data['workflow']);
                 cy.resize();
 				if(window.menu!==null) window.menu.destroy();
 				if(window.input_menu!==null) window.input_menu.destroy();
                 window.cy_setup_events();
 				
-                //Make step editor readonly
+                // Make step editor readonly
                 workflow_step_editor.setReadOnly(true);
-                //Clear all STEP fields
+                // Clear all STEP fields
                 $scope.workflow_info_add_step_clicked();
 
-                //Load the input/output variables
+                // Load the input/output variables
                 // $scope.workflow_input_outputs . [{name: '', description: '', out:true}];
                 $scope.workflow_input_outputs = [];
                 if (cy.$('node[type="input"] , node[type="output"]').length) {
@@ -2422,13 +2456,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                     $scope.workflow_input_outputs = [{name: '', description: '', out:true}];
                 }
 
-                //Set keyowords to chips
+                // Set keyowords to chips
                 window.OBCUI.set_chip_data('workflowChips', data['keywords']);
                 window.OBCUI.chip_disable('workflowChips');
 
                 $scope.workflow_keywords = data['keywords'];
 
-                //Update text fields
+                // Update text fields
                 $timeout(function(){M.updateTextFields()}, 10);
 
             },
@@ -2480,7 +2514,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 this_data.variables.forEach(function(variable) {
                     completion_info.push({
                         caption: 'tool/' + this_data.name + '/' + this_data.version + '/' + this_data.edit + '/' +  variable.name,
-                        value: '${' + this_data.name + '__' + this_data.version + '__' + this_data.edit + '__' + variable.name + '}',
+                        value: '${' + this_data.name.replace(/\./g, '_') + '__' + this_data.version.replace(/\./g, '_') + '__' + this_data.edit + '__' + variable.name + '}',
                         meta: variable.description
                     });
                 });
@@ -2488,8 +2522,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             else if (this_data.type=='step') {
 
                 completion_info.push({
-                    caption: 'call(' + this_data.label + '/' + this_data.belongto.name + '/' + this_node_belong_to_show_edit + ')',
-                    value: 'call(' + this_data.label + '__' + this_data.belongto.name + '__' + this_node_belong_to_value_edit + ')',
+                    //caption: 'call(' + this_data.label + '/' + this_data.belongto.name + '/' + this_node_belong_to_show_edit + ')',
+                    caption: 'step/' + this_data.label + '/' + this_data.belongto.name + '/' + this_node_belong_to_show_edit + ')',
+                    //value: 'call(' + this_data.label + '__' + this_data.belongto.name + '__' + this_node_belong_to_value_edit + ')',
+                    value: 'step__' + this_data.label + '__' + this_data.belongto.name + '__' + this_node_belong_to_value_edit ,
                     meta: 'STEP'
                 });
             }
@@ -2560,10 +2596,21 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */
     $scope.workflow_step_add = function() {
 
-        if (!$scope.tools_name_regexp.test($scope.workflows_step_name)) {
-            $scope.workflow_step_error_message = 'Invalid step name';
+        if (!$scope.tools_version_regexp.test($scope.workflows_step_name)) {
+            $scope.workflow_step_error_message = 'Invalid step name. Allowed characters are: a-z, A-Z, 0-9, ., _';
             return;
         }
+
+        if ($scope.workflows_step_name.includes('__')) {
+            $scope.workflow_step_error_message = 'Step name cannot contain "__"';
+            return;
+        }
+
+        if ($scope.workflows_step_name.includes('..')) {
+            $scope.workflow_step_error_message = 'Step name cannot contain ".."';
+            return;
+        }
+
 
         //Is this an UPDATE or an ADD?
         if ($scope.workflow_step_add_update_label == 'Update') {
@@ -2776,13 +2823,41 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     /*
     * Workflows --> Input/Outputs --> (Alter Input / Output variables) --> Update button --> pressed
+    * input update input output update output
     */
     $scope.workflow_step_input_output_update_pressed = function() {
 
         var nodes_to_add = [];
+        var error_message = '';
+        var nodes_names = [];
 
         $scope.workflow_input_outputs.forEach(function(input_output){
             if (input_output.name && input_output.description) {
+
+                //Check that variables are ok
+                if (!$scope.tools_name_regexp.test(input_output.name)) {
+                    error_message = 'Variable: "' + input_output.name + '" has an invalid name (allowed characters:a-zA-Z0-9 and _)';
+                    return;
+                }
+                if (input_output.name.includes('__')) {
+                    error_message = 'Variable "' + input_output.name + '" contains "__". This is not allowed.';
+                    return;
+                }
+
+                if (input_output.name == 'output') {
+                    error_message = 'Variable cannot have the name "output"';
+                    return;
+                }
+                else if (input_output.name == 'input') {
+                    error_message = 'Variable cannot have the name "input"';
+                    return;
+                }
+                if (nodes_names.indexOf(input_output.name) > -1) {
+                    error_message = 'Variable: "' + input_output.name + '" exists more than once';
+                    return;
+                }
+                nodes_names.push(input_output.name);
+
                 nodes_to_add.push({
                     name: input_output.name,
                     description: input_output.description,
@@ -2791,6 +2866,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 })
             }
         });
+
+
+        if (error_message) {
+            $scope.toast(error_message, 'error');
+            return;
+        }
 
         //console.log('Input / Output Variable to add:');
         //console.log(nodes_to_add);
@@ -2811,9 +2892,20 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         //Check workflow name
         if (!$scope.tools_name_regexp.test($scope.workflow_info_name)) {
-            $scope.toast('Invalid Workflow name', 'error');
+            $scope.toast('Invalid Workflow name. Allowed characters: a-z, A-Z, 0-9, _, .', 'error');
             return;
         }
+
+        if ($scope.workflow_info_name.includes('__')) {
+            $scope.toast('Workflow name cannot contain "__"', 'error');
+            return;
+        }
+
+        if ($scope.workflow_info_name.includes('..')) {
+            $scope.toast('Workflow name cannot contain ".."', 'error');
+            return;
+        }
+
 
         $scope.ajax(
             'workflows_add/',
@@ -2879,7 +2971,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             'edit': $scope.workflow_info_edit
         }
         $scope.workflow_changes = '';
+
+        //Initialize step editor
         workflow_step_editor.setReadOnly(false);
+        $scope.workflows_step_name = '';
+        $scope.workflows_step_main = false;
+        workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1);
 
         //Make Chips editable
         window.OBCUI.chip_enable('workflowChips');

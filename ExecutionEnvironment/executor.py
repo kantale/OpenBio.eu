@@ -196,7 +196,7 @@ class Worfklow:
 
                 if root_output_node['id'] in step_node['outputs']:
                     if not self.output_parameter_step_setters.get(root_output_node['id']) in [None, step_node]:
-                        message = 'Output variable: {} is set by more than one steps:\n'.format(root_output_node['id'])
+                        message = 'OBC: Output variable: {} is set by more than one steps:\n'.format(root_output_node['id'])
                         message += '   {}\n'.format(self.output_parameter_step_setters[root_output_node['id']]['id'])
                         message += '   {}\n'.format(step_node['id'])
                         raise OBC_Executor_Exception(message)
@@ -278,7 +278,7 @@ class Worfklow:
         ret += '\n'
         ret += '### SETTING TOOL VARIABLES FOR: {}\n'.format(tool['label'])
         for tool_variable in tool['variables']:
-            ret += 'export {}__{}="{}" # {} \n'.format(self.get_tool_dash_id(tool), tool_variable['name'], tool_variable['value'], tool_variable['description'])
+            ret += 'export {}__{}="{}" # {} \n'.format(self.get_tool_dash_id(tool, no_dots=True), tool_variable['name'], tool_variable['value'], tool_variable['description'])
         ret += '### END OF SETTING TOOL VARIABLES FOR: {}\n\n'.format(tool['label'])
 
         return ret
@@ -313,8 +313,9 @@ class Worfklow:
                 continue
 
             ret += '# STEP: {}\n'.format(a_node['id'])
-            ret += '{} () {{\n'.format(a_node['id'])
-            ret += ':\n' # No op in case a_node['bash'] is empty 
+            ret += 'step__{} () {{\n'.format(a_node['id'])
+            #ret += ':\n' # No op in case a_node['bash'] is empty 
+            ret += 'echo "OBC: CALLING STEP: {}"\n'.format(a_node['id'])
             ret += a_node['bash'] + '\n'
             ret += '}\n'
 
@@ -327,7 +328,7 @@ class Worfklow:
         '''
 
         ret = '### CALLING MAIN STEP\n'
-        ret += '{}\n'.format(self.root_step['id'])
+        ret += 'step__{}\n'.format(self.root_step['id'])
         ret += '### END OF CALLING MAIN STEP\n'
 
         return ret
@@ -337,10 +338,15 @@ class Worfklow:
         '''
         return '/'.join([tool['name'], tool['version'], str(tool['edit'])])
 
-    def get_tool_dash_id(self, tool):
+    def get_tool_dash_id(self, tool, no_dots=False):
         '''
         '''
-        return '__'.join([tool['name'], tool['version'], str(tool['edit'])])
+        ret =  '__'.join([tool['name'], tool['version'], str(tool['edit'])])
+
+        if no_dots:
+            ret = ret.replace('.', '_')
+
+        return ret
 
     def get_tool_installation_order(self, ):
         '''

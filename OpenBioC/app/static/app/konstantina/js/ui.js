@@ -1037,20 +1037,25 @@ window.onload = function () {
         // TODO : Change NAMES NAMESPACE UI
         window.OBCUI = {
             sep: '__',
-            call_re: new RegExp('((^call)|([\\s]+call))\\([\\w]+\\)', 'g'), // Matches: "call(a)" , "  call(a)", "ABC call(a)", "ABC   call(a)"
-            call_re_id: new RegExp('call\\(([\\w]+)\\)'), // 
-            call_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('(call[\\s]*\\([\\s]*)' + old_id + '([\\s]*\\))', 'g'), '$1' + new_id + '$2'); },
+            //call_re: new RegExp('((^call)|([\\s]+call))\\([\\w]+\\)', 'g'), // Matches: "call(a)" , "  call(a)", "ABC call(a)", "ABC   call(a)"
+            call_re: new RegExp('step__[\\w]+' ,'g'), 
+            //call_re_id: new RegExp('call\\(([\\w]+)\\)'), //
+            call_re_id: new RegExp('step__([\\w]+)'), 
+            //call_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('(call[\\s]*\\([\\s]*)' + old_id + '([\\s]*\\))', 'g'), '$1' + new_id + '$2'); },
+            call_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('step__' + old_id, 'g'),  'step__' + new_id); },
 
-            tool_re: new RegExp('\\$\\{[\\w]+__[\\w\\.]+__[\\d]+__[\\w]+\\}', 'g'), // ${hello__1__1__exec_path}
-            tool_re_id: new RegExp('\\$\\{([\\w]+__[\\w\\.]+__[\\d]+)__([\\w]+)\\}'),
+            //tool_re: new RegExp('\\$\\{[\\w]+__[\\w\\.]+__[\\d]+__[\\w]+\\}', 'g'), // ${hello__1__1__exec_path}
+            tool_re: new RegExp('\\$\\{[\\w]+__[\\w]+__[\\d]+__[\\w]+\\}', 'g'), // ${hello__1__1__exec_path}
+            //tool_re_id: new RegExp('\\$\\{([\\w]+__[\\w\\.]+__[\\d]+)__([\\w]+)\\}'),
+            tool_re_id: new RegExp('\\$\\{([\\w]+__[\\w]+__[\\d]+)__([\\w]+)\\}'),
 
 //            io_re: new RegExp('\\$\\{(input|output)__[a-zA-Z0-9][\\w]*\\}', 'g'), // [^_\w] Does not work???
 //            io_re_id: new RegExp('\\$\\{(input|output)__([\\w]+)\\}'), // TODO: ADD  WHITE SPACEDS JUST LIKE calls
 //            io_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('(\\$\\{(input|output)__)' + old_id + '(\\})'), '$1' + new_id + '$3'); }
 
-            io_re: new RegExp('(input|output)__[a-zA-Z0-9][\\w]*', 'g'), // [^_\w] Does not work???
+            io_re: new RegExp('(input|output)__[a-zA-Z0-9_][\\w]*', 'g'), // [^_\w] Does not work???
             io_re_id: new RegExp('(input|output)__([\\w]+)'), // TODO: ADD  WHITE SPACEDS JUST LIKE calls
-            io_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('((input|output)__)' + old_id), '$1' + new_id); }
+            io_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('((input|output)__)' + old_id, 'g'), '$1' + new_id); }
 
         };
 
@@ -1242,23 +1247,67 @@ window.onload = function () {
                         var splitted_ids = result.match(window.OBCUI.tool_re_id);
                         var tool_id = splitted_ids[1] + '__2';
                         var variable_id = splitted_ids[2];
-                        //Does this tool_id exist?
-                        var cy_tool_node = cy.$("node[type='tool'][id='" + tool_id + "']");
-                        if (cy_tool_node.length) {
-                            //IT EXISTS!
 
-                            //Does this tool has a variable with name: variable_id ?
-                            var tool_tool_variables = cy_tool_node.data().variables;
-                            tool_tool_variables.forEach(function (variable) {
-                                if (variable.name == variable_id) {
-                                    //Add it if it not already there
-                                    if (!tools.includes(tool_id)) {
-                                        tools.push(tool_id);
-                                    }
-                                }
-                            });
+                        //Does tool_id matches any of ids of tool nodes in cytoscape ?
+                        //Idially we would only have to do a:
+                        //cy.$("node[type='tool'][id='" + tool_id + "']").length > 0  
+                        //Unfortunately tool_id might be different than the id of the tool in cytoscape
+                        //tool_id is extracted from bash script and we replace dots with _ whereas dots are allowed as tool ids in cytoscape
+                        console.log('tool_id:', tool_id);
 
+                        //Create a new regular expression from the bash tool id, that will match all possible similar tool ids
+                        var tool_id_replace_meta = new RegExp(/([a-zA-Z0-9]+)_([a-zA-Z0-9]+?)/, 'g');
+                        var tool_id_re_str = tool_id.replace(tool_id_replace_meta, '$1[\\._]$2');  // new RegExp();
+                        while (tool_id_replace_meta.test(tool_id_re_str)) {
+                            tool_id_re_str =  tool_id_re_str.replace(tool_id_replace_meta, '$1[\\._]$2');
                         }
+                        tool_id_re = new RegExp(tool_id_re_str);
+
+                        //console.log('tool_id_re:', tool_id_re);
+
+                        //Get the ids of all tools.
+                        cy.$('node[type="tool"]').forEach(function(cy_tool_node){
+                            var cy_node_id = cy_tool_node.data('id');
+                            console.log('cy_node_id:', cy_node_id);
+                            if (tool_id_re.test(cy_node_id)) {
+                                console.log('MATCHED');
+                                //This cytoscape node id has matched the reg exp from bash
+
+                                //Does this tool has a variable with name: variable_id ?
+                                var tool_tool_variables = cy_tool_node.data().variables;
+                                tool_tool_variables.forEach(function (variable) {
+                                    if (variable.name == variable_id) {
+                                        //Add it if it is not already there
+                                        if (!tools.includes(cy_node_id)) {
+                                            tools.push(cy_node_id);
+                                        }
+                                    }
+                                });
+                            }
+                            else {
+                                console.log('NOT MATCHED');
+                            }
+                        });
+
+
+
+                        // //Does this tool_id exist?
+                        // var cy_tool_node = cy.$("node[type='tool'][id='" + tool_id + "']");
+                        // if (cy_tool_node.length) {
+                        //     //IT EXISTS!
+
+                        //     //Does this tool has a variable with name: variable_id ?
+                        //     var tool_tool_variables = cy_tool_node.data().variables;
+                        //     tool_tool_variables.forEach(function (variable) {
+                        //         if (variable.name == variable_id) {
+                        //             //Add it if it is not already there
+                        //             if (!tools.includes(tool_id)) {
+                        //                 tools.push(tool_id);
+                        //             }
+                        //         }
+                        //     });
+
+                        // }
 
                     });
                 }
@@ -1415,10 +1464,12 @@ window.onload = function () {
         };
 
         /*
+		*
         * parse data from openbioc to meet the cytoscape.js requirements
         * Create cytoscape nodes and edges
         * incomingData: List of nodes to add
         * belongto: the workflow to be added to
+		*
         */
         function parseWorkflow(incomingData, belongto) {
 
@@ -1432,63 +1483,64 @@ window.onload = function () {
 
 
                 //INPUTS/OUTPUTS
-                if (d.type === 'input' || d.type === 'output') {
-                    var this_input_output_id = create_input_output_id(d, this_node_wf_belong_to);
+                if ( d.type === 'input' || d.type === 'output' ) {
+						var this_input_output_id = create_input_output_id(d, this_node_wf_belong_to);
 
-                    var myNode = { data: { id: this_input_output_id, label: d.name, name: d.name, type: d.type, description: d.description, belongto: this_node_wf_belong_to } };
-                    myNodes.push(myNode);
-                    //Connect with belongto workflow
-                    myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_input_output_id, id: create_workflow_edge_id(this_node_wf_belong_to_id, this_input_output_id), edgebelongto: 'true' } });
+						var myNode = { data: { id: this_input_output_id, label: d.name, name: d.name, type: d.type, description: d.description, belongto: this_node_wf_belong_to }};
+						myNodes.push(myNode);
+						//Connect with belongto workflow
+						myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_input_output_id, id: create_workflow_edge_id(this_node_wf_belong_to_id, this_input_output_id), edgebelongto: 'true' }});
                 }
 
 
                 //TOOLS 
                 if (d.type === "tool") {
 
-                    //If d.id is a JSON string parse it. d.id might come either from jstree (needs parsing) or cytoscape (does not need parsing)
-                    if (d.id.indexOf('[') > -1) {
-                        d.id = JSON.parse(d.id).join(window.OBCUI.sep);
-                        /*remove special characters*/
-                        //d.id = d.id.replace(/\./g,''); // CYTOSCAPE ALLOWS . IN IDS
-                    }
+						//If d.id is a JSON string parse it. d.id might come either from jstree (needs parsing) or cytoscape (does not need parsing)
+						if (d.id.indexOf('[') > -1) {
+							d.id = JSON.parse(d.id).join(window.OBCUI.sep);
+							/*remove special characters*/
+							//d.id = d.id.replace(/\./g,''); // CYTOSCAPE ALLOWS . IN IDS
+						}
 
-                    if ("parent" in d) {
-                        d.dep_id = d.parent;
-                        d.parent = '#';
-                    }
+						if ("parent" in d) {
+							d.dep_id = d.parent;
+							d.parent = '#';
+						}
 
-                    if (d.dep_id != "#") {
-                        if (d.dep_id.indexOf('[') > -1) { // Parse it if this is JSON. 
-                            d.dep_id = JSON.parse(d.dep_id).join(window.OBCUI.sep);
-                            /*remove special characters*/
-                            // d.dep_id = d.dep_id.replace(/\./g,''); //CYTOSCAPE ALLOWS . IN IDS
-                        }
+						if (d.dep_id != "#") {
+							if (d.dep_id.indexOf('[') > -1) { // Parse it if this is JSON. 
+								d.dep_id = JSON.parse(d.dep_id).join(window.OBCUI.sep);
+								/*remove special characters*/
+								// d.dep_id = d.dep_id.replace(/\./g,''); //CYTOSCAPE ALLOWS . IN IDS
+							}
 
-                        //var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'no', variables: d.variables } };
-                        var myNode = { data: { id: d.id, text: d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'no', dep_id: d.dep_id, variables: d.variables, belongto: this_node_wf_belong_to } };
+							//var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'no', variables: d.variables } };
+							var myNode = { data: { id: d.id, text: d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'no', dep_id: d.dep_id, variables: d.variables, belongto: this_node_wf_belong_to }};
 
-                        myNodes.push(myNode);
-                        var myEdge = { data: { id: create_workflow_edge_id(d.dep_id, d.id), weight: 1, source: d.dep_id, target: d.id } };
-                        myEdges.push(myEdge);
+							myNodes.push(myNode);
+							var myEdge = { data: { id: create_workflow_edge_id(d.dep_id, d.id), weight: 1, source: d.dep_id, target: d.id } };
+							myEdges.push(myEdge);
 
-                    } else {
-                        //var myNode = { data: { id: d.id, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'yes', variables: d.variables } };
-                        var myNode = { data: { id: d.id, text: d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'yes', dep_id: d.dep_id, variables: d.variables, belongto: this_node_wf_belong_to } };
-                        myNodes.push(myNode);
-                        myEdges.push({ data: { source: this_node_wf_belong_to_id, target: d.id, id: create_workflow_edge_id(this_node_wf_belong_to_id, d.id) } });
-                    }
+						} else {
+							//var myNode = { data: { id: d.id, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'yes', variables: d.variables } };
+							var myNode = { data: { id: d.id, text: d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'yes', dep_id: d.dep_id, variables: d.variables, belongto: this_node_wf_belong_to } };
+							myNodes.push(myNode);
+							myEdges.push({ data: { source: this_node_wf_belong_to_id, target: d.id, id: create_workflow_edge_id(this_node_wf_belong_to_id, d.id), edgebelongto: 'true' } });
+						}
 
                 }
 
                 //WORKFLOWS
                 if (d.type === "workflow") {
+					
                     //TODO add root feature (different than tools): wfroot:yes
-
                     var this_workflow_id = create_workflow_id(d);
 
                     var myNode = { data: { id: this_workflow_id, name: d.name, edit: d.edit, label: create_workflow_label(d), type: 'workflow', belongto: this_node_wf_belong_to } };
                     myNodes.push(myNode);
-                    myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_workflow_id, id: create_workflow_edge_id(this_node_wf_belong_to_id, this_workflow_id) } });
+                    myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_workflow_id, id: create_workflow_edge_id(this_node_wf_belong_to_id, this_workflow_id), edgebelongto: 'true' } });
+					
                 }
 
 
@@ -1501,7 +1553,7 @@ window.onload = function () {
                     myNodes.push(myNode);
 
                     //Connect with belong workflow
-                    myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_step_id, id: create_workflow_edge_id(this_node_wf_belong_to_id, this_step_id) } });
+                    myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_step_id, id: create_workflow_edge_id(this_node_wf_belong_to_id, this_step_id), edgebelongto: 'true' } });
 
                     //create edges to tools and/or steps
                     if (typeof d.tools !== "undefined") {
@@ -1692,34 +1744,38 @@ window.onload = function () {
         */
         window.cy_setup_events = function () {
 			
-				
+			//initializeTree();
+			
             // collapse - expand nodes
             cy.on('click', 'node', function (event) {
-                //connectedEdges: next level
-                //successors: next levels recursively
+						//connectedEdges: next level
+						//successors: next levels recursively
+			
+						// inputs and outpus never collapse
+				//if (this['_private'].data.type !== "step" && this['_private'].data.type !== "input" && this['_private'].data.type !== "output") { //steps should never collapse
+							console.log( this['_private'].data.name + " HAS TARGETS : " );
+							console.log(this.successors().targets());
+							
+							if (this.successors().targets().style("display") == "none") {
+								this.connectedEdges().targets().style("display", "element");
+							} else {
+								//hide the children nodes and edges recursively  
+								this.successors().targets().forEach(function (element) {
+									//check if node has flag(open)								
+									if (typeof element['_private'].data.flag === 'undefined' || element['_private'].data.flag !== 'open') {
+										element.style("display", "none");
+									}
 
-                // inputs and outpus never collapse
-                if (this['_private'].data.type !== "step" && this['_private'].data.type !== "input" && this['_private'].data.type !== "output") { //steps should never collapse
-                    if (this.successors().targets().style("display") == "none") {
-                        this.connectedEdges().targets().style("display", "element");
-                    } else {
-                        //hide the children nodes and edges recursively  
-                        this.successors().targets().forEach(function (element) {
-                            //check if node has flag(open)								
-                            if (typeof element['_private'].data.flag === 'undefined' || element['_private'].data.flag !== 'open') {
-                                element.style("display", "none");
-                            }
-
-                        });
-                    }
-                }
-                if (this['_private'].data.type == "step") { // Click at a step node
-                    //Call angular function
-                    var this_data = this['_private'].data;
-                    angular.element($('#angular_div')).scope().$apply(function () {
-                        angular.element($('#angular_div')).scope().workflop_step_node_clicked(this_data);
-                    });
-                }
+								});
+							}
+				//}
+						if (this['_private'].data.type == "step") { // Click at a step node
+							//Call angular function
+							var this_data = this['_private'].data;
+							angular.element($('#angular_div')).scope().$apply(function () {
+								angular.element($('#angular_div')).scope().workflop_step_node_clicked(this_data);
+							});
+						}
 
             });
 
@@ -1752,10 +1808,10 @@ window.onload = function () {
 
             /* hide tooltip before cxtmenu opens, otherwise they overlap */
             cy.on('mouseout', 'node', function (event) {
-                // destroy all instances
-                mytippys.forEach(function (mytippy) {
-                    mytippy.destroy(mytippy.popper);
-                });
+					// destroy all instances
+					mytippys.forEach(function (mytippy) {
+						mytippy.destroy(mytippy.popper);
+					});
             });
 
 			 // Right-click menu for input nodes 
@@ -1823,8 +1879,8 @@ window.onload = function () {
 									commands: [
 										{
 											content: 'Edit',
-											select: function (ele) {
-											//menu.destroy();	
+												select: function (ele) {
+												//menu.destroy();	
 											}
 										},
 										{
@@ -1864,28 +1920,17 @@ window.onload = function () {
 	
         }
 
-		/*
-		* This function initialize cytoscape with an empty list of elements and the 
-		* style needed for the graphs
-		*
-		*/
-        function createCytoscapeObject() {
+			
 
-            var cy_object = cytoscape({
+        /*
+        * Initialize WORKFLOW graph
+        */
+        //function initializeTree() {
+		window.initializeTree = function () {
+			
+            cy = cytoscape({
                 container: document.getElementById('cywf'), // container to render in
                 elements: [],
-
-                //elements: [ // list of graph elements to start with
-                //      { // node a
-                //        data: { id: 'a' }
-                //      },
-                //      { // node b
-                //        data: { id: 'b' }
-                //      },
-                //      { // edge ab
-                //        data: { id: 'ab', source: 'a', target: 'b' }
-                //      }
-                //],
 
                 style: [ // the stylesheet for the graph
                     {
@@ -1935,9 +1980,9 @@ window.onload = function () {
                     {
                         selector: 'node[type="workflow"]',
                         "style": {
-                            'shape': 'diamond',
-                            'border-width': '3',
-                            'border-color': '#E53935',
+                            'shape': 'octagon',
+                            //'border-width': '3',
+                            //'border-color': '#AFB4AE',
                             'background-color': '#AFB4AE',
                             //"height": 15,
                             //"width": 15
@@ -1946,10 +1991,12 @@ window.onload = function () {
                     {
                         selector: 'edge[edgebelongto="true"]',
                         "style": {
-							'opacity': 0.5,
-                            'curve-style': 'bezier',
+							'curve-style': 'bezier',
                             'target-arrow-shape': 'triangle',
                             'width': 2,
+							'line-style': 'dashed',
+							'line-dash-pattern': [6, 3], 
+							'line-dash-offset': 24,
                             'line-color': '#ddd',
                             'target-arrow-color': '#ddd'
 						}
@@ -1960,8 +2007,6 @@ window.onload = function () {
                             'curve-style': 'bezier',
                             'target-arrow-shape': 'triangle',
                             'width': 2,
-							//'line-dash-pattern': [6, 3], 
-							//'line-dash-offset': 24,
                             'line-color': '#ddd',
                             'target-arrow-color': '#ddd'
                         }
@@ -1981,24 +2026,14 @@ window.onload = function () {
 
             });
 
-
-            return cy_object;
-
-        }
-
-        /*
-        * Initialize WORKFLOW graph
-        */
-        function initializeTree() {
-
-            cy = createCytoscapeObject();
-
             //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.
             //document.querySelector('canvas[data-id="layer2-node"]').style.position = null;
 			document.getElementById("cywf").querySelector('canvas[data-id="layer2-node"]').style.position = null; 
 
-
         }
+		
+		// cy should be initialize so that angular can access it
+		window.initializeTree();
 		
 		
 		window.initializeRepTree = function () {
@@ -2007,7 +2042,7 @@ window.onload = function () {
                 container: document.getElementById('cyrep'), // container to render in
                 elements: [],
                 style: [ // the stylesheet for the graph
-					{   // * tool default state : initial state*//
+					{   // * tool default state : initial state * //
                         selector: 'node[type="tool"]',  //[state = "pending"]
                         "style": {
                             "shape": "round-rectangle",
@@ -2044,7 +2079,7 @@ window.onload = function () {
                     {
                         selector: 'node[type="workflow"]',
                         "style": {
-                            'shape': 'diamond',
+                            'shape': 'octagon',
                             //'border-width': '3',
                             //'border-color': '#E53935',
                             'background-color': '#AFB4AE',
@@ -2122,7 +2157,9 @@ window.onload = function () {
 	
         }
 		
-		/* function for node animation  */ 
+		/* function for node animation
+        * window.nodeAnimation('frequentistadditive__3', 'started') 
+        */ 
 		window.nodeAnimation = function(node_anim_id, state){
 			// get node by id
 			var node_anim = cy_rep.$('#' + node_anim_id);
@@ -2196,20 +2233,55 @@ window.onload = function () {
             }
 			
 			
+			//update label
+			node_anim.data('style', anim_label);
+			node_anim.data('style', anim_style);
+			
+			//make edges blinking
+					var nodeAni = node_anim.animation({
+									style: {
+										'opacity': 0.1
+									},
+									duration: 200
+								});
+
+					//create time interval for continous looping of the animation				
+					var myVar = setInterval(nodeTimer, 200);
+
+					
+					function nodeTimer() {
+
+						nodeAni
+						  .play() // start
+						  .promise('completed').then(
+								function(){ // on next completed
+									nodeAni
+									  .reverse() // switch animation direction
+									  .rewind() // optional but makes intent clear
+									  .play() // start again
+									;
+						  });
+
+					}
+
+					nodeTimer();
+			
+			/*
 			return (node_anim.animation({
-						  style : anim_style, 	//style: { 'background-color': 'red', },
-						  label: anim_label,
+						  style : anim_style, 	//style: { 'background-color': 'red', 'label':''},
 						  duration: 1  			//duration of animation in milliseconds
 						}).play()   			//.promise('complete').then(loopEdgeAnimation(edge_anim)) :TODO fic it so that it can loop
 					);
-			
+			*/
 			
 		};
 				
-		/* function for edge animation  */ 
+		/* function for edge animation 
+        * window.edgeAnimation('hapmap2__1__2__2', 'md5checkdir__1__2__2', "Running")    63Lf7 
+        */ 
 		window.edgeAnimation = function(source_anim_id, target_anim_id, state){
 					// get edge by source / target
-					var edges  = cy_rep.$("edge");
+					var edges  = cy_rep.$("edge"); 
 					var edge_anim=null;
 					
 					edges.forEach(function (edge) {
@@ -2224,33 +2296,75 @@ window.onload = function () {
 				if(edge_anim!== null){
 					
 					/* (1) "Never run", (2) Running blinking, (3) "run at least once" */ 
-					var edge_anim_style=null;
+					//var edge_anim_style=null;
+					var edge_anim_label=null;
 					
 					//if(state==="Never run") edge_anim_style = { 'line-color': 'red', 'target-arrow-color': 'red'};
 					if(state==="Running") {
-							edge_anim_style = { 'line-color': 'red', 'target-arrow-color': '#E53935'};
+							//edge_anim_style = { 'line-color': 'red', 'target-arrow-color': '#E53935', 'label': 'running'};
+							edge_anim_label='running';
 					}
 					if(state==="Run") {
-							edge_anim_style = { 'line-color': 'green', 'target-arrow-color': '#43A047'};
+							//edge_anim_style = { 'line-color': 'green', 'target-arrow-color': '#43A047', 'label': 'run'};
+							edge_anim_label = 'run';
 					}else{
-							edge_anim_style = { 'line-color': '#ddd', 'target-arrow-color': '#ddd'};
+							edge_anim_label = '';
+							//edge_anim_style = { 'line-color': '#ddd', 'target-arrow-color': '#ddd'};
 					}
 					
 					
+					//update label
+					edge_anim.data('style', edge_anim_label);
+					
+					
+					//make edges blinking
+					var edgeAni = edge_anim.animation({
+									style: {
+										'opacity': 0.1
+									},
+									duration: 200
+								});
+
+                    function edgeTimer() {
+
+                        edgeAni
+                          .play() // start
+                          .promise('completed').then(
+                                function(){ // on next completed
+                                    edgeAni
+                                      .reverse() // switch animation direction
+                                      .rewind() // optional but makes intent clear
+                                      .play() // start again
+                                    ;
+                          });
+
+                    }
+
+
+					//create time interval for continous looping of the animation				
+					var myVar = setInterval(edgeTimer, 200);
+
+					
+					edgeTimer();
+					
+					
+					/*
 						return (edge_anim.animation({
 									  style: edge_anim_style,
 									  duration: 5000  //duration of animation in milliseconds
 									}).play()         //.promise('complete').then(loopEdgeAnimation(edge_anim)) :TODO fic it so that it can loop
 								);
 								
-							// call the function for specified edges
-							//loopEdgeAnimation(cy_rep.$("edge")[0]);
+					*/
+							
+							
+							
+							
 				}
 				
 		}	
 		
-		
-        initializeTree();
+     
 
 
         /* 
@@ -2303,7 +2417,7 @@ window.onload = function () {
             }
 
             // this is needed because cy.add() causes multiple instances of layout
-            initializeTree();
+            window.initializeTree();
 
             cy.json({ elements: treeData });   // Add new data
             cy.ready(function () {             // Wait for nodes to be added  
@@ -2488,7 +2602,7 @@ window.onload = function () {
 
             /** re run layout **/
             // this initialization is needed because cy.add() causes multiple instances of layout
-            initializeTree();
+            window.initializeTree();
 
             cy.json({ elements: currentElements });   // Add updated data
             cy.ready(function () {          		 // Wait for nodes to be added  
@@ -2548,9 +2662,9 @@ window.onload = function () {
                 }
             });
 
-            cy.resize();
-            cy.reset();
-            cy.center();
+				cy.resize();
+				cy.reset();
+				cy.center();
 
         };
 
