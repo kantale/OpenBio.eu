@@ -24,10 +24,6 @@
                 </p>
                 <!-- Buttons -->
                 <div class="row right-align">
-                    <a id="expandAllBtn1" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
-                        data-position="bottom" data-tooltip="Expand All"><i class="material-icons">unfold_more</i></a>
-                    <a id="collapseAllBtn1" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
-                        data-position="bottom" data-tooltip="Collapse All"><i class="material-icons">unfold_less</i></a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Save" ng-click="tool_create_save_pressed()" ng-show="tools_info_editable"><i
                             class="material-icons">save</i></a>
@@ -388,10 +384,6 @@
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Clear" ng-click="workflow_info_clear_pressed()"
                         ng-disabled="!workflows_info_editable">Clear</a>
-                    <a id="expandAllBtn2" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
-                        data-position="bottom" data-tooltip="Expand All"><i class="material-icons">unfold_more</i></a>
-                    <a id="collapseAllBtn2" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
-                        data-position="bottom" data-tooltip="Collapse All"><i class="material-icons">unfold_less</i></a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Save" ng-click="workflows_create_save_pressed()"
                         ng-show="workflows_info_editable"><i class="material-icons">save</i></a>
@@ -817,17 +809,13 @@
                         <span>USED IN 86 WFs</span>
                     </small>
                     <div class="card blue-grey darken-1">
-                        <div class="card-content white-text">
+                        <div class="card-content" style="background-color: #f0f8ff;">
                             <p><span ng-bind-html="references_formatted"></span></p>
                         </div>
                     </div>
                 </div>
                 <!-- Buttons -->
                 <div class="row right-align">
-                    <a id="expandAllBtn3" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
-                        data-position="bottom" data-tooltip="Expand All"><i class="material-icons">unfold_more</i></a>
-                    <a id="collapseAllBtn3" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px"
-                        data-position="bottom" data-tooltip="Collapse All"><i class="material-icons">unfold_less</i></a>
                     <!-- <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                             data-tooltip="Save" ng-click="tool_create_save_pressed()" ng-show="tools_info_editable"><i
                                 class="material-icons">save</i></a> -->
@@ -1005,10 +993,12 @@
                                 <div class="col s3"><b>Second Name:</b></div>
                                 <div class="col s9"><span ng-bind="user_lastname"></span></div>
                             </div>
+                            {{verbatim}}
                             <div class="row left-align">
                                 <div class="col s3"><b>Website:</b></div>
-                                <div class="col s9"><span ng-bind="user_website"></span></div>
+                                <div class="col s9"><a href="https://{{user_website}}" target="_blank"><span ng-bind="user_website"></span></a></div>
                             </div>
+                            {{endverbatim}}
                             <div class="row left-align">
                                 <div class="col s3"><b>Affiliation:</b></div>
                                 <div class="col s9"><span ng-bind="user_affiliation"></span></div>
@@ -1092,8 +1082,8 @@
                     <ul class="collection">
                         <li class="collection-item" ng-repeat="post in qa_thread track by post.id">
                             <span ng-bind-html="post.comment_html"></span>
-                            <a class="waves-effect waves-light btn-small" href=""
-                                ng-click="qa_reply_button_clicked(post.id)">Reply</a>
+                            <a class="waves-effect btn-flat qaReplyBtn" href=""
+                                ng-click="qa_reply_button_clicked(post.id)"><u>Reply</u></a>
                             <div class="input-field" ng-show="post.replying">
                                 <textarea class="validate" ng-model="qa_current_reply"></textarea>
                                 <a class="waves-effect waves-light btn-small" href=""
@@ -1104,8 +1094,8 @@
                             <ul class="collection">
                                 <li class="collection-item" ng-repeat="post2 in post.children track by post2.id">
                                     <span ng-bind-html="post2.comment_html"></span>
-                                    <a class="waves-effect waves-light btn-small" href=""
-                                        ng-click="qa_reply_button_clicked(post2.id)">Reply</a>
+                                    <a class="waves-effect btn-flat qaReplyBtn" href=""
+                                        ng-click="qa_reply_button_clicked(post2.id)"><u>Reply</u></a>
                                     <div class="input-field" ng-show="post2.replying">
                                         <textarea class="validate" ng-model="qa_current_reply"></textarea>
                                         <a class="waves-effect waves-light btn-small" href=""
@@ -1117,8 +1107,8 @@
                                         <li class="collection-item"
                                             ng-repeat="post3 in post2.children track by post3.id">
                                             <span ng-bind-html="post3.comment_html"></span>
-                                            <a class="waves-effect waves-light btn-small" href=""
-                                                ng-click="qa_reply_button_clicked(post3.id)">Reply</a>
+                                            <a class="waves-effect btn-flat qaReplyBtn" href=""
+                                                ng-click="qa_reply_button_clicked(post3.id)"><u>Reply</u></a>
                                             <div class="input-field" ng-show="post3.replying">
                                                 <textarea class="validate" ng-model="qa_current_reply"></textarea>
                                                 <a class="waves-effect waves-light btn-small" href=""
@@ -1130,8 +1120,8 @@
                                                 <li class="collection-item"
                                                     ng-repeat="post4 in post3.children track by post4.id">
                                                     <span ng-bind-html="post4.comment_html"></span>
-                                                    <a class="waves-effect waves-light btn-small" href=""
-                                                        ng-click="qa_reply_button_clicked(post4.id)">Reply</a>
+                                                    <a class="waves-effect btn-flat qaReplyBtn" href=""
+                                                        ng-click="qa_reply_button_clicked(post4.id)"><u>Reply</u></a>
                                                     <div class="input-field" ng-show="post4.replying">
                                                         <textarea class="validate"
                                                             ng-model="qa_current_reply"></textarea>
