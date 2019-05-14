@@ -1594,7 +1594,9 @@ def report(request, **kwargs):
     if not status_received:
         return fail('Could not find status field')
 
-    if not status_received in ReportToken.STATUS_CHOICES:
+    status_fields = ReportToken.parse_response_status(status_received)
+    #if not status_received in ReportToken.STATUS_CHOICES:
+    if status_fields is None:
         return fail('Unknown status: {}'.format(status_received))
 
     #Get the ReportToken
@@ -1825,28 +1827,13 @@ def reports_search_3(request, **kwargs):
     report = Report.objects.get(nice_id=run)
     workflow = report.workflow
 
-    def create_node_anim_id(status):
-        if status in ['workflow started', 'workflow finished']:
-            return create_workflow_id(workflow)
-        else:
-            raise Exception('Unknown status: {}'.format(status))
-
-    def create_node_state(status):
-        if status == 'workflow started':
-            return 'started'
-        elif status == 'workflow finished':
-            return 'finished'
-        else:
-            raise Exception('Unknown status: {}'.format(status))
-
-
     #Get all tokens
     tokens = [{
         'status': token.status,
         'created_at': datetime_to_str(token.created_at),
         'token': str(token.token), 
-        'node_anim_id': create_node_anim_id(token.status),
-        'state': create_node_state(token.status)
+        #'node_anim_id': create_node_anim_id(token.status), # the parameter passed to nodeAnimation
+        'node_anim_params': ReportToken.parse_response_status(token.status), # the parameter passed to nodeAnimation_public
     } for token in report.tokens.all().order_by('created_at') if token.status != ReportToken.UNUSED]
 
     ret = {

@@ -1896,12 +1896,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * Called whenever an item is clicked 
     * Updates the cyrep graph 
     */
-    $scope.nodeAnimation = function(node_anim_id, state) {
-        console.log('node_anim_id:');
-        console.log(node_anim_id);
-        console.log('state:');
-        console.log(state);
-        window.nodeAnimation(node_anim_id, state);
+    $scope.nodeAnimation_public = function(node_anim_params) {
+        console.log('node_anim_params:');
+        console.log(node_anim_params);
+        window.nodeAnimation_public(node_anim_params);
     };
 
     /*
