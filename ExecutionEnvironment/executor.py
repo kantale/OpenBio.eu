@@ -93,7 +93,7 @@ def base64_encode(s):
     '''
     return base64.b64encode(s.encode()).decode('ascii')
 
-class Worfklow:
+class Workflow:
     '''
     '''
 
@@ -251,6 +251,7 @@ class Worfklow:
         # Add Bash commands
         ret =  '### BASH INSTALLATION COMMANDS FOR TOOL: {}\n'.format(tool['label'])
         ret += 'echo "OBC: INSTALLING TOOL: {}"\n'.format(tool['label'])
+        ret += Workflow.bash_tool_installation_started(tool) + '\n'
         ret += tool['installation_commands'] + '\n'
         ret += 'echo "OBC: INSTALLATION OF TOOL: {} . COMPLETED"\n'.format(tool['label'])
         ret += '### END OF INSTALLATION COMMANDS FOR TOOL: {}\n\n'.format(tool['label'])
@@ -274,12 +275,12 @@ class Worfklow:
             ret += 'fi\n\n'
             ret += '### END OF VALIDATION COMMANDS FOR TOOL: {}\n\n'.format(tool['label'])
 
-
-        ret += '\n'
+        ret += Workflow.bash_tool_installation_finished(tool) + '\n'
         ret += '### SETTING TOOL VARIABLES FOR: {}\n'.format(tool['label'])
         for tool_variable in tool['variables']:
             ret += 'export {}__{}="{}" # {} \n'.format(self.get_tool_dash_id(tool, no_dots=True), tool_variable['name'], tool_variable['value'], tool_variable['description'])
         ret += '### END OF SETTING TOOL VARIABLES FOR: {}\n\n'.format(tool['label'])
+
 
         return ret
 
@@ -347,6 +348,12 @@ class Worfklow:
             ret = ret.replace('.', '_')
 
         return ret
+
+    @staticmethod
+    def get_workflow_dash_id(workflow):
+        '''
+        '''
+        return workflow['name'] + '/' + str(workflow['edit'])
 
     def get_tool_installation_order(self, ):
         '''
@@ -430,7 +437,7 @@ class Worfklow:
                 ret = node
 
         if ret is None:
-            raise OBC_Executor_Exception('Failed to locate root worfklow')
+            raise OBC_Executor_Exception('Failed to locate root workflow')
 
         return ret
 
@@ -522,7 +529,8 @@ class Worfklow:
 
         return ret
 
-    def update_server_status(self, new_status):
+    @staticmethod
+    def update_server_status(new_status):
         '''
         * Update the serve with a new status
         * Checks for error messages 
@@ -531,18 +539,28 @@ class Worfklow:
         ret = 'update_server_status "{}"\n'.format(new_status)
         return ret
 
-    def bash_workflow_starts(self,):
-        return self.update_server_status('workflow started')
+    @staticmethod
+    def bash_workflow_starts(workflow):
+        return Workflow.update_server_status('workflow started {}'.format(Workflow.get_workflow_dash_id(workflow)))
 
-    def bash_workflow_ends(self,):
-        return self.update_server_status('workflow finished')
+    @staticmethod
+    def bash_workflow_ends(workflow):
+        return Workflow.update_server_status('workflow finished {}'.format(Workflow.get_workflow_dash_id(workflow)))
+
+    @staticmethod
+    def bash_tool_installation_started(tool):
+        return Workflow.update_server_status('tool started {}'.format(tool['label']))
+
+    @staticmethod
+    def bash_tool_installation_finished(tool):
+        return Workflow.update_server_status('tool finished {}'.format(tool['label']))
 
 
 class BaseExecutor():
     '''
     '''
     def __init__(self, workflow):
-        if not isinstance(workflow, Worfklow):
+        if not isinstance(workflow, Workflow):
             raise OBC_Executor_Exception('workflow Unknown type: {}'.format(type(workflow).__name__))
         self.workflow = workflow
 
@@ -565,7 +583,7 @@ class LocalExecutor(BaseExecutor):
             f.write(bash_patterns['base64_decode'])
             f.write(bash_patterns['validate'])
 
-            f.write(self.workflow.bash_workflow_starts())
+            f.write(Workflow.bash_workflow_starts(self.workflow.root_workflow))
 
             # INSTALLATION TOOL BASH
             for tool in self.workflow.tool_bash_script_generator():
@@ -583,7 +601,7 @@ class LocalExecutor(BaseExecutor):
             # PRINT OUTPUT PARAMETERS
             f.write(self.workflow.get_output_bash_commands())
 
-            f.write(self.workflow.bash_workflow_ends())
+            f.write(Workflow.bash_workflow_ends(self.workflow.root_workflow))
 
 
         logging.info(f'Created file: {output_filename}')
@@ -612,7 +630,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
 
-    w = Worfklow(args.workflow_filename)
+    w = Workflow(args.workflow_filename)
     #print (w.root_inputs_outputs)
     #print (w)
     #w.get_tool_installation_order()

@@ -2107,6 +2107,16 @@ window.onload = function () {
 			document.getElementById("cyrep").querySelector('canvas[data-id="layer2-node"]').style.position = null;
 	
         }
+
+        /*
+        *
+        */
+        window.nodeAnimation_public=function(node_anim_params) {
+            console.log('NODE ANIM PARAMS:');
+            console.log(node_anim_params);
+
+            
+        };
 		
 		/* function for node animation
         * window.nodeAnimation('frequentistadditive__3', 'started') 
