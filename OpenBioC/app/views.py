@@ -101,7 +101,7 @@ g = {
         'workflows': 'device_hub',
         'reports': 'description',
         'references': 'format_quote',
-        'users': 'people',
+        'users': 'person',
         'qas': 'forum',
     }
 }
@@ -130,7 +130,7 @@ def jstree_icon_html(t):
     '''
     Create a html tags for materialize icon
     '''
-    return '<i class="material-icons left md-18">{}</i>'.format(g['jstree_icons'][t])
+    return '<i class="material-icons jsTreeMaterialIcons left md-18">{}</i>'.format(g['jstree_icons'][t])
 
 def fail(error_message=None):
     '''
