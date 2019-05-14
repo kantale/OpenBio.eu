@@ -101,7 +101,7 @@ g = {
         'workflows': 'device_hub',
         'reports': 'description',
         'references': 'format_quote',
-        'users': 'people',
+        'users': 'person',
         'qas': 'forum',
     }
 }

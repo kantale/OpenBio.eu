@@ -70,27 +70,27 @@
                                         ng-model="tool_changes"></textarea>
                                     <label for="generalEditSummary">Edit Summary</label>
                                 </div>
-                                <div class="row">
-                                    <div id="toolChips" class="input-field chips left-align col s12 grid-s12-m12-l12">
+                                <div class="input-field col s12 m12 grid-s12-m12-l12">
+                                    <div id="toolChips" class="input-field chips left-align" style="margin:0px">
                                     </div>
                                 </div>
                             </div>
                         </form>
                         <div ng-show="!tools_info_editable">
                             <div class="row left-align">
-                                <div class="col s3"><b>Website:</b></div>
-                                <div class="col s9"><span ng-bind="tool_website"></span></div>
+                                <div class="col s12 m3 grid-s12-m3-l3"><b>Website:</b></div>
+                                <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="tool_website"></span></div>
                             </div>
                             <div class="row left-align">
-                                <div class="col s3"><b>Description:</b></div>
-                                <div class="col s9"><span ng-bind-html="tool_description_html"></span></div>
+                                <div class="col s12 m3 grid-s12-m3-l3"><b>Description:</b></div>
+                                <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind-html="tool_description_html"></span></div>
                             </div>
                             <div class="row left-align" ng-show="tool_changes">
-                                <div class="col s3"><b>Edit Summary:</b></div>
-                                <div class="col s9"><span ng-bind="tool_changes"></span></div>
+                                <div class="col s12 m3 grid-s12-m3-l3"><b>Edit Summary:</b></div>
+                                <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="tool_changes"></span></div>
                             </div>
                             <div class="row left-align">
-                                <div class="col s3"><b>Tags:</b></div>
+                                <div class="col s12 m3 grid-s12-m3-l3"><b>Tags:</b></div>
                                 <span class="new badge left" data-badge-caption="" style="margin-left: 5px;"
                                     ng-repeat="keyword in tool_keywords"><span ng-bind="keyword"></span></span>
                             </div>
@@ -406,7 +406,7 @@
                     <div class="collapsible-body">
                         <form class="col s12">
                             <div class="row" ng-show="workflows_info_editable">
-                                <div class="input-field col s12 m6 grid-s12-m6-l6">
+                                <div class="input-field col s12 m12 grid-s12-m12-l12">
                                     <input id="generalWorkflowName" type="text" class="validate"
                                         ng-model="workflow_info_name" ng-change="workflow_info_name_changed()"
                                         ng-disabled="workflow_info_forked_from">
@@ -422,7 +422,9 @@
                                         ng-model="workflow_description"></textarea>
                                     <label for="workflowsGeneralDescription">Description</label>
                                 </div>
-                                <div id="workflowChips" class="input-field chips left-align col s12 grid-s12-m12-l12">
+                                <div class="input-field col s12 m12 grid-s12-m12-l12">
+                                    <div id="workflowChips" class="input-field chips left-align" style="margin:0px">
+                                    </div>
                                 </div>
                                 <div class="input-field col s12 grid-s12-m12-l12" ng-show="workflow_info_forked_from">
                                     <textarea id="workflowsGeneralEditSummary" class="validate materialize-textarea"
@@ -432,19 +434,19 @@
                             </div>
                             <div class="row" ng-show="!workflows_info_editable">
                                 <div class="row left-align">
-                                    <div class="col s3"><b>Website:</b></div>
-                                    <div class="col s9"><span ng-bind="workflow_website"></span></div>
+                                    <div class="col s12 m3 grid-s12-m3-l3"><b>Website:</b></div>
+                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="workflow_website"></span></div>
                                 </div>
                                 <div class="row left-align">
-                                    <div class="col s3"><b>Description:</b></div>
-                                    <div class="col s9"><span ng-bind-html="workflow_description_html"></span></div>
+                                    <div class="col s12 m3 grid-s12-m3-l3"><b>Description:</b></div>
+                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind-html="workflow_description_html"></span></div>
                                 </div>
                                 <div class="row left-align" ng-show="workflow_changes">
-                                    <div class="col s3"><b>Edit Summary:</b></div>
-                                    <div class="col s9"><span ng-bind="workflow_changes"></span></div>
+                                    <div class="col s12 m3 grid-s12-m3-l3"><b>Edit Summary:</b></div>
+                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="workflow_changes"></span></div>
                                 </div>
                                 <div class="row left-align">
-                                    <div class="col s3"><b>Tags:</b></div>
+                                    <div class="col s12 m3 grid-s12-m3-l3"><b>Tags:</b></div>
                                     <span class="new badge left" data-badge-caption="" style="margin-left: 5px;"
                                         ng-repeat="keyword in workflow_keywords"><span ng-bind="keyword"></span></span>
                                 </div>
@@ -882,28 +884,28 @@
                         <div class="row" ng-show="!references_info_editable">
                             <div class="col s12">
                                 <div class="row left-align">
-                                    <div class="col s3"><b>Name:</b></div>
-                                    <div class="col s9"><span ng-bind="references_name"></span></div>
+                                    <div class="col s12 m3 grid-s12-m3-l3"><b>Name:</b></div>
+                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_name"></span></div>
                                 </div>
                                 <div class="row left-align">
-                                    <div class="col s3"><b>Title:</b></div>
-                                    <div class="col s9"><span ng-bind="references_title"></span></div>
+                                    <div class="col s12 m3 grid-s12-m3-l3"><b>Title:</b></div>
+                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_title"></span></div>
                                 </div>
                                 <div class="row left-align">
-                                    <div class="col s3"><b>URL:</b></div>
-                                    <div class="col s9"><span ng-bind="references_url"></span></div>
+                                    <div class="col s12 m3 grid-s12-m3-l3"><b>URL:</b></div>
+                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_url"></span></div>
                                 </div>
                                 <div class="row left-align">
-                                    <div class="col s3"><b>DOI:</b></div>
-                                    <div class="col s9"><span ng-bind="references_doi"></span></div>
+                                    <div class="col s12 m3 grid-s12-m3-l3"><b>DOI:</b></div>
+                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_doi"></span></div>
                                 </div>
                                 <div class="row left-align">
-                                    <div class="col s3"><b>Notes:</b></div>
-                                    <div class="col s9"><span ng-bind="references_notes"></span></div>
+                                    <div class="col s12 m3 grid-s12-m3-l3"><b>Notes:</b></div>
+                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_notes"></span></div>
                                 </div>
                                 <div class="row left-align">
-                                    <div class="col s3"><b>BIBTEX:</b></div>
-                                    <div class="col s9"><span ng-bind="references_BIBTEX"></span></div>
+                                    <div class="col s12 m3 grid-s12-m3-l3"><b>BIBTEX:</b></div>
+                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_BIBTEX"></span></div>
                                 </div>
                             </div>
                         </div>
@@ -986,26 +988,30 @@
                     <div class="collapsible-body">
                         <form class="col s12">
                             <div class="row left-align">
-                                <div class="col s3"><b>First Name:</b></div>
-                                <div class="col s9"><span ng-bind="user_firstname"></span></div>
+                                <div class="col s12 m3 grid-s12-m3-l3"><b>First Name:</b></div>
+                                <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="user_firstname"></span></div>
                             </div>
                             <div class="row left-align">
-                                <div class="col s3"><b>Second Name:</b></div>
-                                <div class="col s9"><span ng-bind="user_lastname"></span></div>
+                                <div class="col s12 m3 grid-s12-m3-l3"><b>Second Name:</b></div>
+                                <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="user_lastname"></span></div>
                             </div>
                             {{verbatim}}
                             <div class="row left-align">
-                                <div class="col s3"><b>Website:</b></div>
-                                <div class="col s9"><a href="https://{{user_website}}" target="_blank"><span ng-bind="user_website"></span></a></div>
+                                <div class="col s12 m3 grid-s12-m3-l3"><b>Website:</b></div>
+                                <div class="col s12 m9 grid-s12-m9-l9"><a href="https://{{user_website}}" target="_blank"><span ng-bind="user_website"></span></a></div>
                             </div>
                             {{endverbatim}}
                             <div class="row left-align">
-                                <div class="col s3"><b>Affiliation:</b></div>
-                                <div class="col s9"><span ng-bind="user_affiliation"></span></div>
+                                <div class="col s12 m3 grid-s12-m3-l3"><b>Affiliation:</b></div>
+                                <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="user_affiliation"></span></div>
                             </div>
                             <div class="row left-align">
-                                <div class="col s3"><b>Info:</b></div>
-                                <div class="col s9"><span ng-bind="user_publicinfo"></span></div>
+                                <div class="col s12 m3 grid-s12-m3-l3"><b>Member Since:</b></div>
+                                <div class="col s12 m9 grid-s12-m9-l9"><span></span></div>
+                            </div>
+                            <div class="row left-align">
+                                <div class="col s12 m3 grid-s12-m3-l3"><b>Info:</b></div>
+                                <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="user_publicinfo"></span></div>
                             </div>
                         </form>
                     </div>
@@ -1021,11 +1027,11 @@
         <div class="faster" id="QARightPanel" style="display: none;">
 
             <!-- TEMPLATE START -->
-            <div class="row" style="margin-left: 10px; margin-right: 15px;">
+            <!-- <div class="row" style="margin-left: 10px; margin-right: 15px;">
                 <div class="row card-panel left-align" style="padding:5px; margin-bottom: 2px;">
                     <div class="valign-wrapper">
                         <img src="/static/app/images/konstantina/img_avatar.png" alt="" class="circle imgAvatar">
-                        <small>asked by <a href="#">Kona</a> on April 19 at 18:40</small>
+                        <small>Asked by <a href="#">Kona</a> on April 19 at 18:40</small>
                     </div>
                     <div>
                         <h5 style="margin-top:9px; margin-bottom:9px;">lskaflafkalfksdlfklfkf sldfksldfkslfks
@@ -1039,7 +1045,7 @@
                 <div class="row right-align">
                     <a class="waves-effect waves-light btn-small" href="">Add Comment</a>
                 </div>
-            </div>
+            </div> -->
             <!-- TEMPLATE END -->
 
 
@@ -1061,26 +1067,53 @@
                     </form>
                 </div>
                 <div class="row" ng-show="!qa_info_editable">
-                    <div class="row left-align">
+                    <div class="row card-panel left-align" style="padding:5px; margin-bottom: 2px;">
+                        <div class="valign-wrapper">
+                            <img src="/static/app/images/konstantina/img_avatar.png" alt="" class="circle avatarForumQuestion">
+                            <small>Asked by <a href="#">Kona</a> on April 19 at 18:40</small>
+                        </div>
+                        <div>
+                            <h5 style="margin-top:9px; margin-bottom:9px;"><span ng-bind="qa_title"></span></h5>
+                            <p><span ng-bind-html="qa_comment_html"></span></p>
+                        </div>
+                    </div>
+                    <div class="row right-align" style="margin-top:15px; margin-bottom: 15px;">
+                        <a class="waves-effect waves-light btn-small" href="" ng-click="qa_add_comment_button_pressed()">Add Comment</a>
+                    </div>
+                    <div class="input-field" ng-show="qa_show_new_comment">
+                        <textarea class="validate" ng-model="qa_current_comment"></textarea>
+                        <a class="waves-effect waves-light btn-small" href="" ng-click="qa_comment_save_button_pressed()">Save</a>
+                        <a class="waves-effect waves-light btn-small" href="" ng-click="qa_comment_cancel_button_pressed()">Cancel</a>
+                    </div>
+
+                    <!-- <div class="row left-align">
                         <b><span ng-bind="qa_title"></span></b>
                     </div>
+
+
                     <div class="row left-align">
                         <span ng-bind-html="qa_comment_html"></span>
                     </div>
+
                     <div class="row right-align">
                         <a class="waves-effect waves-light btn-small" href=""
                             ng-click="qa_add_comment_button_pressed()">Add Comment</a>
                     </div>
+
                     <div class="input-field" ng-show="qa_show_new_comment">
                         <textarea class="validate" ng-model="qa_current_comment"></textarea>
                         <a class="waves-effect waves-light btn-small" href=""
                             ng-click="qa_comment_save_button_pressed()">Save</a>
                         <a class="waves-effect waves-light btn-small" href=""
                             ng-click="qa_comment_cancel_button_pressed()">Cancel</a>
+                    </div> -->
 
-                    </div>
                     <ul class="collection">
                         <li class="collection-item" ng-repeat="post in qa_thread track by post.id">
+                            <div class="valign-wrapper">
+                                <img src="/static/app/images/konstantina/img_avatar.png" alt="" class="circle avatarForumReply">
+                                <small>Replied by <a href="#">Kona</a> on April 19 at 18:40</small>
+                            </div>
                             <span ng-bind-html="post.comment_html"></span>
                             <a class="waves-effect btn-flat qaReplyBtn" href=""
                                 ng-click="qa_reply_button_clicked(post.id)"><u>Reply</u></a>
@@ -1093,6 +1126,10 @@
                             </div>
                             <ul class="collection">
                                 <li class="collection-item" ng-repeat="post2 in post.children track by post2.id">
+                                    <div class="valign-wrapper">
+                                        <img src="/static/app/images/konstantina/img_avatar.png" alt="" class="circle avatarForumReply">
+                                        <small>Replied by <a href="#">Kona</a> on April 19 at 18:40</small>
+                                    </div>
                                     <span ng-bind-html="post2.comment_html"></span>
                                     <a class="waves-effect btn-flat qaReplyBtn" href=""
                                         ng-click="qa_reply_button_clicked(post2.id)"><u>Reply</u></a>
@@ -1106,6 +1143,10 @@
                                     <ul class="collection">
                                         <li class="collection-item"
                                             ng-repeat="post3 in post2.children track by post3.id">
+                                            <div class="valign-wrapper">
+                                                <img src="/static/app/images/konstantina/img_avatar.png" alt="" class="circle avatarForumReply">
+                                                <small>Replied by <a href="#">Kona</a> on April 19 at 18:40</small>
+                                            </div>
                                             <span ng-bind-html="post3.comment_html"></span>
                                             <a class="waves-effect btn-flat qaReplyBtn" href=""
                                                 ng-click="qa_reply_button_clicked(post3.id)"><u>Reply</u></a>
@@ -1119,6 +1160,10 @@
                                             <ul class="collection">
                                                 <li class="collection-item"
                                                     ng-repeat="post4 in post3.children track by post4.id">
+                                                    <div class="valign-wrapper">
+                                                        <img src="/static/app/images/konstantina/img_avatar.png" alt="" class="circle avatarForumReply">
+                                                        <small>Replied by <a href="#">Kona</a> on April 19 at 18:40</small>
+                                                    </div>
                                                     <span ng-bind-html="post4.comment_html"></span>
                                                     <a class="waves-effect btn-flat qaReplyBtn" href=""
                                                         ng-click="qa_reply_button_clicked(post4.id)"><u>Reply</u></a>
@@ -1133,6 +1178,10 @@
                                                     <ul class="collection">
                                                         <li class="collection-item"
                                                             ng-repeat="post5 in post4.children track by post5.id">
+                                                            <div class="valign-wrapper">
+                                                                <img src="/static/app/images/konstantina/img_avatar.png" alt="" class="circle avatarForumReply">
+                                                                <small>Replied by <a href="#">Kona</a> on April 19 at 18:40</small>
+                                                            </div>
                                                             <span ng-bind-html="post5.comment_html"></span>
                                                             <!-- We allow for 5 levels of comment nesting -->
                                                             <!--
