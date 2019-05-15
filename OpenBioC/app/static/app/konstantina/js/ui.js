@@ -1737,25 +1737,37 @@ window.onload = function () {
 				
                 return editTippy;
             };
-
-        /*
-        * After importing a graph or adding new nodes, we need to register cytoscape events.
-        * This function is called from buildtree and also from angular when we do: cy.json(data['workflow']) from angular
-        */
-        window.cy_setup_events = function () {
 			
-			//initializeTree();
-			
-            // collapse - expand nodes
-            cy.on('click', 'node', function (event) {
-						//connectedEdges: next level
-						//successors: next levels recursively
-			
-						// inputs and outpus never collapse
-				//if (this['_private'].data.type !== "step" && this['_private'].data.type !== "input" && this['_private'].data.type !== "output") { //steps should never collapse
-							console.log( this['_private'].data.name + " HAS TARGETS : " );
-							console.log(this.successors().targets());
-							
+		
+		/**
+		This function gets as input a node and then goes through it's successors and opens or close each one based on predefined assumptions	
+		**/		
+		var collapse_expand_node = function(this_node){
+			this_node.successors().targets().forEach(function (target) {
+				 console.log(" L ");
+				 console.log(target['_private'].data.id);
+			//console.log(target['_private'].data.type);
+						//if(target['_private'].data.type!=="step" && target['_private'].data.type!=="input" && target['_private'].data.type!=="output" ){
+						if(target['_private'].data.type === "tool"){
+								//console.log(target['_private'].data.id);
+								
+								if(target.style("display") == "none"){
+									//console.log("make visible");
+									target.style("display", "element");
+									
+								}else{     
+									//console.log("make non visible");
+									//hide the children nodes and edges recursively  
+										//this.successors().targets().forEach(function (element) {
+											//check if node has flag(open)								
+											if (typeof target['_private'].data.flag === 'undefined' || target['_private'].data.flag !== 'open') {
+												target.style("display", "none");
+											}
+										//});
+								}				
+						}
+						
+						/*
 							if (this.successors().targets().style("display") == "none") {
 								this.connectedEdges().targets().style("display", "element");
 							} else {
@@ -1768,7 +1780,32 @@ window.onload = function () {
 
 								});
 							}
-				//}
+						*/
+			
+			
+			});
+			
+		}	
+			
+
+        /*
+        * After importing a graph or adding new nodes, we need to register cytoscape events.
+        * This function is called from buildtree and also from angular when we do: cy.json(data['workflow']) from angular
+        */
+        window.cy_setup_events = function () {
+			
+			//initializeTree();		
+            // collapse - expand nodes
+            cy.on('click', 'node', function (event) {
+					//connectedEdges: next level
+					//successors: next levels recursively
+			
+					// inputs/outpus and steps should never collapse
+					//if (this['_private'].data.type !== "step" && this['_private'].data.type !== "input" && this['_private'].data.type !== "output") { //steps should never collapse
+					
+					collapse_expand_node(this);
+					
+					
 						if (this['_private'].data.type == "step") { // Click at a step node
 							//Call angular function
 							var this_data = this['_private'].data;
