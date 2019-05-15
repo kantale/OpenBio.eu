@@ -95,6 +95,15 @@ g = {
 #        'pybtex_html_backend': pybtex.plugin.find_plugin('pybtex.backends', 'html')(),
 #        'pybtex_parser': pybtex.database.input.bibtex.Parser()
 #    }
+    # materialize js tree icons
+    'jstree_icons': {
+        'tools': 'settings',
+        'workflows': 'device_hub',
+        'reports': 'description',
+        'references': 'format_quote',
+        'users': 'person',
+        'qas': 'forum',
+    }
 }
 
 ### HELPING FUNCTIONS AND DECORATORS #####
@@ -109,7 +118,19 @@ def markdown(t):
     '''
     https://github.com/lepture/mistune 
     '''
-    return g['markdown'](t)
+    md = g['markdown'](t)
+    # Remove <p> at the start and </p> at the end 
+    s =  re.search(r'^<p>(.*)</p>\n$', md, re.M | re.S)
+    if s:
+        return s.group(1)
+    else:
+        return md
+
+def jstree_icon_html(t):
+    '''
+    Create a html tags for materialize icon
+    '''
+    return '<i class="material-icons jsTreeMaterialIcons left md-18">{}</i>'.format(g['jstree_icons'][t])
 
 def fail(error_message=None):
     '''
@@ -596,7 +617,7 @@ def users_search_2(
     for result in results:
         to_add = {
             'data': {'username': result.user.username},
-            'text': result.user.username,
+            'text': result.user.username + jstree_icon_html('users'),
             'id': result.user.username,
             'parent': '#',
             'state': { 'opened': True},
@@ -926,7 +947,7 @@ def tools_search_2(tools_search_name, tools_search_version, tools_search_edit):
     for x in results:
         to_add = {
             'data': {'name': x.name, 'version': x.version, 'edit': x.edit},
-            'text': tool_text_jstree(x),
+            'text': tool_text_jstree(x) + jstree_icon_html('tools'),
             'id': tool_id_jstree(x, g['SEARCH_TOOL_TREE_ID']),
             'parent': tool_id_jstree(x.forked_from, g['SEARCH_TOOL_TREE_ID']) if x.forked_from else '#',
             'state': { 'opened': True},
@@ -964,7 +985,7 @@ def workflows_search_2(workflows_search_name, workflows_search_edit):
     for x in results:
         to_add = {
             'data': {'name': x.name, 'edit': x.edit},
-            'text': workflow_text_jstree(x),
+            'text': workflow_text_jstree(x) + jstree_icon_html('workflows'),
             'id': workflow_id_jstree(x, g['SEARCH_WORKFLOW_TREE_ID']),
             'parent': workflow_id_jstree(x.forked_from, g['SEARCH_WORKFLOW_TREE_ID']) if x.forked_from else '#',
             'state': { 'opened': True},
@@ -1573,7 +1594,9 @@ def report(request, **kwargs):
     if not status_received:
         return fail('Could not find status field')
 
-    if not status_received in ReportToken.STATUS_CHOICES:
+    status_fields = ReportToken.parse_response_status(status_received)
+    #if not status_received in ReportToken.STATUS_CHOICES:
+    if status_fields is None:
         return fail('Unknown status: {}'.format(status_received))
 
     #Get the ReportToken
@@ -1768,7 +1791,7 @@ def reports_search_2(
 
             to_add = {
                 'data': {'name': workflow.name, 'edit': workflow.edit, 'type': 'workflow'},
-                'text': workflow_text_jstree(workflow),
+                'text': workflow_text_jstree(workflow) + jstree_icon_html('workflows'),
                 'id': workflow_id_jstree(workflow, g['SEARCH_REPORT_TREE_ID']),
                 'parent': workflow_id_jstree(workflow.forked_from, g['SEARCH_REPORT_TREE_ID']) if workflow.forked_from else '#',
                 'state': { 'opened': True},
@@ -1778,7 +1801,7 @@ def reports_search_2(
         # Add the report
         to_add = {
             'data': {'run': report.nice_id, 'type': 'report'},
-            'text': report.nice_id,
+            'text': report.nice_id + jstree_icon_html('reports'),
             'id': report_id_jstree(report, g['SEARCH_REPORT_TREE_ID']),
             'parent': workflow_id_jstree(workflow, g['SEARCH_REPORT_TREE_ID']),
             'state': { 'opened': True},
@@ -1804,28 +1827,13 @@ def reports_search_3(request, **kwargs):
     report = Report.objects.get(nice_id=run)
     workflow = report.workflow
 
-    def create_node_anim_id(status):
-        if status in ['workflow started', 'workflow finished']:
-            return create_workflow_id(workflow)
-        else:
-            raise Exception('Unknown status: {}'.format(status))
-
-    def create_node_state(status):
-        if status == 'workflow started':
-            return 'started'
-        elif status == 'workflow finished':
-            return 'finished'
-        else:
-            raise Exception('Unknown status: {}'.format(status))
-
-
     #Get all tokens
     tokens = [{
         'status': token.status,
         'created_at': datetime_to_str(token.created_at),
         'token': str(token.token), 
-        'node_anim_id': create_node_anim_id(token.status),
-        'state': create_node_state(token.status)
+        #'node_anim_id': create_node_anim_id(token.status), # the parameter passed to nodeAnimation
+        'node_anim_params': ReportToken.parse_response_status(token.status), # the parameter passed to nodeAnimation_public
     } for token in report.tokens.all().order_by('created_at') if token.status != ReportToken.UNUSED]
 
     ret = {
@@ -2019,7 +2027,7 @@ def references_search_2(
     for result in results:
         to_add = {
             'data': {'name': result.name},
-            'text': result.name,
+            'text': result.name + jstree_icon_html('references'),
             'id': result.name,
             'parent': '#',
             'state': { 'opened': True},
@@ -2067,7 +2075,7 @@ def qa_search_2(main_search):
 
         to_add = {
             'data': {'id': result_parent.pk},
-            'text': result_parent.title,
+            'text': result_parent.title + jstree_icon_html('qas'),
             'id': str(result_parent.pk),
             'parent': '#',
             'state': { 'opened': True},
