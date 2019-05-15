@@ -730,7 +730,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                 //Open tool right panel windows
                 document.getElementById('createToolDataDiv').style.display = 'block';
-                M.Collapsible.getInstance($('#createToolDataAccordion')).open();
+                M.Collapsible.getInstance($('#createToolDataAccordion')).open(0);
 
 
                 $scope.tool_info_username = data['username'];
@@ -890,7 +890,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         //Open tool right panel windows
         document.getElementById('createToolDataDiv').style.display = 'block';
-        M.Collapsible.getInstance($('#createToolDataAccordion')).open();
+        M.Collapsible.getInstance($('#createToolDataAccordion')).open(0);
 
 
         $scope.show_tools_info = true;
@@ -1002,7 +1002,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         //Show workflows accordion
         document.getElementById('workflowsRightPanel').style.display = 'block';
-        M.Collapsible.getInstance($('#workflowsRightPanelGeneralAccordion')).open();
+        M.Collapsible.getInstance($('#workflowsRightPanelGeneralAccordion')).open(0);
 
 
         $scope.workflow_info_name = '';
@@ -1561,7 +1561,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                     return true;
                 },
-                worker : true
+                worker : true,
+                themes: {
+                    "icons": false
+                }
             },
 //            types : {
 //                default : {
@@ -1575,12 +1578,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 //                }
 //            },
             version : 1,
-            plugins : ['dnd', 'types'],
-                        types : {
-                default : {
-                    icon : 'fa fa-cog'
-                }
-            },
+            //plugins : ['dnd', 'types'],
+            plugins: ['dnd'],
+            //types : {default : {icon : 'fa fa-cog'}},
             dnd: {
                 is_draggable : function(node) {
                     return true;
@@ -1719,7 +1719,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                 //Open right panel
                 document.getElementById('userDataDiv').style.display = 'block';
-                M.Collapsible.getInstance($('#userDataAccordion')).open();
+                M.Collapsible.getInstance($('#userDataAccordion')).open(0);
 
                 $timeout(function(){M.updateTextFields()}, 10);
             },
@@ -1779,7 +1779,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.hide_all_right_accordions('qas'); // Close all right accordions except QAs
 
         document.getElementById('QARightPanel').style.display = 'block';
-        M.Collapsible.getInstance($('#QARightPanelAccordion')).open();
+        // M.Collapsible.getInstance($('#QARightPanelAccordion')).open();
 
         //Fetch a QA data
         $scope.qa_comment_id = data.node.data.id;
@@ -1804,7 +1804,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                 //Open right report panel
                 document.getElementById('reportsRightPanel').style.display = 'block';
-                M.Collapsible.getInstance($('#reportsRightPanelAccordion')).open();
+                M.Collapsible.getInstance($('#reportsRightPanelAccordion')).open(0);
 
                 //Fill data
                 $scope.report_workflow_name = data['report_workflow_name'];
@@ -1850,7 +1850,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                 $scope.hide_all_right_accordions('references');
                 document.getElementById('referencesRightPanel').style.display = 'block';
-                M.Collapsible.getInstance($('#referencesRightPanelAccordion')).open();
+                M.Collapsible.getInstance($('#referencesRightPanelAccordion')).open(0);
 
                 $scope.references_info_editable = false;
 
@@ -1872,7 +1872,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.hide_all_right_accordions('references');
 
         document.getElementById('referencesRightPanel').style.display = 'block';
-        M.Collapsible.getInstance($('#referencesRightPanelAccordion')).open();
+        M.Collapsible.getInstance($('#referencesRightPanelAccordion')).open(0);
 
         $scope.references_info_editable = true;
 
@@ -1896,12 +1896,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * Called whenever an item is clicked 
     * Updates the cyrep graph 
     */
-    $scope.nodeAnimation = function(node_anim_id, state) {
-        console.log('node_anim_id:');
-        console.log(node_anim_id);
-        console.log('state:');
-        console.log(state);
-        window.nodeAnimation(node_anim_id, state);
+    $scope.nodeAnimation_public = function(node_anim_params) {
+        console.log('node_anim_params:');
+        console.log(node_anim_params);
+        window.nodeAnimation_public(node_anim_params);
     };
 
     /*
@@ -2127,7 +2125,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                     return true;
                 },
-                worker : true
+                worker : true,
+                themes: {"icons": false}
             },
 //            types : {
 //                default : {
@@ -2141,12 +2140,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 //                }
 //            },
             version : 1,
-            plugins : ['dnd', 'types'],
-            types : {
-                default : {
-                    icon : 'fa fa-sitemap' //
-                }
-            },
+            //plugins : ['dnd', 'types'],
+            plugins: ['dnd'],
+            types : {default : {icon : 'fa fa-sitemap' }},
             dnd: {
                 is_draggable : function(node) {
                     return true;
@@ -2183,7 +2179,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                     return true;
                 },
-                worker : true
+                worker : true,
+                themes: {"icons": false}
             },
 //            types : {
 //                default : {
@@ -2197,12 +2194,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 //                }
 //            },
             version : 1,
-            plugins : ['dnd', 'types'],
-            types : {
-                default : {
-                    icon : 'fa fa-sitemap' //
-                }
-            },
+            //plugins : ['dnd', 'types'],
+            plugins : ['dnd'],
+            //types : {default : {icon : 'fa fa-sitemap'}},
             dnd: {
                 is_draggable : function(node) {
                     return true;
@@ -2233,7 +2227,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                     return true;
                 },
-                worker : true
+                worker : true,
+                themes: {"icons": false}
             },
 //            types : {
 //                default : {
@@ -2247,12 +2242,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 //                }
 //            },
             version : 1,
-            plugins : ['dnd', 'types'],
-            types : {
-                default : {
-                    icon : 'fa fa-sitemap' //
-                }
-            },
+            //plugins : ['dnd', 'types'],
+            plugins : ['dnd'],
+            //types : {default : {icon : 'fa fa-sitemap'}},
             dnd: {
                 is_draggable : function(node) {
                     return true;
@@ -2283,7 +2275,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                     return true;
                 },
-                worker : true
+                worker : true,
+                themes: {"icons": false}
             },
 //            types : {
 //                default : {
@@ -2297,12 +2290,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 //                }
 //            },
             version : 1,
-            plugins : ['dnd', 'types'],
-            types : {
-                default : {
-                    icon : 'fa fa-sitemap' //
-                }
-            },
+            //plugins : ['dnd', 'types'],
+            plugins : ['dnd'],
+            //types : {default : {icon : 'fa fa-sitemap'}},
             dnd: {
                 is_draggable : function(node) {
                     return true;
@@ -2333,7 +2323,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
                     return true;
                 },
-                worker : true
+                worker : true,
+                themes: {"icons": false}
             },
 //            types : {
 //                default : {
@@ -2347,12 +2338,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 //                }
 //            },
             version : 1,
-            plugins : ['dnd', 'types'],
-            types : {
-                default : {
-                    icon : 'fa fa-sitemap' //
-                }
-            },
+            //plugins : ['dnd', 'types'],
+            plugins : ['dnd'],
+            //types : {default : {icon : 'fa fa-sitemap'}},
             dnd: {
                 is_draggable : function(node) {
                     return true;
@@ -2399,7 +2387,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
         //Show right panel accordion
         document.getElementById('workflowsRightPanel').style.display = 'block';
-        M.Collapsible.getInstance($('#workflowsRightPanelGeneralAccordion')).open();
+        M.Collapsible.getInstance($('#workflowsRightPanelGeneralAccordion')).open(0);
 
 
         $scope.workflows_info_editable = false;
@@ -3242,7 +3230,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.hide_all_right_accordions('qas');
 
         document.getElementById('QARightPanel').style.display = 'block';
-        M.Collapsible.getInstance($('#QARightPanelAccordion')).open();
+        // M.Collapsible.getInstance($('#QARightPanelAccordion')).open();
 
         $scope.qa_info_editable = true;
         $scope.qa_title = '';
@@ -3389,7 +3377,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         if (except != 'qas') {
             //Hide Q&A
             document.getElementById('QARightPanel').style.display = 'none';
-            M.Collapsible.getInstance($('#QARightPanelAccordion')).close();
+            // M.Collapsible.getInstance($('#QARightPanelAccordion')).close();
         }
 
     }

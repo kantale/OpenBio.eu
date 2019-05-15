@@ -3,32 +3,18 @@
 * generateToast('success message here', 'green lighten-2 black-text', 'stay on');
 */
 function generateToast(message, classes, duration) {
-    var htmlMessage = '<span>' + message + '</span><button onclick="M.Toast.dismissAll()" class="btn-flat"><i class="material-icons">close</i></button>';
+    var htmlMessage = '<span>' + message + '</span><button onclick="closeToastClicked(event)" class="btn-flat"><i class="material-icons">close</i></button>';
     M.toast({
         html: htmlMessage,
         classes: classes,
         displayLength: duration
     });
 }
-
-// scroll to top
-// $('leftPanel').scroll(function() {
-//     console.log('scroll');
-//     var height = $('leftPanel').scrollTop();
-//     if (height > 100) {
-//         $('#back2Top').fadeIn();
-//     } else {
-//         $('#back2Top').fadeOut();
-//     }
-// });
-// $(document).ready(function() {
-//     $("#back2Top").click(function(event) {
-//         event.preventDefault();
-//         $("html, body").animate({ scrollTop: 0 }, "slow");
-//         return false;
-//     });
-
-// });
+function closeToastClicked (event) {
+    var toast = $(event.target).parents('.toast').first();
+    var toastInstance = M.Toast.getInstance(toast);
+    toastInstance.dismiss();
+}
 
 
 // ---------------------------------------------- Warning Modal --------------------------------------------------
@@ -332,41 +318,6 @@ window.onload = function () {
             $('#signInForm').animateCss('fadeIn', function () {
             });
         });
-    });
-
-    // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // ----------------------------------------------------- Expand All / Collapse All Button Click ---------------------------------------------------------------------------------
-    // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // --------------------------------------- Expand All button clicked ---------------------------------------------
-    document.getElementById('expandAllBtn1').addEventListener('click', function () {
-        var instance = M.Collapsible.getInstance($('#createToolDataAccordion'));
-        var childrenNum = instance.el.childElementCount;
-        for (var i = 0; i < childrenNum; i++) {
-            instance.open(i);
-        }
-    });
-    document.getElementById('expandAllBtn2').addEventListener('click', function () {
-        var instance = M.Collapsible.getInstance($('#editWorkflowAccordion'));
-        var childrenNum = instance.el.childElementCount;
-        for (var i = 0; i < childrenNum; i++) {
-            instance.open(i);
-        }
-    });
-
-    // -------------------------------------- Collapse All button clicked --------------------------------------------
-    document.getElementById('collapseAllBtn1').addEventListener('click', function () {
-        var instance = M.Collapsible.getInstance($('#createToolDataAccordion'));
-        var childrenNum = instance.el.childElementCount;
-        for (var i = 0; i < childrenNum; i++) {
-            instance.close(i);
-        }
-    });
-    document.getElementById('collapseAllBtn2').addEventListener('click', function () {
-        var instance = M.Collapsible.getInstance($('#editWorkflowAccordion'));
-        var childrenNum = instance.el.childElementCount;
-        for (var i = 0; i < childrenNum; i++) {
-            instance.close(i);
-        }
     });
 
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -2197,6 +2148,16 @@ window.onload = function () {
 			document.getElementById("cyrep").querySelector('canvas[data-id="layer2-node"]').style.position = null;
 	
         }
+
+        /*
+        *
+        */
+        window.nodeAnimation_public=function(node_anim_params) {
+            console.log('NODE ANIM PARAMS:');
+            console.log(node_anim_params);
+
+            
+        };
 		
 		/* function for node animation
         * window.nodeAnimation('frequentistadditive__3', 'started') 

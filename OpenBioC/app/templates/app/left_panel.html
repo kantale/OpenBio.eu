@@ -15,16 +15,10 @@
 <!-- --------------------------------------------------------- Left Panel ---------------------------------------------------------------------------- -->
 <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
 <div class="leftPanel">
-    <!-- scroll to top -->
-    <!-- <a id="back2Top" title="Back to top" href="#"><i class="material-icons">add</i></a> -->
-
     <div id="leftPanelProgress" class="progress" style="margin-top:1px; display: none;">
         <div class="indeterminate"></div>
     </div>
     <a id="preloaderBtn" class="waves-effect waves-light btn">Toggle Preloader</a>
-    <!-- <div id="createNewBtn" class="fixed-action-btn" style="display:block">
-        <a class="btn-floating btn-large waves-effect waves-light red left-align"><i class="material-icons">add</i></a>
-    </div> -->
     <div style="margin: 20px;">
         <!-- --------------------------------------------------------------------------------------- -->
         <!-- ------------------------------- Search Input ------------------------------------------ -->
@@ -34,30 +28,49 @@
                 <div class="center-align">
                     <div class="input-field col s12" style="margin-bottom:0px">
                         <i class="material-icons prefix">search</i>
-                        <input id="leftPanelSearch" type="text" class="validate" ng-model="main_search" ng-change="main_search_changed()">
+                        <input id="leftPanelSearch" type="text" class="validate" ng-model="main_search"
+                            ng-change="main_search_changed()">
                         <label for="leftPanelSearch">Search</label>
                     </div>
                     <div class="left-align" style="margin-left:15px">
-                        <p class="col s12 m3 grid-s12-m3-l3" style="margin-bottom:0px">
+                        <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
                             <label>
                                 <input type="checkbox" />
                                 <span>Tool</span>
                             </label>
                         </p>
-                        <p class="col s12 m3 grid-s12-m3-l3" style="margin-bottom:0px">
+                        <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
                             <label>
                                 <input type="checkbox" />
                                 <span>Workflow</span>
                             </label>
                         </p>
-                        <p class="col s12 m3 grid-s12-m3-l3" style="margin-bottom:0px">
+                        <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
+                            <label>
+                                <input type="checkbox" />
+                                <span>Report</span>
+                            </label>
+                        </p>
+                        <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
                             <label>
                                 <input type="checkbox" />
                                 <span>Reference</span>
                             </label>
                         </p>
+                        <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
+                            <label>
+                                <input type="checkbox" />
+                                <span>User</span>
+                            </label>
+                        </p>
+                        <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
+                            <label>
+                                <input type="checkbox" />
+                                <span>Q&A</span>
+                            </label>
+                        </p>
                     </div>
-                    
+
                 </div>
             </form>
 
@@ -103,7 +116,6 @@
                                 <div class="input-field col s12 m12 grid-s12-m12-l12">
                                     <div id="searchChips" class="input-field chips left-align" style="margin:0px">
                                     </div>
-
                                 </div>
                             </div>
                         </form>
@@ -122,10 +134,11 @@
                     <i class="material-icons arrow left">keyboard_arrow_right</i>
                     <i class="material-icons left">settings</i>
                     <span class="left" style="margin-right: 10px;">Tools/Data</span>
-                    <span class="new badge" data-badge-caption="found" ng-bind="tools_search_tools_number" ng-show="tools_search_tools_number >= 0"
-                        style="margin-left: 5px;"></span>
+                    <span class="new badge" data-badge-caption="found" ng-bind="tools_search_tools_number"
+                        ng-show="tools_search_tools_number >= 0" style="margin-left: 5px;"></span>
                     <a id="toolsDataPlusBtn" class="waves-effect btn green plusBtn right tooltipped"
-                        data-position="left" data-tooltip="create Tool" ng-click="tools_search_create_new_pressed_ok()"><i class="material-icons plusIcon">add</i></a>
+                        data-position="left" data-tooltip="Create Tool"
+                        ng-click="tools_search_create_new_pressed_ok()"><i class="material-icons plusIcon">add</i></a>
                 </div>
                 <div class="collapsible-body">
                     <!--
@@ -181,11 +194,11 @@
                     <i class="material-icons arrow left">keyboard_arrow_right</i>
                     <i class="material-icons left">device_hub</i>
                     <span class="left" style="margin-right: 10px;">Workflows</span>
-                    <span class="new badge" data-badge-caption="found" ng-bind="workflows_search_tools_number" ng-show="workflows_search_tools_number >= 0"
-                        style="margin-left: 5px;"></span>
+                    <span class="new badge" data-badge-caption="found" ng-bind="workflows_search_tools_number"
+                        ng-show="workflows_search_tools_number >= 0" style="margin-left: 5px;"></span>
                     <a id="workflowsPlusBtn" class="waves-effect btn green plusBtn right tooltipped"
-                        data-position="left" data-tooltip="create Workflow"><i
-                            class="material-icons plusIcon" ng-click="workflows_search_create_new_pressed()">add</i></a>
+                        data-position="left" data-tooltip="Create Workflow"><i class="material-icons plusIcon"
+                            ng-click="workflows_search_create_new_pressed()">add</i></a>
                 </div>
                 <div class="collapsible-body">
                     <div class="row">
@@ -241,9 +254,10 @@
             <li id="reports">
                 <div class="collapsible-header customCollapsibleHeader">
                     <i class="material-icons arrow left">keyboard_arrow_right</i>
-                    <i class="material-icons left">whatshot</i>
+                    <i class="material-icons left">description</i>
                     <span class="left" style="margin-right: 10px;">Reports</span>
-                    <span class="new badge" data-badge-caption="found" style="margin-left: 5px;" ng-bind="main_search_reports_number" ng-show="main_search_reports_number >= 0"></span>
+                    <span class="new badge" data-badge-caption="found" style="margin-left: 5px;"
+                        ng-bind="main_search_reports_number" ng-show="main_search_reports_number >= 0"></span>
                 </div>
                 <div class="collapsible-body">
                     <!--
@@ -259,7 +273,8 @@
                     -->
                     <div class="row left-align">
                         <div class="col">
-                            <div js-tree="reports_search_jstree_config" should-apply="reports_search_jstree_config_apply()"
+                            <div js-tree="reports_search_jstree_config"
+                                should-apply="reports_search_jstree_config_apply()"
                                 ng-model="reports_search_jstree_model" tree="reports_search_jstree"
                                 tree-events="select_node:reports_search_jstree_select_node"></div>
                         </div>
@@ -272,12 +287,13 @@
             <li id="references">
                 <div class="collapsible-header customCollapsibleHeader">
                     <i class="material-icons arrow left">keyboard_arrow_right</i>
-                    <i class="material-icons left">whatshot</i>
+                    <i class="material-icons left">format_quote</i>
                     <span class="left" style="margin-right: 10px;">References</span>
-                    <span class="new badge" data-badge-caption="found" style="margin-left: 5px;" ng-bind="main_search_references_number" ng-show="main_search_references_number >= 0"></span>
+                    <span class="new badge" data-badge-caption="found" style="margin-left: 5px;"
+                        ng-bind="main_search_references_number" ng-show="main_search_references_number >= 0"></span>
                     <a id="referencesPlusBtn" class="waves-effect btn green plusBtn right tooltipped"
-                        data-position="left" data-tooltip="create Reference"><i
-                            class="material-icons plusIcon" ng-click="references_plus_button_clicked()">add</i></a>
+                        data-position="left" data-tooltip="Create Reference"><i class="material-icons plusIcon"
+                            ng-click="references_plus_button_clicked()">add</i></a>
                 </div>
                 <div class="collapsible-body">
                     <!--
@@ -293,7 +309,8 @@
                     -->
                     <div class="row left-align">
                         <div class="col">
-                            <div js-tree="references_search_jstree_config" should-apply="references_search_jstree_config_apply()"
+                            <div js-tree="references_search_jstree_config"
+                                should-apply="references_search_jstree_config_apply()"
                                 ng-model="references_search_jstree_model" tree="references_search_jstree"
                                 tree-events="select_node:references_search_jstree_select_node"></div>
                         </div>
@@ -306,9 +323,10 @@
             <li id="users">
                 <div class="collapsible-header customCollapsibleHeader">
                     <i class="material-icons arrow left">keyboard_arrow_right</i>
-                    <i class="material-icons left">whatshot</i>
+                    <i class="material-icons left">people</i>
                     <span class="left" style="margin-right: 10px;">Users</span>
-                    <span class="new badge" data-badge-caption="found" style="margin-left: 5px;" ng-bind="main_search_users_number" ng-show="main_search_users_number >= 0"></span>
+                    <span class="new badge" data-badge-caption="found" style="margin-left: 5px;"
+                        ng-bind="main_search_users_number" ng-show="main_search_users_number >= 0"></span>
                 </div>
                 <div class="collapsible-body">
                     <!-- 
@@ -337,11 +355,13 @@
             <li id="qa">
                 <div class="collapsible-header customCollapsibleHeader">
                     <i class="material-icons arrow left">keyboard_arrow_right</i>
-                    <i class="material-icons left">whatshot</i>
+                    <i class="material-icons left">forum</i>
                     <span class="left" style="margin-right: 10px;">Q & A</span>
-                    <span class="new badge" data-badge-caption="found" style="margin-left: 5px;" ng-bind="main_search_qa_number" ng-show="main_search_qa_number >= 0"></span>
+                    <span class="new badge" data-badge-caption="found" style="margin-left: 5px;"
+                        ng-bind="main_search_qa_number" ng-show="main_search_qa_number >= 0"></span>
                     <a id="qaPlusBtn" class="waves-effect btn green plusBtn right tooltipped" data-position="left"
-                        data-tooltip="create Question" ng-click="qa_plus_button_clicked()"><i class="material-icons plusIcon">add</i></a>
+                        data-tooltip="Create Question" ng-click="qa_plus_button_clicked()"><i
+                            class="material-icons plusIcon">add</i></a>
                 </div>
                 <div class="collapsible-body">
                     <!--
@@ -355,6 +375,62 @@
                         </form>
                     </div>
                     -->
+
+                    <!-- Q & A TEMPLATE START -->
+                    <div class="row left-align">
+                        <div class="col s12">
+                            <span class="new badge grey lighten-2 black-text" data-badge-caption="votes"
+                                style="float:left; margin-right:4px">0</span>
+                            <span class="new badge green" data-badge-caption="answers"
+                                style="float:left; margin-right:4px">0</span>
+                            <span class="new badge grey lighten-2 black-text" data-badge-caption="views"
+                                style="float:left; margin-right:4px">0</span>
+                            <small style="float:right;">active: 22 days ago</small>
+                        </div>
+                        <div class="col s12">
+                            <h6 style="margin-top:6px; margin-bottom:6px;">Question sakdjaldjaldjdlakdjslakslka
+                                skldjsdkajdlsjkd askdjaldjals m</h6>
+                        </div>
+                        <div class="col s12">
+                            <span class="new badge blue lighten-1" data-badge-caption=""
+                                style="float:left; margin-right:4px">tag1</span>
+                            <span class="new badge blue lighten-1" data-badge-caption=""
+                                style="float:left; margin-right:4px">tag2</span>
+                            <span class="new badge blue lighten-1" data-badge-caption=""
+                                style="float:left; margin-right:4px">tag3</span>
+                            <span class="new badge blue lighten-1" data-badge-caption=""
+                                style="float:left; margin-right:4px">tag4</span>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row left-align">
+                        <div class="col s12">
+                            <span class="new badge grey lighten-2 black-text" data-badge-caption="votes"
+                                style="float:left; margin-right:4px">0</span>
+                            <span class="new badge green" data-badge-caption="answers"
+                                style="float:left; margin-right:4px">0</span>
+                            <span class="new badge grey lighten-2 black-text" data-badge-caption="views"
+                                style="float:left; margin-right:4px">0</span>
+                            <small style="float:right;">active: 5 Feb</small>
+                        </div>
+                        <div class="col s12">
+                            <h6 style="margin-top:6px; margin-bottom:6px;">Question sakdjaldjaldjdlakdjslakslka
+                                skldjsdkajdlsjkd askdjaldjals m</h6>
+                        </div>
+                        <div class="col s12">
+                            <span class="new badge blue lighten-1" data-badge-caption=""
+                                style="float:left; margin-right:4px">tag1</span>
+                            <span class="new badge blue lighten-1" data-badge-caption=""
+                                style="float:left; margin-right:4px">tag2</span>
+                            <span class="new badge blue lighten-1" data-badge-caption=""
+                                style="float:left; margin-right:4px">tag3</span>
+                            <span class="new badge blue lighten-1" data-badge-caption=""
+                                style="float:left; margin-right:4px">tag4</span>
+                        </div>
+                    </div>
+                    <!-- Q & A TEMPLATE END -->
+
+
                     <div class="row left-align">
                         <div class="col">
                             <div js-tree="qa_search_jstree_config" should-apply="qa_search_jstree_config_apply()"

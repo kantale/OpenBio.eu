@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+import re
 import uuid
 import random
 
@@ -232,11 +233,41 @@ class ReportToken(models.Model):
     Each Token represent represent a state of the workflow
     '''
 
-    WORKFLOW_STARTED = 'workflow started'
-    WORKFLOW_FINISHED = 'workflow finished'
+    WORKFLOW_STARTED_CODE = 1
+    WORKFLOW_STARTED = r'workflow started (?P<name>[\w\./]+)'
+    
+    WORKFLOW_FINISHED_CODE = 2
+    WORKFLOW_FINISHED = r'workflow finished (?P<name>[\w\./]+)'
+    
+    TOOL_STARTED_CODE = 3
+    TOOL_STARTED = r'tool started (?P<name>[\w\./]+)'
+    
+    TOOL_FINISHED_CODE = 4
+    TOOL_FINISHED = r'tool finished (?P<name>[\w\./]+)'
+    
     UNUSED = 'unused'
 
-    STATUS_CHOICES = (WORKFLOW_STARTED, WORKFLOW_FINISHED)
+    STATUS_CHOICES = (
+        (WORKFLOW_STARTED_CODE, WORKFLOW_STARTED),
+        (WORKFLOW_FINISHED_CODE, WORKFLOW_FINISHED),
+        (TOOL_STARTED_CODE, TOOL_STARTED),
+        (TOOL_FINISHED_CODE, TOOL_FINISHED),
+    )
+
+    @staticmethod
+    def parse_response_status(status):
+        '''
+        Used from views.report to parse the received status
+        '''
+        for status_code, status_re in ReportToken.STATUS_CHOICES:
+            m = re.match(status_re, status)
+            if m:
+                return {'status_code': status_code, 'status_fields': m.groupdict()}
+
+        # We don't need this here to return None, left for readability
+        return None
+            
+
 
     token = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) # https://books.agiliq.com/projects/django-orm-cookbook/en/latest/uuid.html
     status = models.CharField(max_length=255) # The status of this token
