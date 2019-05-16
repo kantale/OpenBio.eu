@@ -317,7 +317,9 @@ class Workflow:
             ret += 'step__{} () {{\n'.format(a_node['id'])
             #ret += ':\n' # No op in case a_node['bash'] is empty 
             ret += 'echo "OBC: CALLING STEP: {}"\n'.format(a_node['id'])
+            ret += 'update_server_status "step started {}"\n'.format(a_node['id'])
             ret += a_node['bash'] + '\n'
+            ret += 'update_server_status "step finished {}"\n'.format(a_node['id'])
             ret += '}\n'
 
         ret += '### END OF SETTING BASH FUNCTIONS FOR STEPS\n'

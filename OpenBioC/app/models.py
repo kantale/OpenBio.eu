@@ -245,7 +245,14 @@ class ReportToken(models.Model):
     
     TOOL_FINISHED_CODE = 4
     TOOL_FINISHED = r'tool finished (?P<name>[\w\./]+)'
+
+    STEP_STARTED_CODE = 5
+    STEP_STARTED = r'step started (?P<name>[\w]+)'
     
+    STEP_FINISHED_CODE = 6
+    STEP_FINISHED = r'step finished (?P<name>[\w]+)'
+
+
     UNUSED = 'unused'
 
     STATUS_CHOICES = (
@@ -253,6 +260,8 @@ class ReportToken(models.Model):
         (WORKFLOW_FINISHED_CODE, WORKFLOW_FINISHED),
         (TOOL_STARTED_CODE, TOOL_STARTED),
         (TOOL_FINISHED_CODE, TOOL_FINISHED),
+        (STEP_STARTED_CODE, STEP_STARTED),
+        (STEP_FINISHED_CODE, STEP_FINISHED),
     )
 
     @staticmethod
