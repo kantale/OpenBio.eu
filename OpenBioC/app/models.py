@@ -233,6 +233,7 @@ class ReportToken(models.Model):
     Each Token represent represent a state of the workflow
     '''
 
+    # IMPORTANT: ADD THESE CODES ALSO IN ui.js :  window.OBCUI 
     WORKFLOW_STARTED_CODE = 1
     WORKFLOW_STARTED = r'workflow started (?P<name>[\w\./]+)'
     
