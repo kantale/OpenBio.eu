@@ -1006,7 +1006,14 @@ window.onload = function () {
 
             io_re: new RegExp('(input|output)__[a-zA-Z0-9_][\\w]*', 'g'), // [^_\w] Does not work???
             io_re_id: new RegExp('(input|output)__([\\w]+)'), // TODO: ADD  WHITE SPACEDS JUST LIKE calls
-            io_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('((input|output)__)' + old_id, 'g'), '$1' + new_id); }
+            io_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('((input|output)__)' + old_id, 'g'), '$1' + new_id); },
+
+            //Same codes as models.py class ReportToken used in nodeAnimation_public
+            WORKFLOW_STARTED_CODE: 1,
+            WORKFLOW_FINISHED_CODE: 2,
+            TOOL_STARTED_CODE: 3,
+            TOOL_FINISHED_CODE: 4,
+            previous_animation: null // Object that contains information to restore animations in reports
 
         };
 
@@ -2109,27 +2116,93 @@ window.onload = function () {
         }
 
         /*
-        *
+        * status_code : The same declared in models.py: class ReportToken 
+        * status_fields : Thw results from status parsing 
         */
         window.nodeAnimation_public=function(node_anim_params) {
             console.log('NODE ANIM PARAMS:');
             console.log(node_anim_params);
 
-            
+            if (node_anim_params.status_code == window.OBCUI.WORKFLOW_STARTED_CODE) {
+                var workflow_id = node_anim_params.status_fields.name.replace(/\//g, '__');
+                window.nodeAnimation(workflow_id, 'started');
+                console.log('nodeAnimation_public: ', workflow_id)
+            }
+            else if (node_anim_params.status_code == window.OBCUI.WORKFLOW_FINISHED_CODE) {
+                var workflow_id = node_anim_params.status_fields.name.replace(/\//g, '__');
+                window.nodeAnimation(workflow_id, 'finished');
+            }
+
+        };
+
+        /*
+        * Before applying a new animation we need to restore previous animations
+        */
+        window.unset_nodeAnimation = function() {
+
+            if (!window.OBCUI.previous_animation) {
+                return;
+            }
+
+            var node_anim = window.OBCUI.previous_animation.node_anim;
+            //var node_anim = cy_rep.$('#' + window.OBCUI.previous_animation.node_anim_id);
+            console.log('node_anim:', node_anim);
+
+            for (var i=0; i<window.OBCUI.previous_animation.actions.length; i++) {
+                var action = window.OBCUI.previous_animation.actions[i];
+                console.log('ACTION:', action);
+                if (action=='LABEL') {
+                    console.log('SETTING OLD LABEL:', window.OBCUI.previous_animation.label);
+                    node_anim.data('label', window.OBCUI.previous_animation.label);
+                }
+                else if (action == 'STYLE') {
+                    for (var i_style=0; i_style<window.OBCUI.previous_animation.style.length; i_style++) {
+                        var new_style = {};
+                        new_style[window.OBCUI.previous_animation.style[i_style][0]] = window.OBCUI.previous_animation.style[i_style][1];
+                        console.log('NEW STYLE:');
+                        console.log(new_style);
+                        node_anim.style(new_style);
+                    }
+                }
+                else if (action == 'BLINK') {
+                    node_anim.stop();
+                    node_anim.style({'opacity': 1.0});
+                }
+            }
+
         };
 		
 		/* function for node animation
         * window.nodeAnimation('frequentistadditive__3', 'started') 
         */ 
 		window.nodeAnimation = function(node_anim_id, state){
+
+            //Restore previous anumation:
+            if (window.OBCUI.previous_animation) {
+                window.unset_nodeAnimation();
+            }
+
+
 			// get node by id
 			var node_anim = cy_rep.$('#' + node_anim_id);
 			var type = node_anim[0]._private.data.type;
 			var label = node_anim[0]._private.data.label;
 			//var state = node_anim[0]._private.data.state;
 			//check given state
+            var anim_style = {};
+            var anim_label = null;
+            var blink = true;
+
+
+            //Store previous animation so that we unset an animation
+            window.OBCUI.previous_animation = {
+                node_anim: node_anim,
+                label: label,
+                style: [],
+                actions: []
+            };
 			
-			console.log(type);
+			console.log('nodeAnimation type:' +  type);
 			
 			/* Tools have 4 states :  pending (default), installing, installed, failed. */
 			if(type === 'tool'){
@@ -2164,8 +2237,6 @@ window.onload = function () {
                     else {
                         console.warn('63246');
                     }
-
-
 			}
 			
 			/* Outputs have 2 states :  "Unset" (default), "Set" */
@@ -2187,6 +2258,7 @@ window.onload = function () {
                     else if (state === 'finished') {
                         anim_style = {'background-color': '#000000'};
                         anim_label = label + '[finished]';
+                        blink = false;
                     }
                     else {
                         console.warn('63248');
@@ -2195,37 +2267,49 @@ window.onload = function () {
 			
 			
 			//update label
-			node_anim.data('style', anim_label);
-			node_anim.data('style', anim_style);
+			node_anim.data('label', anim_label);
+            window.OBCUI.previous_animation.actions.push('LABEL');
+
+            //Update style
+            if (anim_style) {
+                for (var anim_item in anim_style) {
+                    window.OBCUI.previous_animation.style.push([anim_item, node_anim.style(anim_item)]);
+                }
+            }
+            window.OBCUI.previous_animation.actions.push('STYLE');
+			node_anim.style(anim_style);
 			
-			//make edges blinking
-					var nodeAni = node_anim.animation({
-									style: {
-										'opacity': 0.1
-									},
-									duration: 200
-								});
+            if (blink) {
+    			//make nodes blinking
+    			var nodeAni = node_anim.animation({
+    							style: {
+    								'opacity': 0.1
+    							},
+    							duration: 200
+    						});
 
-					//create time interval for continous looping of the animation				
-					var myVar = setInterval(nodeTimer, 200);
+    			//create time interval for continous looping of the animation				
+    			var myVar = setInterval(nodeTimer, 200);
 
-					
-					function nodeTimer() {
+    			
+    			function nodeTimer() {
 
-						nodeAni
-						  .play() // start
-						  .promise('completed').then(
-								function(){ // on next completed
-									nodeAni
-									  .reverse() // switch animation direction
-									  .rewind() // optional but makes intent clear
-									  .play() // start again
-									;
-						  });
+    				nodeAni
+    				  .play() // start
+    				  .promise('completed').then(
+    						function(){ // on next completed
+    							nodeAni
+    							  .reverse() // switch animation direction
+    							  .rewind() // optional but makes intent clear
+    							  .play() // start again
+    							;
+    				  });
 
-					}
+    			}
 
-					nodeTimer();
+    			nodeTimer();
+                window.OBCUI.previous_animation.actions.push('BLINK');
+            }
 			
 			/*
 			return (node_anim.animation({
