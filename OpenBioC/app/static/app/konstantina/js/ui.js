@@ -1013,6 +1013,8 @@ window.onload = function () {
             WORKFLOW_FINISHED_CODE: 2,
             TOOL_STARTED_CODE: 3,
             TOOL_FINISHED_CODE: 4,
+            STEP_STARTED_CODE: 5,
+            STEP_FINISHED_CODE: 6,
             previous_animation: null // Object that contains information to restore animations in reports
 
         };
@@ -2126,12 +2128,28 @@ window.onload = function () {
             if (node_anim_params.status_code == window.OBCUI.WORKFLOW_STARTED_CODE) {
                 var workflow_id = node_anim_params.status_fields.name.replace(/\//g, '__');
                 window.nodeAnimation(workflow_id, 'started');
-                console.log('nodeAnimation_public: ', workflow_id)
             }
             else if (node_anim_params.status_code == window.OBCUI.WORKFLOW_FINISHED_CODE) {
                 var workflow_id = node_anim_params.status_fields.name.replace(/\//g, '__');
                 window.nodeAnimation(workflow_id, 'finished');
             }
+            else if (node_anim_params.status_code == window.OBCUI.TOOL_STARTED_CODE) {
+                var tool_id = node_anim_params.status_fields.name.replace(/\//g, '__') + '__2';
+                window.nodeAnimation(tool_id, "installing");
+            }
+            else if (node_anim_params.status_code == window.OBCUI.TOOL_FINISHED_CODE) {
+                var tool_id = node_anim_params.status_fields.name.replace(/\//g, '__') + '__2';
+                window.nodeAnimation(tool_id, "installed");
+            }
+            else if (node_anim_params.status_code == window.OBCUI.STEP_STARTED_CODE) {
+                var step_id = node_anim_params.status_fields.name;
+                window.nodeAnimation(step_id, 'running');
+            }
+            else if (node_anim_params.status_code == window.OBCUI.STEP_FINISHED_CODE) {
+                var step_id = node_anim_params.status_fields.name;
+                window.nodeAnimation(step_id, 'finished');
+            }
+
 
         };
 
@@ -2146,21 +2164,16 @@ window.onload = function () {
 
             var node_anim = window.OBCUI.previous_animation.node_anim;
             //var node_anim = cy_rep.$('#' + window.OBCUI.previous_animation.node_anim_id);
-            console.log('node_anim:', node_anim);
 
             for (var i=0; i<window.OBCUI.previous_animation.actions.length; i++) {
                 var action = window.OBCUI.previous_animation.actions[i];
-                console.log('ACTION:', action);
                 if (action=='LABEL') {
-                    console.log('SETTING OLD LABEL:', window.OBCUI.previous_animation.label);
                     node_anim.data('label', window.OBCUI.previous_animation.label);
                 }
                 else if (action == 'STYLE') {
                     for (var i_style=0; i_style<window.OBCUI.previous_animation.style.length; i_style++) {
                         var new_style = {};
                         new_style[window.OBCUI.previous_animation.style[i_style][0]] = window.OBCUI.previous_animation.style[i_style][1];
-                        console.log('NEW STYLE:');
-                        console.log(new_style);
                         node_anim.style(new_style);
                     }
                 }
@@ -2207,16 +2220,17 @@ window.onload = function () {
 			/* Tools have 4 states :  pending (default), installing, installed, failed. */
 			if(type === 'tool'){
 					if(state==="installing")  {
-							anim_style = {'background-color': 'yellow'};
-							anim_label = label +  "installing";
-						}
+						anim_style = {'background-color': 'yellow'};
+						anim_label = label +  "[installing]";
+					}
 					else if(state==="installed")  {
-							anim_style = {'background-color': '#43A047'};
-							anim_label = label + "installed";
+						anim_style = {'background-color': '#43A047'};
+						anim_label = label + "[installed]";
+                        blink = false;
 					}
 					else if(state==="failed")  {
-							anim_style = {'background-color': '#E53935'};
-							anim_label = label + "failed";
+						anim_style = {'background-color': '#E53935'};
+						anim_label = label + "[failed]";
 					}
                     else {
                          console.warn('63245');
@@ -2227,12 +2241,18 @@ window.onload = function () {
 			/* Steps have 3 states :  "not running" (default), "running", "failed". */
 			else if(type === 'step'){
 					if(state==="running")  {
-							anim_style = {'background-color': 'yellow'};
-							anim_label = label + "running";
+						anim_style = {'background-color': 'yellow'};
+						anim_label = label + "[running]";
 					}
+                    else if (state == "finished") {
+                        anim_style = {'background-color': '#43A047'};
+                        anim_label = label + "[finished]";
+                        blink = false;
+
+                    }
 					else if(state==="failed")  {
-							anim_style = {'background-color': '#E53935'};
-							anim_label = label + "failed";
+						anim_style = {'background-color': '#E53935'};
+						anim_label = label + "[failed]";
 					}
                     else {
                         console.warn('63246');
