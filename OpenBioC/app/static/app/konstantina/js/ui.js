@@ -1694,12 +1694,15 @@ window.onload = function () {
 		This function gets as input a node and then goes through it's successors and opens or close each one based on predefined assumptions	
 		**/		
 		var collapse_expand_node = function(this_node){
+			
+			//connectedEdges: next level
+			//successors: next levels recursively
+			
+		/*
 			this_node.successors().targets().forEach(function (target) {
-				 console.log(" L ");
-				 console.log(target['_private'].data.id);
-			//console.log(target['_private'].data.type);
+
 						//if(target['_private'].data.type!=="step" && target['_private'].data.type!=="input" && target['_private'].data.type!=="output" ){
-						if(target['_private'].data.type === "tool"){
+						//if(target['_private'].data.type === "tool"){
 								//console.log(target['_private'].data.id);
 								
 								if(target.style("display") == "none"){
@@ -1709,33 +1712,62 @@ window.onload = function () {
 								}else{     
 									//console.log("make non visible");
 									//hide the children nodes and edges recursively  
-										//this.successors().targets().forEach(function (element) {
+										
 											//check if node has flag(open)								
-											if (typeof target['_private'].data.flag === 'undefined' || target['_private'].data.flag !== 'open') {
+											if (target['_private'].data.type === "tool" && (typeof target['_private'].data.flag === 'undefined' || target['_private'].data.flag !== 'open')) {
 												target.style("display", "none");
+											
+												target.successors().targets().forEach(function (element) {	
+														if (target['_private'].data.type === "tool" && (typeof element['_private'].data.flag === 'undefined' || element['_private'].data.flag !== 'open')) {
+														element.style("display", "none");
+													}
+												});
 											}
-										//});
+										
+										
 								}				
-						}
-						
-						/*
-							if (this.successors().targets().style("display") == "none") {
-								this.connectedEdges().targets().style("display", "element");
-							} else {
-								//hide the children nodes and edges recursively  
-								this.successors().targets().forEach(function (element) {
-									//check if node has flag(open)								
-									if (typeof element['_private'].data.flag === 'undefined' || element['_private'].data.flag !== 'open') {
-										element.style("display", "none");
-									}
-
-								});
-							}
-						*/
-			
-			
+						//}
+				
 			});
+			*/
 			
+			/*
+			this function searches for open connected edges and if any is found,
+			it opens it and returns true,
+			else only returns false
+			*/
+			var openTarget = function (node) {
+				var answer=false;
+				node.connectedEdges().targets().forEach(function (target) {
+					if(target.style("display") == "none"){
+						//console.log("make visible");
+						target.style("display", "element");
+						answer=true;
+					}
+								
+				});	
+							
+					return answer;
+			}
+						
+			/*
+			if selected node has closed connected edges, then open them
+			if selected node has all it;s connected edges open, then close them recursively
+			*/		
+			if(openTarget(this_node)){
+				console.log("opened");
+							
+			}else{
+				this_node.successors().targets().forEach(function (element) {
+			    	//check if node has flag(open)								
+					if (element['_private'].data.type==="tool"  && (typeof element['_private'].data.flag === 'undefined' || element['_private'].data.flag !== 'open')) {
+						element.style("display", "none");
+					}
+
+				});
+							
+			}			
+									
 		}	
 			
 
@@ -1748,8 +1780,7 @@ window.onload = function () {
 			//initializeTree();		
             // collapse - expand nodes
             cy.on('click', 'node', function (event) {
-					//connectedEdges: next level
-					//successors: next levels recursively
+					
 			
 					// inputs/outpus and steps should never collapse
 					//if (this['_private'].data.type !== "step" && this['_private'].data.type !== "input" && this['_private'].data.type !== "output") { //steps should never collapse
