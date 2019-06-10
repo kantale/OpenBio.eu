@@ -3,8 +3,8 @@
     <div class="modal-content">
         <h4>Warning</h4>
         <p>
-        <span ng-bind="modal_message"></span>
-        Are you sure you want to continue?
+            <span ng-bind="modal_message"></span>
+            Are you sure you want to continue?
         </p>
     </div>
     <div class="modal-footer">
@@ -140,10 +140,10 @@
                     <span class="new badge" data-badge-caption="found" ng-bind="tools_search_tools_number"
                         ng-show="tools_search_tools_number >= 0" style="margin-left: 5px;"></span>
                     <a id="toolsDataPlusBtn" class="waves-effect btn green plusBtn right tooltipped"
-                        data-position="left" data-tooltip="Create Tool"
-                        ng-show="!tools_info_editable"
+                        data-position="left" data-tooltip="Create Tool" ng-show="!tools_info_editable"
                         ng-click="tools_plus_button_clicked(true)"><i class="material-icons plusIcon">add</i></a>
-                    <a class="btn pink plusBtn right" ng-show="tools_info_editable" ng-click="tools_plus_button_clicked(false)">UNSAVED</a>
+                    <a id="toolsDataUnsavedBtn" class="waves-effect waves-light btn red lighten-2 right unsavedBtn"
+                        ng-show="tools_info_editable" ng-click="tools_plus_button_clicked(false)">UNSAVED</a>
                 </div>
                 <div class="collapsible-body">
                     <!--
@@ -204,6 +204,8 @@
                     <a id="workflowsPlusBtn" class="waves-effect btn green plusBtn right tooltipped"
                         data-position="left" data-tooltip="Create Workflow"><i class="material-icons plusIcon"
                             ng-click="workflows_plus_button_clicked()">add</i></a>
+                    <a id="workflowsUnsavedBtn"
+                        class="waves-effect waves-light btn red lighten-2 right unsavedBtn">UNSAVED</a>
                 </div>
                 <div class="collapsible-body">
                     <div class="row">
@@ -293,6 +295,8 @@
                     <a id="referencesPlusBtn" class="waves-effect btn green plusBtn right tooltipped"
                         data-position="left" data-tooltip="Create Reference"><i class="material-icons plusIcon"
                             ng-click="references_plus_button_clicked()">add</i></a>
+                    <a id="referencesUnsavedBtn"
+                        class="waves-effect waves-light btn red lighten-2 right unsavedBtn">UNSAVED</a>
                 </div>
                 <div class="collapsible-body">
                     <!--
@@ -361,6 +365,8 @@
                     <a id="qaPlusBtn" class="waves-effect btn green plusBtn right tooltipped" data-position="left"
                         data-tooltip="Create Question" ng-click="qa_plus_button_clicked()"><i
                             class="material-icons plusIcon">add</i></a>
+                    <a id="qaUnsavedBtn"
+                        class="waves-effect waves-light btn red lighten-2 right unsavedBtn">UNSAVED</a>
                 </div>
                 <div class="collapsible-body">
                     <!--
