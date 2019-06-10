@@ -206,3 +206,25 @@ output__result__root__null=${output__result__frequentistadditive__3}
 
 #############################
 ```
+
+tools_plus_button_clicked
+workflows_plus_button_clicked
+references_plus_button_clicked 
+
+workflows_search_create_new_pressed_ok
+
+workflows_search_create_new_pressed ==> DELETE IT!
+
+
+tools_search_create_new_pressed_ok
+
+
+tools_search_jstree_modal_editable ==> DELETE IT
+tools_search_jstree_select_node
+tools_search_raise_edit_are_you_sure_modal
+
+TOOLS_CREATE_BUTTON
+
+
+raise_modal_check
+
