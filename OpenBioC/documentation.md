@@ -181,7 +181,7 @@ tar zxvf snptest_v2.5.2_MacOSX_x86_64.tgz
 
 #############################
 ```
-# Insert the BASH commands for this step
+
 
 # Insert the BASH commands for this step
 
@@ -199,9 +199,9 @@ step__st1__artificialsignal__8
 
 input__dataset__frequentistadditive__1=${output__out__artificialsignal__8}
 
-step__main__frequentistadditive__1
+step__main__frequentistadditive__3
 
-output__result__root__null=${output__result__frequentistadditive__1}
+output__result__root__null=${output__result__frequentistadditive__3}
 
 
 #############################

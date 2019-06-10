@@ -9,7 +9,7 @@
         <div class="faster" id="createToolDataDiv" style="display: none;">
             <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
                 <p>
-                    <h5>
+                    <h5> Tool:
                         <span ng-bind="tools_info_name"></span>/<span ng-bind="tools_info_version"></span><span
                             ng-show="!tools_info_editable">/<span ng-bind="tools_info_edit"></span></span>
                     </h5>
@@ -362,7 +362,7 @@
         <div id="workflowsRightPanel" class="faster" style="display: none;">
             <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
                 <p ng-show="!workflows_info_editable">
-                    <h5>
+                    <h5> Workflow: 
                         <span ng-bind="workflow_info_name"></span><span ng-show="!workflows_info_editable">/<span
                                 ng-bind="workflow_info_edit"></span></span>
                     </h5>
@@ -794,10 +794,11 @@
         <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
         <div class="faster" id="referencesRightPanel" style="display: none;">
             <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
+
+                <h5> Reference: 
+                    <span ng-bind="references_name"></span>
+                </h5>            
                 <div ng-show="!references_info_editable">
-                    <h5>
-                        <span ng-bind="references_name"></span>
-                    </h5>
                     <small class="form-text text-muted">
                         <!-- <span ng-bind="tool_info_username"></span>
                             <span ng-show="!tools_info_editable">, created at <span
@@ -983,7 +984,7 @@
                     <div class="collapsible-header">
                         <i class="material-icons arrow">keyboard_arrow_right</i>
                         <i class="material-icons">info</i>
-                        General
+                        User Info
                     </div>
                     <div class="collapsible-body">
                         <form class="col s12">
