@@ -75,7 +75,6 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tools_version_regexp = /^[\w\.]+$/ ;
         $scope.tools_edit_regexp = /^\d+$/; 
         $scope.tools_search_warning= "";
-        $scope.workflows_search_warning = "";
 
         //$scope.set_tools_info_editable(false);
         $scope.tools_info_editable = false; // Can we edit tools_info ?
@@ -1038,11 +1037,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
-    * Navbar -> Tools/Data --> Search ComboBox Workflows --> Appropriate input --> "Create New" button --> Pressed
+    * Navbar -> Tools/Data --> Search ComboBox Workflows --> Appropriate input --> '+' --> Pressed
     */
     $scope.workflows_search_create_new_pressed = function() {
+
+
         if (!$scope.username) {
-            $scope.workflows_search_warning = 'Login to create new Workflows';
+            $scope.toast('Login to create new Workflow', 'error');
             return;
         }
 
