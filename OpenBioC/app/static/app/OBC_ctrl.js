@@ -1031,11 +1031,6 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
             return
         }
 
-        //Check if is ok to fetch info
-        if ($scope.raise_modal_check()) {
-            $scope.tools_search_raise_edit_are_you_sure_modal('WORKFLOWS_CREATE_BUTTON');
-        }
-
         //Close tool accordion
         $scope.set_tools_info_editable(false);
         //$scope.tools_info_editable = false;
@@ -1659,21 +1654,29 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     $scope.tools_search_jstree_select_node = function(e, data) {
         //console.log(data.node.data.name);
 
+        if ($scope.tools_info_editable) {
+            $scope.toast('There are unsaved info on Tools/Data. Save or press Cancel', 'error');
+            return;
+        }
+
+        $scope.tools_search_show_item(data.node.data);
+        return;
+
         //Check if the tool pane is editable. If we do not include this check. All edits will be lost!
         //If it is editable, show a modal (see function tools_search_jstree_modal_editable)
 
         //Save in a variable the data of the item that has been clicked
-        $scope.modal_data = data;
-        if ($scope.tools_info_editable || $scope.workflows_info_editable) {
-            $scope.tools_search_raise_edit_are_you_sure_modal('TOOL_SEARCH_JSTREE');
-        }
-        else {
-            // Pressed an item in tool search tree, but the tool_info is not editable
-            // Simulate a YES response from warning modal
-            $("#warningModal").data('who_called_me', 'TOOL_SEARCH_JSTREE');
-            $scope.tools_search_jstree_modal_editable(true);
-        }
-
+//        $scope.modal_data = data;
+//        if ($scope.tools_info_editable || $scope.workflows_info_editable) {
+//            $scope.tools_search_raise_edit_are_you_sure_modal('TOOL_SEARCH_JSTREE');
+//        }
+//        else {
+//            // Pressed an item in tool search tree, but the tool_info is not editable
+//            // Simulate a YES response from warning modal
+//            $("#warningModal").data('who_called_me', 'TOOL_SEARCH_JSTREE');
+//            $scope.tools_search_jstree_modal_editable(true);
+//        }
+//
     };
 
     /*
