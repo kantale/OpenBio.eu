@@ -954,6 +954,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         window.OBCUI.chip_enable('toolChips'); // Enable them
     };
 
+    /*
+    * Tools/Data --> CANCEL (header) --> Clicked
+    */
+    $scope.tools_button_cancel_clicked = function() {
+        $scope.hide_all_right_accordions('');
+        $scope.tools_info_editable = false;
+    };
 
     /*
     * Navbar -> Tools/Data --> Appropriate input --> "Create New" button --> Pressed
