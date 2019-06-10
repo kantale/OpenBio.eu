@@ -222,8 +222,8 @@ window.onload = function () {
                 event.stopPropagation();
                 console.log('stdout button clicked');
             }
-            // Add button (left panel)
-            else if (event.target.classList.contains('plusBtn') || event.target.parentNode.classList.contains('plusBtn')) {
+            // Add and Unsaved button (left panel)
+            else if (event.target.classList.contains('plusBtn') || event.target.parentNode.classList.contains('plusBtn') || event.target.classList.contains('unsavedBtn')) {
                 event.stopPropagation();
                 var id;
                 if (event.target.tagName == 'I') {
