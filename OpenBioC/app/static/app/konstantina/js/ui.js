@@ -1607,11 +1607,14 @@ window.onload = function () {
 			*
             */
             var makeTippy = function (node, text) {
+				
                 return tippy(node.popperRef(), {
                     content: function () {
                         var div = document.createElement('div');
+						var belongto = " - ";
+							if(node._private.data.belongto !== null) belongto = node._private.data.belongto.name;
 						
-						text='name : '+node._private.data.label +'<br>'+ 'version : '+node._private.data.version +'<br>'+ 'edit : '+node._private.data.edit +'<br>'+ 'type : '+node._private.data.type+'<br>'+'variables : '+node._private.data.variables +'<br>'+'belongs to : '+node._private.data.belongto +'<br>';
+						text='name : '+node._private.data.label +'<br>'+ 'version : '+node._private.data.version +'<br>'+ 'edit : '+node._private.data.edit +'<br>'+ 'type : '+node._private.data.type+'<br>'+'variables : '+node._private.data.variables +'<br>'+'belongs to : '+ belongto +'<br>';
                         div.innerHTML = text; 
 						div.style.zIndex = "-1000000000000000000000000";	
                         return div;
@@ -1965,7 +1968,7 @@ window.onload = function () {
                         selector: 'node',
                         "style": {
                             "shape": "round-rectangle",
-                            "background-color": "#AFB4AE",
+                            "background-color": "#5A5A5A",
                             //"label": "data(id)",
                             "label": "data(label)",
                             //"height": 15,
@@ -1988,7 +1991,7 @@ window.onload = function () {
                             'shape': 'round-rectangle',
                             'border-width': '3',
                             'border-color': '#43A047', 
-                            'background-color': '#AFB4AE',
+                            'background-color': '#5A5A5A',
                             //"height": 15,
                             //"width": 15
                         }
@@ -1999,7 +2002,7 @@ window.onload = function () {
                             'shape': 'round-rectangle',
                             'border-width': '3',
                             'border-color': '#E53935',
-                            'background-color': '#AFB4AE',
+                            'background-color': '#5A5A5A',
                             //"height": 15,
                             //"width": 15
                         }
@@ -2010,8 +2013,8 @@ window.onload = function () {
                         "style": {
                             'shape': 'octagon',
                             //'border-width': '3',
-                            //'border-color': '#AFB4AE',
-                            'background-color': '#AFB4AE',
+                            //'border-color': '#5A5A5A',
+                            'background-color': '#5A5A5A',
                             //"height": 15,
                             //"width": 15
                         }
@@ -2074,7 +2077,7 @@ window.onload = function () {
                         selector: 'node[type="tool"]',  //[state = "pending"]
                         "style": {
                             "shape": "round-rectangle",
-                            "background-color": "#AFB4AE",
+                            "background-color": "#5A5A5A",
                             "label": "data(label)"
                         }
                     },
@@ -2082,7 +2085,7 @@ window.onload = function () {
                         selector: 'node[type="step"]',
                         "style": {
                             'shape': 'ellipse',
-                            'background-color': '#AFB4AE',
+                            'background-color': '#5A5A5A',
 							"label": "data(label)"
                         }
                     },
@@ -2092,7 +2095,7 @@ window.onload = function () {
                             'shape': 'round-rectangle',
 							'border-width': '3',
                             'border-color': '#43A047',
-                            'background-color': '#AFB4AE',
+                            'background-color': '#5A5A5A',
 							"label": "data(label)"
   
                         }
@@ -2103,7 +2106,7 @@ window.onload = function () {
                             'shape': 'round-rectangle',
 							'border-width': '3',
                             'border-color': '#E53935',
-                            'background-color': '#AFB4AE',
+                            'background-color': '#5A5A5A',
 							"label": "data(label)"
 
                         }
@@ -2114,7 +2117,7 @@ window.onload = function () {
                             'shape': 'octagon',
                             //'border-width': '3',
                             //'border-color': '#E53935',
-                            'background-color': '#AFB4AE',
+                            'background-color': '#5A5A5A',
 							"label": "data(label)"
 
                         }
@@ -2138,8 +2141,8 @@ window.onload = function () {
                             'width': 2,
 							'line-dash-pattern': [6, 3], 
 							'line-dash-offset': 24,
-                            'line-color': '#AFB4AE',
-                            'target-arrow-color': '#AFB4AE'
+                            'line-color': '#5A5A5A',
+                            'target-arrow-color': '#5A5A5A'
 							}
 						*/	
                 ],
@@ -2417,17 +2420,17 @@ window.onload = function () {
         * window.edgeAnimation('hapmap2__1__2__2', 'md5checkdir__1__2__2', "Running")    63Lf7 
         */ 
 		window.edgeAnimation = function(source_anim_id, target_anim_id, state){
-					// get edge by source / target
-					var edges  = cy_rep.$("edge"); 
-					var edge_anim=null;
+				// get edge by source / target
+				var edges  = cy_rep.$("edge"); 
+				var edge_anim=null;
 					
-					edges.forEach(function (edge) {
+				edges.forEach(function (edge) {
 
-							if(edge._private.data.source === source_anim_id && edge._private.data.target===target_anim_id){
-								edge_anim = edge;
-							}
+						if(edge._private.data.source === source_anim_id && edge._private.data.target===target_anim_id){
+							edge_anim = edge;
+						}
 										
-					})
+				})
 					
 			
 				if(edge_anim!== null){
@@ -2460,7 +2463,7 @@ window.onload = function () {
 										'opacity': 0.1
 									},
 									duration: 200
-								});
+					});
 
                     function edgeTimer() {
 
@@ -2480,8 +2483,6 @@ window.onload = function () {
 
 					//create time interval for continous looping of the animation				
 					var myVar = setInterval(edgeTimer, 200);
-
-					
 					edgeTimer();
 					
 					
