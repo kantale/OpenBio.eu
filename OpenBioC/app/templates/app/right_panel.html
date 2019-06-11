@@ -2,11 +2,17 @@
 <!-- -------------------------------------------------------- Right Panel ---------------------------------------------------------------------------- -->
 <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
 <div class="rightPanel">
-    <div style="margin: 20px;">
-        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
-        <!-- ---------------------------------------------- Create Tool / Data Right Panel ------------------------------------------------------------------- -->
-        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
-        <div class="faster" id="createToolDataDiv" style="display: none;">
+    <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+    <!-- ---------------------------------------------- Create Tool / Data Right Panel ------------------------------------------------------------------- -->
+    <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+    <div class="faster" id="createToolDataDiv" style="display: none;">
+        <div class="card blue-grey lighten-4 rightPanelTitleCard">
+            <div class="card-content rightPanelTitleContent">
+                <h5 class="rightPanelTitleHeader">Tool/Data</h5>
+                <a class="waves-effect btn-flat right" style="margin-top: -30px;" ng-click="tools_button_cancel_clicked()">Cancel</a>
+            </div>
+        </div>
+        <div style="margin: 20px;">
             <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
                 <p>
                     <h5>
@@ -83,7 +89,8 @@
                             </div>
                             <div class="row left-align">
                                 <div class="col s12 m3 grid-s12-m3-l3"><b>Description:</b></div>
-                                <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind-html="tool_description_html"></span></div>
+                                <div class="col s12 m9 grid-s12-m9-l9"><span
+                                        ng-bind-html="tool_description_html"></span></div>
                             </div>
                             <div class="row left-align" ng-show="tool_changes">
                                 <div class="col s12 m3 grid-s12-m3-l3"><b>Edit Summary:</b></div>
@@ -243,7 +250,8 @@
                                             <td><input type="text" placeholder="value" ng-model="x.value"
                                                     ng-disabled="!tools_info_editable"></td>
                                             <td><input type="text" placeholder="description" ng-model="x.description"
-                                                    ng-disabled="!tools_info_editable"></td>
+                                                    ng-disabled="!tools_info_editable">
+                                            </td>
                                             <td>
                                                 <a class="waves-effect waves-light btn-small tooltipped green darken-1"
                                                     style="padding-left: 7px; padding-right:7px" data-position="bottom"
@@ -354,12 +362,19 @@
                 </li>
             </ul>
         </div>
+    </div>
 
 
-        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
-        <!-- --------------------------------------------------- Edit Workflow Right Panel ------------------------------------------------------------------- -->
-        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
-        <div id="workflowsRightPanel" class="faster" style="display: none;">
+    <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+    <!-- --------------------------------------------------- Edit Workflow Right Panel ------------------------------------------------------------------- -->
+    <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+    <div id="workflowsRightPanel" class="faster" style="display: none;">
+        <div class="card blue-grey lighten-4 rightPanelTitleCard">
+            <div class="card-content rightPanelTitleContent">
+                <h5 class="rightPanelTitleHeader">Workflow</h5>
+            </div>
+        </div>
+        <div style="margin: 20px;">
             <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
                 <p ng-show="!workflows_info_editable">
                     <h5>
@@ -435,15 +450,18 @@
                             <div class="row" ng-show="!workflows_info_editable">
                                 <div class="row left-align">
                                     <div class="col s12 m3 grid-s12-m3-l3"><b>Website:</b></div>
-                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="workflow_website"></span></div>
+                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="workflow_website"></span>
+                                    </div>
                                 </div>
                                 <div class="row left-align">
                                     <div class="col s12 m3 grid-s12-m3-l3"><b>Description:</b></div>
-                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind-html="workflow_description_html"></span></div>
+                                    <div class="col s12 m9 grid-s12-m9-l9"><span
+                                            ng-bind-html="workflow_description_html"></span></div>
                                 </div>
                                 <div class="row left-align" ng-show="workflow_changes">
                                     <div class="col s12 m3 grid-s12-m3-l3"><b>Edit Summary:</b></div>
-                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="workflow_changes"></span></div>
+                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="workflow_changes"></span>
+                                    </div>
                                 </div>
                                 <div class="row left-align">
                                     <div class="col s12 m3 grid-s12-m3-l3"><b>Tags:</b></div>
@@ -558,7 +576,8 @@
                                             <td><input type="text" placeholder="Name" ng-model="x.name"
                                                     ng-disabled="!workflows_info_editable"></td>
                                             <td><input type="text" placeholder="Description" ng-model="x.description"
-                                                    ng-disabled="!workflows_info_editable"></td>
+                                                    ng-disabled="!workflows_info_editable">
+                                            </td>
                                             <td class="switch">
                                                 <label>
                                                     IN
@@ -684,10 +703,17 @@
                 </li>
             </ul>
         </div>
-        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
-        <!-- ------------------------------------------------------ Reports Right Panel ---------------------------------------------------------------------- -->
-        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
-        <div class="faster" id="reportsRightPanel" style="display: none;">
+    </div>
+    <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+    <!-- ------------------------------------------------------ Reports Right Panel ---------------------------------------------------------------------- -->
+    <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+    <div class="faster" id="reportsRightPanel" style="display: none;">
+        <div class="card blue-grey lighten-4 rightPanelTitleCard">
+            <div class="card-content rightPanelTitleContent">
+                <h5 class="rightPanelTitleHeader">Report</h5>
+            </div>
+        </div>
+        <div style="margin: 20px;">
             <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
                 <div class="row left-align">
                     <div class="col s2">
@@ -789,15 +815,22 @@
                 </li>
             </ul>
         </div>
-        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
-        <!-- ------------------------------------------------- References Right Panel ------------------------------------------------------------------------ -->
-        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
-        <div class="faster" id="referencesRightPanel" style="display: none;">
+    </div>
+    <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+    <!-- ------------------------------------------------- References Right Panel ------------------------------------------------------------------------ -->
+    <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+    <div class="faster" id="referencesRightPanel" style="display: none;">
+        <div class="card blue-grey lighten-4 rightPanelTitleCard">
+            <div class="card-content rightPanelTitleContent">
+                <h5 class="rightPanelTitleHeader">Report</h5>
+            </div>
+        </div>
+        <div style="margin: 20px;">
             <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
+                <h5>
+                    <span ng-bind="references_name"></span>
+                </h5>
                 <div ng-show="!references_info_editable">
-                    <h5>
-                        <span ng-bind="references_name"></span>
-                    </h5>
                     <small class="form-text text-muted">
                         <!-- <span ng-bind="tool_info_username"></span>
                             <span ng-show="!tools_info_editable">, created at <span
@@ -885,27 +918,33 @@
                             <div class="col s12">
                                 <div class="row left-align">
                                     <div class="col s12 m3 grid-s12-m3-l3"><b>Name:</b></div>
-                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_name"></span></div>
+                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_name"></span>
+                                    </div>
                                 </div>
                                 <div class="row left-align">
                                     <div class="col s12 m3 grid-s12-m3-l3"><b>Title:</b></div>
-                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_title"></span></div>
+                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_title"></span>
+                                    </div>
                                 </div>
                                 <div class="row left-align">
                                     <div class="col s12 m3 grid-s12-m3-l3"><b>URL:</b></div>
-                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_url"></span></div>
+                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_url"></span>
+                                    </div>
                                 </div>
                                 <div class="row left-align">
                                     <div class="col s12 m3 grid-s12-m3-l3"><b>DOI:</b></div>
-                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_doi"></span></div>
+                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_doi"></span>
+                                    </div>
                                 </div>
                                 <div class="row left-align">
                                     <div class="col s12 m3 grid-s12-m3-l3"><b>Notes:</b></div>
-                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_notes"></span></div>
+                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_notes"></span>
+                                    </div>
                                 </div>
                                 <div class="row left-align">
                                     <div class="col s12 m3 grid-s12-m3-l3"><b>BIBTEX:</b></div>
-                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_BIBTEX"></span></div>
+                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_BIBTEX"></span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -969,12 +1008,19 @@
                 </li>
             </ul>
         </div>
+    </div>
 
-        <!-- USERS RIGHT PANEL -->
-        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
-        <!-- ------------------------------------------------- Users Right Panel ----------------------------------------------------------------------------- -->
-        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
-        <div class="faster" id="userDataDiv" style="display: none;">
+    <!-- USERS RIGHT PANEL -->
+    <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+    <!-- ------------------------------------------------- Users Right Panel ----------------------------------------------------------------------------- -->
+    <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+    <div class="faster" id="userDataDiv" style="display: none;">
+        <div class="card blue-grey lighten-4 rightPanelTitleCard">
+            <div class="card-content rightPanelTitleContent">
+                <h5 class="rightPanelTitleHeader">User</h5>
+            </div>
+        </div>
+        <div style="margin: 20px;">
             <ul id="userDataAccordion" class="collapsible expandable popout faster">
                 <!-- --------------------------------------------------------------------------------------- -->
                 <!-- ------------------------------------ General ------------------------------------------ -->
@@ -983,7 +1029,7 @@
                     <div class="collapsible-header">
                         <i class="material-icons arrow">keyboard_arrow_right</i>
                         <i class="material-icons">info</i>
-                        General
+                        User Info
                     </div>
                     <div class="collapsible-body">
                         <form class="col s12">
@@ -998,12 +1044,14 @@
                             {{verbatim}}
                             <div class="row left-align">
                                 <div class="col s12 m3 grid-s12-m3-l3"><b>Website:</b></div>
-                                <div class="col s12 m9 grid-s12-m9-l9"><a href="https://{{user_website}}" target="_blank"><span ng-bind="user_website"></span></a></div>
+                                <div class="col s12 m9 grid-s12-m9-l9"><a href="https://{{user_website}}"
+                                        target="_blank"><span ng-bind="user_website"></span></a></div>
                             </div>
                             {{endverbatim}}
                             <div class="row left-align">
                                 <div class="col s12 m3 grid-s12-m3-l3"><b>Affiliation:</b></div>
-                                <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="user_affiliation"></span></div>
+                                <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="user_affiliation"></span>
+                                </div>
                             </div>
                             <div class="row left-align">
                                 <div class="col s12 m3 grid-s12-m3-l3"><b>Member Since:</b></div>
@@ -1018,14 +1066,20 @@
                 </li>
             </ul>
         </div>
-        <!-- END OF USER RIGHT PANEL -->
+    </div>
+    <!-- END OF USER RIGHT PANEL -->
 
-        <!-- Q&A RIGHT PANEL -->
-        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
-        <!-- ------------------------------------------------- Q & A Right Panel ----------------------------------------------------------------------------- -->
-        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
-        <div class="faster" id="QARightPanel" style="display: none;">
-
+    <!-- Q&A RIGHT PANEL -->
+    <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+    <!-- ------------------------------------------------- Q & A Right Panel ----------------------------------------------------------------------------- -->
+    <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+    <div class="faster" id="QARightPanel" style="display: none;">
+        <div class="card blue-grey lighten-4 rightPanelTitleCard">
+            <div class="card-content rightPanelTitleContent">
+                <h5 class="rightPanelTitleHeader">Q & A</h5>
+            </div>
+        </div>
+        <div style="margin: 20px;">
             <!-- TEMPLATE START -->
             <!-- <div class="row" style="margin-left: 10px; margin-right: 15px;">
                 <div class="row card-panel left-align" style="padding:5px; margin-bottom: 2px;">
@@ -1069,7 +1123,8 @@
                 <div class="row" ng-show="!qa_info_editable">
                     <div class="row card-panel left-align" style="padding:5px; margin-bottom: 2px;">
                         <div class="valign-wrapper">
-                            <img src="/static/app/images/konstantina/img_avatar.png" alt="" class="circle avatarForumQuestion">
+                            <img src="/static/app/images/konstantina/img_avatar.png" alt=""
+                                class="circle avatarForumQuestion">
                             <small>Asked by <a href="#">Kona</a> on April 19 at 18:40</small>
                         </div>
                         <div>
@@ -1078,12 +1133,15 @@
                         </div>
                     </div>
                     <div class="row right-align" style="margin-top:15px; margin-bottom: 15px;">
-                        <a class="waves-effect waves-light btn-small" href="" ng-click="qa_add_comment_button_pressed()">Add Comment</a>
+                        <a class="waves-effect waves-light btn-small" href=""
+                            ng-click="qa_add_comment_button_pressed()">Add Comment</a>
                     </div>
                     <div class="input-field" ng-show="qa_show_new_comment">
                         <textarea class="validate" ng-model="qa_current_comment"></textarea>
-                        <a class="waves-effect waves-light btn-small" href="" ng-click="qa_comment_save_button_pressed()">Save</a>
-                        <a class="waves-effect waves-light btn-small" href="" ng-click="qa_comment_cancel_button_pressed()">Cancel</a>
+                        <a class="waves-effect waves-light btn-small" href=""
+                            ng-click="qa_comment_save_button_pressed()">Save</a>
+                        <a class="waves-effect waves-light btn-small" href=""
+                            ng-click="qa_comment_cancel_button_pressed()">Cancel</a>
                     </div>
 
                     <!-- <div class="row left-align">
@@ -1111,7 +1169,8 @@
                     <ul class="collection">
                         <li class="collection-item" ng-repeat="post in qa_thread track by post.id">
                             <div class="valign-wrapper">
-                                <img src="/static/app/images/konstantina/img_avatar.png" alt="" class="circle avatarForumReply">
+                                <img src="/static/app/images/konstantina/img_avatar.png" alt=""
+                                    class="circle avatarForumReply">
                                 <small>Replied by <a href="#">Kona</a> on April 19 at 18:40</small>
                             </div>
                             <span ng-bind-html="post.comment_html"></span>
@@ -1127,7 +1186,8 @@
                             <ul class="collection">
                                 <li class="collection-item" ng-repeat="post2 in post.children track by post2.id">
                                     <div class="valign-wrapper">
-                                        <img src="/static/app/images/konstantina/img_avatar.png" alt="" class="circle avatarForumReply">
+                                        <img src="/static/app/images/konstantina/img_avatar.png" alt=""
+                                            class="circle avatarForumReply">
                                         <small>Replied by <a href="#">Kona</a> on April 19 at 18:40</small>
                                     </div>
                                     <span ng-bind-html="post2.comment_html"></span>
@@ -1144,7 +1204,8 @@
                                         <li class="collection-item"
                                             ng-repeat="post3 in post2.children track by post3.id">
                                             <div class="valign-wrapper">
-                                                <img src="/static/app/images/konstantina/img_avatar.png" alt="" class="circle avatarForumReply">
+                                                <img src="/static/app/images/konstantina/img_avatar.png" alt=""
+                                                    class="circle avatarForumReply">
                                                 <small>Replied by <a href="#">Kona</a> on April 19 at 18:40</small>
                                             </div>
                                             <span ng-bind-html="post3.comment_html"></span>
@@ -1161,8 +1222,10 @@
                                                 <li class="collection-item"
                                                     ng-repeat="post4 in post3.children track by post4.id">
                                                     <div class="valign-wrapper">
-                                                        <img src="/static/app/images/konstantina/img_avatar.png" alt="" class="circle avatarForumReply">
-                                                        <small>Replied by <a href="#">Kona</a> on April 19 at 18:40</small>
+                                                        <img src="/static/app/images/konstantina/img_avatar.png" alt=""
+                                                            class="circle avatarForumReply">
+                                                        <small>Replied by <a href="#">Kona</a> on April 19 at
+                                                            18:40</small>
                                                     </div>
                                                     <span ng-bind-html="post4.comment_html"></span>
                                                     <a class="waves-effect btn-flat qaReplyBtn" href=""
@@ -1179,8 +1242,11 @@
                                                         <li class="collection-item"
                                                             ng-repeat="post5 in post4.children track by post5.id">
                                                             <div class="valign-wrapper">
-                                                                <img src="/static/app/images/konstantina/img_avatar.png" alt="" class="circle avatarForumReply">
-                                                                <small>Replied by <a href="#">Kona</a> on April 19 at 18:40</small>
+                                                                <img src="/static/app/images/konstantina/img_avatar.png"
+                                                                    alt="" class="circle avatarForumReply">
+                                                                <small>Replied by <a href="#">Kona</a> on April 19
+                                                                    at
+                                                                    18:40</small>
                                                             </div>
                                                             <span ng-bind-html="post5.comment_html"></span>
                                                             <!-- We allow for 5 levels of comment nesting -->
@@ -1210,6 +1276,6 @@
                 </div>
             </div>
         </div>
-        <!-- END OF Q&A RIGHT PANEL-->
     </div>
+    <!-- END OF Q&A RIGHT PANEL-->
 </div>
