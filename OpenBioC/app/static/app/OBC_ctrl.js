@@ -1667,11 +1667,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * 2. Click Cancel in Tool Search
     * the results are capture by function: tools_search_jstree_modal_editable(yes_no)
     */
-    $scope.tools_search_raise_edit_are_you_sure_modal = function(who_called_me) {
-        M.Modal.getInstance($("#warningModal")).open();
-        $("#warningModal").data('who_called_me', who_called_me);
-
-    };
+//    $scope.tools_search_raise_edit_are_you_sure_modal = function(who_called_me) {
+//        M.Modal.getInstance($("#warningModal")).open();
+//        $("#warningModal").data('who_called_me', who_called_me);
+//
+//    };
 
     /*
     * An item in tool tree on the search panel is selected
@@ -1963,59 +1963,60 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * Who called me value: 
     * TOOLS_CANCEL_BUTTON, WORKFLOWS_CANCEL_BUTTON, TOOL_SEARCH_JSTREE, WORKFLOWS_CREATE_BUTTON, TOOLS_CREATE_BUTTON
     */
-    $scope.tools_search_jstree_modal_editable = function(yes_no) {
-        $scope.tools_search_jstree_modal_editable_response = yes_no;
-
-        //Who called me?
-        var who_called_me = $("#warningModal").data('who_called_me');
-
-        //If modal is open, close it
-        if (M.Modal.getInstance($("#warningModal")).isOpen) {
-            M.Modal.getInstance($("#warningModal")).close();
-        }
-
-        if ($scope.tools_search_jstree_modal_editable_response) { // She clicked YES
-            console.log('CLICKED YES MODAL');
-            console.log('MODAL DATA:');
-            console.log($scope.modal_data);
-
-            console.log('WHO CALLED MODAL:');
-            console.log(who_called_me);
-
-            if (who_called_me == 'TOOL_SEARCH_JSTREE') { // This means, she clicked YES AFTER clicking on tools js tree 
-                console.log('MODAL WHO CALLED ME: TOOL_SEARCH_JSTREE');
-                $scope.tools_search_show_item($scope.modal_data.node.data);
-                window.createToolDataBtn_click();
-                window.cancelWorkflowBtn_click();
-                $scope.set_tools_info_editable(false);
-                //$scope.tools_info_editable = false;
-                $scope.workflows_info_editable = false;
-            }
-            else if (who_called_me == 'TOOLS_CREATE_BUTTON') {
-                $scope.set_tools_info_editable(false);
-                $scope.tools_plus_button_clicked();
-            }
-//            else if (who_called_me == 'TOOLS_CANCEL_BUTTON') {
-//                console.log('MODAL WHO CALLED ME: TOOLS_CANCEL_BUTTON');
-//                window.cancelToolDataBtn_click(); // Close Tool panel
+//    $scope.tools_search_jstree_modal_editable = function(yes_no) {
+//        $scope.tools_search_jstree_modal_editable_response = yes_no;
+//
+//        //Who called me?
+//        var who_called_me = $("#warningModal").data('who_called_me');
+//
+//        //If modal is open, close it
+//        if (M.Modal.getInstance($("#warningModal")).isOpen) {
+//            M.Modal.getInstance($("#warningModal")).close();
+//        }
+//
+//        if ($scope.tools_search_jstree_modal_editable_response) { // She clicked YES
+//            console.log('CLICKED YES MODAL');
+//            console.log('MODAL DATA:');
+//            console.log($scope.modal_data);
+//
+//            console.log('WHO CALLED MODAL:');
+//            console.log(who_called_me);
+//
+//            if (who_called_me == 'TOOL_SEARCH_JSTREE') { // This means, she clicked YES AFTER clicking on tools js tree 
+//                console.log('MODAL WHO CALLED ME: TOOL_SEARCH_JSTREE');
+//                $scope.tools_search_show_item($scope.modal_data.node.data);
+//                window.createToolDataBtn_click();
+//                window.cancelWorkflowBtn_click();
 //                $scope.set_tools_info_editable(false);
 //                //$scope.tools_info_editable = false;
-//            }
-//            else if (who_called_me == 'WORKFLOWS_CANCEL_BUTTON') {
-//                console.log('MODAL WHO CALLED ME: WORKFLOWS_CANCEL_BUTTON');
 //                $scope.workflows_info_editable = false;
-//                window.cancelWorkflowBtn_click(); // Close WORFKLOW accordion
-//           }
-            else if (who_called_me == 'WORKFLOWS_CREATE_BUTTON') {
-                $scope.workflows_search_create_new_pressed_ok();
-            }
-            else {
-                throw "ERROR: 7847"; // This should never happen
-            }
+//            }
+//            else if (who_called_me == 'TOOLS_CREATE_BUTTON') {
+//                $scope.set_tools_info_editable(false);
+//                $scope.tools_plus_button_clicked();
+//            }
+////            else if (who_called_me == 'TOOLS_CANCEL_BUTTON') {
+////                console.log('MODAL WHO CALLED ME: TOOLS_CANCEL_BUTTON');
+////                window.cancelToolDataBtn_click(); // Close Tool panel
+////                $scope.set_tools_info_editable(false);
+////                //$scope.tools_info_editable = false;
+////            }
+////            else if (who_called_me == 'WORKFLOWS_CANCEL_BUTTON') {
+////                console.log('MODAL WHO CALLED ME: WORKFLOWS_CANCEL_BUTTON');
+////                $scope.workflows_info_editable = false;
+////                window.cancelWorkflowBtn_click(); // Close WORFKLOW accordion
+////           }
+//            else if (who_called_me == 'WORKFLOWS_CREATE_BUTTON') {
+//                $scope.workflows_search_create_new_pressed_ok();
+//            }
+//            else {
+//                throw "ERROR: 7847"; // This should never happen
+//            }
+//
+//        }
+//
+//    };
 
-        }
-
-    };
 
     //JSTREE END tools_search
 
