@@ -202,9 +202,11 @@
                     <span class="new badge" data-badge-caption="found" ng-bind="workflows_search_tools_number"
                         ng-show="workflows_search_tools_number >= 0" style="margin-left: 5px;"></span>
                     <a id="workflowsPlusBtn" class="waves-effect btn green plusBtn right tooltipped"
-                        data-position="left" data-tooltip="Create Workflow"><i class="material-icons plusIcon"
-                            ng-click="workflows_plus_button_clicked()">add</i></a>
+                        data-position="left" data-tooltip="Create Workflow" ng-show="!workflows_info_editable"><i class="material-icons plusIcon"
+                            ng-click="workflows_plus_button_clicked(true)">add</i></a>
                     <a id="workflowsUnsavedBtn"
+                        ng-show="workflows_info_editable"
+                        ng-click="workflows_plus_button_clicked(false)"
                         class="waves-effect waves-light btn red lighten-2 right unsavedBtn">UNSAVED</a>
                 </div>
                 <div class="collapsible-body">
@@ -293,9 +295,11 @@
                     <span class="new badge" data-badge-caption="found" style="margin-left: 5px;"
                         ng-bind="main_search_references_number" ng-show="main_search_references_number >= 0"></span>
                     <a id="referencesPlusBtn" class="waves-effect btn green plusBtn right tooltipped"
-                        data-position="left" data-tooltip="Create Reference"><i class="material-icons plusIcon"
-                            ng-click="references_plus_button_clicked()">add</i></a>
+                        data-position="left" data-tooltip="Create Reference" ng-show="!references_info_editable"><i class="material-icons plusIcon"
+                            ng-click="references_plus_button_clicked(true)">add</i></a>
                     <a id="referencesUnsavedBtn"
+                        ng-show="references_info_editable"
+                        ng-click="references_plus_button_clicked(false)"
                         class="waves-effect waves-light btn red lighten-2 right unsavedBtn">UNSAVED</a>
                 </div>
                 <div class="collapsible-body">
@@ -363,9 +367,11 @@
                     <span class="new badge" data-badge-caption="found" style="margin-left: 5px;"
                         ng-bind="main_search_qa_number" ng-show="main_search_qa_number >= 0"></span>
                     <a id="qaPlusBtn" class="waves-effect btn green plusBtn right tooltipped" data-position="left"
-                        data-tooltip="Create Question" ng-click="qa_plus_button_clicked()"><i
+                        data-tooltip="Create Question" ng-click="qa_plus_button_clicked(true)" ng-show="!qa_info_editable"><i
                             class="material-icons plusIcon">add</i></a>
                     <a id="qaUnsavedBtn"
+                        ng-show="qa_info_editable"
+                        ng-click="qa_plus_button_clicked(false)"
                         class="waves-effect waves-light btn red lighten-2 right unsavedBtn">UNSAVED</a>
                 </div>
                 <div class="collapsible-body">

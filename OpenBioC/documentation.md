@@ -220,8 +220,13 @@ tools_search_create_new_pressed_ok
 
 
 tools_search_jstree_modal_editable ==> DELETE IT
-tools_search_jstree_select_node
+tools_search_jstree_select_node             --> $scope.tools_search_show_item($scope.modal_data.node.data);
+workflows_search_jstree_select_node
+references_search_jstree_select_node
+
 tools_search_raise_edit_are_you_sure_modal
+
+
 
 TOOLS_CREATE_BUTTON
 
