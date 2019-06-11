@@ -75,7 +75,6 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.tools_version_regexp = /^[\w\.]+$/ ;
         $scope.tools_edit_regexp = /^\d+$/; 
         $scope.tools_search_warning= "";
-        $scope.workflows_search_warning = "";
 
         //$scope.set_tools_info_editable(false);
         $scope.tools_info_editable = false; // Can we edit tools_info ?
@@ -876,7 +875,14 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * Create new tool button pressed.
     * All checks are ok.
     */
-    $scope.tools_search_create_new_pressed_ok = function() {
+    $scope.tools_plus_button_clicked = function(is_new) {
+
+        //Is user registered?
+        if (!$scope.username) {
+            $scope.toast('Login to create a new Tool or Data!', 'error');
+            return;
+        }
+
         $scope.tools_search_warning = '';
 
         //Close Workflow right panel
@@ -893,10 +899,16 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         M.Collapsible.getInstance($('#createToolDataAccordion')).open(0);
 
 
-        $scope.show_tools_info = true;
+        //$scope.show_tools_info = true;
         //$scope.show_workflows_info = false; // TODO. THIS SHOULDN'T BE HERE
 
         $scope.set_tools_info_editable(true);
+
+        if (!is_new) {
+            //This is not a new tool. So.. left values unchanged.
+            return;
+        }
+
         //$scope.tools_info_editable = true;
         $scope.tool_info_created_at = null;
         $scope.tools_info_forked_from = null;
@@ -942,6 +954,13 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         window.OBCUI.chip_enable('toolChips'); // Enable them
     };
 
+    /*
+    * Tools/Data --> CANCEL (header) --> Clicked
+    */
+    $scope.tools_button_cancel_clicked = function() {
+        $scope.hide_all_right_accordions('');
+        $scope.tools_info_editable = false;
+    };
 
     /*
     * Navbar -> Tools/Data --> Appropriate input --> "Create New" button --> Pressed
@@ -986,9 +1005,32 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
-    * Create new workflow. All checks are ok. 
+    * Called when ANY "+" button is clicked and when ANY jstree node is clicked!
     */
-    $scope.workflows_search_create_new_pressed_ok = function() {
+    $scope.raise_modal_check = function() {
+        if ($scope.tools_info_editable) {
+            $scope.modal_message = 'You have unsaved info in Tools/Data.';
+            return true;
+        }
+        if ($scope.workflows_info_editable) {
+            $scope.modal_message = 'You have unsaved info in Workflows.';
+            return true;
+        }
+
+        return false;
+    };
+
+    /*
+    * Workflows --> "+" (Create new) --> pressed 
+    */
+    $scope.workflows_plus_button_clicked = function() {
+
+        //Check if user is registered
+        if (!$scope.username) {
+            $scope.toast('Login to create a new workflow!', 'error');
+            return
+        }
+
         //Close tool accordion
         $scope.set_tools_info_editable(false);
         //$scope.tools_info_editable = false;
@@ -1037,46 +1079,6 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.workflow_step_add_update_label = 'Add';
     };
 
-    /*
-    * Navbar -> Tools/Data --> Search ComboBox Workflows --> Appropriate input --> "Create New" button --> Pressed
-    */
-    $scope.workflows_search_create_new_pressed = function() {
-        if (!$scope.username) {
-            $scope.workflows_search_warning = 'Login to create new Workflows';
-            return;
-        }
-
-        //Check if worfklows search name are empty 
-//        if (!$scope.workflows_search_name) {
-//            $scope.workflows_search_warning = 'Name should not be empty';
-//            return;
-//        }
-
-        //Edit SHOULD BE EMPTY!
-//        if ($scope.workflows_search_edit) {
-//            $scope.worfflows_search_warning = 'An edit number will be assigned after you save your workflow (leave it empty)';
-//            return;
-//        }
-
-        //If tools are editable then raise a modal to ask user if she want to lose all edits.
-        if ($scope.tools_info_editable) {
-            $scope.tools_search_raise_edit_are_you_sure_modal('WORKFLOWS_CREATE_BUTTON');
-            return;
-        }
-
-        $scope.workflows_search_create_new_pressed_ok();
-
-        //Open a modal window. The Yes/No buttons of the window are binded to tools_search_jstree_modal_editable 
-        //window.createToolDataBtn_click();
-
-
-        //$scope.show_tools_info = false;
-        //$scope.show_workflows_info = true;
-
-        //$scope.workflows_info_error_message = '';
-
-
-    };
 
     /*
     * Navbar --> Tools/data --> Appropriate input --> "Create New" button --> Pressed --> Filled input --> Save (button) --> Pressed
@@ -1652,21 +1654,29 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     $scope.tools_search_jstree_select_node = function(e, data) {
         //console.log(data.node.data.name);
 
+        if ($scope.tools_info_editable) {
+            $scope.toast('There are unsaved info on Tools/Data. Save or press Cancel', 'error');
+            return;
+        }
+
+        $scope.tools_search_show_item(data.node.data);
+        return;
+
         //Check if the tool pane is editable. If we do not include this check. All edits will be lost!
         //If it is editable, show a modal (see function tools_search_jstree_modal_editable)
 
         //Save in a variable the data of the item that has been clicked
-        $scope.modal_data = data;
-        if ($scope.tools_info_editable || $scope.workflows_info_editable) {
-            $scope.tools_search_raise_edit_are_you_sure_modal('TOOL_SEARCH_JSTREE');
-        }
-        else {
-            // Pressed an item in tool search tree, but the tool_info is not editable
-            // Simulate a YES response from warning modal
-            $("#warningModal").data('who_called_me', 'TOOL_SEARCH_JSTREE');
-            $scope.tools_search_jstree_modal_editable(true);
-        }
-
+//        $scope.modal_data = data;
+//        if ($scope.tools_info_editable || $scope.workflows_info_editable) {
+//            $scope.tools_search_raise_edit_are_you_sure_modal('TOOL_SEARCH_JSTREE');
+//        }
+//        else {
+//            // Pressed an item in tool search tree, but the tool_info is not editable
+//            // Simulate a YES response from warning modal
+//            $("#warningModal").data('who_called_me', 'TOOL_SEARCH_JSTREE');
+//            $scope.tools_search_jstree_modal_editable(true);
+//        }
+//
     };
 
     /*
@@ -1869,6 +1879,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * References "+" button clicked (create/add) a new Reference
     */
     $scope.references_plus_button_clicked = function() {
+
+        if (!$scope.username) {
+            $scope.toast('Login to create a new reference!', 'error');
+            return;
+        }
+
         $scope.hide_all_right_accordions('references');
 
         document.getElementById('referencesRightPanel').style.display = 'block';
@@ -1939,20 +1955,20 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 $scope.workflows_info_editable = false;
             }
             else if (who_called_me == 'TOOLS_CREATE_BUTTON') {
-                $scope.tools_search_create_new_pressed_ok();
-            }
-            else if (who_called_me == 'TOOLS_CANCEL_BUTTON') {
-                console.log('MODAL WHO CALLED ME: TOOLS_CANCEL_BUTTON');
-                window.cancelToolDataBtn_click(); // Close Tool panel
                 $scope.set_tools_info_editable(false);
-                //$scope.tools_info_editable = false;
+                $scope.tools_plus_button_clicked();
             }
-            else if (who_called_me == 'WORKFLOWS_CANCEL_BUTTON') {
-                console.log('MODAL WHO CALLED ME: WORKFLOWS_CANCEL_BUTTON');
-                $scope.workflows_info_editable = false;
-                window.cancelWorkflowBtn_click(); // Close WORFKLOW accordion
-
-            }
+//            else if (who_called_me == 'TOOLS_CANCEL_BUTTON') {
+//                console.log('MODAL WHO CALLED ME: TOOLS_CANCEL_BUTTON');
+//                window.cancelToolDataBtn_click(); // Close Tool panel
+//                $scope.set_tools_info_editable(false);
+//                //$scope.tools_info_editable = false;
+//            }
+//            else if (who_called_me == 'WORKFLOWS_CANCEL_BUTTON') {
+//                console.log('MODAL WHO CALLED ME: WORKFLOWS_CANCEL_BUTTON');
+//                $scope.workflows_info_editable = false;
+//                window.cancelWorkflowBtn_click(); // Close WORFKLOW accordion
+//           }
             else if (who_called_me == 'WORKFLOWS_CREATE_BUTTON') {
                 $scope.workflows_search_create_new_pressed_ok();
             }
@@ -3226,6 +3242,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * Q&A "+" button clicked (create/add) a new Question
     */
     $scope.qa_plus_button_clicked = function() {
+
+        if (!$scope.username) {
+            $scope.toast('Login to post a new question!', 'error');
+            return;
+        }
 
         $scope.hide_all_right_accordions('qas');
 
