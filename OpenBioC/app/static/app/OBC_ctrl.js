@@ -961,6 +961,29 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         $scope.hide_all_right_accordions('');
         $scope.tools_info_editable = false;
     };
+    /*
+    * Workflows --> CANCEL (header) --> Clicked
+    */
+    $scope.workflows_button_cancel_clicked = function() {
+        $scope.hide_all_right_accordions('');
+        $scope.workflows_info_editable = false;
+    };
+
+    /*
+    * Reports --> CANCEL (header) --> Clicked
+    */
+    $scope.references_button_cancel_clicked = function() {
+        $scope.hide_all_right_accordions('');
+        $scope.references_info_editable = false;
+    };
+
+    /*
+    * QAs --> CANCEL (header) --> Clicked
+    */
+    $scope.qas_button_cancel_clicked = function() {
+        $scope.hide_all_right_accordions('');
+        $scope.qa_info_editable = false;
+    };
 
     /*
     * Navbar -> Tools/Data --> Appropriate input --> "Create New" button --> Pressed
@@ -1022,8 +1045,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     /*
     * Workflows --> "+" (Create new) --> pressed 
+    * is_new: Is this a new workflow?
     */
-    $scope.workflows_plus_button_clicked = function() {
+    $scope.workflows_plus_button_clicked = function(is_new) {
 
         //Check if user is registered
         if (!$scope.username) {
@@ -1032,7 +1056,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         }
 
         //Close tool accordion
-        $scope.set_tools_info_editable(false);
+        //$scope.set_tools_info_editable(false);
         //$scope.tools_info_editable = false;
         //window.cancelToolDataBtn_click();
 
@@ -1046,6 +1070,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         document.getElementById('workflowsRightPanel').style.display = 'block';
         M.Collapsible.getInstance($('#workflowsRightPanelGeneralAccordion')).open(0);
 
+        if (!is_new) {
+            return; // Do not clear UI
+        }
 
         $scope.workflow_info_name = '';
         $scope.workflows_info_username = $scope.username;
@@ -1701,6 +1728,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         console.log('References node clicked');
         console.log(data);
 
+        if ($scope.references_info_editable) {
+            $scope.toast('There are unsaved info on References. Save or press Cancel', 'error');
+            return;
+        }
+
         $scope.references_search_3({name: data.node.data.name});
     };
 
@@ -1877,8 +1909,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     /*
     * References "+" button clicked (create/add) a new Reference
+    * is_new : is this a new reference (+ button clicked), if false, the UNSAVED button has been clicked
     */
-    $scope.references_plus_button_clicked = function() {
+    $scope.references_plus_button_clicked = function(is_new) {
 
         if (!$scope.username) {
             $scope.toast('Login to create a new reference!', 'error');
@@ -1891,6 +1924,10 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         M.Collapsible.getInstance($('#referencesRightPanelAccordion')).open(0);
 
         $scope.references_info_editable = true;
+
+        if (!is_new) {
+            return; //Do not update UI
+        }
 
         //Empty all fields
         $scope.references_name = '';
@@ -2373,8 +2410,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * See also: tools_search_jstree_select_node
     */
     $scope.workflows_search_jstree_select_node = function(e, data) {
-        //console.log('Workflow search tree clicked node data:');
-        //console.log(data);
+
+        if ($scope.workflows_info_editable) {
+            $scope.toast('There are unsaved info on Workflows. Save or press Cancel', 'error');
+            return;
+        }
 
         $scope.workflows_search_show_item(data.node.data);
     };
@@ -3240,8 +3280,9 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
 
     /*
     * Q&A "+" button clicked (create/add) a new Question
+    * is_new: if true: Clear the UI, if False: do not clear it.
     */
-    $scope.qa_plus_button_clicked = function() {
+    $scope.qa_plus_button_clicked = function(is_new) {
 
         if (!$scope.username) {
             $scope.toast('Login to post a new question!', 'error');
@@ -3254,6 +3295,12 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         // M.Collapsible.getInstance($('#QARightPanelAccordion')).open();
 
         $scope.qa_info_editable = true;
+
+        if (!is_new) {
+            return; // Do not clear the UI
+        }
+
+
         $scope.qa_title = '';
         $scope.qa_comment = '';
     };
