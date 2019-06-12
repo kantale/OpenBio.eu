@@ -1607,11 +1607,14 @@ window.onload = function () {
 			*
             */
             var makeTippy = function (node, text) {
+				
                 return tippy(node.popperRef(), {
                     content: function () {
                         var div = document.createElement('div');
+						var belongto = " - ";
+							if(node._private.data.belongto !== null) belongto = node._private.data.belongto.name;
 						
-						text='name : '+node._private.data.label +'<br>'+ 'version : '+node._private.data.version +'<br>'+ 'edit : '+node._private.data.edit +'<br>'+ 'type : '+node._private.data.type+'<br>'+'variables : '+node._private.data.variables +'<br>'+'belongs to : '+node._private.data.belongto +'<br>';
+						text='name : '+node._private.data.label +'<br>'+ 'version : '+node._private.data.version +'<br>'+ 'edit : '+node._private.data.edit +'<br>'+ 'type : '+node._private.data.type+'<br>'+'variables : '+node._private.data.variables +'<br>'+'belongs to : '+ belongto +'<br>';
                         div.innerHTML = text; 
 						div.style.zIndex = "-1000000000000000000000000";	
                         return div;
@@ -1697,6 +1700,88 @@ window.onload = function () {
 				
                 return editTippy;
             };
+			
+		
+		/**
+		This function gets as input a node and then goes through it's successors and opens or close each one based on predefined assumptions	
+		**/		
+		var collapse_expand_node = function(this_node){
+			
+			//connectedEdges: next level
+			//successors: next levels recursively
+			
+		/*
+			this_node.successors().targets().forEach(function (target) {
+
+						//if(target['_private'].data.type!=="step" && target['_private'].data.type!=="input" && target['_private'].data.type!=="output" ){
+						//if(target['_private'].data.type === "tool"){
+								//console.log(target['_private'].data.id);
+								
+								if(target.style("display") == "none"){
+									//console.log("make visible");
+									target.style("display", "element");
+									
+								}else{     
+									//console.log("make non visible");
+									//hide the children nodes and edges recursively  
+										
+											//check if node has flag(open)								
+											if (target['_private'].data.type === "tool" && (typeof target['_private'].data.flag === 'undefined' || target['_private'].data.flag !== 'open')) {
+												target.style("display", "none");
+											
+												target.successors().targets().forEach(function (element) {	
+														if (target['_private'].data.type === "tool" && (typeof element['_private'].data.flag === 'undefined' || element['_private'].data.flag !== 'open')) {
+														element.style("display", "none");
+													}
+												});
+											}
+										
+										
+								}				
+						//}
+				
+			});
+			*/
+			
+			/*
+			this function searches for open connected edges and if any is found,
+			it opens it and returns true,
+			else only returns false
+			*/
+			var openTarget = function (node) {
+				var answer=false;
+				node.connectedEdges().targets().forEach(function (target) {
+					if(target.style("display") == "none"){
+						//console.log("make visible");
+						target.style("display", "element");
+						answer=true;
+					}
+								
+				});	
+							
+					return answer;
+			}
+						
+			/*
+			if selected node has closed connected edges, then open them
+			if selected node has all it;s connected edges open, then close them recursively
+			*/		
+			if(openTarget(this_node)){
+				console.log("opened");
+							
+			}else{
+				this_node.successors().targets().forEach(function (element) {
+			    	//check if node has flag(open)								
+					if (element['_private'].data.type==="tool"  && (typeof element['_private'].data.flag === 'undefined' || element['_private'].data.flag !== 'open')) {
+						element.style("display", "none");
+					}
+
+				});
+							
+			}			
+									
+		}	
+			
 
         /*
         * After importing a graph or adding new nodes, we need to register cytoscape events.
@@ -1704,31 +1789,17 @@ window.onload = function () {
         */
         window.cy_setup_events = function () {
 			
-			//initializeTree();
-			
+			//initializeTree();		
             // collapse - expand nodes
             cy.on('click', 'node', function (event) {
-						//connectedEdges: next level
-						//successors: next levels recursively
+					
 			
-						// inputs and outpus never collapse
-				//if (this['_private'].data.type !== "step" && this['_private'].data.type !== "input" && this['_private'].data.type !== "output") { //steps should never collapse
-							console.log( this['_private'].data.name + " HAS TARGETS : " );
-							console.log(this.successors().targets());
-							
-							if (this.successors().targets().style("display") == "none") {
-								this.connectedEdges().targets().style("display", "element");
-							} else {
-								//hide the children nodes and edges recursively  
-								this.successors().targets().forEach(function (element) {
-									//check if node has flag(open)								
-									if (typeof element['_private'].data.flag === 'undefined' || element['_private'].data.flag !== 'open') {
-										element.style("display", "none");
-									}
-
-								});
-							}
-				//}
+					// inputs/outpus and steps should never collapse
+					//if (this['_private'].data.type !== "step" && this['_private'].data.type !== "input" && this['_private'].data.type !== "output") { //steps should never collapse
+					
+					collapse_expand_node(this);
+					
+					
 						if (this['_private'].data.type == "step") { // Click at a step node
 							//Call angular function
 							var this_data = this['_private'].data;
@@ -1897,7 +1968,7 @@ window.onload = function () {
                         selector: 'node',
                         "style": {
                             "shape": "round-rectangle",
-                            "background-color": "#AFB4AE",
+                            "background-color": "#5A5A5A",
                             //"label": "data(id)",
                             "label": "data(label)",
                             //"height": 15,
@@ -1920,7 +1991,7 @@ window.onload = function () {
                             'shape': 'round-rectangle',
                             'border-width': '3',
                             'border-color': '#43A047', 
-                            'background-color': '#AFB4AE',
+                            'background-color': '#5A5A5A',
                             //"height": 15,
                             //"width": 15
                         }
@@ -1931,7 +2002,7 @@ window.onload = function () {
                             'shape': 'round-rectangle',
                             'border-width': '3',
                             'border-color': '#E53935',
-                            'background-color': '#AFB4AE',
+                            'background-color': '#5A5A5A',
                             //"height": 15,
                             //"width": 15
                         }
@@ -1942,8 +2013,8 @@ window.onload = function () {
                         "style": {
                             'shape': 'octagon',
                             //'border-width': '3',
-                            //'border-color': '#AFB4AE',
-                            'background-color': '#AFB4AE',
+                            //'border-color': '#5A5A5A',
+                            'background-color': '#5A5A5A',
                             //"height": 15,
                             //"width": 15
                         }
@@ -2006,7 +2077,7 @@ window.onload = function () {
                         selector: 'node[type="tool"]',  //[state = "pending"]
                         "style": {
                             "shape": "round-rectangle",
-                            "background-color": "#AFB4AE",
+                            "background-color": "#5A5A5A",
                             "label": "data(label)"
                         }
                     },
@@ -2014,7 +2085,7 @@ window.onload = function () {
                         selector: 'node[type="step"]',
                         "style": {
                             'shape': 'ellipse',
-                            'background-color': '#AFB4AE',
+                            'background-color': '#5A5A5A',
 							"label": "data(label)"
                         }
                     },
@@ -2022,7 +2093,9 @@ window.onload = function () {
                         selector: 'node[type="input"]',
                         "style": {
                             'shape': 'round-rectangle',
-                            'background-color': '#AFB4AE',
+							'border-width': '3',
+                            'border-color': '#43A047',
+                            'background-color': '#5A5A5A',
 							"label": "data(label)"
   
                         }
@@ -2031,7 +2104,9 @@ window.onload = function () {
                         selector: 'node[type="output"]',
                         "style": {
                             'shape': 'round-rectangle',
-                            'background-color': '#AFB4AE',
+							'border-width': '3',
+                            'border-color': '#E53935',
+                            'background-color': '#5A5A5A',
 							"label": "data(label)"
 
                         }
@@ -2042,7 +2117,7 @@ window.onload = function () {
                             'shape': 'octagon',
                             //'border-width': '3',
                             //'border-color': '#E53935',
-                            'background-color': '#AFB4AE',
+                            'background-color': '#5A5A5A',
 							"label": "data(label)"
 
                         }
@@ -2066,8 +2141,8 @@ window.onload = function () {
                             'width': 2,
 							'line-dash-pattern': [6, 3], 
 							'line-dash-offset': 24,
-                            'line-color': '#AFB4AE',
-                            'target-arrow-color': '#AFB4AE'
+                            'line-color': '#5A5A5A',
+                            'target-arrow-color': '#5A5A5A'
 							}
 						*/	
                 ],
@@ -2345,17 +2420,17 @@ window.onload = function () {
         * window.edgeAnimation('hapmap2__1__2__2', 'md5checkdir__1__2__2', "Running")    63Lf7 
         */ 
 		window.edgeAnimation = function(source_anim_id, target_anim_id, state){
-					// get edge by source / target
-					var edges  = cy_rep.$("edge"); 
-					var edge_anim=null;
+				// get edge by source / target
+				var edges  = cy_rep.$("edge"); 
+				var edge_anim=null;
 					
-					edges.forEach(function (edge) {
+				edges.forEach(function (edge) {
 
-							if(edge._private.data.source === source_anim_id && edge._private.data.target===target_anim_id){
-								edge_anim = edge;
-							}
+						if(edge._private.data.source === source_anim_id && edge._private.data.target===target_anim_id){
+							edge_anim = edge;
+						}
 										
-					})
+				})
 					
 			
 				if(edge_anim!== null){
@@ -2388,7 +2463,7 @@ window.onload = function () {
 										'opacity': 0.1
 									},
 									duration: 200
-								});
+					});
 
                     function edgeTimer() {
 
@@ -2408,8 +2483,6 @@ window.onload = function () {
 
 					//create time interval for continous looping of the animation				
 					var myVar = setInterval(edgeTimer, 200);
-
-					
 					edgeTimer();
 					
 					
