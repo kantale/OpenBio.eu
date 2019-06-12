@@ -912,8 +912,8 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         //$scope.tools_info_editable = true;
         $scope.tool_info_created_at = null;
         $scope.tools_info_forked_from = null;
-        $scope.tools_info_name = $scope.tools_search_name;
-        $scope.tools_info_version = $scope.tools_search_version;
+        $scope.tools_info_name = ''; // $scope.tools_search_name;
+        $scope.tools_info_version = ''; // $scope.tools_search_version;
         $scope.tools_info_success_message = '';
         $scope.tools_info_error_message = '';
         $scope.tool_info_username = $scope.username;
