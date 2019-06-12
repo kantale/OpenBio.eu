@@ -2457,6 +2457,7 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * See also: tools_search_3
     */ 
     $scope.workflows_search_3 = function(item) {
+		
         $scope.ajax(
             'workflows_search_3/',
             {

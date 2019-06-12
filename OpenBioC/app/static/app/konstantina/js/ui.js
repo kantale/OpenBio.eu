@@ -1580,7 +1580,8 @@ window.onload = function () {
                 if (node.data.type === "workflow" && node.data.edit !== "null") {
                     cy.$("#" + node.data.id).successors().targets().forEach(function (element) {
 
-                        if (element['_private'].data.type === 'input' || element['_private'].data.type === 'output' || element['_private'].data.type === 'workflow') {
+                        //if (element['_private'].data.type === 'input' || element['_private'].data.type === 'output' || element['_private'].data.type === 'workflow') {
+                        if (element['_private'].data.type !== 'tool') {
                             element.style("display", "element");
                         } else {
                             element.style("display", "none");
@@ -1827,7 +1828,6 @@ window.onload = function () {
 			
 			//on right click close tooltip before menu opens
 			cy.on('cxttapstart', 'node', function (event){
-				console.log(this._private.data.id);
 				//$('#tippy_div_' + this._private.data.id).remove();
 				mytippys.forEach(function (mytippy) {
 					  //console.log(mytippy);
