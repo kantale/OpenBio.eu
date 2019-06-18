@@ -2852,25 +2852,38 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     * Worfklows --> Input/Outpus --> Add variable button ('+') --> Pressed 
     */
     $scope.workflow_step_add_input_output = function() {
+
+        //Check for errors
+        var error_message = $scope.workflow_step_input_output_check_if_correct();
+
+        if (error_message) {
+            $scope.toast(error_message, 'error');
+            return;
+        }
+
+        //Add an extra item for the next variable
         $scope.workflow_input_outputs.push({name:'', description: '', out:false});
+
+        //Add variables to the graph
         $scope.workflow_step_input_output_update_pressed();
 
     };
 
     /*
-    * Worfklwos --> Inputs/Outputs --> Remove Variable button ('-') --> Pressed
+    * Worfklows --> Inputs/Outputs --> Remove Variable button ('-') --> Pressed
     */
     $scope.workflow_step_remove_input_output = function(index) {
 
-
-        console.log('Node to remove:');
-        console.log($scope.workflow_input_outputs[index]);
+        //console.log('Node to remove:');
+        //console.log($scope.workflow_input_outputs[index]);
 
         //Remove from graph 
         cy.$('#' + $scope.workflow_input_outputs[index].name + '__root__null').remove();
         $scope.workflow_update_tab_completion_info_to_step();
  
+        //Remove from workflow_input_outputs list
         $scope.workflow_input_outputs.splice(index, 1);
+
         //workflow_input_outputs should never be empty
         if (!$scope.workflow_input_outputs.length) {
             $scope.workflow_step_add_input_output();
@@ -2878,12 +2891,11 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     };
 
     /*
-    * Workflows --> Input/Outputs --> (Alter Input / Output variables) --> Update button --> pressed
-    * input update input output update output
+    * Check if the input/output parameter is correct.
+    * Return the error_message or an empty string if everything is ok
     */
-    $scope.workflow_step_input_output_update_pressed = function() {
+    $scope.workflow_step_input_output_check_if_correct = function() {
 
-        var nodes_to_add = [];
         var error_message = '';
         var nodes_names = [];
 
@@ -2912,6 +2924,29 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                     error_message = 'Variable: "' + input_output.name + '" exists more than once';
                     return;
                 }
+
+                nodes_names.push(input_output.name);
+            }
+        });
+
+        return error_message;
+ 
+
+    };
+
+    /*
+    * Called from workflow_step_add_input_output.
+    * Adds input/output parameters to the graph
+    * input update input output update output
+    */
+    $scope.workflow_step_input_output_update_pressed = function() {
+
+        var nodes_to_add = [];
+        var nodes_names = [];
+
+        $scope.workflow_input_outputs.forEach(function(input_output){
+            if (input_output.name && input_output.description) {
+
                 nodes_names.push(input_output.name);
 
                 nodes_to_add.push({
@@ -2922,11 +2957,6 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 })
             }
         });
-
-        if (error_message) {
-            $scope.toast(error_message, 'error');
-            return;
-        }
 
         //console.log('Input / Output Variable to add:');
         //console.log(nodes_to_add);
