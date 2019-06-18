@@ -2853,12 +2853,23 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     */
     $scope.workflow_step_add_input_output = function() {
         $scope.workflow_input_outputs.push({name:'', description: '', out:false});
+        $scope.workflow_step_input_output_update_pressed();
+
     };
 
     /*
     * Worfklwos --> Inputs/Outputs --> Remove Variable button ('-') --> Pressed
     */
     $scope.workflow_step_remove_input_output = function(index) {
+
+
+        console.log('Node to remove:');
+        console.log($scope.workflow_input_outputs[index]);
+
+        //Remove from graph 
+        cy.$('#' + $scope.workflow_input_outputs[index].name + '__root__null').remove();
+        $scope.workflow_update_tab_completion_info_to_step();
+ 
         $scope.workflow_input_outputs.splice(index, 1);
         //workflow_input_outputs should never be empty
         if (!$scope.workflow_input_outputs.length) {
@@ -2911,7 +2922,6 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
                 })
             }
         });
-
 
         if (error_message) {
             $scope.toast(error_message, 'error');

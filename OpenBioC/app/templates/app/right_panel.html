@@ -575,24 +575,26 @@
                                     <tbody>
                                         <tr ng-repeat="x in workflow_input_outputs">
                                             <td><input type="text" placeholder="Name" ng-model="x.name"
-                                                    ng-disabled="!workflows_info_editable"></td>
+                                                    ng-disabled="(!$last) || (!workflows_info_editable)"></td>
                                             <td><input type="text" placeholder="Description" ng-model="x.description"
-                                                    ng-disabled="!workflows_info_editable">
+                                                    ng-disabled="(!$last) || (!workflows_info_editable)">
                                             </td>
                                             <td class="switch">
                                                 <label>
                                                     IN
                                                     <input type="checkbox" ng-model="x.out" style="display:none"
-                                                        ng-disabled="!workflows_info_editable">
+                                                        ng-disabled="(!$last) || (!workflows_info_editable)">
                                                     <span class="lever"></span>
                                                     OUT
                                                 </label>
                                             </td>
                                             <td>
+                                                <!--add: ng-if="$last" removed  , remove: (!$first) removed
+                                                -->
                                                 <a class="waves-effect waves-light btn-small tooltipped green darken-1"
                                                     style="padding-left: 7px; padding-right:7px" data-position="bottom"
                                                     data-tooltip="Add new variable"
-                                                    ng-if="$last && x.name && x.description && workflows_info_editable"
+                                                    ng-if="$last && x.name && x.description && workflows_info_editable" 
                                                     ng-click="workflow_step_add_input_output()"><i
                                                         class="material-icons">add</i></a>
                                             </td>
@@ -600,18 +602,13 @@
                                                 <a class="waves-effect waves-light btn-small tooltipped red darken-1"
                                                     style="padding-left: 7px; padding-right:7px" data-position="bottom"
                                                     data-tooltip="Remove variable"
-                                                    ng-if="(!$first) && workflows_info_editable"
+                                                    ng-if="(!$last) && workflows_info_editable"
                                                     ng-click="workflow_step_remove_input_output($index)"><i
                                                         class="material-icons">remove</i></a>
                                             </td>
                                         </tr>
                                     </tbody>
                                 </table>
-                            </div>
-                            <div class="right-align">
-                                <a class="waves-effect waves-light btn" style="margin:2px"
-                                    ng-click="workflow_step_input_output_update_pressed()"
-                                    ng-show="workflows_info_editable">Update</a>
                             </div>
                         </div>
                     </div>
