@@ -451,11 +451,13 @@
                                 </div>
                             </div>
                             <div class="row" ng-show="!workflows_info_editable">
+                                {% verbatim %}
                                 <div class="row left-align">
                                     <div class="col s12 m3 grid-s12-m3-l3"><b>Website:</b></div>
-                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="workflow_website"></span>
+                                    <div class="col s12 m9 grid-s12-m9-l9"><a ng-href="{{ workflow_website }}" target="_blank"><span ng-bind="workflow_website"></span></a>
                                     </div>
                                 </div>
+                                {% endverbatim %}
                                 <div class="row left-align">
                                     <div class="col s12 m3 grid-s12-m3-l3"><b>Description:</b></div>
                                     <div class="col s12 m9 grid-s12-m9-l9"><span
