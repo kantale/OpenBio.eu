@@ -607,7 +607,13 @@ def users_edit_data(request, **kwargs):
 
     obc_user.first_name = kwargs.get('profile_firstname', '')
     obc_user.last_name = kwargs.get('profile_lastname', '')
-    obc_user.website = kwargs.get('profile_website', '')
+
+    website = kwargs.get('profile_website', '')
+    if website:
+        if not valid_url(website):
+            return fail('website is not a valid URL')
+    obc_user.website = website
+
     obc_user.affiliation = kwargs.get('profile_affiliation', '')
     obc_user.public_info = kwargs.get('profile_publicinfo', '')
 
