@@ -9,7 +9,8 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import login as django_login # To distinguish from AJAX called login
 from django.contrib.auth import logout as django_logout # To distinguish from AJAX called logout
 
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.validators import URLValidator
 
 from django.db.models import Q # https://docs.djangoproject.com/en/2.1/topics/db/queries/#complex-lookups-with-q-objects
 from django.db.models import Max # https://docs.djangoproject.com/en/2.1/topics/db/aggregation/
@@ -103,7 +104,8 @@ g = {
         'references': 'format_quote',
         'users': 'person',
         'qas': 'forum',
-    }
+    },
+    'url_validator': URLValidator(), # Can be customized: URLValidator(schemes=('http', 'https', 'ftp', 'ftps', 'rtsp', 'rtmp'))
 }
 
 ### HELPING FUNCTIONS AND DECORATORS #####
@@ -113,6 +115,21 @@ def md5(t):
     Return the md5 hash of this string
     '''
     return hashlib.md5(t.encode("utf-8")).hexdigest()
+
+def valid_url(url):
+    '''
+    Is url valid?
+    Uses django's URLvalidator
+    '''
+
+    try:
+        g['url_validator'](url)
+    except ValidationError:
+        return False
+    else:
+        return True
+
+
 
 def markdown(t):
     '''
@@ -1115,6 +1132,9 @@ def tools_add(request, **kwargs):
     tool_website = kwargs.get('tool_website', '')
     if not tool_website:
         return fail('Website cannot be empty')
+
+    if not valid_url(tool_website):
+        return fail('Website is not a valid URL')
 
     tool_description = kwargs.get('tool_description', '')
     if not tool_description:
