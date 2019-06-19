@@ -925,14 +925,16 @@
                                     <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_title"></span>
                                     </div>
                                 </div>
-                                {{verbatim}}
+                                {% verbatim %}
+                                <!-- ng-href="{{ trust_url(references_url) }}" -->
                                 <div class="row left-align">
                                     <div class="col s12 m3 grid-s12-m3-l3"><b>URL:</b></div>
-                                    <div class="col s12 m9 grid-s12-m9-l9"><a ng-href="{{references_url}}"
+                                    <div class="col s12 m9 grid-s12-m9-l9"><a 
+                                        ng-href="{{ references_url }}" 
                                         target="_blank"><span ng-bind="references_url"></span></a>
                                     </div>
                                 </div>
-                                {{endverbatim}}
+                                {% endverbatim %}
                                 <div class="row left-align">
                                     <div class="col s12 m3 grid-s12-m3-l3"><b>DOI:</b></div>
                                     <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_doi"></span>
