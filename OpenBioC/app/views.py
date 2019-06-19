@@ -1401,8 +1401,11 @@ def workflows_add(request, **kwargs):
         workflow_forked_from = None
         workflow_changes = None
 
-
     workflow_website = kwargs.get('workflow_website', '')
+    if workflow_website:
+        if not valid_url(workflow_website):
+            return fail('website is not a valid URL')
+
     workflow_description = kwargs.get('workflow_description', '')
     if not workflow_description.strip():
         return fail('Description cannot be empty')
