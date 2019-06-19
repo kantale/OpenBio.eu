@@ -51,7 +51,7 @@ angular.module('OBC_app').filter('workflow_label', function() {
     }
 });
 
-app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
+app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log) {
     /*
     * ok some things that are here perhaps could be placed elsewhere.. 
     * https://docs.angularjs.org/api/ng/directive/ngInit
@@ -132,6 +132,15 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
     ];
 
     $scope.selected = { value: $scope.itemArray[0] };
+
+    /*
+    * https://stackoverflow.com/a/21757855/5626738 
+    * https://github.com/angular/angular.js/issues/16593 
+    * NOT USED! (see issue #74)
+    */ 
+    $scope.trust_url = function(url) {
+        return $sce.trustAsResourceUrl(url);
+    };
 
     /*
     * Anytime we change tools_info_editable we need the UI to respond.
