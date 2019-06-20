@@ -1015,6 +1015,8 @@ window.onload = function () {
             TOOL_FINISHED_CODE: 4,
             STEP_STARTED_CODE: 5,
             STEP_FINISHED_CODE: 6,
+			CALLSTEP_STARTED_CODE:7,
+			CALLSTEP_FINISHED_CODE:8,
             previous_animation: null // Object that contains information to restore animations in reports
 
         };
@@ -2354,6 +2356,7 @@ window.onload = function () {
                         anim_style = {'background-color': '#000000'};
                         anim_label = label + '[finished]';
                         blink = false;
+						
                     }
                     else {
                         console.warn('63248');
@@ -2415,14 +2418,36 @@ window.onload = function () {
 			*/
 			
 		};
+		
+		
+		//check_it
+		 window.edgeAnimation_public=function(edge_anim_params) {
+			console.log('EDGE ANIM PARAMS:');
+            console.log(edge_anim_params);
+
+            if (edge_anim_params.status_code == window.OBCUI.CALLSTEP_STARTED_CODE) {
+                //var workflow_id = edge_anim_params.status_fields.name.replace(/\//g, '__');
+				source_anim_id
+                window.edgeAnimation(source_anim_id, target_anim_id, 'running');
+            }
+            else if (edge_anim_params.status_code == window.OBCUI.CALLSTEP_FINISHED_CODE) {
+                //var workflow_id = edge_anim_params.status_fields.name.replace(/\//g, '__');
+                window.edgeAnimation(source_anim_id, target_anim_id, 'run');
+            }
+			 
+		 }
 				
 		/* function for edge animation 
         * window.edgeAnimation('hapmap2__1__2__2', 'md5checkdir__1__2__2', "Running")    63Lf7 
         */ 
 		window.edgeAnimation = function(source_anim_id, target_anim_id, state){
+			//check_it
+			// create and call "unset_edgeAnimation"
+			
 				// get edge by source / target
 				var edges  = cy_rep.$("edge"); 
 				var edge_anim=null;
+				var edge_blink = true;
 					
 				edges.forEach(function (edge) {
 
@@ -2431,7 +2456,8 @@ window.onload = function () {
 						}
 										
 				})
-					
+				
+				
 			
 				if(edge_anim!== null){
 					
@@ -2447,16 +2473,18 @@ window.onload = function () {
 					if(state==="Run") {
 							//edge_anim_style = { 'line-color': 'green', 'target-arrow-color': '#43A047', 'label': 'run'};
 							edge_anim_label = 'run';
+							edge_blink=false;
 					}else{
 							edge_anim_label = '';
 							//edge_anim_style = { 'line-color': '#ddd', 'target-arrow-color': '#ddd'};
+							edge_blink=false;
 					}
 					
 					
 					//update label
 					edge_anim.data('style', edge_anim_label);
 					
-					
+				  if (edge_blink) {	
 					//make edges blinking
 					var edgeAni = edge_anim.animation({
 									style: {
@@ -2484,7 +2512,8 @@ window.onload = function () {
 					//create time interval for continous looping of the animation				
 					var myVar = setInterval(edgeTimer, 200);
 					edgeTimer();
-					
+					window.OBCUI.previous_animation.actions.push('EDGE BLINK');
+				}
 					
 					/*
 						return (edge_anim.animation({
