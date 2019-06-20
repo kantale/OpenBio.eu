@@ -29,6 +29,7 @@ urlpatterns = [
 	path('all_search_2/', views.all_search_2), # Called on main search on-change . Construct jstrees. 
 	path('reports_search_3/', views.reports_search_3), # Search (and get the details) for a specific SINGLE Report. 
 	path('references_generate/', views.references_generate), # Generate a HTML reference from BIBTEX 
+	path('references_process_doi/', views.references_process_doi), # Generate a BIBTEX entry from DOI
 	path('references_add/', views.references_add), # Add a new reference
 	path('references_search_3/', views.references_search_3), # Search (and get the details) for a specific SINGLE Reference
 	path('users_search_3/', views.users_search_3), # Search and get the results for a single user
