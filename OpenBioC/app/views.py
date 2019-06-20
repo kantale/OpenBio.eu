@@ -55,8 +55,11 @@ from pybtex.database import parse_string as parse_reference_string
 import pybtex.database.input.bibtex
 import pybtex.plugin
 
+import requests # Used in DOI resolution
+
 # https://github.com/lepture/mistune
 import mistune
+
 
 __version__ = '0.0.4rc'
 
@@ -129,7 +132,21 @@ def valid_url(url):
     else:
         return True
 
+def resolve_doi(doi):
+    '''
+    https://gist.github.com/jrsmith3/5513926
+    Return a bibTeX string of metadata for a given DOI.
+    Used in references_process_doi
+    '''
 
+    url = "http://dx.doi.org/" + doi
+    headers = {"accept": "application/x-bibtex"}
+    r = requests.get(url, headers = headers)
+
+    if r.status_code == requests.codes.ok:
+        return r.text
+
+    return None
 
 def markdown(t):
     '''
@@ -1922,6 +1939,45 @@ def bibtex_to_html(content):
 
     return True, new_html, fields
 
+def get_fields_from_bibtex_fields(fields, str_response):
+    '''
+    Reads fields from a bibtex formated in html
+
+    TEST 1
+    @article{Barrangou_2007,
+    doi = {10.1126/science.1138140},
+    url = {https://doi.org/10.1126%2Fscience.1138140},
+    year = 2007,
+    month = {mar},
+    publisher = {American Association for the Advancement of Science ({AAAS})},
+    volume = {315},
+    number = {5819},
+    pages = {1709--1712},
+    author = {R. Barrangou and C. Fremaux and H. Deveau and M. Richards and P. Boyaval and S. Moineau and D. A. Romero and P. Horvath},
+    title = {{CRISPR} Provides Acquired Resistance Against Viruses in Prokaryotes},
+    journal = {Science}
+}
+    '''
+
+    name = list(fields.keys())[0] # first key
+    title = fields[name].get('title', '')
+    # check if it is enclised in brackets {title}
+    # Remove '{' and '}' from tite
+    #m = re.match(r'{(.*)}', title)
+    #if m:
+    #    title = m.group(1)
+    title = title.replace('{', '').replace('}', '')
+
+    ret = {
+        'references_name': name,
+        'references_formatted': str_response,
+        'references_title': title,
+        'references_doi': fields[name].get('doi', ''),
+        'references_url': fields[name].get('url', ''),
+    }
+
+    return ret
+
 
 @has_data
 def references_generate(request, **kwargs):
@@ -1935,22 +1991,38 @@ def references_generate(request, **kwargs):
     if not suc:
         return fail(str_response)
 
-    name = list(fields.keys())[0] # first key
-    title = fields[name].get('title', '')
-    # check if it is enclised in brackets {title}
-    m = re.match(r'{(.*)}', title)
-    if m:
-        title = m.group(1)
+    ret = get_fields_from_bibtex_fields(fields, str_response)
+    return success(ret)
 
-    ret = {
-        'references_name': name,
-        'references_formatted': str_response,
-        'references_title': title,
-        'references_doi': fields[name].get('doi', ''),
-        'references_url': fields[name].get('url', ''),
-    }
+@has_data
+def references_process_doi(request, **kwargs):
+    '''
+    Generate a BIBTEX from DOI
+    '''
+
+    references_doi = kwargs.get('references_doi', '')
+    if not references_doi:
+        return fail('DOI is empty')
+
+    doi_url =  "http://dx.doi.org/" + references_doi
+    if not valid_url(doi_url):
+        return fail('Invalid DOI. Example of valid DOI: 10.1126/science.1138140')
+
+    bibtex = resolve_doi(references_doi)
+    #print ('bibtex:')
+    #print (bibtex)
+    if not bibtex:
+        return fail('Could not get bibliographic information for this DOI')
+
+    suc, str_response, fields = bibtex_to_html(bibtex)
+    if not suc:
+        return fail('The BIBTEX returned from this doi was invalid: ' + str_response) # This should never happen..
+
+    ret = get_fields_from_bibtex_fields(fields, str_response)
+    ret['references_BIBTEX']  = bibtex
 
     return success(ret)
+
 
 @has_data
 def references_add(request, **kwargs):
