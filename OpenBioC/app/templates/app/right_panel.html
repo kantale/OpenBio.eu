@@ -887,14 +887,23 @@
                                         ng-model="references_url" required>
                                     <label for="referencesGeneralURL">URL </label>
                                 </div>
-                                <!-- <div> -->
-                                    <div class="input-field inline">
-                                        <input id="referencesGeneralDOI" type="text" class="validate"
-                                            ng-model="references_doi">
-                                        <label for="referencesGeneralDOI">DOI</label>
-                                      </div>
-                                      <a class="waves-effect waves-light btn-small">Process DOI</a>
-                                <!-- </div> -->
+
+
+
+
+
+                                <div class="row" style="margin-bottom: 0px;">
+                                        <div class="input-field col s6" style="display: table; width:100%">
+                                            <input id="referencesGeneralDOI" type="text" class="validate" ng-model="references_doi">
+                                            <label for="referencesGeneralDOI">DOI</label>
+                                            <span style="display: table-cell; width:120px;">
+                                                <a class="waves-effect waves-light btn-small">Process DOI</a>
+                                            </span>
+                                        </div>
+                                    </div>
+
+                               
+
                                 <div class="input-field">
                                     <textarea id="referencesGeneralNotes" class="validate materialize-textarea"
                                         ng-model="references_notes"></textarea>
