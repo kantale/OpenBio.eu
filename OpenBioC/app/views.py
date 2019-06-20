@@ -1968,12 +1968,20 @@ def get_fields_from_bibtex_fields(fields, str_response):
     #    title = m.group(1)
     title = title.replace('{', '').replace('}', '')
 
+    doi = fields[name].get('doi', '')
+    if not doi:
+        doi = fields[name].get('DOI', '')
+
+    url = fields[name].get('url', '')
+    if not url:
+        url = fields[name].get('URL', '')
+
     ret = {
         'references_name': name,
         'references_formatted': str_response,
         'references_title': title,
-        'references_doi': fields[name].get('doi', ''),
-        'references_url': fields[name].get('url', ''),
+        'references_doi': doi,
+        'references_url': url,
     }
 
     return ret
