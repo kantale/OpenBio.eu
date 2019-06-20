@@ -104,7 +104,7 @@ g = {
         'tools': 'settings',
         'workflows': 'device_hub',
         'reports': 'description',
-        'references': 'format_quote',
+        'references': 'link',
         'users': 'person',
         'qas': 'forum',
     },

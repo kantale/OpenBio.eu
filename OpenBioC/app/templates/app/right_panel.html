@@ -583,6 +583,8 @@
                                             <td><input type="text" placeholder="Description" ng-model="x.description"
                                                     ng-disabled="(!$last) || (!workflows_info_editable)">
                                             </td>
+
+                                            <!-- Old switch -->
                                             <td class="switch">
                                                 <label>
                                                     IN
@@ -592,6 +594,21 @@
                                                     OUT
                                                 </label>
                                             </td>
+
+                                            <!-- New switch -->
+                                            <!-- document.getElementById('switchIn').checked; -> returns true/false -->
+                                            <!-- document.getElementById('switchOut').checked; -> returns true/false -->
+                                            <!-- $("#switchCustom").children().attr("disabled","disabled"); -> disable switch -->
+                                            <td>
+                                                <div class="switch-custom" id="switchCustom">
+                                                    <input type="radio" class="switch-input" name="view" value="in" id="switchIn" checked>
+                                                    <label for="switchIn" class="switch-label switch-label-off">IN</label>
+                                                    <input type="radio" class="switch-input" name="view" value="out" id="switchOut">
+                                                    <label for="switchOut" class="switch-label switch-label-on">OUT</label>
+                                                    <span class="switch-selection"></span>
+                                                </div>
+                                            </td>
+                                            
                                             <td>
                                                 <!--add: ng-if="$last" removed  , remove: (!$first) removed
                                                 -->
