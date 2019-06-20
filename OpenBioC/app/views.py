@@ -148,6 +148,31 @@ def resolve_doi(doi):
 
     return None
 
+def replace_interlinks(text):
+    '''
+    Search for interlinks and replace with javascript calls
+    '''
+
+    ret = text
+
+    def javascript_call(matched_string, arguments):
+        '''
+        Create the javascript call
+        '''
+        
+        func_call = '''window.OBCUI.interlink({});'''.format(simplejson.dumps(arguments))
+        pattern = '''<a href="javascript:void(0);" onclick='{}'>{}</a>'''.format(func_call, matched_string)
+        return pattern
+
+    tool_calls = set(re.findall(r'[^\w](t/[\w]+/[\w\.]+/[\d]+)', text))
+    for tool_call in tool_calls:
+        arguments = re.search(r'(?P<type>t)/(?P<name>[\w]+)/(?P<version>[\w\.]+)/(?P<edit>[\d]+)', tool_call).groupdict()
+        ret = ret.replace(tool_call, javascript_call(tool_call, arguments))
+
+    return ret
+
+
+
 def markdown(t):
     '''
     https://github.com/lepture/mistune 
@@ -156,9 +181,13 @@ def markdown(t):
     # Remove <p> at the start and </p> at the end 
     s =  re.search(r'^<p>(.*)</p>\n$', md, re.M | re.S)
     if s:
-        return s.group(1)
+        ret = s.group(1)
     else:
-        return md
+        ret = md
+
+    # Check for interlinks
+    ret = replace_interlinks(ret)
+    return ret
 
 def jstree_icon_html(t):
     '''
