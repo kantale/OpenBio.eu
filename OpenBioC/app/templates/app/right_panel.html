@@ -891,11 +891,14 @@
                                         ng-model="references_url" required>
                                     <label for="referencesGeneralURL">URL </label>
                                 </div>
-                                <div class="input-field">
-                                    <input id="referencesGeneralDOI" type="text" class="validate"
-                                        ng-model="references_doi">
-                                    <label for="referencesGeneralDOI">DOI</label>
-                                </div>
+                                <!-- <div> -->
+                                    <div class="input-field inline">
+                                        <input id="referencesGeneralDOI" type="text" class="validate"
+                                            ng-model="references_doi">
+                                        <label for="referencesGeneralDOI">DOI</label>
+                                      </div>
+                                      <a class="waves-effect waves-light btn-small">Process DOI</a>
+                                <!-- </div> -->
                                 <div class="input-field">
                                     <textarea id="referencesGeneralNotes" class="validate materialize-textarea"
                                         ng-model="references_notes"></textarea>
@@ -1052,7 +1055,8 @@
                             {% verbatim %}
                             <div class="row left-align">
                                 <div class="col s12 m3 grid-s12-m3-l3"><b>Website:</b></div>
-                                <div class="col s12 m9 grid-s12-m9-l9"><a ng-href="{{user_website}}"
+                                <div class="col s12 m9 grid-s12-m9-l9"><a 
+                                        ng-href="{{user_website}}"
                                         target="_blank"><span ng-bind="user_website"></span></a></div>
                             </div>
                             {% endverbatim %}
