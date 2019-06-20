@@ -1955,6 +1955,15 @@ app.controller("OBC_ctrl", function($scope, $http, $filter, $timeout, $log) {
         window.nodeAnimation_public(node_anim_params);
     };
 
+	
+	//CHECK_IT
+	$scope.edgeAnimation_public = function(edge_anim_params) {
+        console.log('edge_anim_params:');
+        console.log(edge_anim_params);
+        window.edgeAnimation_public(edge_anim_params);
+    };
+	
+	
     /*
     * Called by Yes/No on Modal "All tool edits will be lost!"
     * M.Modal.getInstance($("#warningModal")).open()
