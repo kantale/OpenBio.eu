@@ -3528,8 +3528,18 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             document.getElementById('QARightPanel').style.display = 'none';
             // M.Collapsible.getInstance($('#QARightPanelAccordion')).close();
         }
-
     }
+
+    /*
+    * called by ui.js --> interlink()
+    * Handle interlinks
+    */
+    $scope.interlink = function(args) {
+        if (args.type == 't') {
+            //Open a tool/data
+            $scope.tools_search_jstree_select_node(null, {node:{data: args}});
+        }
+    };
 
 }); 
 

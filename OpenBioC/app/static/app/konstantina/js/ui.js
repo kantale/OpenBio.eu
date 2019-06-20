@@ -2825,5 +2825,21 @@ window.onload = function () {
 
     // END OF GALATEIA'S CODE
 
+    /*
+    * Handle interinks. Called by the javascript function injected from function replace_interlinks in views.py
+    */
+    window.OBCUI.interlink = function(args) {
+        //console.log('interlink:');
+        //console.log(args);
+
+        //Call the angular function
+        angular.element($('#angular_div')).scope().$apply(function () {
+            angular.element($('#angular_div')).scope().interlink(args); 
+        });
+
+
+
+    };
+
 
 };
