@@ -83,10 +83,12 @@
                             </div>
                         </form>
                         <div ng-show="!tools_info_editable">
+                            {% verbatim %}
                             <div class="row left-align">
                                 <div class="col s12 m3 grid-s12-m3-l3"><b>Website:</b></div>
-                                <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="tool_website"></span></div>
+                                <div class="col s12 m9 grid-s12-m9-l9"><a ng-href="{{ tool_website }}" target="_blank"><span ng-bind="tool_website"></span></a></div>
                             </div>
+                            {% endverbatim %}
                             <div class="row left-align">
                                 <div class="col s12 m3 grid-s12-m3-l3"><b>Description:</b></div>
                                 <div class="col s12 m9 grid-s12-m9-l9"><span
@@ -449,11 +451,13 @@
                                 </div>
                             </div>
                             <div class="row" ng-show="!workflows_info_editable">
+                                {% verbatim %}
                                 <div class="row left-align">
                                     <div class="col s12 m3 grid-s12-m3-l3"><b>Website:</b></div>
-                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="workflow_website"></span>
+                                    <div class="col s12 m9 grid-s12-m9-l9"><a ng-href="{{ workflow_website }}" target="_blank"><span ng-bind="workflow_website"></span></a>
                                     </div>
                                 </div>
+                                {% endverbatim %}
                                 <div class="row left-align">
                                     <div class="col s12 m3 grid-s12-m3-l3"><b>Description:</b></div>
                                     <div class="col s12 m9 grid-s12-m9-l9"><span
@@ -575,24 +579,26 @@
                                     <tbody>
                                         <tr ng-repeat="x in workflow_input_outputs">
                                             <td><input type="text" placeholder="Name" ng-model="x.name"
-                                                    ng-disabled="!workflows_info_editable"></td>
+                                                    ng-disabled="(!$last) || (!workflows_info_editable)"></td>
                                             <td><input type="text" placeholder="Description" ng-model="x.description"
-                                                    ng-disabled="!workflows_info_editable">
+                                                    ng-disabled="(!$last) || (!workflows_info_editable)">
                                             </td>
                                             <td class="switch">
                                                 <label>
                                                     IN
                                                     <input type="checkbox" ng-model="x.out" style="display:none"
-                                                        ng-disabled="!workflows_info_editable">
+                                                        ng-disabled="(!$last) || (!workflows_info_editable)">
                                                     <span class="lever"></span>
                                                     OUT
                                                 </label>
                                             </td>
                                             <td>
+                                                <!--add: ng-if="$last" removed  , remove: (!$first) removed
+                                                -->
                                                 <a class="waves-effect waves-light btn-small tooltipped green darken-1"
                                                     style="padding-left: 7px; padding-right:7px" data-position="bottom"
                                                     data-tooltip="Add new variable"
-                                                    ng-if="$last && x.name && x.description && workflows_info_editable"
+                                                    ng-if="$last && x.name && x.description && workflows_info_editable" 
                                                     ng-click="workflow_step_add_input_output()"><i
                                                         class="material-icons">add</i></a>
                                             </td>
@@ -600,18 +606,13 @@
                                                 <a class="waves-effect waves-light btn-small tooltipped red darken-1"
                                                     style="padding-left: 7px; padding-right:7px" data-position="bottom"
                                                     data-tooltip="Remove variable"
-                                                    ng-if="(!$first) && workflows_info_editable"
+                                                    ng-if="(!$last) && workflows_info_editable"
                                                     ng-click="workflow_step_remove_input_output($index)"><i
                                                         class="material-icons">remove</i></a>
                                             </td>
                                         </tr>
                                     </tbody>
                                 </table>
-                            </div>
-                            <div class="right-align">
-                                <a class="waves-effect waves-light btn" style="margin:2px"
-                                    ng-click="workflow_step_input_output_update_pressed()"
-                                    ng-show="workflows_info_editable">Update</a>
                             </div>
                         </div>
                     </div>
@@ -890,11 +891,14 @@
                                         ng-model="references_url" required>
                                     <label for="referencesGeneralURL">URL </label>
                                 </div>
-                                <div class="input-field">
-                                    <input id="referencesGeneralDOI" type="text" class="validate"
-                                        ng-model="references_doi">
-                                    <label for="referencesGeneralDOI">DOI</label>
-                                </div>
+                                <!-- <div> -->
+                                    <div class="input-field inline">
+                                        <input id="referencesGeneralDOI" type="text" class="validate"
+                                            ng-model="references_doi">
+                                        <label for="referencesGeneralDOI">DOI</label>
+                                      </div>
+                                      <a class="waves-effect waves-light btn-small">Process DOI</a>
+                                <!-- </div> -->
                                 <div class="input-field">
                                     <textarea id="referencesGeneralNotes" class="validate materialize-textarea"
                                         ng-model="references_notes"></textarea>
@@ -928,11 +932,16 @@
                                     <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_title"></span>
                                     </div>
                                 </div>
+                                {% verbatim %}
+                                <!-- ng-href="{{ trust_url(references_url) }}" -->
                                 <div class="row left-align">
                                     <div class="col s12 m3 grid-s12-m3-l3"><b>URL:</b></div>
-                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_url"></span>
+                                    <div class="col s12 m9 grid-s12-m9-l9"><a 
+                                        ng-href="{{ references_url }}" 
+                                        target="_blank"><span ng-bind="references_url"></span></a>
                                     </div>
                                 </div>
+                                {% endverbatim %}
                                 <div class="row left-align">
                                     <div class="col s12 m3 grid-s12-m3-l3"><b>DOI:</b></div>
                                     <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_doi"></span>
@@ -1043,13 +1052,14 @@
                                 <div class="col s12 m3 grid-s12-m3-l3"><b>Second Name:</b></div>
                                 <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="user_lastname"></span></div>
                             </div>
-                            {{verbatim}}
+                            {% verbatim %}
                             <div class="row left-align">
                                 <div class="col s12 m3 grid-s12-m3-l3"><b>Website:</b></div>
-                                <div class="col s12 m9 grid-s12-m9-l9"><a href="https://{{user_website}}"
+                                <div class="col s12 m9 grid-s12-m9-l9"><a 
+                                        ng-href="{{user_website}}"
                                         target="_blank"><span ng-bind="user_website"></span></a></div>
                             </div>
-                            {{endverbatim}}
+                            {% endverbatim %}
                             <div class="row left-align">
                                 <div class="col s12 m3 grid-s12-m3-l3"><b>Affiliation:</b></div>
                                 <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="user_affiliation"></span>

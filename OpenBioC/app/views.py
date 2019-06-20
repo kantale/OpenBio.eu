@@ -9,7 +9,8 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import login as django_login # To distinguish from AJAX called login
 from django.contrib.auth import logout as django_logout # To distinguish from AJAX called logout
 
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.validators import URLValidator
 
 from django.db.models import Q # https://docs.djangoproject.com/en/2.1/topics/db/queries/#complex-lookups-with-q-objects
 from django.db.models import Max # https://docs.djangoproject.com/en/2.1/topics/db/aggregation/
@@ -103,7 +104,8 @@ g = {
         'references': 'format_quote',
         'users': 'person',
         'qas': 'forum',
-    }
+    },
+    'url_validator': URLValidator(), # Can be customized: URLValidator(schemes=('http', 'https', 'ftp', 'ftps', 'rtsp', 'rtmp'))
 }
 
 ### HELPING FUNCTIONS AND DECORATORS #####
@@ -113,6 +115,21 @@ def md5(t):
     Return the md5 hash of this string
     '''
     return hashlib.md5(t.encode("utf-8")).hexdigest()
+
+def valid_url(url):
+    '''
+    Is url valid?
+    Uses django's URLvalidator
+    '''
+
+    try:
+        g['url_validator'](url)
+    except ValidationError:
+        return False
+    else:
+        return True
+
+
 
 def markdown(t):
     '''
@@ -590,7 +607,13 @@ def users_edit_data(request, **kwargs):
 
     obc_user.first_name = kwargs.get('profile_firstname', '')
     obc_user.last_name = kwargs.get('profile_lastname', '')
-    obc_user.website = kwargs.get('profile_website', '')
+
+    website = kwargs.get('profile_website', '')
+    if website:
+        if not valid_url(website):
+            return fail('website is not a valid URL')
+    obc_user.website = website
+
     obc_user.affiliation = kwargs.get('profile_affiliation', '')
     obc_user.public_info = kwargs.get('profile_publicinfo', '')
 
@@ -1116,6 +1139,9 @@ def tools_add(request, **kwargs):
     if not tool_website:
         return fail('Website cannot be empty')
 
+    if not valid_url(tool_website):
+        return fail('Website is not a valid URL')
+
     tool_description = kwargs.get('tool_description', '')
     if not tool_description:
         return fail('Description cannot be empty')
@@ -1381,8 +1407,11 @@ def workflows_add(request, **kwargs):
         workflow_forked_from = None
         workflow_changes = None
 
-
     workflow_website = kwargs.get('workflow_website', '')
+    if workflow_website:
+        if not valid_url(workflow_website):
+            return fail('website is not a valid URL')
+
     workflow_description = kwargs.get('workflow_description', '')
     if not workflow_description.strip():
         return fail('Description cannot be empty')
