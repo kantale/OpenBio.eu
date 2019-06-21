@@ -235,31 +235,22 @@ class ReportToken(models.Model):
 
     # IMPORTANT: ADD THESE CODES ALSO IN ui.js :  window.OBCUI 
     WORKFLOW_STARTED_CODE = 1
-    WORKFLOW_STARTED = r'workflow started (?P<name>[\w\./]+)'
+    WORKFLOW_STARTED = r'workflow started (?P<name>[\w\./]+)[\s]*$'
     
     WORKFLOW_FINISHED_CODE = 2
-    WORKFLOW_FINISHED = r'workflow finished (?P<name>[\w\./]+)'
+    WORKFLOW_FINISHED = r'workflow finished (?P<name>[\w\./]+)[\s]*$'
     
     TOOL_STARTED_CODE = 3
-    TOOL_STARTED = r'tool started (?P<name>[\w\./]+)'
+    TOOL_STARTED = r'tool started (?P<name>[\w\./]+)[\s]*$'
     
     TOOL_FINISHED_CODE = 4
-    TOOL_FINISHED = r'tool finished (?P<name>[\w\./]+)'
+    TOOL_FINISHED = r'tool finished (?P<name>[\w\./]+)[\s]*$'
 
     STEP_STARTED_CODE = 5
-    STEP_STARTED = r'step started (?P<name>[\w]+)'
+    STEP_STARTED = r'step started (?P<name>[\w]+) (?P<caller>[\w]+)[\s]*$'
     
     STEP_FINISHED_CODE = 6
-    STEP_FINISHED = r'step finished (?P<name>[\w]+)'
-	
-	#CHECK_IT#
-    CALLSTEP_STARTED_CODE = 7
-    CALLSTEP_STARTED = r' callstep started (?P<name>[\w]+)'
-	#CHECK_IT#
-    CALLSTEP_FINISHED_CODE = 8
-    CALLSTEP_FINISHED = r' callstep finished (?P<name>[\w]+)'
-	
-
+    STEP_FINISHED = r'step finished (?P<name>[\w]+)[\s]*$'
 
     UNUSED = 'unused'
 
@@ -270,10 +261,6 @@ class ReportToken(models.Model):
         (TOOL_FINISHED_CODE, TOOL_FINISHED),
         (STEP_STARTED_CODE, STEP_STARTED),
         (STEP_FINISHED_CODE, STEP_FINISHED),
-        #CHECK_IT#
-		(CALLSTEP_STARTED_CODE, CALLSTEP_STARTED),
-		#CHECK_IT#
-        (CALLSTEP_FINISHED_CODE, CALLSTEP_FINISHED),
     )
 
     @staticmethod

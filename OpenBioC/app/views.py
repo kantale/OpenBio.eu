@@ -1659,11 +1659,7 @@ def report(request, **kwargs):
     token = kwargs.get('token', None)
     if not token:
         return fail('Could not find token field')
-
     print ('token: {}'.format(token))
-    token = kwargs.get('token', None)
-    if not token:
-        return fail('Could not find token field')
 
     status_received = kwargs.get('status', None)
     if not status_received:
