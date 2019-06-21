@@ -60,6 +60,7 @@ pip install Django==2.1.5
 pip install simplejson
 pip install pybtex
 pip install mistune
+pip install requests
 ```
 
 * Build database
