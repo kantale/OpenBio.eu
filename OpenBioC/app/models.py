@@ -251,6 +251,14 @@ class ReportToken(models.Model):
     
     STEP_FINISHED_CODE = 6
     STEP_FINISHED = r'step finished (?P<name>[\w]+)'
+	
+	#CHECK_IT#
+    CALLSTEP_STARTED_CODE = 7
+    CALLSTEP_STARTED = r' callstep started (?P<name>[\w]+)'
+	#CHECK_IT#
+    CALLSTEP_FINISHED_CODE = 8
+    CALLSTEP_FINISHED = r' callstep finished (?P<name>[\w]+)'
+	
 
 
     UNUSED = 'unused'
@@ -262,6 +270,10 @@ class ReportToken(models.Model):
         (TOOL_FINISHED_CODE, TOOL_FINISHED),
         (STEP_STARTED_CODE, STEP_STARTED),
         (STEP_FINISHED_CODE, STEP_FINISHED),
+        #CHECK_IT#
+		(CALLSTEP_STARTED_CODE, CALLSTEP_STARTED),
+		#CHECK_IT#
+        (CALLSTEP_FINISHED_CODE, CALLSTEP_FINISHED),
     )
 
     @staticmethod
