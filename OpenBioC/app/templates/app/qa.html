@@ -1,0 +1,138 @@
+<div class="row" ng-show="true">
+    <div class="row right-align" style="margin-top:15px; margin-bottom: 15px;">
+        <a class="waves-effect waves-light btn-small" href=""
+            ng-click="qa_add_comment_button_pressed()">Add Comment</a>
+    </div>
+    <div class="input-field" ng-show="qa_show_new_comment">
+        <textarea class="validate" ng-model="qa_current_comment"></textarea>
+        <a class="waves-effect waves-light btn-small" href=""
+            ng-click="qa_comment_save_button_pressed()">Save</a>
+        <a class="waves-effect waves-light btn-small" href=""
+            ng-click="qa_comment_cancel_button_pressed()">Cancel</a>
+    </div>
+
+    <!-- <div class="row left-align">
+        <b><span ng-bind="qa_title"></span></b>
+    </div>
+
+
+    <div class="row left-align">
+        <span ng-bind-html="qa_comment_html"></span>
+    </div>
+
+    <div class="row right-align">
+        <a class="waves-effect waves-light btn-small" href=""
+            ng-click="qa_add_comment_button_pressed()">Add Comment</a>
+    </div>
+
+    <div class="input-field" ng-show="qa_show_new_comment">
+        <textarea class="validate" ng-model="qa_current_comment"></textarea>
+        <a class="waves-effect waves-light btn-small" href=""
+            ng-click="qa_comment_save_button_pressed()">Save</a>
+        <a class="waves-effect waves-light btn-small" href=""
+            ng-click="qa_comment_cancel_button_pressed()">Cancel</a>
+    </div> -->
+
+    <ul class="collection">
+        <li class="collection-item" ng-repeat="post in qa_thread track by post.id">
+            <div class="valign-wrapper">
+                <img src="/static/app/images/konstantina/img_avatar.png" alt=""
+                    class="circle avatarForumReply">
+                <small>Replied by <a href="#">Kona</a> on April 19 at 18:40</small>
+            </div>
+            <span ng-bind-html="post.comment_html"></span>
+            <a class="waves-effect btn-flat qaReplyBtn" href=""
+                ng-click="qa_reply_button_clicked(post.id)"><u>Reply</u></a>
+            <div class="input-field" ng-show="post.replying">
+                <textarea class="validate" ng-model="qa_current_reply"></textarea>
+                <a class="waves-effect waves-light btn-small" href=""
+                    ng-click="qa_reply_save_button_pressed(post.id, qa_current_reply)">Save</a>
+                <a class="waves-effect waves-light btn-small" href=""
+                    ng-click="qa_reply_cancel_button_pressed(post.id)">Cancel</a>
+            </div>
+            <ul class="collection">
+                <li class="collection-item" ng-repeat="post2 in post.children track by post2.id">
+                    <div class="valign-wrapper">
+                        <img src="/static/app/images/konstantina/img_avatar.png" alt=""
+                            class="circle avatarForumReply">
+                        <small>Replied by <a href="#">Kona</a> on April 19 at 18:40</small>
+                    </div>
+                    <span ng-bind-html="post2.comment_html"></span>
+                    <a class="waves-effect btn-flat qaReplyBtn" href=""
+                        ng-click="qa_reply_button_clicked(post2.id)"><u>Reply</u></a>
+                    <div class="input-field" ng-show="post2.replying">
+                        <textarea class="validate" ng-model="qa_current_reply"></textarea>
+                        <a class="waves-effect waves-light btn-small" href=""
+                            ng-click="qa_reply_save_button_pressed(post2.id, qa_current_reply)">Save</a>
+                        <a class="waves-effect waves-light btn-small" href=""
+                            ng-click="qa_reply_cancel_button_pressed(post2.id)">Cancel</a>
+                    </div>
+                    <ul class="collection">
+                        <li class="collection-item"
+                            ng-repeat="post3 in post2.children track by post3.id">
+                            <div class="valign-wrapper">
+                                <img src="/static/app/images/konstantina/img_avatar.png" alt=""
+                                    class="circle avatarForumReply">
+                                <small>Replied by <a href="#">Kona</a> on April 19 at 18:40</small>
+                            </div>
+                            <span ng-bind-html="post3.comment_html"></span>
+                            <a class="waves-effect btn-flat qaReplyBtn" href=""
+                                ng-click="qa_reply_button_clicked(post3.id)"><u>Reply</u></a>
+                            <div class="input-field" ng-show="post3.replying">
+                                <textarea class="validate" ng-model="qa_current_reply"></textarea>
+                                <a class="waves-effect waves-light btn-small" href=""
+                                    ng-click="qa_reply_save_button_pressed(post3.id, qa_current_reply)">Save</a>
+                                <a class="waves-effect waves-light btn-small" href=""
+                                    ng-click="qa_reply_cancel_button_pressed(post3.id)">Cancel</a>
+                            </div>
+                            <ul class="collection">
+                                <li class="collection-item"
+                                    ng-repeat="post4 in post3.children track by post4.id">
+                                    <div class="valign-wrapper">
+                                        <img src="/static/app/images/konstantina/img_avatar.png" alt=""
+                                            class="circle avatarForumReply">
+                                        <small>Replied by <a href="#">Kona</a> on April 19 at
+                                            18:40</small>
+                                    </div>
+                                    <span ng-bind-html="post4.comment_html"></span>
+                                    <a class="waves-effect btn-flat qaReplyBtn" href=""
+                                        ng-click="qa_reply_button_clicked(post4.id)"><u>Reply</u></a>
+                                    <div class="input-field" ng-show="post4.replying">
+                                        <textarea class="validate"
+                                            ng-model="qa_current_reply"></textarea>
+                                        <a class="waves-effect waves-light btn-small" href=""
+                                            ng-click="qa_reply_save_button_pressed(post4.id, qa_current_reply)">Save</a>
+                                        <a class="waves-effect waves-light btn-small" href=""
+                                            ng-click="qa_reply_cancel_button_pressed(post4.id)">Cancel</a>
+                                    </div>
+                                    <ul class="collection">
+                                        <li class="collection-item"
+                                            ng-repeat="post5 in post4.children track by post5.id">
+                                            <div class="valign-wrapper">
+                                                <img src="/static/app/images/konstantina/img_avatar.png"
+                                                    alt="" class="circle avatarForumReply">
+                                                <small>Replied by <a href="#">Kona</a> on April 19
+                                                    at
+                                                    18:40</small>
+                                            </div>
+                                            <span ng-bind-html="post5.comment_html"></span>
+                                            <!-- We allow for 5 levels of comment nesting -->
+                                            <!--
+                                                        <button ng-click="qa_reply_button_clicked(post5.id)">Reply</button>
+                                                        <div class="input-field" ng-show="post5.replying">
+                                                            <textarea class="validate" ng-model="qa_current_reply"></textarea>
+                                                            <button ng-click="qa_reply_save_button_pressed(post5.id, qa_current_reply)">Save</button>
+                                                            <button ng-click="qa_reply_cancel_button_pressed(post5.id)">Cancel</button>
+                                                        </div>
+                                                        -->
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</div>
