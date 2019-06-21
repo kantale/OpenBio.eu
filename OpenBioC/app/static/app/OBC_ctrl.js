@@ -3244,6 +3244,37 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     };
 
     /*
+    * References --> Insert DOI --> Button "Process DOI" --> clicked
+    */
+    $scope.references_process_doi_pressed = function() {
+        $scope.ajax(
+            'references_process_doi/',
+            {
+                'references_doi': $scope.references_doi
+            },
+            function(data) {
+                $scope.references_BIBTEX = data['references_BIBTEX']
+
+                //DUPLICATE CODE!! from references_generate_clicked 
+                //We do not call references_generate_clicked to save one ajax call
+                $scope.references_formatted = data['references_formatted'];
+                $scope.references_name = data['references_name'];
+                $scope.references_title = data['references_title'];
+                //$scope.references_doi = data['references_doi'];
+                $scope.references_url = data['references_url'];
+
+                $timeout(function(){M.updateTextFields()}, 10);
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
+    };
+
+    /*
     * References --> Save --> Pressed
     */
     $scope.references_create_save_pressed = function() {
@@ -3507,8 +3538,18 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             document.getElementById('QARightPanel').style.display = 'none';
             // M.Collapsible.getInstance($('#QARightPanelAccordion')).close();
         }
-
     }
+
+    /*
+    * called by ui.js --> interlink()
+    * Handle interlinks
+    */
+    $scope.interlink = function(args) {
+        if (args.type == 't') {
+            //Open a tool/data
+            $scope.tools_search_jstree_select_node(null, {node:{data: args}});
+        }
+    };
 
 }); 
 
