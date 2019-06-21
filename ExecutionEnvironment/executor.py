@@ -316,8 +316,12 @@ class Workflow:
             ret += '# STEP: {}\n'.format(a_node['id'])
             ret += 'step__{} () {{\n'.format(a_node['id'])
             #ret += ':\n' # No op in case a_node['bash'] is empty 
-            ret += 'echo "OBC: CALLING STEP: {}"\n'.format(a_node['id'])
-            ret += 'update_server_status "step started {}"\n'.format(a_node['id'])
+            ret += "OBC_WHOCALLEDME=$(caller 0 | awk '{print $2}') \n"
+            ret += "if [ $OBC_WHOCALLEDME != \"main\" ] ; then \n"
+            ret +="   OBC_WHOCALLEDME=${OBC_WHOCALLEDME:6}\n" # :6 =  step__step1__callme__1 --> step1__callme__1
+            ret += "fi\n"
+            ret += 'echo "OBC: CALLING STEP: {}    CALLER: $OBC_WHOCALLEDME"\n'.format(a_node['id']) # 
+            ret += 'update_server_status "step started {} $OBC_WHOCALLEDME"\n'.format(a_node['id'])
             ret += a_node['bash'] + '\n'
             ret += 'update_server_status "step finished {}"\n'.format(a_node['id'])
             ret += '}\n'
