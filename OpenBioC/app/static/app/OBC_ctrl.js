@@ -120,6 +120,11 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.report_workflow_run = '';
         $scope.report_tokens = [];
  
+        //Init generic qa data
+        $scope.qa_gen = {
+            "tools": {}
+        };
+
         $scope.get_init_data();
 
 
@@ -1822,6 +1827,13 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     };
 
     /*
+    * Generic version of $scope.qa_search_3
+    */
+    $scope.gen_qa_search_3 = function(qa, qa_type) {
+        
+    };
+
+    /*
     * A node in the Q&A search js tree is clicked
     */ 
     $scope.qa_search_jstree_select_node = function(e, data) {
@@ -3447,7 +3459,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.ajax(
             'qa_add_comment/',
             {
-                'qa_id': id,
+                'qa_id': id, // The id of root comment
                 'qa_comment': comment
             },
             function(data) {
@@ -3491,6 +3503,14 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     $scope.qa_add_comment_button_pressed = function() {
         $scope.qa_show_new_comment = true;
         $scope.qa_current_comment = '';
+    };
+
+    /*
+    * Same as qa_add_comment_button_pressed but generic
+    */
+    $scope.gen_qa_add_comment_button_pressed = function(qa_type) {
+        $scope.qa_gen[qa_type].qa_show_new_comment = true;
+        $scope.qa_gen[qa_type].qa_current_comment = '';
     };
 
     // QA END 
@@ -3545,6 +3565,16 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             //Open a tool/data
             $scope.tools_search_jstree_select_node(null, {node:{data: args}});
         }
+    };
+
+    /*
+    * ng-click from IN/OUT worfklow variables
+    */
+    $scope.workflow_input_output_toggle = function(index) {
+        //console.log('ffff:');
+        //console.log(index);
+
+        $scope.workflow_input_outputs[index].out = !$scope.workflow_input_outputs[index].out;
     };
 
 }); 

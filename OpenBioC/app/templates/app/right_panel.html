@@ -342,24 +342,7 @@
                         Discussion
                     </div>
                     <div class="collapsible-body">
-                        <div class="row">
-                            Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry
-                            richardson
-                            ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food
-                            truck
-                            quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a
-                            bird
-                            on
-                            it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim
-                            keffiyeh
-                            helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
-                            Ad
-                            vegan
-                            excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw
-                            denim
-                            aesthetic synth nesciunt you probably haven't heard of them accusamus labore
-                            sustainable VHS.
-                        </div>
+                        {% include "app/qa.html" with qa_type="tools" %}
                     </div>
                 </li>
             </ul>
@@ -577,12 +560,15 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr ng-repeat="x in workflow_input_outputs">
+                                        {% verbatim %}
+                                        <tr ng-repeat="x in workflow_input_outputs track by $index">
                                             <td><input type="text" placeholder="Name" ng-model="x.name"
                                                     ng-disabled="(!$last) || (!workflows_info_editable)"></td>
                                             <td><input type="text" placeholder="Description" ng-model="x.description"
                                                     ng-disabled="(!$last) || (!workflows_info_editable)">
                                             </td>
+
+                                            <!-- Old switch 
                                             <td class="switch">
                                                 <label>
                                                     IN
@@ -592,6 +578,19 @@
                                                     OUT
                                                 </label>
                                             </td>
+                                            -->
+
+                                            <!-- New switch -->
+                                            <td>
+                                                <div class="switch-custom" id="{{'switchCustom'+$index}}">
+                                                    <input type="radio" class="switch-input" name="{{'switchName'+$index}}" ng-disabled="(!$last) || (!workflows_info_editable)" ng-attr-id="{{'switchIn'+$index}}" ng-checked="!x.out" ng-click="workflow_input_output_toggle($index)">
+                                                    <label for="{{'switchIn'+$index}}" class="switch-label switch-label-off">IN</label>
+                                                    <input type="radio" class="switch-input" name="{{'switchName'+$index}}" ng-disabled="(!$last) || (!workflows_info_editable)" ng-attr-id="{{'switchOut'+$index}}" ng-checked="x.out" ng-click="workflow_input_output_toggle($index)">
+                                                    <label for="{{'switchOut'+$index}}" class="switch-label switch-label-on">OUT</label>
+                                                    <span class="switch-selection"></span>
+                                                </div>
+                                            </td>
+                                            
                                             <td>
                                                 <!--add: ng-if="$last" removed  , remove: (!$first) removed
                                                 -->
@@ -611,6 +610,7 @@
                                                         class="material-icons">remove</i></a>
                                             </td>
                                         </tr>
+                                        {% endverbatim %}
                                     </tbody>
                                 </table>
                             </div>
