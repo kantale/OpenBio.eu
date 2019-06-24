@@ -3556,5 +3556,15 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         }
     };
 
+    /*
+    * ng-click from IN/OUT worfklow variables
+    */
+    $scope.workflow_input_output_toggle = function(index) {
+        //console.log('ffff:');
+        //console.log(index);
+
+        $scope.workflow_input_outputs[index].out = !$scope.workflow_input_outputs[index].out;
+    };
+
 }); 
 
