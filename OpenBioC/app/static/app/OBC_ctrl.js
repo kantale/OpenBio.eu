@@ -1864,6 +1864,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.report_created_at = data['report_created_at'];
                 $scope.report_tokens = data['report_tokens'];
 
+				console.log('$scope.report_tokens');
+				console.log($scope.report_tokens);
+				
+				
 
                 /* Create the report workflow*/
                 window.createRepTree(data['workflow'].elements);
@@ -1963,7 +1967,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         console.log(node_anim_params);
         window.nodeAnimation_public(node_anim_params); // Also performs edge animation
     };
-
+	
 	
     /*
     * Called by Yes/No on Modal "All tool edits will be lost!"

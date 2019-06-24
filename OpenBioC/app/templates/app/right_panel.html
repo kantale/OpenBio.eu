@@ -756,6 +756,31 @@
                         </form>
                     </div>
                 </li>
+
+				<!-- TIMELINE -->
+				<li id="reportsTimeline">
+                    <div class="collapsible-header">
+                        <i class="material-icons arrow">keyboard_arrow_right</i>
+                        <i class="material-icons">info</i>
+                        Timeline
+                    </div>
+                    <div class="collapsible-body">
+                        <form class="col s12">
+                            <div class="row left-align">
+							<div id="reportTimeline"></div>
+							<!--
+                                <ul>
+                                    <li ng-repeat="token in report_tokens track by token.token">
+                                        <span ng-bind="token.status"></span>, <span ng-bind="token.created_at"></span><a
+                                            ng-click="nodeAnimation_public(token.node_anim_params)">show</a>
+                                    </li>
+                                </ul>
+								-->
+                            </div>
+                        </form>
+                    </div>
+                </li>		
+				
                 <div class="row">
                     <div id="cyrep"></div>
                 </div>
