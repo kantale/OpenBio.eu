@@ -1,10 +1,10 @@
 <div class="row" ng-show="true">
     <div class="row right-align" style="margin-top:15px; margin-bottom: 15px;">
         <a class="waves-effect waves-light btn-small" href=""
-            ng-click="qa_add_comment_button_pressed()">Add Comment</a>
+            ng-click="gen_qa_add_comment_button_pressed('{{ qa_type }}')">Add Comment</a>
     </div>
-    <div class="input-field" ng-show="qa_show_new_comment">
-        <textarea class="validate" ng-model="qa_current_comment"></textarea>
+    <div class="input-field" ng-show="qa_gen['{{ qa_type }}'].qa_show_new_comment">
+        <textarea class="validate" ng-model="qa_gen['{{ qa_type }}'].qa_current_comment"></textarea>
         <a class="waves-effect waves-light btn-small" href=""
             ng-click="qa_comment_save_button_pressed()">Save</a>
         <a class="waves-effect waves-light btn-small" href=""

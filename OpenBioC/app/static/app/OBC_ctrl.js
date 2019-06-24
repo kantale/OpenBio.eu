@@ -120,6 +120,11 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.report_workflow_run = '';
         $scope.report_tokens = [];
  
+        //Init generic qa data
+        $scope.qa_gen = {
+            "tools": {}
+        };
+
         $scope.get_init_data();
 
 
@@ -3487,6 +3492,14 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     $scope.qa_add_comment_button_pressed = function() {
         $scope.qa_show_new_comment = true;
         $scope.qa_current_comment = '';
+    };
+
+    /*
+    * Same as qa_add_comment_button_pressed but generic
+    */
+    $scope.gen_qa_add_comment_button_pressed = function(qa_type) {
+        $scope.qa_gen[qa_type].qa_show_new_comment = true;
+        $scope.qa_gen[qa_type].qa_current_comment = '';
     };
 
     // QA END 
