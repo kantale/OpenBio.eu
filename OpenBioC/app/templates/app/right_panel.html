@@ -560,14 +560,15 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr ng-repeat="x in workflow_input_outputs">
+                                        {% verbatim %}
+                                        <tr ng-repeat="x in workflow_input_outputs track by $index">
                                             <td><input type="text" placeholder="Name" ng-model="x.name"
                                                     ng-disabled="(!$last) || (!workflows_info_editable)"></td>
                                             <td><input type="text" placeholder="Description" ng-model="x.description"
                                                     ng-disabled="(!$last) || (!workflows_info_editable)">
                                             </td>
 
-                                            <!-- Old switch -->
+                                            <!-- Old switch 
                                             <td class="switch">
                                                 <label>
                                                     IN
@@ -577,17 +578,15 @@
                                                     OUT
                                                 </label>
                                             </td>
+                                            -->
 
                                             <!-- New switch -->
-                                            <!-- document.getElementById('switchIn').checked; -> returns true/false -->
-                                            <!-- document.getElementById('switchOut').checked; -> returns true/false -->
-                                            <!-- $("#switchCustom").children().attr("disabled","disabled"); -> disable switch -->
                                             <td>
-                                                <div class="switch-custom" id="switchCustom">
-                                                    <input type="radio" class="switch-input" name="view" value="in" id="switchIn" checked>
-                                                    <label for="switchIn" class="switch-label switch-label-off">IN</label>
-                                                    <input type="radio" class="switch-input" name="view" value="out" id="switchOut">
-                                                    <label for="switchOut" class="switch-label switch-label-on">OUT</label>
+                                                <div class="switch-custom" id="{{'switchCustom'+$index}}">
+                                                    <input type="radio" class="switch-input" name="{{'switchName'+$index}}" ng-disabled="(!$last) || (!workflows_info_editable)" ng-attr-id="{{'switchIn'+$index}}" ng-checked="!x.out" ng-click="workflow_input_output_toggle($index)">
+                                                    <label for="{{'switchIn'+$index}}" class="switch-label switch-label-off">IN</label>
+                                                    <input type="radio" class="switch-input" name="{{'switchName'+$index}}" ng-disabled="(!$last) || (!workflows_info_editable)" ng-attr-id="{{'switchOut'+$index}}" ng-checked="x.out" ng-click="workflow_input_output_toggle($index)">
+                                                    <label for="{{'switchOut'+$index}}" class="switch-label switch-label-on">OUT</label>
                                                     <span class="switch-selection"></span>
                                                 </div>
                                             </td>
@@ -611,6 +610,7 @@
                                                         class="material-icons">remove</i></a>
                                             </td>
                                         </tr>
+                                        {% endverbatim %}
                                     </tbody>
                                 </table>
                             </div>
