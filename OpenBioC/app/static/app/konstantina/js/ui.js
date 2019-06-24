@@ -2444,9 +2444,11 @@ window.onload = function () {
             var edge_anim = cy_rep.$('edge[source = "' + source_anim_id + '"][target = "' + target_anim_id + '"]');
 
             if (!edge_anim.length) {
-                console.log('WARNING: COULD NOT FIND EDGE!');
-                console.log('SOURCE:', source_anim_id);
-                console.log('TARGET:', target_anim_id);
+                if (source_anim_id != 'main') {
+                    console.log('WARNING: COULD NOT FIND EDGE!');
+                    console.log('SOURCE:', source_anim_id);
+                    console.log('TARGET:', target_anim_id);
+                }
                 return;
             }
 				
