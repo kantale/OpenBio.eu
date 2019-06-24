@@ -1827,6 +1827,13 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     };
 
     /*
+    * Generic version of $scope.qa_search_3
+    */
+    $scope.gen_qa_search_3 = function(qa, qa_type) {
+        
+    };
+
+    /*
     * A node in the Q&A search js tree is clicked
     */ 
     $scope.qa_search_jstree_select_node = function(e, data) {
@@ -3448,7 +3455,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.ajax(
             'qa_add_comment/',
             {
-                'qa_id': id,
+                'qa_id': id, // The id of root comment
                 'qa_comment': comment
             },
             function(data) {
