@@ -353,5 +353,7 @@ class Comment(models.Model):
     parent = models.ForeignKey(to='Comment', null=True, on_delete=models.CASCADE, related_name='comment_parent')
     children =  models.ManyToManyField(to='Comment', related_name='comment_children')
 
+    tool = models.ForeignKey(to='Tool', null=True, on_delete=models.CASCADE, related_name='comment')
+
 
 
