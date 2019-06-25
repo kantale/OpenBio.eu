@@ -2429,6 +2429,38 @@ def qa_search_3(request, **kwargs):
     return success(ret)
 
 @has_data
+def gen_qa_search_3(request, **kwargs):
+    '''
+    PATH: gen_qa_search_3/
+    Generic version of qa_search_3
+    Get a unique Q&A thread
+    '''
+
+    # Get arguments
+    object_pk = kwargs['object_pk'] # This is the primary key of the tool/workflow
+    qa_type = kwargs['qa_type']
+
+    if qa_type == 'tool':
+        commentable = Tool.object.get(pk=object_pk)
+    elif qa_type == 'workflow':
+        commentable = Workflow.object.get(pk=object_pk)
+    else:
+        return fail('ERROR: 2918 . Unknown qa_type: {}'.format(qa_type))
+
+    # Check if this object has comments
+    if not commentable.comment:
+        return success({
+            'qa_id': -1, 
+            'qa_thread': [],
+            })
+
+    # Get the thread of this comment
+    ret = success({
+        'qa_id': commentable.comment.pk,
+        'qa_thread': qa_create_thread(comment),
+        })
+
+@has_data
 def qa_add_comment(request, **kwargs):
     '''
     Add a comment at a Q&A question
@@ -2449,7 +2481,7 @@ def qa_add_comment(request, **kwargs):
     try:
         parent_comment = Comment.objects.get(pk=id_)
     except ObjectDoesNotExist as e:
-        return fail('Could not find comment database object')
+        return fail('ERROR: 8991. Could not find comment database object')
 
     new_comment = Comment(
         obc_user=OBC_user.objects.get(user=request.user),
@@ -2466,6 +2498,66 @@ def qa_add_comment(request, **kwargs):
     }
 
     return success(ret)
+
+@has_data
+def gen_qa_add_comment(request, **kwargs):
+    '''
+    PATH: gen_qa_add_comment/
+    Generic version of the qa_add_comment
+    Add a comment at a Q&A question
+    '''
+    if request.user.is_anonymous:
+        return fail('Please login to add a new comment')
+
+    comment_pk = kwargs['comment_pk']
+    object_pk = kwargs['object_pk']
+    qa_comment = kwargs['qa_comment']
+
+    current_comment_html = markdown(qa_comment)
+
+    if comment_pk == -1:
+        '''This is a new thread!'''
+
+        #Get the commentable. DUPLICATE CODE
+        if qa_type == 'tool':
+            commentable = Tool.object.get(pk=object_pk)
+        elif qa_type == 'workflow':
+            commentable = Workflow.object.get(pk=object_pk)
+        else:
+            return fail('ERROR: 2918 . Unknown qa_type: {}'.format(qa_type))
+
+
+        #Create the comment
+        new_comment = Comment(
+            obc_user=OBC_user.objects.get(user=request.user),
+            comment = qa_comment,
+            comment_html = current_comment_html,
+            parent = None,
+        )
+        new_comment.save()
+
+        #Attach thread to commentable RO
+        commentable.comment = new_comment
+        commentable.save()
+    else:
+        '''This is an existing thread'''
+        parent_comment = Comment.objects.get(pk=comment_pk)
+        new_comment = Comment(
+            obc_user=OBC_user.objects.get(user=request.user),
+            comment = qa_comment,
+            comment_html = current_comment_html,
+            parent = parent_comment,
+        )
+        new_comment.save()
+        parent_comment.children.add(new_comment)
+        parent_comment.save()
+
+    ret = {
+        'comment_html': current_comment_html,
+    }
+
+    return success(ret)
+
 
 ### END OF Q&A
 
