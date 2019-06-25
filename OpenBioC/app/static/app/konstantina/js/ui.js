@@ -2861,6 +2861,16 @@ window.onload = function () {
 						"name": "runTest4/1"
 					  }
 					}
+				  },{
+					"status": "step finished step1__runTest4__1",
+					"created_at": "Thu, 20 Jun 2019 12:14:36",
+					"token": "88230a5e-e7e6-48cc-9c10-a869d7d10c0c",
+					"node_anim_params": {
+					  "status_code": 6,
+					  "status_fields": {
+						"name": "step1__runTest4__1"
+					  }
+					}
 				  }
 				];
 				
@@ -2870,7 +2880,7 @@ window.onload = function () {
 		var i=0;	
 		timeline_data.forEach(function (tdata) {
 			i++;
-			item={id: i, content: tdata.node_anim_params.status_fields.name, start: new Date(tdata.created_at).toISOString().split('T')[0]};
+			item={id: i, content: tdata.node_anim_params.status_fields.name, start: new Date(tdata.created_at).toISOString().split('T')[0], params: tdata.node_anim_params};
 			myItems.push(item);
 		});
 		
@@ -2904,6 +2914,20 @@ window.onload = function () {
 
 		  // Create a Timeline
 		  var timeline = new vis.Timeline(container, items, options);
+		  timeline.on('click', function (properties) {
+
+			myItems.forEach(function (myItem) {
+			  
+				if(myItem.id===properties.item){						
+					nodeAnimation_public(myItem.params);
+				}
+				
+			  });
+				  //should call: nodeAnimation_public(token.node_anim_params)
+				  //logEvent('click', properties);
+				  
+			});
+
 
     // END OF GALATEIA'S CODE
 
