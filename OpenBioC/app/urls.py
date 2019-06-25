@@ -36,6 +36,8 @@ urlpatterns = [
 	path('users_edit_data/', views.users_edit_data), # User changes (edit), profile info data
 	path('qa_add_1/', views.qa_add_1), # Add a new Title and a new comment.
 	path('qa_search_3/', views.qa_search_3), # Get a unique Q&A thread 
+	path('gen_qa_search_3/', views.gen_qa_search_3), # Generic version of the above.  Get a unique Q&A thread  
 	path('qa_add_comment/', views.qa_add_comment), # Add a comment to a Q&A
+	path('gen_qa_add_comment/', views.gen_qa_add_comment), # Genetic version of the above # Add a comment to a QA
 
 ]

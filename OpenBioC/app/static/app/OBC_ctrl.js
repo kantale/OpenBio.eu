@@ -1828,9 +1828,48 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
     /*
     * Generic version of $scope.qa_search_3
+    * Fetch the data from a single Q&A and update the UI 
+    * Duplicate code. FIXME !
     */
-    $scope.gen_qa_search_3 = function(qa, qa_type) {
-        
+    $scope.gen_qa_search_3 = function(object_pk, qa_type) {
+        // Fetch thread
+        $scope.ajax(
+            'gen_qa_search_3/',
+            {
+                'object_pk': object_pk,
+                'qa_type': qa_type
+            },
+            function(data) {
+                //$scope.qa_title = data['qa_title']; // There is no qa_title in generic
+                //$scope.qa_comment = data['qa_comment']; // There is no qa_comment in generic
+                //$scope.qa_comment_html = data['qa_comment_html']; // There is no qa_comment_html in generic
+
+                //$scope.qa_comment_id = data['qa_id']; // The primary key to the Comment object in db
+
+                $scope.qa_gen[qa_type].qa_comment_id = data['qa_id'];   // The primary key to the Comment object in db
+                                                                        // -1, means has no comments
+
+                // $scope.qa_info_editable = false; // No use in generic
+
+                //$scope.qa_show_new_comment = false;
+                $scope.qa_gen[qa_type].qa_show_new_comment = false
+
+//                $scope.qa_thread = [
+//                    {'comment': 'comment 1', 'id': 1, 'replying': false},
+//                    {'comment': 'comment 2', 'id': 2, 'replying': false}
+//                ];
+                
+                //$scope.qa_thread = data['qa_thread'];
+                $scope.qa_gen[qa_type].qa_thread = data['qa_thread'];
+
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
     };
 
     /*
@@ -3465,6 +3504,32 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             function(data) {
                 //Update the UI
                 $scope.qa_search_3({id: $scope.qa_comment_id});
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
+    };
+
+    /*
+    * Generic version qa_add_comment 
+    */
+    $scope.gen_qa_add_comment = function(comment_pk, object_pk, comment, qa_type) {
+        $scope.ajax(
+            'qen_qa_add_comment/',
+            {
+                'comment_pk': comment_pk, // The id of root comment
+                'object_pk': object_pk,
+                'qa_comment': comment,
+                'qa_type': qa_type
+            },
+            function(data) {
+                //Update the UI
+                //$scope.qa_search_3({id: $scope.qa_comment_id});
+                $scope.gen_qa_search_3(object_pk, qa_type)
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');
