@@ -163,6 +163,9 @@ class Tool(models.Model):
     #validation_status = models.CharField(max_length=256) # unvalidated, submitted, ...
     last_validation = models.ForeignKey(to="ToolValidations", null=True, on_delete=models.CASCADE, related_name='last_validation_related')
 
+    comment = models.ForeignKey(to='Comment', null=True, on_delete=models.CASCADE, related_name='tool_comment') # The comments of the tool
+    
+
 class ToolValidations(models.Model):
     '''
     This is like a log entry.
@@ -226,6 +229,8 @@ class Workflow(models.Model):
     tools = models.ManyToManyField(Tool)
 
     created_at = models.DateTimeField(auto_now_add=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#datefield 
+
+    comment = models.ForeignKey(to='Comment', null=True, on_delete=models.CASCADE, related_name='workflow_comment') # The comments of the tool
 
 class ReportToken(models.Model):
     '''
@@ -353,7 +358,7 @@ class Comment(models.Model):
     parent = models.ForeignKey(to='Comment', null=True, on_delete=models.CASCADE, related_name='comment_parent')
     children =  models.ManyToManyField(to='Comment', related_name='comment_children')
 
-    tool = models.ForeignKey(to='Tool', null=True, on_delete=models.CASCADE, related_name='comment')
+
 
 
 
