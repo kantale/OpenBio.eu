@@ -706,6 +706,10 @@ window.onload = function () {
         if (typeof cy !== 'undefined') {
             cy.resize();
         }
+        if (typeof cy_rep !== 'undefined') {
+            cy_rep.resize();
+        }
+
     }
 
     // -------------------------------- Get elements which row alignment should be fixed  ----------------------------    
@@ -1015,10 +1019,15 @@ window.onload = function () {
             TOOL_FINISHED_CODE: 4,
             STEP_STARTED_CODE: 5,
             STEP_FINISHED_CODE: 6,
-			CALLSTEP_STARTED_CODE:7,
-			CALLSTEP_FINISHED_CODE:8,
-            previous_animation: null // Object that contains information to restore animations in reports
+//			CALLSTEP_STARTED_CODE:7,
+//			CALLSTEP_FINISHED_CODE:8,
+            previous_animation: null, // Object that contains information to restore animations in reports
 
+            //Timeline
+            timeline: new vis.Timeline(
+                document.getElementById('reportTimeline'),
+                new vis.DataSet([{id: 1, content: 'item 1', start: '1950-04-20'}]), //Cannot initialize with empty array ???
+                {}) // <-- Options
         };
 
         /*
@@ -2847,57 +2856,18 @@ window.onload = function () {
 		]
   */
 	
-	window.fillTimeline = function (timeline_datatimeline_data){
-		
-		//TODO remove the statica data
-		timeline_data=[
-				  {
-					"status": "workflow started runTest4/1",
-					"created_at": "Thu, 20 Jun 2019 12:14:35",
-					"token": "bcc74666-0fb7-4b31-be6b-cbe1ea371700",
-					"node_anim_params": {
-					  "status_code": 1,
-					  "status_fields": {
-						"name": "runTest4/1"
-					  }
-					}
-				  },{
-					"status": "step finished step1__runTest4__1",
-					"created_at": "Thu, 20 Jun 2019 12:14:36",
-					"token": "88230a5e-e7e6-48cc-9c10-a869d7d10c0c",
-					"node_anim_params": {
-					  "status_code": 6,
-					  "status_fields": {
-						"name": "step1__runTest4__1"
-					  }
-					}
-				  }
-				];
-				
-				
-				
-		myItems = [];	
-		var i=0;	
-		timeline_data.forEach(function (tdata) {
-			i++;
-			item={id: i, content: tdata.node_anim_params.status_fields.name, start: new Date(tdata.created_at).toISOString().split('T')[0], params: tdata.node_anim_params};
-			myItems.push(item);
-		});
-		
-
-		
-	}
 	
 	//TODO remove this and find the proper place to call the function
-	window.fillTimeline();
+	//window.OBCUI.fillTimeline();
 	
 	 // DOM element where the Timeline will be attached
-		  var container = document.getElementById('reportTimeline');
+		  
 
 		  // Create a DataSet (allows two way data-binding)
 		  
 		  //TODO create my dataset
-		  var items = new vis.DataSet(myItems);
+		  //var items = new vis.DataSet(myItems);
+          //var items = new vis.DataSet([{id: 1, content: 'item 1', start: '2013-04-20'}]);
 		  /*
 		  var items = new vis.DataSet([
 			{id: 1, content: 'item 1', start: '2013-04-20'},
@@ -2910,11 +2880,16 @@ window.onload = function () {
 		  */
 
 		  // Configuration for the Timeline
-		  var options = {};
+		  //var options = {};
 
 		  // Create a Timeline
-		  var timeline = new vis.Timeline(container, items, options);
-		  timeline.on('click', function (properties) {
+		  //timeline = new vis.Timeline(container, items, options);
+          //new vis.Timeline(container,  new vis.DataSet([{id: 1, content: 'item 1', start: '2013-04-20'}]), options)
+          // timeline.setItems([])
+
+    window.OBCUI.init_timeline = function() {
+
+		  window.OBCUI.timeline.on('click', function (properties) {
 
 			myItems.forEach(function (myItem) {
 			  
@@ -2927,7 +2902,12 @@ window.onload = function () {
 				  //logEvent('click', properties);
 				  
 			});
+    };
+    window.OBCUI.init_timeline();
 
+    window.OBCUI.set_timeline = function(timeline_data) {
+        window.OBCUI.timeline.setItems(timeline_data);
+    };
 
     // END OF GALATEIA'S CODE
 
@@ -2942,9 +2922,6 @@ window.onload = function () {
         angular.element($('#angular_div')).scope().$apply(function () {
             angular.element($('#angular_div')).scope().interlink(args); 
         });
-
-
-
     };
 
 

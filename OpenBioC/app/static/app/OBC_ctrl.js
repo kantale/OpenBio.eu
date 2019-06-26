@@ -1899,6 +1899,31 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     };
 
     /*
+    * Convert $scope.report_tokens to a data array for timeline
+    */
+    $scope.convert_report_tokens_to_timeline_data = function () {
+                
+        var ret = [];   
+        var i=0;    
+        $scope.report_tokens.forEach(function (tdata) {
+
+            console.log('token created_at:');
+            console.log(tdata.created_at);
+
+            i++;
+            ret.push({
+                    id: i, 
+                    content: tdata.node_anim_params.status_fields.name, 
+                    start: new Date(tdata.created_at), //.toISOString().split('T')[0], 
+                    params: tdata.node_anim_params}
+            );
+        });
+
+        return ret;
+    };
+
+
+    /*
     * Called from reports_search_jstree_select_node
     * Show a Report on the UI
     */
@@ -1927,10 +1952,12 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 				console.log('$scope.report_tokens');
 				console.log($scope.report_tokens);
 				
-				
-
                 /* Create the report workflow*/
                 window.createRepTree(data['workflow'].elements);
+
+                //Update timeline 
+                var timeline_data = $scope.convert_report_tokens_to_timeline_data();
+                window.OBCUI.set_timeline(timeline_data);
 
             },
             function(data) {
