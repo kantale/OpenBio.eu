@@ -122,7 +122,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
  
         //Init generic qa data
         $scope.qa_gen = {
-            "tools": {}
+            "tool": {},
+            "workflow": {}
         };
 
         $scope.get_init_data();
@@ -789,6 +790,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $timeout(function(){M.updateTextFields()}, 10); //Update text fields so that we don't get a crumbled text input
 
                 $scope.tool_keywords = data['tool_keywords'];
+                $scope.tool_pk = data['tool_pk']; //Used in QAs
+                $scope.qa_gen['tool'].object_pk = $scope.tool_pk;
+                $scope.qa_gen['tool'].qa_thread = data['tool_thread'];
+
             },
             function (data) {
                 $scope.toast('Error 5429', 'error');
@@ -2572,6 +2577,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 // Update text fields
                 $timeout(function(){M.updateTextFields()}, 10);
 
+                $scope.workflow_pk = data['workflow_pk']; // Used in QAs
+                $scope.qa_gen['workflow'].object_pk = $scope.workflow_pk;
+
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');
@@ -3441,6 +3449,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
     /* 
     * Recursively search and set replying status
+    * Takes a whole thread and sets a replying flag=True to the node that we are currently replying
     */
     $scope.qa_set_replying = function(current_scope, current_id, value) {
         for (var i=0; i<current_scope.length; i++) {
@@ -3465,6 +3474,15 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
     };
 
+    /*
+    * Generic version of qa_reply_button_clicked
+    * Tool/WF --> Q&A --> Show thread --> Reply button --> Clicked 
+    */
+    $scope.gen_qa_reply_button_clicked = function(id, qa_type) {
+        $scope.qa_set_replying($scope.qa_gen[qa_type].qa_thread, id, true);
+        $scope.qa_gen[qa_type].qa_current_reply = '';
+
+    };
 
     /*
     * Q&A --> Show Thread --> reply to a comment --> add text --> Save button --> Clicked 
@@ -3479,10 +3497,29 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     };
 
     /*
+    * Generic version of qa_reply_save_button_pressed
+    * Tools/WF --> Q&A --> Show Thread --> reply to a comment --> add text --> Save button --> Clicked
+    */
+    $scope.gen_qa_reply_save_button_pressed = function(id, comment, qa_type) {
+        // $scope.gen_qa_add_comment = function(comment_pk, object_pk, comment, qa_type) 
+
+        $scope.gen_qa_add_comment(id, $scope.qa_gen[qa_type].object_pk, comment, qa_type);
+        $scope.qa_gen[qa_type].qa_current_reply = '';
+    };
+
+    /*
     * Q&A --> Show Thread --> reply to a comment --> add text --> Cancel button --> Clicked 
     */
     $scope.qa_reply_cancel_button_pressed = function(id) {
         $scope.qa_set_replying($scope.qa_thread, id, false);
+    };
+
+    /*
+    * Generic version of qa_reply_cancel_button_pressed
+    * Tool/WF --> Q&A --> Show Thread --> reply to a comment --> add text --> Cancel button --> Clicked 
+    */
+    $scope.gen_qa_reply_cancel_button_pressed = function(id, qa_type) {
+        $scope.qa_set_replying($scope.qa_gen[qa_type].qa_thread, id, false);
     };
 
     /*
@@ -3515,7 +3552,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     */
     $scope.gen_qa_add_comment = function(comment_pk, object_pk, comment, qa_type) {
         $scope.ajax(
-            'qen_qa_add_comment/',
+            'gen_qa_add_comment/',
             {
                 'comment_pk': comment_pk, // The id of root comment
                 'object_pk': object_pk,
@@ -3551,12 +3588,39 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     };
 
     /*
+    * Generic version of qa_comment_save_button_pressed
+    * Tools/WF --> Q&A --> Show Thread --> Add Comment -(!NOT REPLY!) -> Add text --> Save button --> Clicked 
+    */
+    $scope.gen_qa_comment_save_button_pressed = function(qa_type) {
+        // $scope.gen_qa_add_comment = function(comment_pk, object_pk, comment, qa_type)  
+        // ### here
+
+        $scope.gen_qa_add_comment(
+            null, 
+            $scope.qa_gen[qa_type].object_pk, 
+            $scope.qa_gen[qa_type].qa_current_comment,
+            qa_type);
+
+        $scope.qa_gen[qa_type].qa_show_new_comment = false;
+    };
+
+    /*
     * Q&A --> Show Thread --> Add Comment -(!NOT REPLY!) -> Add text --> Cancel button --> Clicked 
     */
     $scope.qa_comment_cancel_button_pressed = function() {
         $scope.qa_show_new_comment = false;
         $scope.qa_current_comment = '';
     };
+
+    /*
+    * Generic version of qa_comment_cancel_button_pressed
+    * Tool/WG --> Q&A --> Show Thread --> Add Comment -(!NOT REPLY!) -> Add text --> Cancel button --> Clicked 
+    */
+    $scope.gen_qa_comment_cancel_button_pressed = function(qa_type) {
+        $scope.qa_gen[qa_type].qa_show_new_comment= false;
+        $scope.qa_gen[qa_type].qa_current_comment = '';
+    };
+
 
     /*
     * Q&A --> Show tread --> "Add Comment" button --> pressed
