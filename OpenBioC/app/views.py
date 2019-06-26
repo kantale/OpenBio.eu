@@ -1299,7 +1299,7 @@ def tools_add(request, **kwargs):
         obc_user = OBC_user.objects.get(user=request.user),
         comment = '',
         comment_html = '',
-        title = '',
+        title = 'Tool: {}/{}/{}'.format(tools_search_name, tools_search_version, next_edit),
         parent = None,
     )
     comment.save()
@@ -1309,7 +1309,10 @@ def tools_add(request, **kwargs):
     ret = {
         'description_html': tool_description_html, 
         'edit': next_edit,
-        'created_at': datetime_to_str(new_tool.created_at)
+        'created_at': datetime_to_str(new_tool.created_at),
+
+        'tool_pk': new_tool.pk, # Used in comments
+        'tool_thread': qa_create_thread(new_tool.comment), # Tool comment thread 
     }
 
     return success(ret)

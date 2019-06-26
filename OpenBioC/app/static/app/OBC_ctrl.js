@@ -790,7 +790,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $timeout(function(){M.updateTextFields()}, 10); //Update text fields so that we don't get a crumbled text input
 
                 $scope.tool_keywords = data['tool_keywords'];
-                $scope.tool_pk = data['tool_pk']; //Used in QAs
+  
                 $scope.qa_gen['tool'].object_pk = data['tool_pk'];
                 $scope.qa_gen['tool'].qa_thread = data['tool_thread'];
 
@@ -1203,6 +1203,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
                 //Get markdown
                 $scope.tool_description_html = data['description_html'];
+
+                //Load comment thread
+                $scope.qa_gen['tool'].object_pk = data['tool_pk'];
+                $scope.qa_gen['tool'].qa_thread = data['tool_thread'];
 
                 //EXPERIMENTAL. UPDATE SEARCH RESULTS
                 $scope.all_search_2();
