@@ -1128,6 +1128,8 @@ def tools_search_3(request, **kwargs):
         'stderr' : tool.last_validation.stderr if tool.last_validation else None,
         'errcode' : tool.last_validation.errcode if tool.last_validation else None,
         'validation_created_at' : datetime_to_str(tool.last_validation.created_at) if tool.last_validation else None,
+        'tool_pk': tool.pk, # Used in comments
+        'tool_thread': qa_create_thread(tool.comment), # Tool comment thread 
 
     }
 
@@ -1290,6 +1292,18 @@ def tools_add(request, **kwargs):
     #Add keywords
     keywords = [Keyword.objects.get_or_create(keyword=keyword)[0] for keyword in kwargs['tool_keywords']]
     new_tool.keywords.add(*keywords)
+    new_tool.save()
+
+    #Add an empty comment. This will be the root comment for the QA thread
+    comment = Comment(
+        obc_user = OBC_user.objects.get(user=request.user),
+        comment = '',
+        comment_html = '',
+        title = '',
+        parent = None,
+    )
+    comment.save()
+    new_tool.comment = comment
     new_tool.save()
 
     ret = {
@@ -1570,6 +1584,7 @@ def workflows_search_3(request, **kwargs):
         'keywords': [keyword.keyword for keyword in workflow.keywords.all()],
         'workflow' : simplejson.loads(workflow.workflow),
         'changes': workflow.changes,
+        'workflow_pk': workflow.pk, # Used in comments (QAs)
     }
 
     return success(ret)
@@ -2378,29 +2393,30 @@ def qa_add_1(request, **kwargs):
 
     return success(ret)
 
+def qa_create_thread(comment):
+    '''
+    Recursive
+    Create the children thread of a comment
+    '''
+    ret = []
+    for child in comment.children.all():
+        to_add = {
+            'comment': child.comment,
+            'comment_html': child.comment_html,
+            'id': child.pk,
+            'replying': False,
+            'children': qa_create_thread(child)
+        }
+        ret.append(to_add)
+    return ret
+
+
 @has_data
 def qa_search_3(request, **kwargs):
     '''
     path: qa_search_3/
     Get a unique Q&A thread
     '''
-
-    def qa_create_thread(comment):
-        '''
-        Create the children thread of a comment
-        '''
-        ret = []
-        for child in comment.children.all():
-            to_add = {
-                'comment': child.comment,
-                'comment_html': child.comment_html,
-                'id': child.pk,
-                'replying': False,
-                'children': qa_create_thread(child)
-            }
-            ret.append(to_add)
-        return ret
-
 
     id_ = kwargs.get('qa_id', None)
     if not id_:
@@ -2441,24 +2457,20 @@ def gen_qa_search_3(request, **kwargs):
     qa_type = kwargs['qa_type']
 
     if qa_type == 'tool':
-        commentable = Tool.object.get(pk=object_pk)
+        commentable = Tool.objects.get(pk=object_pk)
     elif qa_type == 'workflow':
-        commentable = Workflow.object.get(pk=object_pk)
+        commentable = Workflow.objects.get(pk=object_pk)
     else:
         return fail('ERROR: 2918 . Unknown qa_type: {}'.format(qa_type))
 
-    # Check if this object has comments
-    if not commentable.comment:
-        return success({
-            'qa_id': -1, 
-            'qa_thread': [],
-            })
-
     # Get the thread of this comment
-    ret = success({
+    ret = {
         'qa_id': commentable.comment.pk,
-        'qa_thread': qa_create_thread(comment),
-        })
+        'qa_thread': qa_create_thread(commentable.comment),
+        }
+
+    return success(ret)
+
 
 @has_data
 def qa_add_comment(request, **kwargs):
@@ -2509,48 +2521,32 @@ def gen_qa_add_comment(request, **kwargs):
     if request.user.is_anonymous:
         return fail('Please login to add a new comment')
 
-    comment_pk = kwargs['comment_pk']
+    comment_pk = kwargs['comment_pk'] # THIS IS ALWAYS None!!!
     object_pk = kwargs['object_pk']
     qa_comment = kwargs['qa_comment']
+    qa_type = kwargs['qa_type']
 
     current_comment_html = markdown(qa_comment)
 
-    if comment_pk == -1:
-        '''This is a new thread!'''
-
-        #Get the commentable. DUPLICATE CODE
-        if qa_type == 'tool':
-            commentable = Tool.object.get(pk=object_pk)
-        elif qa_type == 'workflow':
-            commentable = Workflow.object.get(pk=object_pk)
-        else:
-            return fail('ERROR: 2918 . Unknown qa_type: {}'.format(qa_type))
-
-
-        #Create the comment
-        new_comment = Comment(
-            obc_user=OBC_user.objects.get(user=request.user),
-            comment = qa_comment,
-            comment_html = current_comment_html,
-            parent = None,
-        )
-        new_comment.save()
-
-        #Attach thread to commentable RO
-        commentable.comment = new_comment
-        commentable.save()
+    # Get the tool
+    if qa_type == 'tool':
+        commentable = Tool.objects.get(pk=object_pk)
+    elif qa_type == 'workflow':
+        commentable = Workflow.objects.get(pk=object_pk)
     else:
-        '''This is an existing thread'''
-        parent_comment = Comment.objects.get(pk=comment_pk)
-        new_comment = Comment(
-            obc_user=OBC_user.objects.get(user=request.user),
-            comment = qa_comment,
-            comment_html = current_comment_html,
-            parent = parent_comment,
-        )
-        new_comment.save()
-        parent_comment.children.add(new_comment)
-        parent_comment.save()
+        return fail('ERROR: 2918 . Unknown qa_type: {}'.format(qa_type))
+
+    # Get the root comment
+    root_comment = commentable.comment
+    new_comment = Comment(
+        obc_user=OBC_user.objects.get(user=request.user),
+        comment = qa_comment,
+        comment_html = current_comment_html,
+        parent = root_comment,
+    )
+    new_comment.save()
+    root_comment.children.add(new_comment)
+    root_comment.save()
 
     ret = {
         'comment_html': current_comment_html,
