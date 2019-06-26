@@ -198,4 +198,10 @@ wget -O "v3.0.2.tar.gz" https://github.com/cytoscape/cytoscape.js-cxtmenu/archiv
 tar zxvf v3.0.2.tar.gz
 ```
 
+### vis js . REQUIRED 
+<!-- run -->
+```
+wget -O  "vis.min.js" https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js
+wget -O  "vis.min.css" https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css
+```
 
