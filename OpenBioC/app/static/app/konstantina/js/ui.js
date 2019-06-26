@@ -706,6 +706,10 @@ window.onload = function () {
         if (typeof cy !== 'undefined') {
             cy.resize();
         }
+        if (typeof cy_rep !== 'undefined') {
+            cy_rep.resize();
+        }
+
     }
 
     // -------------------------------- Get elements which row alignment should be fixed  ----------------------------    
@@ -2852,19 +2856,6 @@ window.onload = function () {
 		]
   */
 	
-	window.OBCUI.convert_report_tokens_to_timeline_data = function (report_tokens){
-				
-		var ret = [];	
-		var i=0;	
-		report_tokens.forEach(function (tdata) {
-			i++;
-			var item = {id: i, content: tdata.node_anim_params.status_fields.name, start: new Date(tdata.created_at).toISOString().split('T')[0], params: tdata.node_anim_params};
-			ret.push(item);
-		});
-
-        return ret;
-	
-	};
 	
 	//TODO remove this and find the proper place to call the function
 	//window.OBCUI.fillTimeline();
