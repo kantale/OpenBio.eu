@@ -1925,6 +1925,12 @@ def reports_search_3(request, **kwargs):
         'node_anim_params': ReportToken.parse_response_status(token.status), # the parameter passed to nodeAnimation_public
     } for token in report.tokens.all().order_by('created_at') if token.status != ReportToken.UNUSED]
 
+    # Check if ReportToken.parse_response_status successfully parsed tokens
+    # This is a sanity check
+    for token in tokens:
+        if token['node_anim_params'] is None:
+            return fail('Error 8915: could not parse token: {}'.format(token.status))
+
     ret = {
         'report_workflow_name': workflow.name,
         'report_workflow_edit': workflow.edit,
