@@ -1929,7 +1929,7 @@ def reports_search_3(request, **kwargs):
     # This is a sanity check
     for token in tokens:
         if token['node_anim_params'] is None:
-            return fail('Error 8915: could not parse token: {}'.format(token.status))
+            return fail('Error 8915: could not parse token: {}'.format(token['status']))
 
     ret = {
         'report_workflow_name': workflow.name,
