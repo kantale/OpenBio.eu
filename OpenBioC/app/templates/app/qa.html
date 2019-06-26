@@ -1,4 +1,4 @@
-<div class="row" ng-show="true">
+<div class="row" ng-show="!{{qa_type}}s_info_editable">
     <div class="row right-align" style="margin-top:15px; margin-bottom: 15px;">
         <a class="waves-effect waves-light btn-small" href=""
             ng-click="gen_qa_add_comment_button_pressed('{{ qa_type }}')">Add Comment</a>
@@ -6,9 +6,9 @@
     <div class="input-field" ng-show="qa_gen['{{ qa_type }}'].qa_show_new_comment">
         <textarea class="validate" ng-model="qa_gen['{{ qa_type }}'].qa_current_comment"></textarea>
         <a class="waves-effect waves-light btn-small" href=""
-            ng-click="qa_comment_save_button_pressed()">Save</a>
+            ng-click="gen_qa_comment_save_button_pressed('{{ qa_type }}')">Save</a>
         <a class="waves-effect waves-light btn-small" href=""
-            ng-click="qa_comment_cancel_button_pressed()">Cancel</a>
+            ng-click="gen_qa_comment_cancel_button_pressed('{{ qa_type }}')">Cancel</a>
     </div>
 
     <!-- <div class="row left-align">
@@ -34,7 +34,7 @@
     </div> -->
 
     <ul class="collection">
-        <li class="collection-item" ng-repeat="post in qa_thread track by post.id">
+        <li class="collection-item" ng-repeat="post in qa_gen['{{ qa_type }}'].qa_thread track by post.id">
             <div class="valign-wrapper">
                 <img src="/static/app/images/konstantina/img_avatar.png" alt=""
                     class="circle avatarForumReply">
@@ -42,11 +42,11 @@
             </div>
             <span ng-bind-html="post.comment_html"></span>
             <a class="waves-effect btn-flat qaReplyBtn" href=""
-                ng-click="qa_reply_button_clicked(post.id)"><u>Reply</u></a>
+                ng-click="gen_qa_reply_button_clicked(post.id, '{{ qa_type }}')"><u>Reply</u></a>
             <div class="input-field" ng-show="post.replying">
                 <textarea class="validate" ng-model="qa_current_reply"></textarea>
                 <a class="waves-effect waves-light btn-small" href=""
-                    ng-click="qa_reply_save_button_pressed(post.id, qa_current_reply)">Save</a>
+                    ng-click="gen_qa_reply_save_button_pressed(post.id, qa_current_reply, '{{ qa_type }}')">Save</a>
                 <a class="waves-effect waves-light btn-small" href=""
                     ng-click="qa_reply_cancel_button_pressed(post.id)">Cancel</a>
             </div>
@@ -59,11 +59,11 @@
                     </div>
                     <span ng-bind-html="post2.comment_html"></span>
                     <a class="waves-effect btn-flat qaReplyBtn" href=""
-                        ng-click="qa_reply_button_clicked(post2.id)"><u>Reply</u></a>
+                        ng-click="gen_qa_reply_button_clicked(post2.id, '{{ qa_type }}')"><u>Reply</u></a>
                     <div class="input-field" ng-show="post2.replying">
                         <textarea class="validate" ng-model="qa_current_reply"></textarea>
                         <a class="waves-effect waves-light btn-small" href=""
-                            ng-click="qa_reply_save_button_pressed(post2.id, qa_current_reply)">Save</a>
+                            ng-click="gen_qa_reply_save_button_pressed(post2.id, qa_current_reply, '{{ qa_type }}')">Save</a>
                         <a class="waves-effect waves-light btn-small" href=""
                             ng-click="qa_reply_cancel_button_pressed(post2.id)">Cancel</a>
                     </div>
@@ -77,11 +77,11 @@
                             </div>
                             <span ng-bind-html="post3.comment_html"></span>
                             <a class="waves-effect btn-flat qaReplyBtn" href=""
-                                ng-click="qa_reply_button_clicked(post3.id)"><u>Reply</u></a>
+                                ng-click="gen_qa_reply_button_clicked(post3.id, '{{ qa_type }}')"><u>Reply</u></a>
                             <div class="input-field" ng-show="post3.replying">
                                 <textarea class="validate" ng-model="qa_current_reply"></textarea>
                                 <a class="waves-effect waves-light btn-small" href=""
-                                    ng-click="qa_reply_save_button_pressed(post3.id, qa_current_reply)">Save</a>
+                                    ng-click="gen_qa_reply_save_button_pressed(post3.id, qa_current_reply, '{{ qa_type }}')">Save</a>
                                 <a class="waves-effect waves-light btn-small" href=""
                                     ng-click="qa_reply_cancel_button_pressed(post3.id)">Cancel</a>
                             </div>
@@ -96,12 +96,12 @@
                                     </div>
                                     <span ng-bind-html="post4.comment_html"></span>
                                     <a class="waves-effect btn-flat qaReplyBtn" href=""
-                                        ng-click="qa_reply_button_clicked(post4.id)"><u>Reply</u></a>
+                                        ng-click="gen_qa_reply_button_clicked(post4.id, '{{ qa_type }}')"><u>Reply</u></a>
                                     <div class="input-field" ng-show="post4.replying">
                                         <textarea class="validate"
                                             ng-model="qa_current_reply"></textarea>
                                         <a class="waves-effect waves-light btn-small" href=""
-                                            ng-click="qa_reply_save_button_pressed(post4.id, qa_current_reply)">Save</a>
+                                            ng-click="gen_qa_reply_save_button_pressed(post4.id, qa_current_reply, '{{ qa_type }}')">Save</a>
                                         <a class="waves-effect waves-light btn-small" href=""
                                             ng-click="qa_reply_cancel_button_pressed(post4.id)">Cancel</a>
                                     </div>
