@@ -791,7 +791,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
                 $scope.tool_keywords = data['tool_keywords'];
                 $scope.tool_pk = data['tool_pk']; //Used in QAs
-                $scope.qa_gen['tool'].object_pk = $scope.tool_pk;
+                $scope.qa_gen['tool'].object_pk = data['tool_pk'];
                 $scope.qa_gen['tool'].qa_thread = data['tool_thread'];
 
             },
@@ -3634,6 +3634,11 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * Same as qa_add_comment_button_pressed but generic
     */
     $scope.gen_qa_add_comment_button_pressed = function(qa_type) {
+        console.log('$scope.qa_gen:');
+        console.log($scope.qa_gen)
+
+        console.log('qa_type:', qa_type);
+
         $scope.qa_gen[qa_type].qa_show_new_comment = true;
         $scope.qa_gen[qa_type].qa_current_comment = '';
     };

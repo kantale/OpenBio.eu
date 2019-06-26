@@ -2521,7 +2521,7 @@ def gen_qa_add_comment(request, **kwargs):
     if request.user.is_anonymous:
         return fail('Please login to add a new comment')
 
-    comment_pk = kwargs['comment_pk'] # THIS IS ALWAYS None!!!
+    comment_pk = kwargs['comment_pk'] 
     object_pk = kwargs['object_pk']
     qa_comment = kwargs['qa_comment']
     qa_type = kwargs['qa_type']
@@ -2537,7 +2537,11 @@ def gen_qa_add_comment(request, **kwargs):
         return fail('ERROR: 2918 . Unknown qa_type: {}'.format(qa_type))
 
     # Get the root comment
-    root_comment = commentable.comment
+    if comment_pk is None:
+        root_comment = commentable.comment
+    else:
+        root_comment = Comment.objects.get(pk=comment_pk)
+
     new_comment = Comment(
         obc_user=OBC_user.objects.get(user=request.user),
         comment = qa_comment,
