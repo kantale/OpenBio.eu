@@ -3744,6 +3744,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         else if (args.type == 'u') {
             $scope.users_search_jstree_select_node(null, {node:{data: args}});
         }
+        else if (args.type == 'c') {
+            $scope.qa_search_jstree_select_node(null, {node:{data: args}});
+        }
     };
 
     /*

@@ -1143,17 +1143,19 @@
                     </form>
                 </div>
                 <div class="row" ng-show="!qa_info_editable">
+                    {% verbatim %}
                     <div class="row card-panel left-align" style="padding:5px; margin-bottom: 2px;">
                         <div class="valign-wrapper">
                             <img src="/static/app/images/konstantina/img_avatar.png" alt=""
                                 class="circle avatarForumQuestion">
-                            <small>Asked by <a href="#">Kona</a> on April 19 at 18:40</small>
+                            <small>Asked by <a href="#">Kona</a> on April 19 at 18:40<span>, </span><a ng-click="interlink({type: 'c', id: qa_comment_id})">u/<span ng-bind="qa_comment_id"></span></a></small>
                         </div>
                         <div>
                             <h5 style="margin-top:9px; margin-bottom:9px;"><span ng-bind="qa_title"></span></h5>
                             <p><span ng-bind-html="qa_comment_html"></span></p>
                         </div>
                     </div>
+                    {% endverbatim %}
                     <div class="row right-align" style="margin-top:15px; margin-bottom: 15px;">
                         <a class="waves-effect waves-light btn-small" href=""
                             ng-click="qa_add_comment_button_pressed()">Add Comment</a>

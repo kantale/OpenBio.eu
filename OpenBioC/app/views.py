@@ -184,6 +184,11 @@ def replace_interlinks(text):
             'findall': r'[^\w](u/[\w]+)',
             'arguments': r'(?P<type>u)/(?P<username>[\w]+)',
             'exists': lambda arguments: OBC_user.objects.filter(user__username=arguments['username']).exists()
+        },
+        'comment': {
+            'findall': r'[^\w](c/[\d]+)',
+            'arguments': r'(?P<type>c)/(?P<id>[\d]+)',
+            'exists': lambda arguments: Comment.objects.filter(pk=int(arguments['id'])).exists()
         }
     }
 
