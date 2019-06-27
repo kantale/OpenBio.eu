@@ -1960,6 +1960,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 //Update timeline 
                 var timeline_data = $scope.convert_report_tokens_to_timeline_data();
                 window.OBCUI.set_timeline(timeline_data);
+				window.OBCUI.init_timeline(timeline_data);
 
             },
             function(data) {
