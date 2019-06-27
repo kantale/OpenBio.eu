@@ -164,10 +164,39 @@ def replace_interlinks(text):
         pattern = '''<a href="javascript:void(0);" onclick='{}'>{}</a>'''.format(func_call, matched_string)
         return pattern
 
-    tool_calls = set(re.findall(r'[^\w](t/[\w]+/[\w\.]+/[\d]+)', text))
-    for tool_call in tool_calls:
-        arguments = re.search(r'(?P<type>t)/(?P<name>[\w]+)/(?P<version>[\w\.]+)/(?P<edit>[\d]+)', tool_call).groupdict()
-        ret = ret.replace(tool_call, javascript_call(tool_call, arguments))
+    interlink_options = {
+        'tools': {
+            'findall': r'[^\w]([td]/[\w]+/[\w\.]+/[\d]+)',
+            'arguments': r'(?P<type>[td])/(?P<name>[\w]+)/(?P<version>[\w\.]+)/(?P<edit>[\d]+)',
+            'exists': lambda arguments: Tool.objects.filter(name=arguments['name'], version=arguments['version'], edit=int(arguments['edit'])).exists()
+        },
+        'workflows': {
+            'findall': r'[^\w](w/[\w]+/[\d]+)',
+            'arguments': r'(?P<type>w)/(?P<name>[\w]+)/(?P<edit>[\d]+)',
+            'exists': lambda arguments: Workflow.objects.filter(name=arguments['name'], edit=int(arguments['edit'])).exists()
+        },
+        'references': {
+            'findall': r'[^\w](r/[\w]+)',
+            'arguments': r'(?P<type>r)/(?P<name>[\w]+)',
+            'exists': lambda arguments: Reference.objects.filter(name=arguments['name']).exists()
+        }
+    }
+
+    for interlink_key, interlink_value in interlink_options.items():
+        calls = set(re.findall(interlink_value['findall'], text))
+        for call in calls:
+            print ('call:', call)
+            print ('regexp:', interlink_value['arguments'])
+            arguments = re.search(interlink_value['arguments'], call).groupdict()
+            if interlink_value['exists'](arguments):
+                ret = ret.replace(call, javascript_call(call, arguments))
+
+#    tool_calls = set(re.findall(interlink_options['tools']['findall'], text))
+#    for tool_call in tool_calls:
+#        arguments = re.search(interlink_options['tools']['arguments'], tool_call).groupdict()
+#        # Does this tool exists?
+#        if Tool.objects.filter(name=arguments['name'], version=arguments['version'], edit=arguments['edit']).exists():
+#            ret = ret.replace(tool_call, javascript_call(tool_call, arguments))
 
     return ret
 
