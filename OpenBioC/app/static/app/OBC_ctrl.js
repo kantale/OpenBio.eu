@@ -2613,9 +2613,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 // Update text fields
                 $timeout(function(){M.updateTextFields()}, 10);
 
-                $scope.workflow_pk = data['workflow_pk']; // Used in QAs
-                $scope.qa_gen['workflow'].object_pk = $scope.workflow_pk;
-
+                // Set the thread of this workflow
+                $scope.qa_gen['workflow'].object_pk = data['workflow_pk'];
+                $scope.qa_gen['workflow'].qa_thread = data['workflow_thread'];
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');
@@ -3125,6 +3125,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.workflows_search_3({name: $scope.workflow_info_name, edit:data['edit']});
 
                 $scope.workflow_keywords = window.OBCUI.get_chip_data('workflowChips');
+
+                //Load comment thread
+                $scope.qa_gen['workflow'].object_pk = data['workflow_pk'];
+                $scope.qa_gen['workflow'].qa_thread = data['workflow_thread'];
 
                 //EXPERIMENTAL. UPDATE SEARCH RESULTS
                 $scope.all_search_2();
