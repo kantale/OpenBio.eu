@@ -3730,9 +3730,16 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * Handle interlinks
     */
     $scope.interlink = function(args) {
-        if (args.type == 't') {
+        if (args.type == 't' || args.type == 'd') {
             //Open a tool/data
             $scope.tools_search_jstree_select_node(null, {node:{data: args}});
+        }
+        else if (args.type == 'w') {
+            //Open a workflow
+            $scope.workflows_search_jstree_select_node(null, {node:{data: args}});
+        }
+        else if (args.type == 'r') {
+            $scope.references_search_jstree_select_node(null, {node:{data: args}});
         }
     };
 
