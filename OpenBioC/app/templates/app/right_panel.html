@@ -1143,19 +1143,17 @@
                     </form>
                 </div>
                 <div class="row" ng-show="!qa_info_editable">
-                    {% verbatim %}
                     <div class="row card-panel left-align" style="padding:5px; margin-bottom: 2px;">
                         <div class="valign-wrapper">
                             <img src="/static/app/images/konstantina/img_avatar.png" alt=""
                                 class="circle avatarForumQuestion">
-                            <small>Asked by <a href="#">Kona</a> on April 19 at 18:40<span>, </span><a ng-click="interlink({type: 'c', id: qa_comment_id})">u/<span ng-bind="qa_comment_id"></span></a></small>
+                            <small>Asked by <a ng-click="interlink({type: 'u', username: qa_username})">u/<span ng-bind="qa_username"></span></a> on <span ng-bind="qa_created_at"></span><span>, </span><a ng-click="interlink({type: 'c', id: qa_comment_id})">c/<span ng-bind="qa_comment_id"></span></a></small>
                         </div>
                         <div>
                             <h5 style="margin-top:9px; margin-bottom:9px;"><span ng-bind="qa_title"></span></h5>
                             <p><span ng-bind-html="qa_comment_html"></span></p>
                         </div>
                     </div>
-                    {% endverbatim %}
                     <div class="row right-align" style="margin-top:15px; margin-bottom: 15px;">
                         <a class="waves-effect waves-light btn-small" href=""
                             ng-click="qa_add_comment_button_pressed()">Add Comment</a>
@@ -1195,7 +1193,7 @@
                             <div class="valign-wrapper">
                                 <img src="/static/app/images/konstantina/img_avatar.png" alt=""
                                     class="circle avatarForumReply">
-                                <small>Replied by <a href="#">Kona</a> on April 19 at 18:40</small>
+                                <small>Replied by <a ng-click="interlink({type: 'u', username: post.username})">u/<span ng-bind="post.username"></span></a> on <span ng-bind="post.created_at"></span><span></small>
                             </div>
                             <span ng-bind-html="post.comment_html"></span>
                             <a class="waves-effect btn-flat qaReplyBtn" href=""
@@ -1212,7 +1210,7 @@
                                     <div class="valign-wrapper">
                                         <img src="/static/app/images/konstantina/img_avatar.png" alt=""
                                             class="circle avatarForumReply">
-                                        <small>Replied by <a href="#">Kona</a> on April 19 at 18:40</small>
+                                        <small>Replied by <a ng-click="interlink({type: 'u', username: post2.username})">u/<span ng-bind="post2.username"></span></a> on <span ng-bind="post2.created_at"></span><span></small>
                                     </div>
                                     <span ng-bind-html="post2.comment_html"></span>
                                     <a class="waves-effect btn-flat qaReplyBtn" href=""
@@ -1230,7 +1228,7 @@
                                             <div class="valign-wrapper">
                                                 <img src="/static/app/images/konstantina/img_avatar.png" alt=""
                                                     class="circle avatarForumReply">
-                                                <small>Replied by <a href="#">Kona</a> on April 19 at 18:40</small>
+                                                <small>Replied by <a ng-click="interlink({type: 'u', username: post3.username})">u/<span ng-bind="post3.username"></span></a> on <span ng-bind="post3.created_at"></span><span></small>
                                             </div>
                                             <span ng-bind-html="post3.comment_html"></span>
                                             <a class="waves-effect btn-flat qaReplyBtn" href=""
@@ -1248,8 +1246,7 @@
                                                     <div class="valign-wrapper">
                                                         <img src="/static/app/images/konstantina/img_avatar.png" alt=""
                                                             class="circle avatarForumReply">
-                                                        <small>Replied by <a href="#">Kona</a> on April 19 at
-                                                            18:40</small>
+                                                        <small>Replied by <a ng-click="interlink({type: 'u', username: post4.username})">u/<span ng-bind="post4.username"></span></a> on <span ng-bind="post4.created_at"></span><span></small>
                                                     </div>
                                                     <span ng-bind-html="post4.comment_html"></span>
                                                     <a class="waves-effect btn-flat qaReplyBtn" href=""
@@ -1268,9 +1265,7 @@
                                                             <div class="valign-wrapper">
                                                                 <img src="/static/app/images/konstantina/img_avatar.png"
                                                                     alt="" class="circle avatarForumReply">
-                                                                <small>Replied by <a href="#">Kona</a> on April 19
-                                                                    at
-                                                                    18:40</small>
+                                                                <small>Replied by <a ng-click="interlink({type: 'u', username: post5.username})">u/<span ng-bind="post5.username"></span></a> on <span ng-bind="post5.created_at"></span><span></small>
                                                             </div>
                                                             <span ng-bind-html="post5.comment_html"></span>
                                                             <!-- We allow for 5 levels of comment nesting -->
