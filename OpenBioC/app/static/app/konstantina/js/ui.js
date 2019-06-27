@@ -2887,11 +2887,17 @@ window.onload = function () {
           //new vis.Timeline(container,  new vis.DataSet([{id: 1, content: 'item 1', start: '2013-04-20'}]), options)
           // timeline.setItems([])
 
-    window.OBCUI.init_timeline = function() {
+   
 
-		  window.OBCUI.timeline.on('click', function (properties) {
+    window.OBCUI.set_timeline = function(timeline_data) {
+        window.OBCUI.timeline.setItems(timeline_data);
+    };
+	
+	 window.OBCUI.init_timeline = function(timeline_data) {
 
-			myItems.forEach(function (myItem) {
+		window.OBCUI.timeline.on('click', function (properties) {
+
+			timeline_data.forEach(function (myItem) {
 			  
 				if(myItem.id===properties.item){						
 					nodeAnimation_public(myItem.params);
@@ -2901,13 +2907,9 @@ window.onload = function () {
 				  //should call: nodeAnimation_public(token.node_anim_params)
 				  //logEvent('click', properties);
 				  
-			});
+		});
     };
-    window.OBCUI.init_timeline();
-
-    window.OBCUI.set_timeline = function(timeline_data) {
-        window.OBCUI.timeline.setItems(timeline_data);
-    };
+    //window.OBCUI.init_timeline();
 
     // END OF GALATEIA'S CODE
 
