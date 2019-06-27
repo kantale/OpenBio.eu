@@ -233,3 +233,6 @@ TOOLS_CREATE_BUTTON
 
 raise_modal_check
 
+$scope.gen_qa_add_comment = function(comment_pk, object_pk, comment, qa_type) {
+
+
