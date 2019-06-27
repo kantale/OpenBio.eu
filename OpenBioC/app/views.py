@@ -179,6 +179,16 @@ def replace_interlinks(text):
             'findall': r'[^\w](r/[\w]+)',
             'arguments': r'(?P<type>r)/(?P<name>[\w]+)',
             'exists': lambda arguments: Reference.objects.filter(name=arguments['name']).exists()
+        },
+        'users': {
+            'findall': r'[^\w](u/[\w]+)',
+            'arguments': r'(?P<type>u)/(?P<username>[\w]+)',
+            'exists': lambda arguments: OBC_user.objects.filter(user__username=arguments['username']).exists()
+        },
+        'comment': {
+            'findall': r'[^\w](c/[\d]+)',
+            'arguments': r'(?P<type>c)/(?P<id>[\d]+)',
+            'exists': lambda arguments: Comment.objects.filter(pk=int(arguments['id'])).exists()
         }
     }
 
@@ -2461,7 +2471,9 @@ def qa_create_thread(comment):
             'comment_html': child.comment_html,
             'id': child.pk,
             'replying': False,
-            'children': qa_create_thread(child)
+            'children': qa_create_thread(child),
+            'username': child.obc_user.user.username,
+            'created_at': datetime_to_str(child.created_at),
         }
         ret.append(to_add)
     return ret
@@ -2494,6 +2506,8 @@ def qa_search_3(request, **kwargs):
         'qa_comment_html': comment.comment_html,
         'qa_id': comment.pk,
         'qa_thread': qa_create_thread(comment),
+        'qa_username': comment.obc_user.user.username,
+        'qa_created_at': datetime_to_str(comment.created_at),
     }
 
     #print (simplejson.dumps(ret, indent=4))
@@ -2523,7 +2537,9 @@ def gen_qa_search_3(request, **kwargs):
     ret = {
         'qa_id': commentable.comment.pk,
         'qa_thread': qa_create_thread(commentable.comment),
-        }
+        'qa_username': commentable.comment.obc_user.user.username,
+        'qa_created_at': datetime_to_str(commentable.comment.created_at),
+    }
 
     return success(ret)
 
