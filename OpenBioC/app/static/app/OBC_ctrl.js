@@ -1813,6 +1813,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.qa_comment = data['qa_comment'];
                 $scope.qa_comment_html = data['qa_comment_html'];
                 $scope.qa_comment_id = data['qa_id']; // The primary key to the Comment object in db
+                $scope.qa_username = data['qa_username'];
+                $scope.qa_created_at = data['qa_created_at'];
 
                 $scope.qa_info_editable = false;
                 $scope.qa_show_new_comment = false;

@@ -2471,7 +2471,9 @@ def qa_create_thread(comment):
             'comment_html': child.comment_html,
             'id': child.pk,
             'replying': False,
-            'children': qa_create_thread(child)
+            'children': qa_create_thread(child),
+            'username': child.obc_user.user.username,
+            'created_at': datetime_to_str(child.created_at),
         }
         ret.append(to_add)
     return ret
@@ -2504,6 +2506,8 @@ def qa_search_3(request, **kwargs):
         'qa_comment_html': comment.comment_html,
         'qa_id': comment.pk,
         'qa_thread': qa_create_thread(comment),
+        'qa_username': comment.obc_user.user.username,
+        'qa_created_at': datetime_to_str(comment.created_at),
     }
 
     #print (simplejson.dumps(ret, indent=4))
@@ -2533,7 +2537,9 @@ def gen_qa_search_3(request, **kwargs):
     ret = {
         'qa_id': commentable.comment.pk,
         'qa_thread': qa_create_thread(commentable.comment),
-        }
+        'qa_username': commentable.comment.obc_user.user.username,
+        'qa_created_at': datetime_to_str(commentable.comment.created_at),
+    }
 
     return success(ret)
 
