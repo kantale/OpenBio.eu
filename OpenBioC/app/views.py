@@ -1553,10 +1553,26 @@ def workflows_add(request, **kwargs):
     new_workflow.keywords.add(*keywords)
     new_workflow.save();
 
+    # Add an empty comment. This will be the root comment for the QA thread
+    comment = Comment(
+        obc_user = OBC_user.objects.get(user=request.user),
+        comment = '',
+        comment_html = '',
+        title = 'Workflow: {}/{}'.format(workflow_info_name, next_edit),
+        parent = None,
+    )
+    comment.save()
+    new_workflow.comment = comment
+    new_workflow.save()
+
+
     ret = {
         'description_html': workflow_description_html, 
         'edit': next_edit,
-        'created_at': datetime_to_str(new_workflow.created_at)
+        'created_at': datetime_to_str(new_workflow.created_at),
+
+        'workflow_pk': new_workflow.pk, # Used in comments
+        'workflow_thread': qa_create_thread(new_workflow.comment), # Tool comment thread 
     }
 
     return success(ret)
@@ -1588,6 +1604,8 @@ def workflows_search_3(request, **kwargs):
         'workflow' : simplejson.loads(workflow.workflow),
         'changes': workflow.changes,
         'workflow_pk': workflow.pk, # Used in comments (QAs)
+        'workflow_thread': qa_create_thread(workflow.comment), # Tool comment thread 
+
     }
 
     return success(ret)
