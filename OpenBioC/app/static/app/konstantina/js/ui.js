@@ -1024,10 +1024,12 @@ window.onload = function () {
             previous_animation: null, // Object that contains information to restore animations in reports
 
             //Timeline
+			
             timeline: new vis.Timeline(
                 document.getElementById('reportTimeline'),
                 new vis.DataSet([{id: 1, content: 'item 1', start: '1950-04-20'}]), //Cannot initialize with empty array ???
                 {}) // <-- Options
+			
         };
 
         /*
@@ -2890,15 +2892,43 @@ window.onload = function () {
    
 
     window.OBCUI.set_timeline = function(timeline_data) {
-        window.OBCUI.timeline.setItems(timeline_data);
+		
+		items = new vis.DataSet();
+        items.add(timeline_data);
+		
+        window.OBCUI.timeline.setItems(items);
+		window.OBCUI.timeline.fit();
+
+		//window.OBCUI.timeline.setItems(items);
+		//window.OBCUI.timeline.redraw();
+
+		//
+		var currentitems = items.get(); 
+		window.OBCUI.timeline.on('click', function (properties) {
+
+		items.forEach(function (myItem) {
+				if(myItem.id===properties.item){						
+					nodeAnimation_public(myItem.params);
+				}
+				
+		});
+				  //should call: nodeAnimation_public(token.node_anim_params)
+				  //logEvent('click', properties);
+				  
+		});
+ 
+
     };
 	
+	/*
 	 window.OBCUI.init_timeline = function(timeline_data) {
 
 		window.OBCUI.timeline.on('click', function (properties) {
 
 			timeline_data.forEach(function (myItem) {
-			  
+			  console.log("______________________");
+			  console.log(myItem);
+			  console.log("______________________");
 				if(myItem.id===properties.item){						
 					nodeAnimation_public(myItem.params);
 				}
@@ -2909,6 +2939,8 @@ window.onload = function () {
 				  
 		});
     };
+	
+	*/
     //window.OBCUI.init_timeline();
 
     // END OF GALATEIA'S CODE
