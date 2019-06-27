@@ -171,6 +171,10 @@ window.onload = function () {
                     if (event.id == 'workflowRightPanelStep') {
 
                     }
+                    if (event.id == 'reportsTimeline') {
+                        window.OBCUI.timeline.redraw();
+                        window.OBCUI.timeline.fit(); // https://github.com/almende/vis/issues/3193
+                    }
                 },
                 // Callback function called before collapsible is closed
                 onCloseStart: function (event) {
@@ -2891,6 +2895,11 @@ window.onload = function () {
 
     window.OBCUI.set_timeline = function(timeline_data) {
         window.OBCUI.timeline.setItems(timeline_data);
+
+
+        
+        window.OBCUI.timeline.redraw();
+        window.OBCUI.timeline.fit(); // https://github.com/almende/vis/issues/3193
     };
 	
 	 window.OBCUI.init_timeline = function(timeline_data) {
