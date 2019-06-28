@@ -171,6 +171,12 @@ window.onload = function () {
                     if (event.id == 'workflowRightPanelStep') {
 
                     }
+                    if (event.id == 'reportsTimeline') {
+                        window.OBCUI.timeline.redraw();
+                        window.OBCUI.timeline.fit(); // https://github.com/almende/vis/issues/3193
+                    }
+
+
                 },
                 // Callback function called before collapsible is closed
                 onCloseStart: function (event) {
@@ -2828,120 +2834,23 @@ window.onload = function () {
 
     }
 
-	
-
 	/***  TIMELINE  ***/
-	
-	/**
-	this function gets as input the data from the '$scope.report_tokens' and change format in order to be compatible with timeline lib
-	**/
-	
-	/*
-		[
-		  {
-			"status": "workflow started runTest4/1",
-			"created_at": "Thu, 20 Jun 2019 12:14:35",
-			"token": "bcc74666-0fb7-4b31-be6b-cbe1ea371700",
-			"node_anim_params": {
-			  "status_code": 1,
-			  "status_fields": {
-				"name": "runTest4/1"
-			  }
-			}
-		  },
-		  {
-			"status": "step started step1__runTest4__1",
-			"created_at": "Thu, 20 Jun 2019 12:14:35",
-			"token": "2e1a4523-cf97-48d4-ae16-c13a205ae370",
-			"node_anim_params": null
-		  }
-		]
-  */
-	
-	
-	//TODO remove this and find the proper place to call the function
-	//window.OBCUI.fillTimeline();
-	
-	 // DOM element where the Timeline will be attached
-		  
-
-		  // Create a DataSet (allows two way data-binding)
-		  
-		  //TODO create my dataset
-		  //var items = new vis.DataSet(myItems);
-          //var items = new vis.DataSet([{id: 1, content: 'item 1', start: '2013-04-20'}]);
-		  /*
-		  var items = new vis.DataSet([
-			{id: 1, content: 'item 1', start: '2013-04-20'},
-			{id: 2, content: 'item 2', start: '2013-04-14'},
-			{id: 3, content: 'item 3', start: '2013-04-18'},
-			{id: 4, content: 'item 4', start: '2013-04-16', end: '2013-04-19'},
-			{id: 5, content: 'item 5', start: '2013-04-25'},
-			{id: 6, content: 'item 6', start: '2013-04-27'}
-		  ]);
-		  */
-
-		  // Configuration for the Timeline
-		  //var options = {};
-
-		  // Create a Timeline
-		  //timeline = new vis.Timeline(container, items, options);
-          //new vis.Timeline(container,  new vis.DataSet([{id: 1, content: 'item 1', start: '2013-04-20'}]), options)
-          // timeline.setItems([])
-
-   
-
     window.OBCUI.set_timeline = function(timeline_data) {
 		
-		items = new vis.DataSet();
-        items.add(timeline_data);
-		
-        window.OBCUI.timeline.setItems(items);
+        window.OBCUI.timeline.setItems(timeline_data);
 		window.OBCUI.timeline.fit();
 
-		//window.OBCUI.timeline.setItems(items);
-		//window.OBCUI.timeline.redraw();
-
-		//
-		var currentitems = items.get(); 
 		window.OBCUI.timeline.on('click', function (properties) {
 
-		items.forEach(function (myItem) {
-				if(myItem.id===properties.item){						
-					nodeAnimation_public(myItem.params);
-				}
-				
-		});
-				  //should call: nodeAnimation_public(token.node_anim_params)
-				  //logEvent('click', properties);
-				  
-		});
- 
-
+    		window.OBCUI.timeline.itemsData.getDataSet().forEach(function (myItem) {
+    				if(myItem.id===properties.item){						
+    					nodeAnimation_public(myItem.params);
+    				}
+    				
+    		});
+		}); 
     };
 	
-	/*
-	 window.OBCUI.init_timeline = function(timeline_data) {
-
-		window.OBCUI.timeline.on('click', function (properties) {
-
-			timeline_data.forEach(function (myItem) {
-			  console.log("______________________");
-			  console.log(myItem);
-			  console.log("______________________");
-				if(myItem.id===properties.item){						
-					nodeAnimation_public(myItem.params);
-				}
-				
-			  });
-				  //should call: nodeAnimation_public(token.node_anim_params)
-				  //logEvent('click', properties);
-				  
-		});
-    };
-	
-	*/
-    //window.OBCUI.init_timeline();
 
     // END OF GALATEIA'S CODE
 
