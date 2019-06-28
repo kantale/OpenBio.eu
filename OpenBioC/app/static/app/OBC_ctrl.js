@@ -2677,7 +2677,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
                 completion_info.push({
                     //caption: 'call(' + this_data.label + '/' + this_data.belongto.name + '/' + this_node_belong_to_show_edit + ')',
-                    caption: 'step/' + this_data.label + '/' + this_data.belongto.name + '/' + this_node_belong_to_show_edit + ')',
+                    caption: 'step/' + this_data.label + '/' + this_data.belongto.name + '/' + this_node_belong_to_show_edit,
                     //value: 'call(' + this_data.label + '__' + this_data.belongto.name + '__' + this_node_belong_to_value_edit + ')',
                     value: 'step__' + this_data.label + '__' + this_data.belongto.name + '__' + this_node_belong_to_value_edit ,
                     meta: 'STEP'
