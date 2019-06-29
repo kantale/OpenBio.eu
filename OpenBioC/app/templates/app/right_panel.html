@@ -20,12 +20,11 @@
                             ng-show="!tools_info_editable">/<span ng-bind="tools_info_edit"></span></span>
                     </h5>
                     <small class="form-text text-muted" ng-show="!tools_info_editable">
-                        <span ng-bind="tool_info_username"></span>, created at <span
+                        <a ng-click="interlink({type: 'u', username: tool_info_username})">u/<span ng-bind="tool_info_username"></span></a>, created at <span
                             ng-bind="tool_info_created_at"></span>
                         <span ng-show="tools_info_forked_from">, forked from <a href
-                                ng-click="tools_search_show_item(tools_info_forked_from)"><span
+                                ng-click="tools_search_show_item(tools_info_forked_from)">t/<span
                                     ng-bind="tools_info_forked_from | tool_label"></span></a></span>
-                        <span>USED IN 86 WFs</span>
                     </small>
                 </p>
                 <!-- Buttons -->
@@ -368,10 +367,10 @@
                                 ng-bind="workflow_info_edit"></span></span>
                     </h5>
                     <small class="form-text text-muted" ng-show="!workflows_info_editable">
-                        <span ng-bind="workflows_info_username"></span>
+                        <a ng-click="interlink({type: 'u', username: workflows_info_username})">u/<span ng-bind="workflows_info_username"></span></a>
                         <span>, created at <span ng-bind="workflow_info_created_at"></span></span>
                         <span ng-show="workflow_info_forked_from">, forked from <a href
-                                ng-click="workflows_search_show_item(workflow_info_forked_from)"><span
+                                ng-click="workflows_search_show_item(workflow_info_forked_from)">w/<span
                                     ng-bind="workflow_info_forked_from | workflow_label"></span></a></span>
                     </small>
                 </p>
@@ -705,7 +704,8 @@
                         <h5>Workflow:</h5>
                     </div>
                     <div class="col s6">
-                        <h5><span ng-bind="report_workflow_name"></span>/<span ng-bind="report_workflow_edit"></span>
+                        <h5>
+                            <a ng-click="interlink({type: 'w', name: report_workflow_name, edit:report_workflow_edit})">w/<span ng-bind="report_workflow_name"></span>/<span ng-bind="report_workflow_edit"></span></a>
                         </h5>
                     </div>
                     <div class="col s4">
@@ -713,7 +713,7 @@
                     </div>
                 </div>
                 <small class="form-text text-muted">
-                    <span ng-bind="report_username"></span>, created at: <span ng-bind="report_created_at"></span>
+                    <a ng-click="interlink({type: 'u', username: report_username})">u/<span ng-bind="report_username"></span></a>, created at: <span ng-bind="report_created_at"></span>
                 </small>
             </div>
             <ul id="reportsRightPanelAccordion" class="collapsible expandable popout faster">
@@ -850,9 +850,8 @@
                                     ng-click="tools_search_show_item(tools_info_forked_from)"><span
                                         ng-bind="tools_info_forked_from | tool_label"></span></a></span>
                             <span>USED IN 86 WFs</span> -->
-                        <span ng-bind="references_username"></span>
+                        <a ng-click="interlink({type: 'u', username: references_username})">u/<span ng-bind="references_username"></span></a>
                         <span>, created at <span ng-bind="references_created_at"></span></span>
-                        <span>USED IN 86 WFs</span>
                     </small>
                     <div class="card blue-grey darken-1">
                         <div class="card-content" style="background-color: #f0f8ff;">
