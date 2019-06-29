@@ -20,9 +20,9 @@
             <!-- Profile dropdown content -->
             <ul id="profile" class="dropdown-content">
                 <li><a href ng-click="navbar_profile_clicked()" class="dropdownStyle"><i class="material-icons dropdownIcon">person</i>Profile</a></li>
-                <li><a href="#!" class="dropdownStyle"><i class="material-icons dropdownIcon">mail_outline</i>Inbox</a></li>
-                <li><a href="#!" class="dropdownStyle"><i class="material-icons dropdownIcon">notifications</i>Notifications</a></li>
-                <li><a href="#!" class="dropdownStyle"><i class="material-icons dropdownIcon">settings</i>Settings</a></li>
+                <li ng-show="false"><a href="#!" class="dropdownStyle"><i class="material-icons dropdownIcon">mail_outline</i>Inbox</a></li>
+                <li ng-show="false"><a href="#!" class="dropdownStyle"><i class="material-icons dropdownIcon">notifications</i>Notifications</a></li>
+                <li ng-show="false"><a href="#!" class="dropdownStyle"><i class="material-icons dropdownIcon">settings</i>Settings</a></li>
                 <li class="divider"></li>
                 <li><a href="logout/" class="dropdownStyle"><i class="material-icons dropdownIcon">exit_to_app</i>Logout</a></li>
             </ul>
@@ -32,9 +32,9 @@
                 <li><a id="signInBtn" href="#signModal" class="modal-trigger">Sign in</a></li>
                 <li class="divider"></li>
                 <li><a href ng-click="navbar_profile_clicked()">Profile</a></li>
-                <li><a href="#!">Inbox</a></li>
-                <li><a href="#!">Notifications</a></li>
-                <li><a href="#!">Settings</a></li>
+                <li ng-show="false"><a href="#!">Inbox</a></li>
+                <li ng-show="false"><a href="#!">Notifications</a></li>
+                <li ng-show="false"><a href="#!">Settings</a></li>
                 <li><a href="logout/">Logout</a></li>
             </ul>
         </div>
