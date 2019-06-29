@@ -1798,6 +1798,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.user_website = data['profile_website'];
                 $scope.user_affiliation = data['profile_affiliation'];
                 $scope.user_publicinfo = data['profile_publicinfo'];
+                $scope.user_created_at = data['profile_created_at'];
 
                 //Open right panel
                 document.getElementById('userDataDiv').style.display = 'block';
