@@ -36,58 +36,59 @@
                             ng-change="main_search_changed()">
                         <label for="leftPanelSearch">Search</label>
                     </div>
-                    <div class="left-align" style="margin-left:15px">
-                        <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
-                            <label>
-                                <input type="checkbox" />
-                                <span>Tool</span>
-                            </label>
-                        </p>
-                        <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
-                            <label>
-                                <input type="checkbox" />
-                                <span>Workflow</span>
-                            </label>
-                        </p>
-                        <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
-                            <label>
-                                <input type="checkbox" />
-                                <span>Report</span>
-                            </label>
-                        </p>
-                        <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
-                            <label>
-                                <input type="checkbox" />
-                                <span>Reference</span>
-                            </label>
-                        </p>
-                        <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
-                            <label>
-                                <input type="checkbox" />
-                                <span>User</span>
-                            </label>
-                        </p>
-                        <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
-                            <label>
-                                <input type="checkbox" />
-                                <span>Q&A</span>
-                            </label>
-                        </p>
-                    </div>
-
                 </div>
             </form>
 
-            <div class="right-align">
+            <div class="right-align" ng-show="false">
                 <a id="searchFiltersBtn" class="teal-text text-lighten-2 btn-flat"><i class="material-icons"
                         style="padding-bottom: 3px;">keyboard_arrow_right</i>Advanced search</a>
             </div>
             <ul id="searchFiltersCollapsible" class="collapsible hidden"
-                style="border:none; box-shadow: none; margin-top:0px">
+                style="border:none; box-shadow: none; margin-top:0px" ng-show="false">
                 <li>
                     <div class="collapsible-header hide" style="padding:0px;"></div>
                     <div id="searchFiltersCollapsibleBody" class="collapsible-body">
                         <form class="col s12">
+                            <div class="row">
+                                <div class="left-align" style="margin-left:15px">
+                                    <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
+                                        <label>
+                                            <input type="checkbox" />
+                                            <span>Tool</span>
+                                        </label>
+                                    </p>
+                                    <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
+                                        <label>
+                                            <input type="checkbox" />
+                                            <span>Workflow</span>
+                                        </label>
+                                    </p>
+                                    <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
+                                        <label>
+                                            <input type="checkbox" />
+                                            <span>Report</span>
+                                        </label>
+                                    </p>
+                                    <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
+                                        <label>
+                                            <input type="checkbox" />
+                                            <span>Reference</span>
+                                        </label>
+                                    </p>
+                                    <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
+                                        <label>
+                                            <input type="checkbox" />
+                                            <span>User</span>
+                                        </label>
+                                    </p>
+                                    <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
+                                        <label>
+                                            <input type="checkbox" />
+                                            <span>Q&A</span>
+                                        </label>
+                                    </p>
+                                </div>
+                            </div>
                             <div class="row">
                                 <div class="input-field col s12 m4 grid-s12-m4-l4">
                                     <input id="searchName" type="text">
