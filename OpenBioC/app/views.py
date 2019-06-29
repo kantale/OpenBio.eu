@@ -664,6 +664,7 @@ def users_search_3(request, **kwargs):
         'profile_website': u.website,
         'profile_affiliation': u.affiliation,
         'profile_publicinfo': u.public_info,
+        'profile_created_at': datetime_to_str(u.user.date_joined), # https://docs.djangoproject.com/en/2.2/ref/contrib/auth/#django.contrib.auth.models.User.date_joined
     }
 
     # We fetch mail only for registered user 
