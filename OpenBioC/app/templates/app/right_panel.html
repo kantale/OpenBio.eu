@@ -138,6 +138,7 @@
                         <i class="material-icons left">computer</i>
                         <span class="left">Installation</span>
 
+                        <div ng-show="false">
                         {% verbatim %}
                         <small class="right"
                             ng-show="tool_info_validation_status=='Validated' || tool_info_validation_status=='Failed'">
@@ -173,6 +174,8 @@
                         <a ng-show="!tools_info_editable" ng-click="tool_info_validate_refresh_pressed()"
                             id="installationRefreshBtn" class="waves-effect btn-flat btnCollapsible right"><i
                                 class="material-icons" style="margin:0px;">refresh</i></a>
+
+                        </div>
                     </div>
                     <div class="collapsible-body">
                         <!-- Hide Variables -->
