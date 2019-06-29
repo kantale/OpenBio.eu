@@ -1149,7 +1149,7 @@
                             <small>Asked by <a ng-click="interlink({type: 'u', username: qa_username})">u/<span ng-bind="qa_username"></span></a> on <span ng-bind="qa_created_at"></span><span>, </span><a ng-click="interlink({type: 'c', id: qa_comment_id})">c/<span ng-bind="qa_comment_id"></span></a></small>
                         </div>
                         <div>
-                            <h5 style="margin-top:9px; margin-bottom:9px;"><span ng-bind="qa_title"></span></h5>
+                            <h5 style="margin-top:9px; margin-bottom:9px;"><span ng-bind-html="qa_title"></span></h5>
                             <p><span ng-bind-html="qa_comment_html"></span></p>
                         </div>
                     </div>

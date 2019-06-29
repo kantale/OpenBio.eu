@@ -92,7 +92,8 @@ g = {
     },
     'instance_setting_not_found_printed': False,
     'ansi2html_converter': Ansi2HTMLConverter(), # https://github.com/ralphbean/ansi2html/
-    'markdown': mistune.Markdown(), # If you care about performance, it is better to re-use the Markdown instance: 
+    'markdown': mistune.Markdown(escape=True), # If you care about performance, it is better to re-use the Markdown instance: 
+                                                # escape=True should be the default option for mistune...
 
 #    'pybtex': {
 #        'pybtex_style': pybtex.plugin.find_plugin('pybtex.style.formatting', 'plain')(),
@@ -1341,7 +1342,7 @@ def tools_add(request, **kwargs):
         obc_user = OBC_user.objects.get(user=request.user),
         comment = '',
         comment_html = '',
-        title = 'Tool: {}/{}/{}'.format(tools_search_name, tools_search_version, next_edit),
+        title = markdown('Discussion on Tool: t/{}/{}/{}'.format(tools_search_name, tools_search_version, next_edit)),
         parent = None,
     )
     comment.save()
@@ -1600,7 +1601,7 @@ def workflows_add(request, **kwargs):
         obc_user = OBC_user.objects.get(user=request.user),
         comment = '',
         comment_html = '',
-        title = 'Workflow: {}/{}'.format(workflow_info_name, next_edit),
+        title = markdown('Discussion on Workflow: w/{}/{}'.format(workflow_info_name, next_edit)),
         parent = None,
     )
     comment.save()
