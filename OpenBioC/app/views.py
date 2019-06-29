@@ -803,6 +803,9 @@ def index(request):
     # Get OS choices
     context['os_choices'] = simplejson.dumps(OS_types.get_angular_model());
 
+    # Add version
+    context['version'] = __version__
+
     return render(request, 'app/index.html', context)
 
 @has_data
