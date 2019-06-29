@@ -1230,11 +1230,12 @@ def tools_add(request, **kwargs):
         return fail('Please login to create new tools')
     
     tool_website = kwargs.get('tool_website', '')
-    if not tool_website:
-        return fail('Website cannot be empty')
+    #if not tool_website:
+    #    return fail('Website cannot be empty') # Website CAN be empty
 
-    if not valid_url(tool_website):
-        return fail('Website is not a valid URL')
+    if tool_website:
+        if not valid_url(tool_website):
+            return fail('Website is not a valid URL')
 
     tool_description = kwargs.get('tool_description', '')
     if not tool_description:
