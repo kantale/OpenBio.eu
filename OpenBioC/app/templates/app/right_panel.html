@@ -52,21 +52,27 @@
                         <form class="col s12" ng-show="tools_info_editable">
                             <div class="row">
                                 <div class="input-field col s12 m4 grid-s12-m4-l4">
-                                    <input id="generalName" type="text" class="validate" ng-model="tools_info_name"
+                                    <input id="generalName" type="text" class="validate tooltipped" 
+                                        data-tooltip="Name of the tool or dataset. Available characters: a-z, A-Z, 0-9, _"
+                                        ng-model="tools_info_name"
                                         ng-disabled="tools_info_forked_from">
                                     <label for="generalName">Name</label>
                                 </div>
                                 <div class="input-field col s12 m4 grid-s12-m4-l4">
-                                    <input id="generalVersion" type="text" class="validate"
+                                    <input id="generalVersion" type="text" class="validate tooltipped"
+                                        data-tooltip="Version of the tool or dataset. Available characters: a-z, A-Z, 0-0, _, ."
                                         ng-model="tools_info_version" ng-disabled="tools_info_forked_from">
                                     <label for="generalVersion">Version</label>
                                 </div>
                                 <div class="input-field col s12 grid-s12-m12-l12">
-                                    <input id="generalWebsite" type="text" class="validate" ng-model="tool_website">
+                                    <input id="generalWebsite" type="text" class="validate tooltipped" 
+                                        data-tooltip="Optional. Websites should start from http://, https:// or ftp:// "
+                                        ng-model="tool_website">
                                     <label for="generalWebsite">Website</label>
                                 </div>
                                 <div class="input-field col s12 grid-s12-m12-l12">
-                                    <textarea id="generalDescription" class="validate materialize-textarea"
+                                    <textarea id="generalDescription" class="validate materialize-textarea tooltipped"
+                                        data-tooltip="General tool/data description. You can use markdown"
                                         ng-model="tool_description"></textarea>
                                     <label for="generalDescription">Description</label>
                                 </div>
@@ -115,9 +121,9 @@
                         Dependencies
                     </div>
                     <div class="collapsible-body">
-                        <div class="row" ng-show="tools_info_editable">
-                            <strong>Drop here a tool from the search tree, to add it as a dependency. Right click to
-                                delete it.</strong>
+                        <div class="row left-align" ng-show="tools_info_editable">
+                            <strong>Drop here a tool from the Tools/Data search tree, in order to add it as a dependency. Right click to
+                                remove it. The dependent Tools/Data, will be installed each time this Tool/Data is installed.</strong>
                         </div>
                         <div class="row" ng-show="!tools_info_editable">
                             <strong>Tool Dependency Tree</strong>
