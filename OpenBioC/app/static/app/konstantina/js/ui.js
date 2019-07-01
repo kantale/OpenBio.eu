@@ -2837,7 +2837,16 @@ window.onload = function () {
 	/***  TIMELINE  ***/
     window.OBCUI.set_timeline = function(timeline_data) {
 		
+		 var groups = new vis.DataSet([
+				{id: 1, content: 'Workflows', value: 1},
+				{id: 2, content: 'Tools', value: 2},
+				//{id: 3, content: ' ', value: 3}
+			  ]);
+					
+		
         window.OBCUI.timeline.setItems(timeline_data);
+        window.OBCUI.timeline.setGroups(groups);
+		
 		window.OBCUI.timeline.fit();
 
 		window.OBCUI.timeline.on('click', function (properties) {
