@@ -22,7 +22,7 @@
     <div id="leftPanelProgress" class="progress" style="margin-top:1px; display: none;">
         <div class="indeterminate"></div>
     </div>
-    <a id="preloaderBtn" class="waves-effect waves-light btn">Toggle Preloader</a>
+    <!-- <a id="preloaderBtn" class="waves-effect waves-light btn">Toggle Preloader</a> -->
     <div style="margin: 20px;">
         <!-- --------------------------------------------------------------------------------------- -->
         <!-- ------------------------------- Search Input ------------------------------------------ -->
@@ -36,58 +36,59 @@
                             ng-change="main_search_changed()">
                         <label for="leftPanelSearch">Search</label>
                     </div>
-                    <div class="left-align" style="margin-left:15px">
-                        <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
-                            <label>
-                                <input type="checkbox" />
-                                <span>Tool</span>
-                            </label>
-                        </p>
-                        <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
-                            <label>
-                                <input type="checkbox" />
-                                <span>Workflow</span>
-                            </label>
-                        </p>
-                        <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
-                            <label>
-                                <input type="checkbox" />
-                                <span>Report</span>
-                            </label>
-                        </p>
-                        <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
-                            <label>
-                                <input type="checkbox" />
-                                <span>Reference</span>
-                            </label>
-                        </p>
-                        <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
-                            <label>
-                                <input type="checkbox" />
-                                <span>User</span>
-                            </label>
-                        </p>
-                        <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
-                            <label>
-                                <input type="checkbox" />
-                                <span>Q&A</span>
-                            </label>
-                        </p>
-                    </div>
-
                 </div>
             </form>
 
-            <div class="right-align">
+            <div class="right-align" ng-show="false">
                 <a id="searchFiltersBtn" class="teal-text text-lighten-2 btn-flat"><i class="material-icons"
                         style="padding-bottom: 3px;">keyboard_arrow_right</i>Advanced search</a>
             </div>
             <ul id="searchFiltersCollapsible" class="collapsible hidden"
-                style="border:none; box-shadow: none; margin-top:0px">
+                style="border:none; box-shadow: none; margin-top:0px" ng-show="false">
                 <li>
                     <div class="collapsible-header hide" style="padding:0px;"></div>
                     <div id="searchFiltersCollapsibleBody" class="collapsible-body">
                         <form class="col s12">
+                            <div class="row">
+                                <div class="left-align" style="margin-left:15px">
+                                    <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
+                                        <label>
+                                            <input type="checkbox" />
+                                            <span>Tool</span>
+                                        </label>
+                                    </p>
+                                    <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
+                                        <label>
+                                            <input type="checkbox" />
+                                            <span>Workflow</span>
+                                        </label>
+                                    </p>
+                                    <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
+                                        <label>
+                                            <input type="checkbox" />
+                                            <span>Report</span>
+                                        </label>
+                                    </p>
+                                    <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
+                                        <label>
+                                            <input type="checkbox" />
+                                            <span>Reference</span>
+                                        </label>
+                                    </p>
+                                    <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
+                                        <label>
+                                            <input type="checkbox" />
+                                            <span>User</span>
+                                        </label>
+                                    </p>
+                                    <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
+                                        <label>
+                                            <input type="checkbox" />
+                                            <span>Q&A</span>
+                                        </label>
+                                    </p>
+                                </div>
+                            </div>
                             <div class="row">
                                 <div class="input-field col s12 m4 grid-s12-m4-l4">
                                     <input id="searchName" type="text">
@@ -141,7 +142,7 @@
                     <span class="new badge" data-badge-caption="found" ng-bind="tools_search_tools_number"
                         ng-show="tools_search_tools_number >= 0" style="margin-left: 5px;"></span>
                     <a id="toolsDataPlusBtn" class="waves-effect btn green plusBtn right tooltipped"
-                        data-position="left" data-tooltip="Create Tool" ng-show="!tools_info_editable"
+                        data-position="left" data-tooltip="Add a new Tool or Dataset" ng-show="!tools_info_editable"
                         ng-click="tools_plus_button_clicked(true)"><i class="material-icons plusIcon">add</i></a>
                     <a id="toolsDataUnsavedBtn" class="waves-effect waves-light btn red lighten-2 right unsavedBtn"
                         ng-show="tools_info_editable" ng-click="tools_plus_button_clicked(false)">UNSAVED</a>
@@ -389,55 +390,57 @@
                     -->
 
                     <!-- Q & A TEMPLATE START -->
-                    <div class="row left-align">
-                        <div class="col s12">
-                            <span class="new badge grey lighten-2 black-text" data-badge-caption="votes"
-                                style="float:left; margin-right:4px">0</span>
-                            <span class="new badge green" data-badge-caption="answers"
-                                style="float:left; margin-right:4px">0</span>
-                            <span class="new badge grey lighten-2 black-text" data-badge-caption="views"
-                                style="float:left; margin-right:4px">0</span>
-                            <small style="float:right;">active: 22 days ago</small>
+                    <div ng-show="false">
+                        <div class="row left-align">
+                            <div class="col s12">
+                                <span class="new badge grey lighten-2 black-text" data-badge-caption="votes"
+                                    style="float:left; margin-right:4px">0</span>
+                                <span class="new badge green" data-badge-caption="answers"
+                                    style="float:left; margin-right:4px">0</span>
+                                <span class="new badge grey lighten-2 black-text" data-badge-caption="views"
+                                    style="float:left; margin-right:4px">0</span>
+                                <small style="float:right;">active: 22 days ago</small>
+                            </div>
+                            <div class="col s12">
+                                <h6 style="margin-top:6px; margin-bottom:6px;">Question sakdjaldjaldjdlakdjslakslka
+                                    skldjsdkajdlsjkd askdjaldjals m</h6>
+                            </div>
+                            <div class="col s12">
+                                <span class="new badge blue lighten-1" data-badge-caption=""
+                                    style="float:left; margin-right:4px">tag1</span>
+                                <span class="new badge blue lighten-1" data-badge-caption=""
+                                    style="float:left; margin-right:4px">tag2</span>
+                                <span class="new badge blue lighten-1" data-badge-caption=""
+                                    style="float:left; margin-right:4px">tag3</span>
+                                <span class="new badge blue lighten-1" data-badge-caption=""
+                                    style="float:left; margin-right:4px">tag4</span>
+                            </div>
                         </div>
-                        <div class="col s12">
-                            <h6 style="margin-top:6px; margin-bottom:6px;">Question sakdjaldjaldjdlakdjslakslka
-                                skldjsdkajdlsjkd askdjaldjals m</h6>
-                        </div>
-                        <div class="col s12">
-                            <span class="new badge blue lighten-1" data-badge-caption=""
-                                style="float:left; margin-right:4px">tag1</span>
-                            <span class="new badge blue lighten-1" data-badge-caption=""
-                                style="float:left; margin-right:4px">tag2</span>
-                            <span class="new badge blue lighten-1" data-badge-caption=""
-                                style="float:left; margin-right:4px">tag3</span>
-                            <span class="new badge blue lighten-1" data-badge-caption=""
-                                style="float:left; margin-right:4px">tag4</span>
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="row left-align">
-                        <div class="col s12">
-                            <span class="new badge grey lighten-2 black-text" data-badge-caption="votes"
-                                style="float:left; margin-right:4px">0</span>
-                            <span class="new badge green" data-badge-caption="answers"
-                                style="float:left; margin-right:4px">0</span>
-                            <span class="new badge grey lighten-2 black-text" data-badge-caption="views"
-                                style="float:left; margin-right:4px">0</span>
-                            <small style="float:right;">active: 5 Feb</small>
-                        </div>
-                        <div class="col s12">
-                            <h6 style="margin-top:6px; margin-bottom:6px;">Question sakdjaldjaldjdlakdjslakslka
-                                skldjsdkajdlsjkd askdjaldjals m</h6>
-                        </div>
-                        <div class="col s12">
-                            <span class="new badge blue lighten-1" data-badge-caption=""
-                                style="float:left; margin-right:4px">tag1</span>
-                            <span class="new badge blue lighten-1" data-badge-caption=""
-                                style="float:left; margin-right:4px">tag2</span>
-                            <span class="new badge blue lighten-1" data-badge-caption=""
-                                style="float:left; margin-right:4px">tag3</span>
-                            <span class="new badge blue lighten-1" data-badge-caption=""
-                                style="float:left; margin-right:4px">tag4</span>
+                        <hr>
+                        <div class="row left-align">
+                            <div class="col s12">
+                                <span class="new badge grey lighten-2 black-text" data-badge-caption="votes"
+                                    style="float:left; margin-right:4px">0</span>
+                                <span class="new badge green" data-badge-caption="answers"
+                                    style="float:left; margin-right:4px">0</span>
+                                <span class="new badge grey lighten-2 black-text" data-badge-caption="views"
+                                    style="float:left; margin-right:4px">0</span>
+                                <small style="float:right;">active: 5 Feb</small>
+                            </div>
+                            <div class="col s12">
+                                <h6 style="margin-top:6px; margin-bottom:6px;">Question sakdjaldjaldjdlakdjslakslka
+                                    skldjsdkajdlsjkd askdjaldjals m</h6>
+                            </div>
+                            <div class="col s12">
+                                <span class="new badge blue lighten-1" data-badge-caption=""
+                                    style="float:left; margin-right:4px">tag1</span>
+                                <span class="new badge blue lighten-1" data-badge-caption=""
+                                    style="float:left; margin-right:4px">tag2</span>
+                                <span class="new badge blue lighten-1" data-badge-caption=""
+                                    style="float:left; margin-right:4px">tag3</span>
+                                <span class="new badge blue lighten-1" data-badge-caption=""
+                                    style="float:left; margin-right:4px">tag4</span>
+                            </div>
                         </div>
                     </div>
                     <!-- Q & A TEMPLATE END -->

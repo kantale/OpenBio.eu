@@ -71,9 +71,10 @@ window.onload = function () {
             secondaryPlaceholder: '+ keyword',
             autocompleteOptions: {
                 data: {
-                    'Apple': null,
-                    'Microsoft': null,
-                    'Google': null
+// Some examples
+//                    'Apple': null,
+//                    'Microsoft': null,
+//                    'Google': null
                 },
                 limit: Infinity,
                 minLength: 1
@@ -85,9 +86,6 @@ window.onload = function () {
             secondaryPlaceholder: '+ keyword',
             autocompleteOptions: {
                 data: {
-                    'Apple': null,
-                    'Microsoft': null,
-                    'Google': null
                 },
                 limit: Infinity,
                 minLength: 1
@@ -100,9 +98,6 @@ window.onload = function () {
             secondaryPlaceholder: '+ keyword',
             autocompleteOptions: {
                 data: {
-                    'Apple': null,
-                    'Microsoft': null,
-                    'Google': null
                 },
                 limit: Infinity,
                 minLength: 1
@@ -205,15 +200,15 @@ window.onload = function () {
             });
         }
 
-        // Preloader toogle button
-        document.getElementById('preloaderBtn').addEventListener('click', function () {
-            if (document.getElementById('leftPanelProgress').style.display == 'block') {
-                document.getElementById('leftPanelProgress').style.display = 'none';
-            }
-            else {
-                document.getElementById('leftPanelProgress').style.display = 'block';
-            }
-        });
+        // Preloader toogle button . TEST progress bar
+//        document.getElementById('preloaderBtn').addEventListener('click', function () {
+//            if (document.getElementById('leftPanelProgress').style.display == 'block') {
+//                document.getElementById('leftPanelProgress').style.display = 'none';
+//            }
+//            else {
+//                document.getElementById('leftPanelProgress').style.display = 'block';
+//            }
+//        });
 
 
         // Refresh btn on installation header

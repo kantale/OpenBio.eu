@@ -18,6 +18,9 @@ Important:
 class OBC_user(models.Model):
     '''
     Note: the email is stored in user.email
+
+    # Here are the fields that user has:
+    https://docs.djangoproject.com/en/2.2/ref/contrib/auth/#django.contrib.auth.models.User
     '''
     user = models.OneToOneField(User, on_delete=models.CASCADE) # Basically we will never delete users ??
     email_validated = models.BooleanField() # Is this user's email validated?

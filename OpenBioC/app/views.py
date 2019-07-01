@@ -92,7 +92,8 @@ g = {
     },
     'instance_setting_not_found_printed': False,
     'ansi2html_converter': Ansi2HTMLConverter(), # https://github.com/ralphbean/ansi2html/
-    'markdown': mistune.Markdown(), # If you care about performance, it is better to re-use the Markdown instance: 
+    'markdown': mistune.Markdown(escape=True), # If you care about performance, it is better to re-use the Markdown instance: 
+                                                # escape=True should be the default option for mistune...
 
 #    'pybtex': {
 #        'pybtex_style': pybtex.plugin.find_plugin('pybtex.style.formatting', 'plain')(),
@@ -168,22 +169,22 @@ def replace_interlinks(text):
         'tools': {
             'findall': r'[^\w]([td]/[\w]+/[\w\.]+/[\d]+)',
             'arguments': r'(?P<type>[td])/(?P<name>[\w]+)/(?P<version>[\w\.]+)/(?P<edit>[\d]+)',
-            'exists': lambda arguments: Tool.objects.filter(name=arguments['name'], version=arguments['version'], edit=int(arguments['edit'])).exists()
+            'exists': lambda arguments: Tool.objects.filter(name__iexact=arguments['name'], version__iexact=arguments['version'], edit=int(arguments['edit'])).exists()
         },
         'workflows': {
             'findall': r'[^\w](w/[\w]+/[\d]+)',
             'arguments': r'(?P<type>w)/(?P<name>[\w]+)/(?P<edit>[\d]+)',
-            'exists': lambda arguments: Workflow.objects.filter(name=arguments['name'], edit=int(arguments['edit'])).exists()
+            'exists': lambda arguments: Workflow.objects.filter(name__iexact=arguments['name'], edit=int(arguments['edit'])).exists()
         },
         'references': {
             'findall': r'[^\w](r/[\w]+)',
             'arguments': r'(?P<type>r)/(?P<name>[\w]+)',
-            'exists': lambda arguments: Reference.objects.filter(name=arguments['name']).exists()
+            'exists': lambda arguments: Reference.objects.filter(name__iexact=arguments['name']).exists()
         },
         'users': {
             'findall': r'[^\w](u/[\w]+)',
             'arguments': r'(?P<type>u)/(?P<username>[\w]+)',
-            'exists': lambda arguments: OBC_user.objects.filter(user__username=arguments['username']).exists()
+            'exists': lambda arguments: OBC_user.objects.filter(user__username__iexact=arguments['username']).exists()
         },
         'comment': {
             'findall': r'[^\w](c/[\d]+)',
@@ -193,7 +194,7 @@ def replace_interlinks(text):
     }
 
     for interlink_key, interlink_value in interlink_options.items():
-        calls = set(re.findall(interlink_value['findall'], text))
+        calls = set(re.findall(interlink_value['findall'], ' ' + text)) # We add a space (' ') so that we catch interlinks at the beginning of string
         for call in calls:
             print ('call:', call)
             print ('regexp:', interlink_value['arguments'])
@@ -284,7 +285,7 @@ def username_exists(username):
     Checks if a username exists
     '''
 
-    return User.objects.filter(username=username).exists()
+    return User.objects.filter(username__iexact=username).exists()
 
 def datetime_to_str(d):
     '''
@@ -654,7 +655,7 @@ def users_search_3(request, **kwargs):
         return fail('Could not get username')
 
     try:
-        u = OBC_user.objects.get(user__username=username)
+        u = OBC_user.objects.get(user__username__iexact=username)
     except ObjectDoesNotExist as e:
         return fail('Could not find user with this username')
 
@@ -664,6 +665,7 @@ def users_search_3(request, **kwargs):
         'profile_website': u.website,
         'profile_affiliation': u.affiliation,
         'profile_publicinfo': u.public_info,
+        'profile_created_at': datetime_to_str(u.user.date_joined), # https://docs.djangoproject.com/en/2.2/ref/contrib/auth/#django.contrib.auth.models.User.date_joined
     }
 
     # We fetch mail only for registered user 
@@ -800,6 +802,9 @@ def index(request):
 
     # Get OS choices
     context['os_choices'] = simplejson.dumps(OS_types.get_angular_model());
+
+    # Add version
+    context['version'] = __version__
 
     return render(request, 'app/index.html', context)
 
@@ -1118,7 +1123,7 @@ def tools_search_3(request, **kwargs):
     tool_version = kwargs.get('tool_version', '')
     tool_edit = int(kwargs.get('tool_edit', -1))
 
-    tool = Tool.objects.get(name=tool_name, version=tool_version, edit=tool_edit)
+    tool = Tool.objects.get(name__iexact=tool_name, version__iexact=tool_version, edit=tool_edit)
 
     #Get the dependencies of this tool and build a JSTREE
     tool_dependencies_jstree = []
@@ -1217,17 +1222,20 @@ def tools_add(request, **kwargs):
     '''
     Add a new tool
     tool add tool save tool
+
+    * names and version is searched case insensitive
     '''
 
     if request.user.is_anonymous: # Server should always check..
         return fail('Please login to create new tools')
     
     tool_website = kwargs.get('tool_website', '')
-    if not tool_website:
-        return fail('Website cannot be empty')
+    #if not tool_website:
+    #    return fail('Website cannot be empty') # Website CAN be empty
 
-    if not valid_url(tool_website):
-        return fail('Website is not a valid URL')
+    if tool_website:
+        if not valid_url(tool_website):
+            return fail('Website is not a valid URL')
 
     tool_description = kwargs.get('tool_description', '')
     if not tool_description:
@@ -1249,7 +1257,7 @@ def tools_add(request, **kwargs):
         return fail('Operating system cannot be empty')
 
     #Get the maximum version
-    tool_all = Tool.objects.filter(name=tools_search_name, version=tools_search_version)
+    tool_all = Tool.objects.filter(name__iexact=tools_search_name, version__iexact=tools_search_version) # https://docs.djangoproject.com/en/dev/ref/models/querysets/#std:fieldlookup-iexact
     if not tool_all.exists():
         next_edit = 1
     else:
@@ -1338,7 +1346,7 @@ def tools_add(request, **kwargs):
         obc_user = OBC_user.objects.get(user=request.user),
         comment = '',
         comment_html = '',
-        title = 'Tool: {}/{}/{}'.format(tools_search_name, tools_search_version, next_edit),
+        title = markdown('Discussion on Tool: t/{}/{}/{}'.format(tools_search_name, tools_search_version, next_edit)),
         parent = None,
     )
     comment.save()
@@ -1538,7 +1546,7 @@ def workflows_add(request, **kwargs):
 
 
     #Get the maximum version. FIXME DUPLICATE CODE
-    workflow_all = Workflow.objects.filter(name=workflow_info_name)
+    workflow_all = Workflow.objects.filter(name__iexact=workflow_info_name)
     if not workflow_all.exists():
         next_edit = 1
     else:
@@ -1597,7 +1605,7 @@ def workflows_add(request, **kwargs):
         obc_user = OBC_user.objects.get(user=request.user),
         comment = '',
         comment_html = '',
-        title = 'Workflow: {}/{}'.format(workflow_info_name, next_edit),
+        title = markdown('Discussion on Workflow: w/{}/{}'.format(workflow_info_name, next_edit)),
         parent = None,
     )
     comment.save()
@@ -1630,7 +1638,7 @@ def workflows_search_3(request, **kwargs):
     workflow_name = kwargs['workflow_name']
     workflow_edit = kwargs['workflow_edit']
 
-    workflow = Workflow.objects.get(name = workflow_name, edit=workflow_edit)
+    workflow = Workflow.objects.get(name__iexact = workflow_name, edit=workflow_edit)
 
     ret = {
         'username': workflow.obc_user.user.username,
@@ -2148,7 +2156,6 @@ def references_add(request, **kwargs):
     if request.user.is_anonymous:
         return fail('Please login to create References')
 
-
     references_name = kwargs.get('references_name', '')
     if not references_name:
         return fail('References Name is required')
@@ -2312,7 +2319,7 @@ def references_search_3(request, **kwargs):
 
     name = kwargs.get('name', '')
     try:
-        reference = Reference.objects.get(name=name)
+        reference = Reference.objects.get(name__iexact=name)
     except ObjectDoesNotExist as e:
         return fail('Could not find Reference') # This should never happen..
 
