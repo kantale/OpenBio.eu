@@ -20,12 +20,11 @@
                             ng-show="!tools_info_editable">/<span ng-bind="tools_info_edit"></span></span>
                     </h5>
                     <small class="form-text text-muted" ng-show="!tools_info_editable">
-                        <span ng-bind="tool_info_username"></span>, created at <span
+                        <a ng-click="interlink({type: 'u', username: tool_info_username})">u/<span ng-bind="tool_info_username"></span></a>, created at <span
                             ng-bind="tool_info_created_at"></span>
                         <span ng-show="tools_info_forked_from">, forked from <a href
-                                ng-click="tools_search_show_item(tools_info_forked_from)"><span
+                                ng-click="tools_search_show_item(tools_info_forked_from)">t/<span
                                     ng-bind="tools_info_forked_from | tool_label"></span></a></span>
-                        <span>USED IN 86 WFs</span>
                     </small>
                 </p>
                 <!-- Buttons -->
@@ -53,21 +52,27 @@
                         <form class="col s12" ng-show="tools_info_editable">
                             <div class="row">
                                 <div class="input-field col s12 m4 grid-s12-m4-l4">
-                                    <input id="generalName" type="text" class="validate" ng-model="tools_info_name"
+                                    <input id="generalName" type="text" class="validate tooltipped" 
+                                        data-tooltip="Name of the tool or dataset. Available characters: a-z, A-Z, 0-9, _"
+                                        ng-model="tools_info_name"
                                         ng-disabled="tools_info_forked_from">
                                     <label for="generalName">Name</label>
                                 </div>
                                 <div class="input-field col s12 m4 grid-s12-m4-l4">
-                                    <input id="generalVersion" type="text" class="validate"
+                                    <input id="generalVersion" type="text" class="validate tooltipped"
+                                        data-tooltip="Version of the tool or dataset. Available characters: a-z, A-Z, 0-0, _, ."
                                         ng-model="tools_info_version" ng-disabled="tools_info_forked_from">
                                     <label for="generalVersion">Version</label>
                                 </div>
                                 <div class="input-field col s12 grid-s12-m12-l12">
-                                    <input id="generalWebsite" type="text" class="validate" ng-model="tool_website">
+                                    <input id="generalWebsite" type="text" class="validate tooltipped" 
+                                        data-tooltip="Optional. Websites should start from http://, https:// or ftp:// "
+                                        ng-model="tool_website">
                                     <label for="generalWebsite">Website</label>
                                 </div>
                                 <div class="input-field col s12 grid-s12-m12-l12">
-                                    <textarea id="generalDescription" class="validate materialize-textarea"
+                                    <textarea id="generalDescription" class="validate materialize-textarea tooltipped"
+                                        data-tooltip="General tool/data description. You can use markdown"
                                         ng-model="tool_description"></textarea>
                                     <label for="generalDescription">Description</label>
                                 </div>
@@ -116,9 +121,9 @@
                         Dependencies
                     </div>
                     <div class="collapsible-body">
-                        <div class="row" ng-show="tools_info_editable">
-                            <strong>Drop here a tool from the search tree, to add it as a dependency. Right click to
-                                delete it.</strong>
+                        <div class="row left-align" ng-show="tools_info_editable">
+                            <strong>Drop here a tool from the Tools/Data search tree, in order to add it as a dependency. Right click to
+                                remove it. The dependent Tools/Data, will be installed each time this Tool/Data is installed.</strong>
                         </div>
                         <div class="row" ng-show="!tools_info_editable">
                             <strong>Tool Dependency Tree</strong>
@@ -139,6 +144,7 @@
                         <i class="material-icons left">computer</i>
                         <span class="left">Installation</span>
 
+                        <div ng-show="false">
                         {% verbatim %}
                         <small class="right"
                             ng-show="tool_info_validation_status=='Validated' || tool_info_validation_status=='Failed'">
@@ -174,6 +180,8 @@
                         <a ng-show="!tools_info_editable" ng-click="tool_info_validate_refresh_pressed()"
                             id="installationRefreshBtn" class="waves-effect btn-flat btnCollapsible right"><i
                                 class="material-icons" style="margin:0px;">refresh</i></a>
+
+                        </div>
                     </div>
                     <div class="collapsible-body">
                         <!-- Hide Variables -->
@@ -279,7 +287,7 @@
                 <!-- --------------------------------------------------------------------------------------- -->
                 <!-- ---------------------------------- Statistics ----------------------------------------- -->
                 <!-- --------------------------------------------------------------------------------------- -->
-                <li id="toolsDataStatistics">
+                <li id="toolsDataStatistics" ng-show="false">
                     <div class="collapsible-header">
                         <i class="material-icons arrow">keyboard_arrow_right</i>
                         <i class="material-icons">poll</i>
@@ -335,7 +343,7 @@
                 <!-- --------------------------------------------------------------------------------------- -->
                 <!-- ---------------------------------- Discussion ----------------------------------------- -->
                 <!-- --------------------------------------------------------------------------------------- -->
-                <li id="toolsDataDiscussion">
+                <li id="toolsDataDiscussion" ng-show="!tools_info_editable">
                     <div class="collapsible-header">
                         <i class="material-icons arrow">keyboard_arrow_right</i>
                         <i class="material-icons">forum</i>
@@ -368,10 +376,10 @@
                                 ng-bind="workflow_info_edit"></span></span>
                     </h5>
                     <small class="form-text text-muted" ng-show="!workflows_info_editable">
-                        <span ng-bind="workflows_info_username"></span>
+                        <a ng-click="interlink({type: 'u', username: workflows_info_username})">u/<span ng-bind="workflows_info_username"></span></a>
                         <span>, created at <span ng-bind="workflow_info_created_at"></span></span>
                         <span ng-show="workflow_info_forked_from">, forked from <a href
-                                ng-click="workflows_search_show_item(workflow_info_forked_from)"><span
+                                ng-click="workflows_search_show_item(workflow_info_forked_from)">w/<span
                                     ng-bind="workflow_info_forked_from | workflow_label"></span></a></span>
                     </small>
                 </p>
@@ -620,7 +628,7 @@
                 <!-- --------------------------------------------------------------------------------------- -->
                 <!-- ------------------------------ Statistics Workflow ------------------------------------ -->
                 <!-- --------------------------------------------------------------------------------------- -->
-                <li id="workflowStatistics">
+                <li id="workflowStatistics" ng-show="false">
                     <div class="collapsible-header">
                         <i class="material-icons arrow">keyboard_arrow_right</i>
                         <i class="material-icons">poll</i>
@@ -676,7 +684,7 @@
                 <!-- --------------------------------------------------------------------------------------- -->
                 <!-- ---------------------------------- Discussion ----------------------------------------- -->
                 <!-- --------------------------------------------------------------------------------------- -->
-                <li id="workflowDiscussion">
+                <li id="workflowDiscussion" ng-show="!workflows_info_editable">
                     <div class="collapsible-header">
                         <i class="material-icons arrow">keyboard_arrow_right</i>
                         <i class="material-icons">forum</i>
@@ -705,7 +713,8 @@
                         <h5>Workflow:</h5>
                     </div>
                     <div class="col s6">
-                        <h5><span ng-bind="report_workflow_name"></span>/<span ng-bind="report_workflow_edit"></span>
+                        <h5>
+                            <a ng-click="interlink({type: 'w', name: report_workflow_name, edit:report_workflow_edit})">w/<span ng-bind="report_workflow_name"></span>/<span ng-bind="report_workflow_edit"></span></a>
                         </h5>
                     </div>
                     <div class="col s4">
@@ -713,7 +722,7 @@
                     </div>
                 </div>
                 <small class="form-text text-muted">
-                    <span ng-bind="report_username"></span>, created at: <span ng-bind="report_created_at"></span>
+                    <a ng-click="interlink({type: 'u', username: report_username})">u/<span ng-bind="report_username"></span></a>, created at: <span ng-bind="report_created_at"></span>
                 </small>
             </div>
             <ul id="reportsRightPanelAccordion" class="collapsible expandable popout faster">
@@ -770,7 +779,7 @@
                 <!-- --------------------------------------------------------------------------------------- -->
                 <!-- ------------------------------------ Statistics ------------------------------------------ -->
                 <!-- --------------------------------------------------------------------------------------- -->
-                <li id="reportsStatistics">
+                <li id="reportsStatistics" ng-show="false">
                     <div class="collapsible-header">
                         <i class="material-icons arrow">keyboard_arrow_right</i>
                         <i class="material-icons">poll</i>
@@ -832,7 +841,7 @@
     <div class="faster" id="referencesRightPanel" style="display: none;">
         <div class="card blue-grey lighten-4 rightPanelTitleCard">
             <div class="card-content rightPanelTitleContent">
-                <h5 class="rightPanelTitleHeader">Report</h5>
+                <h5 class="rightPanelTitleHeader">Reference</h5>
                 <a class="waves-effect btn-flat right" style="margin-top: -30px;" ng-click="references_button_cancel_clicked()">Cancel</a>
             </div>
         </div>
@@ -850,9 +859,8 @@
                                     ng-click="tools_search_show_item(tools_info_forked_from)"><span
                                         ng-bind="tools_info_forked_from | tool_label"></span></a></span>
                             <span>USED IN 86 WFs</span> -->
-                        <span ng-bind="references_username"></span>
+                        <a ng-click="interlink({type: 'u', username: references_username})">u/<span ng-bind="references_username"></span></a>
                         <span>, created at <span ng-bind="references_created_at"></span></span>
-                        <span>USED IN 86 WFs</span>
                     </small>
                     <div class="card blue-grey darken-1">
                         <div class="card-content" style="background-color: #f0f8ff;">
@@ -973,7 +981,7 @@
                 <!-- --------------------------------------------------------------------------------------- -->
                 <!-- ---------------------------------- Statistics ----------------------------------------- -->
                 <!-- --------------------------------------------------------------------------------------- -->
-                <li id="referencesStatistics">
+                <li id="referencesStatistics" ng-show="false">
                     <div class="collapsible-header">
                         <i class="material-icons arrow">keyboard_arrow_right</i>
                         <i class="material-icons">poll</i>
@@ -1076,7 +1084,7 @@
                             </div>
                             <div class="row left-align">
                                 <div class="col s12 m3 grid-s12-m3-l3"><b>Member Since:</b></div>
-                                <div class="col s12 m9 grid-s12-m9-l9"><span></span></div>
+                                <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="user_created_at"></span></div>
                             </div>
                             <div class="row left-align">
                                 <div class="col s12 m3 grid-s12-m3-l3"><b>Info:</b></div>
@@ -1150,11 +1158,11 @@
                             <small>Asked by <a ng-click="interlink({type: 'u', username: qa_username})">u/<span ng-bind="qa_username"></span></a> on <span ng-bind="qa_created_at"></span><span>, </span><a ng-click="interlink({type: 'c', id: qa_comment_id})">c/<span ng-bind="qa_comment_id"></span></a></small>
                         </div>
                         <div>
-                            <h5 style="margin-top:9px; margin-bottom:9px;"><span ng-bind="qa_title"></span></h5>
+                            <h5 style="margin-top:9px; margin-bottom:9px;"><span ng-bind-html="qa_title"></span></h5>
                             <p><span ng-bind-html="qa_comment_html"></span></p>
                         </div>
                     </div>
-                    <div class="row right-align" style="margin-top:15px; margin-bottom: 15px;">
+                    <div class="row right-align" style="margin-top:15px; margin-bottom: 15px;" ng-show="!qa_show_new_comment">
                         <a class="waves-effect waves-light btn-small" href=""
                             ng-click="qa_add_comment_button_pressed()">Add Comment</a>
                     </div>

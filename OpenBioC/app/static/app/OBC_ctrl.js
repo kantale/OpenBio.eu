@@ -126,6 +126,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             "workflow": {}
         };
 
+        $scope.scheduled_main_search_changed = false; // https://openfolder.sh/django-tutorial-as-you-type-search-with-ajax
+
         $scope.get_init_data();
 
 
@@ -548,7 +550,19 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * Changed the main search
     */ 
     $scope.main_search_changed = function() {
-        $scope.all_search_2();
+        //toggle on the search progress. It will be toggled off from $scope.all_search_2() that will be called eventually
+        document.getElementById('leftPanelProgress').style.display = 'block';
+
+        // https://openfolder.sh/django-tutorial-as-you-type-search-with-ajax
+        if ($scope.scheduled_main_search_changed) {
+            $timeout.cancel($scope.scheduled_main_search_changed);
+        }
+
+        $scope.scheduled_main_search_changed = $timeout(function() {
+            $scope.all_search_2();
+        }, 700);
+
+        //$scope.all_search_2();
     };
 
     /*
@@ -559,6 +573,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         //If search criteria are empty do not perform any search
         if (!$.trim($scope.main_search).length) {
             $scope.init_search_results(); //Remove every counter
+            document.getElementById('leftPanelProgress').style.display = 'none'; //Toggle off the search progress
             return;
         }
 
@@ -593,13 +608,15 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.main_search_qa_number = data['main_search_qa_number'];
                 angular.copy(data['qa_search_jstree'], $scope.qa_search_jstree_model);
 
+                //Toggle off the search progress
+                document.getElementById('leftPanelProgress').style.display = 'none';
 
             },
             function(data) {
-
+                $scope.toast('Error 8922. Main search failed', 'error');
             },
             function(statusText) {
-
+                $scope.toast(statusText, 'error');
             }
         );
     };
@@ -1781,6 +1798,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.user_website = data['profile_website'];
                 $scope.user_affiliation = data['profile_affiliation'];
                 $scope.user_publicinfo = data['profile_publicinfo'];
+                $scope.user_created_at = data['profile_created_at'];
 
                 //Open right panel
                 document.getElementById('userDataDiv').style.display = 'block';
@@ -2692,7 +2710,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
                 completion_info.push({
                     //caption: 'call(' + this_data.label + '/' + this_data.belongto.name + '/' + this_node_belong_to_show_edit + ')',
-                    caption: 'step/' + this_data.label + '/' + this_data.belongto.name + '/' + this_node_belong_to_show_edit + ')',
+                    caption: 'step/' + this_data.label + '/' + this_data.belongto.name + '/' + this_node_belong_to_show_edit,
                     //value: 'call(' + this_data.label + '__' + this_data.belongto.name + '__' + this_node_belong_to_value_edit + ')',
                     value: 'step__' + this_data.label + '__' + this_data.belongto.name + '__' + this_node_belong_to_value_edit ,
                     meta: 'STEP'

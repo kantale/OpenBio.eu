@@ -7,9 +7,9 @@
             style="position:fixed; padding-top: 100px">
             <ul class="section table-of-contents">
                 <li><a class="lien_projet" href="#profileCard">Profile</a></li>
-                <li><a class="lien_projet" href="#inboxCard">Inbox</a></li>
-                <li><a class="lien_projet" href="#notificationsCard">Notifications</a></li>
-                <li><a class="lien_projet" href="#settingsCard">Settings</a></li>
+                <li><a class="lien_projet" href="#inboxCard" ng-show="false">Inbox</a></li>
+                <li><a class="lien_projet" href="#notificationsCard" ng-show="false">Notifications</a></li>
+                <li><a class="lien_projet" href="#settingsCard" ng-show="false">Settings</a></li>
             </ul>
         </div>
     </div>
@@ -104,7 +104,7 @@
                 <!-- --------------------------------------------------------------------------------------- -->
                 <!-- ------------------------------------- Temp Card --------------------------------------- -->
                 <!-- --------------------------------------------------------------------------------------- -->
-                <div class="col s12">
+                <div class="col s12" ng-show="false">
                     <section id="inboxCard" class="scrollspy section_projet">
                         <div class="card">
                             <div class="card-content">
@@ -135,7 +135,7 @@
                 <!-- --------------------------------------------------------------------------------------- -->
                 <!-- -------------------------------- Notifications Card ----------------------------------- -->
                 <!-- --------------------------------------------------------------------------------------- -->
-                <div class="col s12">
+                <div class="col s12" ng-show="false">
                     <section id="notificationsCard" class="scrollspy section_projet">
                         <div class="card">
                             <div class="card-content">
@@ -166,7 +166,7 @@
                 <!-- --------------------------------------------------------------------------------------- -->
                 <!-- ------------------------------------ Settings Card ------------------------------------ -->
                 <!-- --------------------------------------------------------------------------------------- -->
-                <div class="col s12">
+                <div class="col s12" ng-show="false">
                     <section id="settingsCard" class="scrollspy section_projet">
                         <div class="card">
                             <div class="card-content">
@@ -199,7 +199,7 @@
         <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
         <!-- -------------------------------------------------------- Temp ----------------------------------------------------------------------------------- -->
         <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
-        <div class="container faster">
+        <div class="container faster" ng-show="false"> <!-- what is this for? -->
             <div class="col s12">
                 <div class="card">
                     <div class="card-content">
@@ -208,121 +208,6 @@
                             Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
                             incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
                             nostrud
-                            exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem
-                            ipsum
-                            dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-                            labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-                            exercitation
-                            ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit
-                            amet,
-                            consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-                            dolore
-                            magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-                            nisi ut aliquip ex ea commodo consequat.
-                        </div>
-                    </div>
-                    <div class="card-action right-align">
-                        <button class="btn waves-effect waves-light" type="submit" name="action">Update</button>
-                    </div>
-                </div>
-            </div>
-            <div class="col s12">
-                <div class="card">
-                    <div class="card-content">
-                        <blockquote><span class="card-title">Settings</span></blockquote>
-                        <div class="row">
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-                            incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-                            nostrud
-                            exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem
-                            ipsum
-                            dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-                            labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-                            exercitation
-                            ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit
-                            amet,
-                            consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-                            dolore
-                            magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-                            nisi ut aliquip ex ea commodo consequat.
-                        </div>
-                    </div>
-                    <div class="card-action right-align">
-                        <button class="btn waves-effect waves-light" type="submit" name="action">Update</button>
-                    </div>
-                </div>
-            </div>
-            <div class="col s12">
-                <div class="card">
-                    <div class="card-content">
-                        <blockquote><span class="card-title">Settings</span></blockquote>
-                        <div class="row">
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-                            incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-                            nostrud
-                            exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem
-                            ipsum
-                            dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-                            labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-                            exercitation
-                            ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit
-                            amet,
-                            consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-                            dolore
-                            magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-                            nisi ut aliquip ex ea commodo consequat.
-                        </div>
-                    </div>
-                    <div class="card-action right-align">
-                        <button class="btn waves-effect waves-light" type="submit" name="action">Update</button>
-                    </div>
-                </div>
-            </div>
-            <div class="col s12">
-                <div class="card">
-                    <div class="card-content">
-                        <blockquote><span class="card-title">Settings</span></blockquote>
-                        <div class="row">
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-                            incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-                            nostrud
-                            exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem
-                            ipsum
-                            dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-                            labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-                            exercitation
-                            ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit
-                            amet,
-                            consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-                            dolore
-                            magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-                            nisi ut aliquip ex ea commodo consequat.
-                        </div>
-                    </div>
-                    <div class="card-action right-align">
-                        <button class="btn waves-effect waves-light" type="submit" name="action">Update</button>
-                    </div>
-                </div>
-            </div>
-            <div class="col s12">
-                <div class="card">
-                    <div class="card-content">
-                        <blockquote><span class="card-title">Settings</span></blockquote>
-                        <div class="row">
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-                            incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-                            nostrud
-                            exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem
-                            ipsum
-                            dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-                            labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-                            exercitation
-                            ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit
-                            amet,
-                            consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-                            dolore
-                            magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-                            nisi ut aliquip ex ea commodo consequat.
                         </div>
                     </div>
                     <div class="card-action right-align">
