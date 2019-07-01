@@ -1909,13 +1909,28 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         var i=0;    
         $scope.report_tokens.forEach(function (tdata) {
 
-            console.log('token created_at:');
-            console.log(tdata.created_at);
-
+		//create groups 
+		if(tdata.status.split(" ")[0]==='workflow' || tdata.status.split(" ")[0]==='step')
+			mygroup = 1;
+		else if(tdata.status.split(" ")[0]==='tool')
+			mygroup = 2;
+		else{
+			mygroup = 3; //TODO check the possible group names
+		}
+		
+		
+		//manage names
+		if(tdata.status.split(" ")[0]==='step')
+			myname = tdata.node_anim_params.status_fields.name.split("_")[0];
+		else
+			myname = tdata.node_anim_params.status_fields.name;
+			
+			
             i++;
             ret.push({
                     id: i, 
-                    content: tdata.node_anim_params.status_fields.name, 
+					group: mygroup,
+                    content: myname, 
                     start: new Date(tdata.created_at), //.toISOString().split('T')[0], 
                     params: tdata.node_anim_params}
             );
