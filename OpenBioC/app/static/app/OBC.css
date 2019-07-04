@@ -93,7 +93,19 @@ pre {
   height: 400px;  
 }
 
-
+/* timeline css */
+.vis-item.workflow {
+      background-color: #4CAF50;
+      border-color: #4CAF50;
+    }
+	
+.vis-item.tool {
+      background-color: #9CD8F5;
+      border-color: #9CD8F5;
+    }
+	
+	
+	
 
 /* https://getbootstrap.com/docs/4.1/examples/sticky-footer/ */
 /*
