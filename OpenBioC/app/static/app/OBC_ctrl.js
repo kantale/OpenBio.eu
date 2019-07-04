@@ -1928,12 +1928,17 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.report_tokens.forEach(function (tdata) {
 
 		//create groups 
-		if(tdata.status.split(" ")[0]==='workflow' || tdata.status.split(" ")[0]==='step')
+		if(tdata.status.split(" ")[0]==='workflow' || tdata.status.split(" ")[0]==='step'){
 			mygroup = 1;
-		else if(tdata.status.split(" ")[0]==='tool')
+			myClass = 'workflow';
+		}
+		else if(tdata.status.split(" ")[0]==='tool'){
 			mygroup = 2;
+			myClass = 'tool';
+		}
 		else{
 			mygroup = 3; //TODO check the possible group names
+			myClass = 'default';
 		}
 		
 		
@@ -1949,6 +1954,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                     id: i, 
 					group: mygroup,
                     content: myname, 
+					className: myClass,
                     start: new Date(tdata.created_at), //.toISOString().split('T')[0], 
                     params: tdata.node_anim_params}
             );
