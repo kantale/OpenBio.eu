@@ -103,6 +103,31 @@ pre {
       background-color: #9CD8F5;
       border-color: #9CD8F5;
     }
+
+/* our custom classes overrule the styles for selected events,
+       so lets define a new style for the selected events */
+.vis-item.vis-selected {
+      background-color: white;
+      border-color: #222222;
+      color: #222222;
+      box-shadow: 0 0 10px #222222;
+	}	
+	
+.vis-item.vis-selected.workflow {
+	   background-color: white;
+       border-color: #4CAF50;
+       color: #4CAF50;
+       box-shadow: 0 0 10px #4CAF50;	
+			
+	}
+	
+.vis-item.vis-selected.tool {
+	   background-color: white;
+       border-color: #9CD8F5;
+       color: #9CD8F5;
+       box-shadow: 0 0 10px #9CD8F5;	
+			
+	}	
 	
 	
 	
