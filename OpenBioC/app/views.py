@@ -579,17 +579,18 @@ def tool_build_dependencies_jstree(tool_dependencies, add_variables=False):
     for tool_dependency in tool_dependencies:
         tool_dependencies_jstree.append({
 
-#            'data': {
+            'data': {
 #                    'name': tool_dependency['dependency'].name,
 #                    'version': tool_dependency['dependency'].version,
 #                    'edit': tool_dependency['dependency'].edit,
-#                    'type': 'tool',
-#                },
+                    'type': 'tool',
+             },
             'text': tool_text_jstree(tool_dependency['dependency']),
             'id': tool_id_jstree(tool_dependency['dependency'], g['DEPENDENCY_TOOL_TREE_ID']),
             'parent': tool_id_jstree(tool_dependency['dependant'], g['DEPENDENCY_TOOL_TREE_ID']) if tool_dependency['dependant'] else '#',
-            'type': 'tool', ### TODO: FIX REDUNDANCY WITH ['data']['type'] . FIXED.
-
+            'type': 'tool', ### This is redundant with ['data']['type'], but we need it because 
+                            ### The node[0].data.type is checked in $scope.tools_var_jstree_model. 
+                            ### See also issue #93
 
             'name': tool_dependency['dependency'].name,
             'version': tool_dependency['dependency'].version,
