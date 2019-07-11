@@ -787,7 +787,12 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
                 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
                 // find and save the selected os when the user search specific tool
-                $scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === data['tool_os_choices'][0]})  ; // Take just the first. The model allows for multiple choices
+                //$scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === data['tool_os_choices'][0]})  ; // Take just the first. The model allows for multiple choices
+                $scope.tool_os_choices = data['tool_os_choices']; // ### Here
+                console.log('$scope.tool_os_choices in tools_search_3:');
+                console.log($scope.tool_os_choices);
+
+
                 //console.log('$scope.tool_os_choices:');
                 //console.log($scope.tool_os_choices);
                 $('#tool_os_choices_select').formSelect();
@@ -977,7 +982,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.tool_info_validation_created_at = null;
 
         // Default operating system is ubuntu:16.04 . FIXME!
-        $scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === 'ubuntu:16.04'})  ;;
+        // $scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === 'ubuntu:16.04'});
+        $scope.tool_os_choices = [];
         console.log('$scope.os_choices:');
         console.log($scope.os_choices);
         console.log('$scope.tool_os_choices:');
@@ -1285,7 +1291,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.tools_var_jstree_id_show = true; // Show variable/dependency tree
 
         // Set the operating system. Practically we are setting tool_os_choices = tool_os_choices ... But that was the only way I could do it
-        $scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === $scope.tool_os_choices.value});
+        // $scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === $scope.tool_os_choices.value});
         $timeout(function(){$('#tool_os_choices_select').formSelect();}, 100);
 
         // The new tool is unvalidated
@@ -1497,7 +1503,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * Get the dependencies of this tool
     * This is called from OBC.js
     * what_to_do == 1: DRAG FROM SEARCH TREE TO DEPENDENCY TREE
-    * what_to_do == 2: DRAG FROM SEARCH TREE TO WORKFLOW DIV
+    * what_to_do == 2: DRAG FROM SEARCH TREE TO CYTOSCAPE CYWORKFLOW DIV
     */
     $scope.tool_get_dependencies = function(tool, what_to_do) {
 
@@ -1532,7 +1538,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                     //Check if this parent is already in the tree
                     for (var i=0; i<$scope.tools_dep_jstree_model.length; i++) {
                         if ($scope.tools_dep_jstree_model[i].id == inserted_parent_id) {
-                            $scope.tools_info_error_message = 'This tool is already in the dependency tree';
+                            //$scope.tools_info_error_message = 'This tool is already in the dependency tree';
+                            $scope.toast('This tool is already in the dependency tree', 'error');
                             return;
                         }
                     }
@@ -1550,7 +1557,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                         $scope.tools_var_jstree_model.push(data['variables_jstree'][i]);
                     }
                 }
-                else if (what_to_do == 2) { //DRAG FROM TOOLS SEARCH TREE TO WORKFLOW DIV
+                else if (what_to_do == 2) { //DRAG FROM TOOLS SEARCH TREE TO CYTOSCAPE WORKFLOW DIV
                     console.log('UPDATE THE GRAPH WITH: dependencies_jstree');
                     console.log(data['dependencies_jstree']);
                     console.log('variables_jstree:');
