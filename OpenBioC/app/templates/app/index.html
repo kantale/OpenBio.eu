@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<script type="text/javascript"> 
-		window.CSRF_TOKEN = "{{ csrf_token }}"; 
+	<script type="text/javascript">
+		window.CSRF_TOKEN = "{{ csrf_token }}";
 		window.username = "{{ username }}";
 		window.general_alert_message = {% autoescape off %}"{{ general_alert_message }}"{% endautoescape %};
-		window.general_success_message = {% autoescape off %}"{{ general_success_message }}"{% endautoescape %}; 
+		window.general_success_message = {% autoescape off %}"{{ general_success_message }}"{% endautoescape %};
 		window.password_reset_token = "{{ password_reset_token }}";
-		window.OBC_PORT = {{port}};
+		window.OBC_PORT = {{ port }};
 		window.OBC_CONTROLLER_URL = "{{controller_url}}";
-		window.OBC_OS_CHOICES = {{os_choices|safe}};
-		window.menu=null;
-		window.input_menu=null;
+		window.OBC_OS_CHOICES = {{ os_choices | safe }};
+		window.menu = null;
+		window.input_menu = null;
 	</script>
 
 	<script src="/static/app/jquery-3.3.1.min.js"></script>
@@ -28,13 +29,14 @@
 	<link rel="stylesheet" href="/static/app/material-design-icons-3.0.1/iconfont/material-icons.css">
 
 	<!-- Materialize CSS-->
-	<link type="text/css" rel="stylesheet" href="/static/app/materialize/css/materialize.min.css" media="screen,projection" />
+	<link type="text/css" rel="stylesheet" href="/static/app/materialize/css/materialize.min.css"
+		media="screen,projection" />
 
 	<!-- Animate CSS FIXME: Add animate as external dependency-->
 	<link rel="stylesheet" href="/static/app/konstantina/css/animate-v3.7.0.css">
 
 	<!-- Custom CSS -->
-	<link rel="stylesheet" href="/static/app/konstantina/css/style.css">	
+	<link rel="stylesheet" href="/static/app/konstantina/css/style.css">
 
 	<!-- FOR DRAGGABLE
 	<script src="/static/app/jquery-ui-1.12.1.custom/jquery-ui.min.js" type="text/javascript" charset="utf-8"></script>
@@ -52,7 +54,7 @@
 	<script defer src="/static/app/js/bootstrap.min.js"></script>
 	-->
 
-	
+
 
 	<!--
 	<link rel="stylesheet" href="/static/app/bootstrap-3.3.7/dist/css/bootstrap.min.css" type="text/css"/>
@@ -60,11 +62,11 @@
 	-->
 
 	<!-- For Glyphicons -->
-	<link rel="stylesheet" href="/static/app/fontawesome/font-awesome-4.7.0/css/font-awesome.min.css" type="text/css"/>
+	<link rel="stylesheet" href="/static/app/fontawesome/font-awesome-4.7.0/css/font-awesome.min.css" type="text/css" />
 
 	<!-- This is version 1.7.2 -->
 	<script src="/static/app/angular.min.js"></script>
-	
+
 	<!-- For Select Perhaps we never use it!-->
 	<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/3.4.5/select2.css">  -->
 	<link rel="stylesheet" href="/static/app/select2-3.4.5/select2.css">
@@ -74,8 +76,9 @@
 
 	<script src='/static/app/bower-angular-sanitize-1.7.2/angular-sanitize.min.js'></script>
 
-	<link rel="stylesheet" href="/static/app/ui-select-0.19.8/dist/select.min.css" type="text/css"/> <!-- https://angular-ui.github.io/ui-select/ -->
-  	<script src='/static/app/ui-select-0.19.8/dist/select.min.js'></script>
+	<link rel="stylesheet" href="/static/app/ui-select-0.19.8/dist/select.min.css" type="text/css" />
+	<!-- https://angular-ui.github.io/ui-select/ -->
+	<script src='/static/app/ui-select-0.19.8/dist/select.min.js'></script>
 
 
 	<!--
@@ -91,10 +94,10 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
 	-->
 
-	
-	<link rel="stylesheet" href="/static/app/jstree-3.3.5/dist/themes/default/style.min.css" type="text/css"/>
+
+	<link rel="stylesheet" href="/static/app/jstree-3.3.5/dist/themes/default/style.min.css" type="text/css" />
 	<script src="/static/app/jstree-3.3.5/dist/jstree.min.js"></script>
-	
+
 
 	<!--
 	<link rel="stylesheet" href="/static/app/jstree-3.2.1/dist/themes/default-dark/style.min.css" type="text/css"/>
@@ -107,7 +110,7 @@
 	-->
 
 	<script src="/static/app/ngJsTree-0.0.10/dist/ngJsTree.min.js"></script>
-	
+
 	<!--
 	<script src="/static/app/ngJsTree-0.0.10/dist/ngJsTree.js"></script>
 	-->
@@ -123,10 +126,12 @@
 	<link rel="stylesheet" type="text/css" href="/static/app/angular-tree-control-0.2.28/css/tree-control.css">
 	-->
 
-	
-	<link rel="stylesheet" href="/static/app/OBC.css" type="text/css"/>
-	<script src="/static/app/ace-builds-1.4.1/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
-	<script src="/static/app/ace-builds-1.4.1/src-min-noconflict/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+
+	<link rel="stylesheet" href="/static/app/OBC.css" type="text/css" />
+	<script src="/static/app/ace-builds-1.4.1/src-min-noconflict/ace.js" type="text/javascript"
+		charset="utf-8"></script>
+	<script src="/static/app/ace-builds-1.4.1/src-min-noconflict/ext-language_tools.js" type="text/javascript"
+		charset="utf-8"></script>
 
 
 	<!--
@@ -136,141 +141,146 @@
 
 	<!-- cytoscape 3.4.0 -->
 	<script src="/static/app/cytoscape.js-3.4.0/dist/cytoscape.min.js" type="text/javascript" charset="utf-8"></script>
-	
+
 	<!--cytoscape tooltip -->
 	<script src="/static/app/popper.min.js" type="text/javascript" charset="utf-8"></script>
-	<script src="/static/app/cytoscape.js-popper-1.0.4/cytoscape-popper.js" type="text/javascript" charset="utf-8"></script>
+	<script src="/static/app/cytoscape.js-popper-1.0.4/cytoscape-popper.js" type="text/javascript"
+		charset="utf-8"></script>
 	<script src="/static/app/tippy.min.js" type="text/javascript" charset="utf-8"></script>
 	<!--cytoscape tooltip css-->
 	<link rel="stylesheet" href="/static/app/tippy.css" />
 	<link rel="stylesheet" href="/static/app/custom_tippy.css" />
-	
+
 	<!-- cytoscape menu -->
-	<script src="/static/app/cytoscape.js-cxtmenu-3.0.2/cytoscape-cxtmenu.js" type="text/javascript" charset="utf-8"></script>
-	
+	<script src="/static/app/cytoscape.js-cxtmenu-3.0.2/cytoscape-cxtmenu.js" type="text/javascript"
+		charset="utf-8"></script>
+
 	<!-- cytoscape 3.4.2 
 	<script src="/static/app/cytoscape.js-3.4.2/dist/cytoscape.min.js" type="text/javascript" charset="utf-8"></script>
-	-->	
-	
+	-->
+
 	<!-- timeline  vis-4.21.0 -->
 	<script src="/static/app/vis.min.js" type="text/javascript" charset="utf-8"></script>
 	<link rel="stylesheet" href="/static/app/vis.min.css" />
 
 
 </head>
+
 <body>
 
-<div id="angular_div" ng-app="OBC_app" ng-controller="OBC_ctrl" ng-init="init()">
 
-	<a id='hiddena' download="" href="" ng-show='false'></a>
+	<div id="angular_div" ng-app="OBC_app" ng-controller="OBC_ctrl" ng-init="init()">
+		<a id='hiddena' download="" href="" ng-show='false'></a>
 
-{% include "app/navbar2.html" %}
-<!-- Sign In Form -->
-<!-- Sign Up Form -->
+		{% include "app/navbar2.html" %}
+		<!-- Sign In Form -->
+		<!-- Sign Up Form -->
 
-<div class="splitter-container" ng-show="main_container_show">
+		<div class="splitter-container" ng-show="main_container_show">
 
-    <!-- --- LEFT PANEL / left_panel.html -->
+			<!-- --- LEFT PANEL / left_panel.html -->
 			{% include "app/left_panel.html" %}
 
 
-    <!-- --- RIGHT PANEL / right_panel.html -->
+			<!-- --- RIGHT PANEL / right_panel.html -->
 			{% include "app/right_panel.html" %}
 
 
-</div>
-
-<div ng-show="profile_container_show">
-
-	<!-- PROFILE!! -->
-	{% include "app/profile.html" %}
-
-	<!-- <a href ng-click="profile_save_pressed()">SAVE</a> -->
-
-</div>
-
-
-{# include "app/navbar.html" #} <!-- AK version -->
-{# include "app/navbar_default.html" #}
-
-
-
-{% comment %}
-<div class="container py-5" ng-show="show_login">
-{% include "app/login.html" %}
-</div>
-
-<div class="container py-5" ng-show="show_signup">
-{% include "app/signup.html" %}
-</div>
-
-<div class="container py-5" ng-show="general_success_message">
-{% include "app/general_success_message.html" %}
-</div>
-
-<div class="container py-5" ng-show="general_alert_message">
-{% include "app/general_alert_message.html" %}
-</div>
-
-<div class="container py-5" ng-show="show_reset_password_email">
-{% include "app/reset_password_email.html" %}
-</div>
-
-<div class="container py-5" ng-show="show_password_reset">
-{% include "app/password_reset.html" %}
-</div>
-
-<div class="container" ng-show="show_user_profile">
-{% include "app/user_profile.html" %}
-</div>
-
-<div class="container" ng-show="show_tools">
-{% include "app/tools.html" %}
-</div>
-{% endcomment %}
-
-{% comment %}
-<!-- https://github.com/angular-ui/ui-select/wiki/ui-select-match -->
-<div class="container">
-	<div class="row">
-		<div class="col-md-12">
-			aaa
-			<ui-select ng-model="saa" theme="select2" close-on-select="true" style="width: 200px;">
-			    <ui-select-match>{{saa}}</ui-select-match>
-			    <ui-select-choices repeat="item in saa_items"> <!--  track by item.id -->
-			        <span ng-bind="item"></span>
-			    </ui-select-choices>	
-			</ui-select>
-			bbb
 		</div>
-	</div>
-</div>
-{% endcomment %}
 
-{% comment %}
-LOGO FOOTER
-<footer class="footer">
-      <div class="container">
-        <!-- <span class="text-muted">Place sticky footer content here.</span> -->
-        <img src="/static/app/images/logo23.png" class="rounded float-left" alt="...">
-      </div>
-</footer>
-{% endcomment %}
+		<div ng-show="profile_container_show">
 
-</div> <!-- angular controler -->
+			<!-- PROFILE!! -->
+			{% include "app/profile.html" %}
 
-<script type="text/javascript" src="/static/app/OBC.js" charset="utf-8"></script>
+			<!-- <a href ng-click="profile_save_pressed()">SAVE</a> -->
 
-<script type="text/javascript" src="/static/app/materialize/js/materialize.min.js"></script>
-<script type="text/javascript" src="/static/app/konstantina/js/ui.js"></script>
-<script type="text/javascript" src="/static/app/OBC_app.js"></script>
-<script type="text/javascript" src="/static/app/OBC_ctrl.js"></script>
-<script type="text/javascript">
+		</div>
 
-angular.element(document).ready(function () {
-	$('select').formSelect();
-});
-</script>
+
+		{# include "app/navbar.html" #}
+		<!-- AK version -->
+		{# include "app/navbar_default.html" #}
+
+
+
+		{% comment %}
+		<div class="container py-5" ng-show="show_login">
+			{% include "app/login.html" %}
+		</div>
+
+		<div class="container py-5" ng-show="show_signup">
+			{% include "app/signup.html" %}
+		</div>
+
+		<div class="container py-5" ng-show="general_success_message">
+			{% include "app/general_success_message.html" %}
+		</div>
+
+		<div class="container py-5" ng-show="general_alert_message">
+			{% include "app/general_alert_message.html" %}
+		</div>
+
+		<div class="container py-5" ng-show="show_reset_password_email">
+			{% include "app/reset_password_email.html" %}
+		</div>
+
+		<div class="container py-5" ng-show="show_password_reset">
+			{% include "app/password_reset.html" %}
+		</div>
+
+		<div class="container" ng-show="show_user_profile">
+			{% include "app/user_profile.html" %}
+		</div>
+
+		<div class="container" ng-show="show_tools">
+			{% include "app/tools.html" %}
+		</div>
+		{% endcomment %}
+
+		{% comment %}
+		<!-- https://github.com/angular-ui/ui-select/wiki/ui-select-match -->
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					aaa
+					<ui-select ng-model="saa" theme="select2" close-on-select="true" style="width: 200px;">
+						<ui-select-match>{{saa}}</ui-select-match>
+						<ui-select-choices repeat="item in saa_items">
+							<!--  track by item.id -->
+							<span ng-bind="item"></span>
+						</ui-select-choices>
+					</ui-select>
+					bbb
+				</div>
+			</div>
+		</div>
+		{% endcomment %}
+
+		{% comment %}
+		LOGO FOOTER
+		<footer class="footer">
+			<div class="container">
+				<!-- <span class="text-muted">Place sticky footer content here.</span> -->
+				<img src="/static/app/images/logo23.png" class="rounded float-left" alt="...">
+			</div>
+		</footer>
+		{% endcomment %}
+
+	</div> <!-- angular controler -->
+
+	<script type="text/javascript" src="/static/app/OBC.js" charset="utf-8"></script>
+
+	<script type="text/javascript" src="/static/app/materialize/js/materialize.min.js"></script>
+	<script type="text/javascript" src="/static/app/konstantina/js/ui.js"></script>
+	<script type="text/javascript" src="/static/app/OBC_app.js"></script>
+	<script type="text/javascript" src="/static/app/OBC_ctrl.js"></script>
+	<script type="text/javascript">
+
+		angular.element(document).ready(function () {
+			$('select').formSelect();
+		});
+	</script>
 </body>
-</html>
 
+</html>
