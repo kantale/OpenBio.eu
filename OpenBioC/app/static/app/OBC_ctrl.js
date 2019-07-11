@@ -788,10 +788,23 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
                 // find and save the selected os when the user search specific tool
                 //$scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === data['tool_os_choices'][0]})  ; // Take just the first. The model allows for multiple choices
-                $scope.tool_os_choices = data['tool_os_choices']; // ### Here
-                console.log('$scope.tool_os_choices in tools_search_3:');
-                console.log($scope.tool_os_choices);
+                $scope.tool_os_choices_tmp = data['tool_os_choices']; 
 
+                //The server returns data['tool_os_choices'] which has the structure that ui-select "wants"
+                //Nevertheless $scope.tool_os_choices is the model for the select element.
+                //This variable (tool_os_choices) MUST HAVE items from the variable in the ng-repeat attribute (in our case $scope.os_choices)
+                //Since os_choices is in the ng-repeat attribute, it has a private $$hashKey key, which might differ from run to run.  
+                //As an effect we cannot simply do: $scope.tool_os_choices = data['tool_os_choices']; 
+                //Here we make sure that tool_os_choices has identical elements with the ones in os_choices.
+                //Is there any better way to do this?
+                $scope.tool_os_choices = [];
+                $scope.os_choices.forEach(function (element){
+                    for (var i=0; i<$scope.tool_os_choices_tmp.length; i++) {
+                        if ($scope.tool_os_choices_tmp[i].value === element.value) {
+                            $scope.tool_os_choices.push(element);
+                        }
+                    }
+                });
 
                 //console.log('$scope.tool_os_choices:');
                 //console.log($scope.tool_os_choices);
@@ -984,10 +997,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         // Default operating system is ubuntu:16.04 . FIXME!
         // $scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === 'ubuntu:16.04'});
         $scope.tool_os_choices = [];
-        console.log('$scope.os_choices:');
-        console.log($scope.os_choices);
-        console.log('$scope.tool_os_choices:');
-        console.log($scope.tool_os_choices);
+        //console.log('$scope.os_choices:');
+        //console.log($scope.os_choices);
+        //console.log('$scope.tool_os_choices:');
+        //console.log($scope.tool_os_choices);
         //$('#tool_os_choices_select').formSelect();
         $timeout(function(){$('#tool_os_choices_select').formSelect();}, 100);
 
@@ -1192,6 +1205,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             }
         }
 
+        //console.log('tool_create_save_pressed: tool_os_choices');
+        //console.log($scope.tool_os_choices);
+
         $scope.ajax(
             'tools_add/',
             {   'username':$scope.username,
@@ -1240,7 +1256,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             },
             function(statusText) {
                 $scope.tools_info_error_message = statusText;
-                $scope.toast($scope.tools_info_error_message, 'error')
+                $scope.toast($scope.tools_info_error_message, 'error');
             }
         );
     };
@@ -1260,6 +1276,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
     /*
     * Navbar --> tools/data --> Appropriated Input (search) --> List Item --> clicked --> Fork --> pressed
+    * tool fork tool
     */
     $scope.tool_info_fork_pressed = function() {
 
@@ -1292,6 +1309,11 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         // Set the operating system. Practically we are setting tool_os_choices = tool_os_choices ... But that was the only way I could do it
         // $scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === $scope.tool_os_choices.value});
+
+        //console.log('tool_info_fork_pressed: tool_os_choices:');
+        //console.log($scope.tool_os_choices);
+
+
         $timeout(function(){$('#tool_os_choices_select').formSelect();}, 100);
 
         // The new tool is unvalidated
@@ -3682,7 +3704,6 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     */
     $scope.gen_qa_comment_save_button_pressed = function(qa_type) {
         // $scope.gen_qa_add_comment = function(comment_pk, object_pk, comment, qa_type)  
-        // ### here
 
         $scope.gen_qa_add_comment(
             null, 
