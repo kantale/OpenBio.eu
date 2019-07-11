@@ -787,7 +787,12 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
                 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
                 // find and save the selected os when the user search specific tool
-                $scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === data['tool_os_choices'][0]})  ; // Take just the first. The model allows for multiple choices
+                //$scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === data['tool_os_choices'][0]})  ; // Take just the first. The model allows for multiple choices
+                $scope.tool_os_choices = data['tool_os_choices']; // ### Here
+                console.log('$scope.tool_os_choices in tools_search_3:');
+                console.log($scope.tool_os_choices);
+
+
                 //console.log('$scope.tool_os_choices:');
                 //console.log($scope.tool_os_choices);
                 $('#tool_os_choices_select').formSelect();
@@ -977,7 +982,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.tool_info_validation_created_at = null;
 
         // Default operating system is ubuntu:16.04 . FIXME!
-        $scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === 'ubuntu:16.04'})  ;;
+        // $scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === 'ubuntu:16.04'});
+        $scope.tool_os_choices = [];
         console.log('$scope.os_choices:');
         console.log($scope.os_choices);
         console.log('$scope.tool_os_choices:');
@@ -1285,7 +1291,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.tools_var_jstree_id_show = true; // Show variable/dependency tree
 
         // Set the operating system. Practically we are setting tool_os_choices = tool_os_choices ... But that was the only way I could do it
-        $scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === $scope.tool_os_choices.value});
+        // $scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === $scope.tool_os_choices.value});
         $timeout(function(){$('#tool_os_choices_select').formSelect();}, 100);
 
         // The new tool is unvalidated
