@@ -579,17 +579,18 @@ def tool_build_dependencies_jstree(tool_dependencies, add_variables=False):
     for tool_dependency in tool_dependencies:
         tool_dependencies_jstree.append({
 
-#            'data': {
+            'data': {
 #                    'name': tool_dependency['dependency'].name,
 #                    'version': tool_dependency['dependency'].version,
 #                    'edit': tool_dependency['dependency'].edit,
-#                    'type': 'tool',
-#                },
+                    'type': 'tool',
+             },
             'text': tool_text_jstree(tool_dependency['dependency']),
             'id': tool_id_jstree(tool_dependency['dependency'], g['DEPENDENCY_TOOL_TREE_ID']),
             'parent': tool_id_jstree(tool_dependency['dependant'], g['DEPENDENCY_TOOL_TREE_ID']) if tool_dependency['dependant'] else '#',
-            'type': 'tool', ### TODO: FIX REDUNDANCY WITH ['data']['type'] . FIXED.
-
+            'type': 'tool', ### This is redundant with ['data']['type'], but we need it because 
+                            ### The node[0].data.type is checked in $scope.tools_var_jstree_model. 
+                            ### See also issue #93
 
             'name': tool_dependency['dependency'].name,
             'version': tool_dependency['dependency'].version,
@@ -1162,7 +1163,7 @@ def tools_search_3(request, **kwargs):
         'variables_js_tree': tool_variables_jstree,
 
         'variables': tool_variables,
-        'tool_os_choices': [x.os_choices for x in tool.os_choices.all()],
+        'tool_os_choices': OS_types.get_angular_model([x.os_choices for x in tool.os_choices.all()]),
         'installation_commands': tool.installation_commands,
         'validation_commands': tool.validation_commands,
         
@@ -1252,9 +1253,12 @@ def tools_add(request, **kwargs):
         return fail('Invalid version')
 
     #os_type Update 
-    tool_os_choices = kwargs.get('tool_os_choices','')
+    tool_os_choices = kwargs.get('tool_os_choices',[])
     if not tool_os_choices:
-        return fail('Operating system cannot be empty')
+        return fail('Please select at least one operating system')
+
+    print ('Operating Systems:')
+    print (tool_os_choices)
 
     #Get the maximum version
     tool_all = Tool.objects.filter(name__iexact=tools_search_name, version__iexact=tools_search_version) # https://docs.djangoproject.com/en/dev/ref/models/querysets/#std:fieldlookup-iexact
@@ -1332,8 +1336,9 @@ def tools_add(request, **kwargs):
         new_tool.save()
 
     #Add os type
-    OS_types_obj, created = OS_types.objects.get_or_create(os_choices=tool_os_choices['value'])
-    new_tool.os_choices.add(OS_types_obj)
+    for tool_os_choice in tool_os_choices:
+        OS_types_obj, created = OS_types.objects.get_or_create(os_choices=tool_os_choice['value'])
+        new_tool.os_choices.add(OS_types_obj)
     new_tool.save()
 
     #Add keywords

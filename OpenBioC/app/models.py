@@ -79,17 +79,23 @@ class OS_types(models.Model):
     }
 
     @staticmethod
-    def get_angular_model():
+    def get_angular_model(values=None):
         '''
         Return a list of..
         {group:'Ubuntu',name:'Ubuntu:14.04',value:'ubuntu:14.04'},
+
+        if values is not None, then filter on values
+
+        Explanation of the "(not values) | (os_name in values)" part:
+        if values is None then the (not values) is True so the second part will not be evaluated
+        if values is a non-empty-list then the (not values) is False so the second part will be evaluated
         '''
 
         return [{
             'group': [group_name for group_name, group_values in OS_types.groups.items() if os_value in group_values][0],
             'name': os_name,
-            'value': os_value
-        } for os_value, os_name in OS_types.OS_CHOICES]
+            'value': os_value,
+        } for os_value, os_name in OS_types.OS_CHOICES if (not values) | (os_value in values)]
 
     os_choices = models.CharField(choices=OS_CHOICES, max_length=100)
 
