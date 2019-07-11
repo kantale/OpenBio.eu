@@ -57,6 +57,8 @@ class OS_types(models.Model):
     Hold OS types
     Another option: https://pypi.org/project/django-multiselectfield/
     '''
+
+    posix = 'posix'
     ubuntu_14_04 = 'ubuntu:14.04'
     ubuntu_16_04 = 'ubuntu:16.04'
     debian_jessie = 'debian:8'
@@ -65,6 +67,7 @@ class OS_types(models.Model):
 
 
     OS_CHOICES = (
+        (posix, 'POSIX system'),
         (ubuntu_14_04,'Ubuntu:14.04'),
         (ubuntu_16_04,'Ubuntu:16.04'), 
         (debian_jessie,'Debian 8 (Jessie)'),
@@ -73,6 +76,7 @@ class OS_types(models.Model):
      )
 
     groups = {
+        'Generic': [posix],
         'Ubuntu': [ubuntu_14_04, ubuntu_16_04],
         'Debian': [debian_jessie, debian_stretch, denian_buster],
 
