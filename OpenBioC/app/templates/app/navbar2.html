@@ -4,18 +4,29 @@
 <div class="navbar" id="navbar">
     <nav>
         <div class="nav-wrapper blue-grey lighten-4 ">
-            <div>
-            <a href="#!" class="brand-logo left">
-                <img class="responsive-img" style="max-height: 60px;" src="/static/app/images/konstantina/epanek_logo_transparent_x60.png">
-            </a>
-            <span class="brand-logo center black-text" style="top: -8px;">
-                OpenBio.eu <span style="font-size:24px;">(beta)</span>
-            </span>
-            <span class="brand-logo center black-text" style="font-size: 14px; top: 20px;">
-                Version: {{version}} 
-                <a href="https://github.com/kantale/OpenBioC" target="_blank">Source</a>
-            </span>
-        </div>
+            <!-- on large and up screens -->
+            <div class="hide-on-med-and-down">
+                <a href="#!" class="brand-logo left">
+                    <img style="height: 60px;" src="/static/app/images/konstantina/epanek_logo_transparent_x60.png">
+                </a>
+                <span class="brand-logo center black-text" style="top: -8px;">
+                    OpenBio.eu <span style="font-size:24px;">(beta)</span>
+                </span>
+                <span class="brand-logo center black-text" style="font-size: 14px; top: 20px;">
+                    Version: {{version}} 
+                    <a href="https://github.com/kantale/OpenBioC" target="_blank">Source</a>
+                </span>
+            </div>
+            <!-- on medium and down screens -->
+            <div class="hide-on-large-only">
+                <span class="brand-logo left black-text" style="top: -8px;">
+                    OpenBio.eu <span style="font-size:24px;">(beta)</span>
+                </span>
+                <span class="brand-logo left black-text" style="font-size: 14px; top: 20px;">
+                    Version: {{version}} 
+                    <a href="https://github.com/kantale/OpenBioC" target="_blank">Source</a>
+                </span>
+            </div>
             <a id="navMenuBtn" href="#" data-target="mobile-nav" class="sidenav-trigger right black-text"><i class="material-icons">menu</i></a>
             <!-- Navbar Content -->
             <ul id="main-nav" class="right hide-on-med-and-down">
@@ -47,6 +58,8 @@
                 <li ng-show="false"><a href="#!">Notifications</a></li>
                 <li ng-show="false"><a href="#!">Settings</a></li>
                 <li><a href="logout/">Logout</a></li>
+                <li class="divider"></li>
+                <li><img style="height: 63px;" src="/static/app/images/konstantina/epanek_logo_transparent_x60.png"></li>
             </ul>
         </div>
     </nav>
