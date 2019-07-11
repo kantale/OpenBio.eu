@@ -3,7 +3,7 @@ from django.urls import path, re_path
 from . import views
 
 urlpatterns = [
-	#path('', views.index),
+	path('platform/', views.index),
 	path('', views.index_static),
 	path('index_gr/', views.index_static_gr),
 	path('register/', views.register), # Register a new user 
