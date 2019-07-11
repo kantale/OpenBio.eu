@@ -107,13 +107,17 @@ http://www.tooplate.com/view/2098-health
   }
 
   .section-btn {
+	width: 200px; 
+	height: 70px;  
     background: #a5c422;
-    border: 0;
+    border: 10;
     border-radius: 3px;
     color: #ffffff;
     font-size: inherit;
-    font-weight: 500;
-    padding: 14px 20px;
+    font-weight: 900;
+	text-align: center;
+	line-height: 60px;
+    /*padding: 14px 20px;*/
     transition: transform 0.1s ease-in;
     transform: translateX(0);
   }
