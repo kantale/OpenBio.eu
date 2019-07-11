@@ -745,22 +745,6 @@ def users_search_2(
 
 ### END OF USERS 
 
-def index_static(request):
-    '''
-    '''
-
-    context = {}
-
-    return render(request, 'app/index_static_en.html', context)
-
-def index_static_gr(request):
-    '''
-    '''
-
-    context = {}
-
-    return render(request, 'app/index_static_gr.html', context)
-
 def index(request):
     '''
     View url: ''
