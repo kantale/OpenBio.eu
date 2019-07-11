@@ -1163,7 +1163,7 @@ def tools_search_3(request, **kwargs):
         'variables_js_tree': tool_variables_jstree,
 
         'variables': tool_variables,
-        'tool_os_choices': [x.os_choices for x in tool.os_choices.all()],
+        'tool_os_choices': OS_types.get_angular_model([x.os_choices for x in tool.os_choices.all()]),
         'installation_commands': tool.installation_commands,
         'validation_commands': tool.validation_commands,
         
@@ -1253,9 +1253,12 @@ def tools_add(request, **kwargs):
         return fail('Invalid version')
 
     #os_type Update 
-    tool_os_choices = kwargs.get('tool_os_choices','')
+    tool_os_choices = kwargs.get('tool_os_choices',[])
     if not tool_os_choices:
-        return fail('Operating system cannot be empty')
+        return fail('Please select at least one operating system')
+
+    print ('Operating Systems:')
+    print (tool_os_choices)
 
     #Get the maximum version
     tool_all = Tool.objects.filter(name__iexact=tools_search_name, version__iexact=tools_search_version) # https://docs.djangoproject.com/en/dev/ref/models/querysets/#std:fieldlookup-iexact
@@ -1333,8 +1336,9 @@ def tools_add(request, **kwargs):
         new_tool.save()
 
     #Add os type
-    OS_types_obj, created = OS_types.objects.get_or_create(os_choices=tool_os_choices['value'])
-    new_tool.os_choices.add(OS_types_obj)
+    for tool_os_choice in tool_os_choices:
+        OS_types_obj, created = OS_types.objects.get_or_create(os_choices=tool_os_choice['value'])
+        new_tool.os_choices.add(OS_types_obj)
     new_tool.save()
 
     #Add keywords

@@ -195,7 +195,8 @@
                                 tree="tools_var_jstree" ng-show="tools_var_jstree_id_show"></div>
                         </div>
                         <div class="row left-align" ng-show="!tools_info_editable">
-                            Operating System: <span ng-bind="tool_os_choices.name"></span>
+                            Operating Systems: <!-- <span ng-bind="tool_os_choices.name"></span>  ### here --> 
+                            <div ng-repeat="tool_os_choice in tool_os_choices"><span ng-bind="tool_os_choice.name"></span></div>
                         </div>
                         <!-- adding values to use it for dockerfile-->
                         <!--<div class="row" ng-show="tools_info_editable">
@@ -219,10 +220,10 @@
                         <div class="row" ng-show="tools_info_editable">
                             <!-- adding values to use it for dockerfile-->
                             <div class="col s12 left-align">
-                                <span>Select Operating System</span>
+                                <span>Select Operating Systems</span>
                                 <!-- TODO add multiple -->
                                 <select id="tool_os_choices_select" ng-model="tool_os_choices"
-                                    ng-options="os.name group by os.group for os in os_choices"></select>
+                                    ng-options="os.name group by os.group for os in os_choices" multiple></select>
                             </div>
                         </div>
 
