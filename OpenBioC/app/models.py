@@ -95,7 +95,7 @@ class OS_types(models.Model):
             'group': [group_name for group_name, group_values in OS_types.groups.items() if os_value in group_values][0],
             'name': os_name,
             'value': os_value,
-        } for os_value, os_name in OS_types.OS_CHOICES if (not values) | (os_value in values)]
+        } for os_value, os_name in OS_types.OS_CHOICES if (not values) or (os_value in values)]
 
     os_choices = models.CharField(choices=OS_CHOICES, max_length=100)
 
