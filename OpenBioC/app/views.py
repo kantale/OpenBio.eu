@@ -196,8 +196,8 @@ def replace_interlinks(text):
     for interlink_key, interlink_value in interlink_options.items():
         calls = set(re.findall(interlink_value['findall'], ' ' + text)) # We add a space (' ') so that we catch interlinks at the beginning of string
         for call in calls:
-            print ('call:', call)
-            print ('regexp:', interlink_value['arguments'])
+            #print ('call:', call)
+            #print ('regexp:', interlink_value['arguments'])
             arguments = re.search(interlink_value['arguments'], call).groupdict()
             if interlink_value['exists'](arguments):
                 ret = ret.replace(call, javascript_call(call, arguments))
@@ -274,7 +274,7 @@ def has_data(f):
             elif request.method == 'GET':
                     for k in request.GET:
                         kwargs[k] = request.GET[k]
-                        print ("GET: {} == {}".format(k, kwargs[k]))
+                        #print ("GET: {} == {}".format(k, kwargs[k]))
 
             return f(*args, **kwargs)
 
@@ -634,7 +634,7 @@ def get_instance_settings():
 
     if not os.path.exists('id.txt'):
         if not g['instance_setting_not_found_printed']:
-            print ('Could not find id.txt setting default')
+            logger.warning('Could not find id.txt setting default')
             g['instance_setting_not_found_printed'] = True
 
         return g['instance_settings']['default']
@@ -1139,9 +1139,9 @@ def tools_search_3(request, **kwargs):
         variables_js_tree = tool_build_dependencies_jstree(tool_get_dependencies_internal(dependency, include_as_root=True), add_variables=True)
         tool_variables_jstree.extend(variables_js_tree)
 
-    print ('LOGGG DEPENDENIES + VARIABLES')
+    #print ('LOGGG DEPENDENIES + VARIABLES')
     #print (tool_variables_jstree)
-    print (simplejson.dumps(tool_variables_jstree, indent=4))
+    #print (simplejson.dumps(tool_variables_jstree, indent=4))
 
     #Get the variables of this tool
     tool_variables = []
@@ -1257,8 +1257,8 @@ def tools_add(request, **kwargs):
     if not tool_os_choices:
         return fail('Please select at least one operating system')
 
-    print ('Operating Systems:')
-    print (tool_os_choices)
+    #print ('Operating Systems:')
+    #print (tool_os_choices)
 
     #Get the maximum version
     tool_all = Tool.objects.filter(name__iexact=tools_search_name, version__iexact=tools_search_version) # https://docs.djangoproject.com/en/dev/ref/models/querysets/#std:fieldlookup-iexact
@@ -1742,12 +1742,12 @@ def report(request, **kwargs):
     called from executor
     '''
 
-    print (kwargs)
+    #print (kwargs)
 
     token = kwargs.get('token', None)
     if not token:
         return fail('Could not find token field')
-    print ('token: {}'.format(token))
+    #print ('token: {}'.format(token))
 
     status_received = kwargs.get('status', None)
     if not status_received:
@@ -1780,8 +1780,8 @@ def report(request, **kwargs):
     report_obj.tokens.add(new_report_token)
     report_obj.save()
 
-    print ('OLD STATUS:', old_report_token.status)
-    print ('NEW STATUS:', new_report_token.status)
+    #print ('OLD STATUS:', old_report_token.status)
+    #print ('NEW STATUS:', new_report_token.status)
 
     return success({'token': str(new_report_token.token)})
 
@@ -1810,7 +1810,7 @@ def tool_validation_status(request, **kwargs):
         'errcode':tool.last_validation.errcode if tool.last_validation else None,
     }
 
-    print (ret)
+    #print (ret)
 
     return success(ret)
 
@@ -1831,7 +1831,7 @@ def tool_info_validation_queued(request, **kwargs):
     tv = ToolValidations(tool=tool, task_id=this_id, validation_status='Queued')
     tv.save()
 
-    print (f'Saved ToolValidation Queued with task_id: {this_id}')
+    #print (f'Saved ToolValidation Queued with task_id: {this_id}')
 
     tool.last_validation = tv
     tool.save()
@@ -1845,10 +1845,10 @@ def callback(request, **kwargs):
     '''
     Funtion called by conntroller.py
     '''
-    print("--------------- REQUEST FROM CONTROLLER ------------------")
+    #print("--------------- REQUEST FROM CONTROLLER ------------------")
     # print(kwargs)
     remote_address = request.META['REMOTE_ADDR']
-    print (f'Callback from: {remote_address}')
+    #print (f'Callback from: {remote_address}')
 
     if not remote_address in ['139.91.190.79']:
         return fail(f'Received callback from unknown remote address: {remote_address}')
@@ -1884,7 +1884,7 @@ def callback(request, **kwargs):
     # If status is Queued or Running set this three None
     tv = ToolValidations(tool=tool, task_id=this_id, validation_status=status, stdout= stdout, stderr= stderr, errcode= errcode)
     tv.save()
-    print (f'CALLBACK: Tool: {tool.name}/{tool.version}/{tool.edit}  id: {this_id} status: {status}')
+    #print (f'CALLBACK: Tool: {tool.name}/{tool.version}/{tool.edit}  id: {this_id} status: {status}')
     # Assign tv to tool
     tool.last_validation = tv
     tool.save()

@@ -216,12 +216,12 @@ window.onload = function () {
             // Refresh button
             if ((event.target.id == 'installationRefreshBtn') || (event.target.parentNode.id == 'installationRefreshBtn')) {
                 event.stopPropagation();
-                console.log('refresh button clicked');
+                //console.log('refresh button clicked');
             }
             // STDOUT button
             else if((event.target.id == 'installationSTDOUT') || (event.target.parentNode.id == 'installationSTDOUT')){
                 event.stopPropagation();
-                console.log('stdout button clicked');
+                //console.log('stdout button clicked');
             }
             // Add and Unsaved button (left panel)
             else if (event.target.classList.contains('plusBtn') || event.target.parentNode.classList.contains('plusBtn') || event.target.classList.contains('unsavedBtn')) {
@@ -233,7 +233,7 @@ window.onload = function () {
                 else {
                     id = event.target.id;
                 }
-                console.log('add button clicked with id: ' + id);
+                //console.log('add button clicked with id: ' + id);
             }
         });
 
@@ -890,7 +890,7 @@ window.onload = function () {
         }
         else if (this_id_array[3] == "3") { // We are moving a variable from the dependency + variable tree
             // This id array = [ name, value, description, "3" ]
-            console.log(this_id_array);
+            //console.log(this_id_array);
             var var_to_show = this_id_array[4] + '__' + this_id_array[5] + '__' + this_id_array[6] + '__' + this_id_array[0];
 
             if (target.closest('#tool_installation_editor').length) { // Adding to installation bash editor
@@ -1099,14 +1099,14 @@ window.onload = function () {
         window.OBCUI.edit_bash = function (bash, apply_to_element_fun, find_elements_fun, replace_fun) {
             var new_bash = bash;
             find_elements_fun(bash).forEach(function (element) {
-                console.log('GAMATO: element');
-                console.log(element);
-                console.log('GAMATO: To be replaced with:');
-                console.log(apply_to_element_fun(element));
+                //console.log('element');
+                //console.log(element);
+                //console.log('To be replaced with:');
+                //console.log(apply_to_element_fun(element));
 
                 new_bash = replace_fun(new_bash, element, apply_to_element_fun(element));
-                console.log('GAMATO: Whole bash replaced:');
-                console.log(new_bash);
+                //console.log('Whole bash replaced:');
+                //console.log(new_bash);
             });
             return new_bash;
         };
@@ -1120,8 +1120,8 @@ window.onload = function () {
             //Remove bash comments
             var no_comments = window.OBCUI.remove_bash_comments(t);
 
-            console.log('NO COMMENTS BASH SCRIPT:');
-            console.log('-->' + no_comments + '<--');
+            //console.log('NO COMMENTS BASH SCRIPT:');
+            //console.log('-->' + no_comments + '<--');
 
             var splitted = no_comments.split('\n');
 
@@ -1135,18 +1135,18 @@ window.onload = function () {
                 }
 
                 var results = line.match(window.OBCUI.call_re);
-                console.log("PROCESSING line: " + line);
-                console.log("FOUND THE FOLLOWING CALLS:");
-                console.log(results);
+                //console.log("PROCESSING line: " + line);
+                //console.log("FOUND THE FOLLOWING CALLS:");
+                //console.log(results);
 
                 if (results) {
                     results.forEach(function (result) {
 
-                        console.log('PROCESSING THE FOLLOOWING CALL: -->' + result + '<--');
+                        //console.log('PROCESSING THE FOLLOOWING CALL: -->' + result + '<--');
 
                         var step_id = result.match(window.OBCUI.call_re_id)[1];
-                        console.log("matched step id : ");
-                        console.log(step_id);
+                        //console.log("matched step id : ");
+                        //console.log(step_id);
                         //Is there a node with type step and id step_id ?
                         if (cy.$("node[type='step'][id='" + step_id + "']").length) {
                             //Add it only if it is not already there
@@ -1227,7 +1227,7 @@ window.onload = function () {
                         //cy.$("node[type='tool'][id='" + tool_id + "']").length > 0  
                         //Unfortunately tool_id might be different than the id of the tool in cytoscape
                         //tool_id is extracted from bash script and we replace dots with _ whereas dots are allowed as tool ids in cytoscape
-                        console.log('tool_id:', tool_id);
+                        //console.log('tool_id:', tool_id);
 
                         //Create a new regular expression from the bash tool id, that will match all possible similar tool ids
                         var tool_id_replace_meta = new RegExp(/([a-zA-Z0-9]+)_([a-zA-Z0-9]+?)/, 'g');
@@ -1242,9 +1242,9 @@ window.onload = function () {
                         //Get the ids of all tools.
                         cy.$('node[type="tool"]').forEach(function(cy_tool_node){
                             var cy_node_id = cy_tool_node.data('id');
-                            console.log('cy_node_id:', cy_node_id);
+                            //console.log('cy_node_id:', cy_node_id);
                             if (tool_id_re.test(cy_node_id)) {
-                                console.log('MATCHED');
+                                //console.log('MATCHED');
                                 //This cytoscape node id has matched the reg exp from bash
 
                                 //Does this tool has a variable with name: variable_id ?
@@ -1259,7 +1259,7 @@ window.onload = function () {
                                 });
                             }
                             else {
-                                console.log('NOT MATCHED');
+                                //console.log('NOT MATCHED');
                             }
                         });
 
@@ -1782,7 +1782,7 @@ window.onload = function () {
 			if selected node has all it;s connected edges open, then close them recursively
 			*/		
 			if(openTarget(this_node)){
-				console.log("opened");
+				//console.log("opened");
 							
 			}else{
 				this_node.successors().targets().forEach(function (element) {
@@ -1906,7 +1906,7 @@ window.onload = function () {
 									 {
 										content: 'Cancel',
 										select: function (ele) {
-											console.log("CANCEL OPTION");
+											//console.log("CANCEL OPTION");
 											cy.cxtmenu().destroy();
 											//input_menu.destroy();
 										}
@@ -1954,7 +1954,7 @@ window.onload = function () {
 										 {
 											content: 'Cancel',
 											select: function (ele) {
-												console.log("CANCEL 2 OPTION");
+												//console.log("CANCEL 2 OPTION");
 												cy.cxtmenu().destroy();
 												//menu.destroy();
 											}
@@ -2211,8 +2211,8 @@ window.onload = function () {
         * status_fields : Thw results from status parsing 
         */
         window.nodeAnimation_public=function(node_anim_params) {
-            console.log('NODE ANIM PARAMS:');
-            console.log(node_anim_params);
+            //console.log('NODE ANIM PARAMS:');
+            //console.log(node_anim_params);
 
             if (node_anim_params.status_code == window.OBCUI.WORKFLOW_STARTED_CODE) {
                 var workflow_id = node_anim_params.status_fields.name.replace(/\//g, '__');
@@ -2314,7 +2314,7 @@ window.onload = function () {
                 actions: []
             };
 			
-			console.log('nodeAnimation type:' +  type);
+			//console.log('nodeAnimation type:' +  type);
 			
 			/* Tools have 4 states :  pending (default), installing, installed, failed. */
 			if(type === 'tool'){
@@ -2457,9 +2457,9 @@ window.onload = function () {
 
             if (!edge_anim.length) {
                 if (source_anim_id != 'main') {
-                    console.log('WARNING: COULD NOT FIND EDGE!');
-                    console.log('SOURCE:', source_anim_id);
-                    console.log('TARGET:', target_anim_id);
+                    //console.log('WARNING: COULD NOT FIND EDGE!');
+                    //console.log('SOURCE:', source_anim_id);
+                    //console.log('TARGET:', target_anim_id);
                 }
                 return;
             }
@@ -2474,7 +2474,7 @@ window.onload = function () {
 				edge_anim_label='running';
 			}
             else {
-                console.log('WARNING: Unknown state on edgeAnimation:', state);
+                //console.log('WARNING: Unknown state on edgeAnimation:', state);
                 return;
             }
 				
@@ -2620,8 +2620,8 @@ window.onload = function () {
 
             });
 
-            console.log("*************old_root_belong**************");
-            console.log(old_root_belong);
+            //console.log("*************old_root_belong**************");
+            //console.log(old_root_belong);
 
 
             // Change belongto for the nodes that have root workflow as source
@@ -2680,8 +2680,8 @@ window.onload = function () {
                     }
 
 
-                    console.log('OLD BASH:');
-                    console.log(node.data.bash);
+                    //console.log('OLD BASH:');
+                    //console.log(node.data.bash);
 
                     //Change step ids
                     node.data.bash = window.OBCUI.edit_bash(node.data.bash, change_SIO_id, window.OBCUI.get_steps_from_bash_script, window.OBCUI.call_replace);
@@ -2694,8 +2694,8 @@ window.onload = function () {
                         },
                         window.OBCUI.io_replace);
 
-                    console.log('NEW BASH:')
-                    console.log(node.data.bash);
+                    //console.log('NEW BASH:')
+                    //console.log(node.data.bash);
 
                     //window.OBCUI.edit_steps_from_bash_scripts(node.data.bash, old_root_id, new_root);
 

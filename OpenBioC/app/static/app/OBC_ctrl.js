@@ -167,8 +167,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     $scope.ajax = function(url, data, success_view, fail_view, fail_ajax) {
         // URL should always end with '/'
 
-        console.log('Before Ajax, data:');
-        console.log(data);
+        //console.log('Before Ajax, data:');
+        //console.log(data);
 
         data.csrftoken = CSRF_TOKEN;
 
@@ -186,18 +186,18 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             // $scope.myWelcome = response.data;
             // alert(JSON.stringify(response));
             if (response['data']['success']) {
-                console.log('AJAX SUCCESS:');
-                console.log(response['data']['success']);
+                //console.log('AJAX SUCCESS:');
+                //console.log(response['data']['success']);
                 success_view(response['data']);
             }
             else {
-                console.log('AJAX ERROR:');
+                //console.log('AJAX ERROR:');
                 fail_view(response['data']);
             }
             
         }, function myError(response) {
-            console.log('AJAX SYSTEM ERROR:');
-            console.log(response.statusText);
+            //console.log('AJAX SYSTEM ERROR:');
+            //console.log(response.statusText);
             if (response.statusText) {
                 fail_ajax(response.statusText);
             }
@@ -1513,7 +1513,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 //This node does not have children
                 //Delete this node
                 if (this_index == -1) {
-                    console.log('This should never happen')
+                    throw "ERROR: 3988"; // This should never happen
                 }
                 //Delete the node
                 tree.splice(this_index, 1);
@@ -1581,10 +1581,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                     }
                 }
                 else if (what_to_do == 2) { //DRAG FROM TOOLS SEARCH TREE TO CYTOSCAPE WORKFLOW DIV
-                    console.log('UPDATE THE GRAPH WITH: dependencies_jstree');
-                    console.log(data['dependencies_jstree']);
-                    console.log('variables_jstree:');
-                    console.log(data['variables_jstree']);
+                    //console.log('UPDATE THE GRAPH WITH: dependencies_jstree');
+                    //console.log(data['dependencies_jstree']);
+                    //console.log('variables_jstree:');
+                    //console.log(data['variables_jstree']);
 
                     if (!$scope.workflows_info_editable) {
                         $scope.toast('You cannot edit this workflow. You can fork it, or create a new one.', 'error');
@@ -1649,7 +1649,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 },
                 check_callback : function(operation, node, node_parent, node_position, more) { //https://stackoverflow.com/a/23486435/5626738
 
-                    console.log('First Tree Operation:', operation);
+                    //console.log('First Tree Operation:', operation);
 
                     if (operation === "move_node") {
                         return false;
@@ -1780,8 +1780,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * A node in the reports search js tree is clicked .
     */
     $scope.reports_search_jstree_select_node = function(e, data) {
-        console.log('Reports node clicked');
-        console.log(data);
+        //console.log('Reports node clicked');
+        //console.log(data);
 
         //The user might have clicked on a workflow node.
         if (data.node.data.type == 'report') {
@@ -1795,8 +1795,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * A node on the references search js tree is clicked.
     */
     $scope.references_search_jstree_select_node = function(e, data) {
-        console.log('References node clicked');
-        console.log(data);
+        //console.log('References node clicked');
+        //console.log(data);
 
         if ($scope.references_info_editable) {
             $scope.toast('There are unsaved info on References. Save or press Cancel', 'error');
@@ -1810,7 +1810,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * A node on the users search js tree is clicked
     */
     $scope.users_search_jstree_select_node = function(e, data) {
-        console.log('Users node clicked');
+        //console.log('Users node clicked');
 
         //Fetch user data
         $scope.ajax(
@@ -1935,7 +1935,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * A node in the Q&A search js tree is clicked
     */ 
     $scope.qa_search_jstree_select_node = function(e, data) {
-        console.log('Q&A node clicked');
+        //console.log('Q&A node clicked');
 
         $scope.hide_all_right_accordions('qas'); // Close all right accordions except QAs
 
@@ -1944,7 +1944,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         //Fetch a QA data
         $scope.qa_comment_id = data.node.data.id;
-        console.log('QA node clicked. qa_id:', $scope.qa_comment_id);
+        //console.log('QA node clicked. qa_id:', $scope.qa_comment_id);
         $scope.qa_search_3({id: $scope.qa_comment_id});
     };
 
@@ -2020,8 +2020,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.report_created_at = data['report_created_at'];
                 $scope.report_tokens = data['report_tokens'];
 
-				console.log('$scope.report_tokens');
-				console.log($scope.report_tokens);
+				//console.log('$scope.report_tokens');
+				//console.log($scope.report_tokens);
 				
                 /* Create the report workflow*/
                 window.createRepTree(data['workflow'].elements);
@@ -2123,8 +2123,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * Updates the cyrep graph 
     */
     $scope.nodeAnimation_public = function(node_anim_params) {
-        console.log('node_anim_params:');
-        console.log(node_anim_params);
+        //console.log('node_anim_params:');
+        //console.log(node_anim_params);
         window.nodeAnimation_public(node_anim_params); // Also performs edge animation
     };
 	
@@ -2204,7 +2204,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 },
                 //check_callback: true,
                 check_callback : function(operation, node, node_parent, node_position, more) {
-                    console.log('Second Tree Operation:', operation);
+                    //console.log('Second Tree Operation:', operation);
 
                     if (operation == 'copy_node') {
                         //$scope.tools_dep_jstree_model.push({'id': 'eee', 'parent': '#', 'text': 'ddddd'});
@@ -2280,7 +2280,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 },
                 //check_callback: true,
                 check_callback : function(operation, node, node_parent, node_position, more) {
-                    console.log('Third Tree Operation:', operation);
+                    //console.log('Third Tree Operation:', operation);
 
                     if (operation == 'copy_node') {
                         //$scope.tools_dep_jstree_model.push({'id': 'eee', 'parent': '#', 'text': 'ddddd'});
@@ -2342,7 +2342,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 },
                 check_callback : function(operation, node, node_parent, node_position, more) { //https://stackoverflow.com/a/23486435/5626738
 
-                    console.log('First Tree Operation:', operation);
+                    //console.log('First Tree Operation:', operation);
 
                     if (operation === "move_node") {
                         return false;
@@ -2396,7 +2396,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 },
                 check_callback : function(operation, node, node_parent, node_position, more) { //https://stackoverflow.com/a/23486435/5626738
 
-                    console.log('First Tree Operation:', operation);
+                    //console.log('First Tree Operation:', operation);
 
                     if (operation === "move_node") {
                         return false;
@@ -2444,7 +2444,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 },
                 check_callback : function(operation, node, node_parent, node_position, more) { //https://stackoverflow.com/a/23486435/5626738
 
-                    console.log('First Tree Operation:', operation);
+                    //console.log('First Tree Operation:', operation);
 
                     if (operation === "move_node") {
                         return false;
@@ -2492,7 +2492,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 },
                 check_callback : function(operation, node, node_parent, node_position, more) { //https://stackoverflow.com/a/23486435/5626738
 
-                    console.log('First Tree Operation:', operation);
+                    //console.log('First Tree Operation:', operation);
 
                     if (operation === "move_node") {
                         return false;
@@ -2540,7 +2540,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 },
                 check_callback : function(operation, node, node_parent, node_position, more) { //https://stackoverflow.com/a/23486435/5626738
 
-                    console.log('First Tree Operation:', operation);
+                    //console.log('First Tree Operation:', operation);
 
                     if (operation === "move_node") {
                         return false;
@@ -3257,8 +3257,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * workflow = {'name': ... , 'edit': '...'}
     */
     $scope.workflow_add_workflow = function(workflow) {
-        console.log('WORKFLOW TO BE ADDED:');
-        console.log(workflow);
+        //console.log('WORKFLOW TO BE ADDED:');
+        //console.log(workflow);
 
         //Fetch info of this workflow
         $scope.ajax(
@@ -3347,8 +3347,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 }
             },
             function(data) {
-                console.log('data:');
-                console.log(data);
+                //console.log('data:');
+                //console.log(data);
 
                 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs
                 $("#hiddena").attr({
@@ -3600,8 +3600,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * Q&A --> Show Thread --> reply to a comment --> add text --> Save button --> Clicked 
     */
     $scope.qa_reply_save_button_pressed = function(id, comment) {
-        console.log('Reply to id: ', id);
-        console.log('Comment:', comment);
+        //console.log('Reply to id: ', id);
+        //console.log('Comment:', comment);
 
         $scope.qa_add_comment(id, comment);
         $scope.qa_current_reply = '';
@@ -3690,9 +3690,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * Q&A --> Show Thread --> Add Comment -(!NOT REPLY!) -> Add text --> Save button --> Clicked 
     */
     $scope.qa_comment_save_button_pressed = function() {
-        console.log('Save comment');
-        console.log('QA_COMMENT_ID: ', $scope.qa_comment_id);
-        console.log('Current Comment:', $scope.qa_current_comment);
+        //console.log('Save comment');
+        //console.log('QA_COMMENT_ID: ', $scope.qa_comment_id);
+        //console.log('Current Comment:', $scope.qa_current_comment);
 
         $scope.qa_add_comment($scope.qa_comment_id, $scope.qa_current_comment);
 
@@ -3745,10 +3745,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * Same as qa_add_comment_button_pressed but generic
     */
     $scope.gen_qa_add_comment_button_pressed = function(qa_type) {
-        console.log('$scope.qa_gen:');
-        console.log($scope.qa_gen)
+        //console.log('$scope.qa_gen:');
+        //console.log($scope.qa_gen)
 
-        console.log('qa_type:', qa_type);
+        //console.log('qa_type:', qa_type);
 
         $scope.qa_gen[qa_type].qa_show_new_comment = true;
         $scope.qa_gen[qa_type].qa_current_comment = '';
