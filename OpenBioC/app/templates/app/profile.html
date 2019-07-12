@@ -26,6 +26,10 @@
                     <section id="profileCard" class="scrollspy section_projet">
                         <div class="card">
                             <div class="card-content">
+                                <div class="row right">
+                                    <a class="waves-effect waves-teal btn-flat" ng-click="profile_cancel_clicked()">Cancel</a>
+                                    <a class="waves-effect waves-teal btn-flat" ng-click="profile_update_clicked()">Update</a>
+                                </div>
                                 <blockquote><span class="card-title">Profile</span></blockquote>
                                 <div class="row">
                                     <form class="col s12">
@@ -94,9 +98,6 @@
                                         </div>
                                     </form>
                                 </div>
-                            </div>
-                            <div class="card-action right-align">
-                                <button class="btn waves-effect waves-light" name="action" ng-click="profile_update_clicked()">Update</button>
                             </div>
                         </div>
                     </section>

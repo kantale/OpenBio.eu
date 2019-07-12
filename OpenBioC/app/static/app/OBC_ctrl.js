@@ -223,9 +223,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     };
 
     /*
-    * Navbar --> Home --> clicked 
+    * Profile --> Cancel --> clicked 
     */
-    $scope.navbar_home_clicked = function() {
+    $scope.profile_cancel_clicked = function() {
         $scope.profile_container_show = false;
         $scope.main_container_show = true;
     };
@@ -279,6 +279,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             },
             function(data) {
                 $scope.toast('Profile data succesfully changed', 'success');
+                $scope.profile_cancel_clicked(); //Hide profile
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');
