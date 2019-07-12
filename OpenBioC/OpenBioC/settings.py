@@ -12,6 +12,19 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 
 import os
 
+try:
+	from .obc_private import ALLOWED_HOSTS
+except ImportError:
+	ALLOWED_HOSTS = ['0.0.0.0']
+
+try:
+	from .obc_private import SECRET_KEY
+except ImportError:
+	SECRET_KEY = '!!!!!!!!!!!!!!!thisisnotasecretkey!!!!!!!!!!!!!!!!'
+
+if 'thisisnotasecretkey' in SECRET_KEY:
+	print ('WARNING: SECRET KEY IS NOT SET!!')
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -20,12 +33,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '!!!!!!!!!!!!!!!thisisnotasecretkey!!!!!!!!!!!!!!!!'
+# SECRET_KEY = '!!!!!!!!!!!!!!!thisisnotasecretkey!!!!!!!!!!!!!!!!'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['0.0.0.0', 'localhost', 'staging.openbio.eu', '127.0.0.1', '139.91.190.79']
+#ALLOWED_HOSTS = ['0.0.0.0']
 
 
 # Application definition
