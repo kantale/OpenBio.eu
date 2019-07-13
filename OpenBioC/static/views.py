@@ -1,13 +1,23 @@
 from django.shortcuts import render
 
-# Create your views here.
+from .forms import ContactForm
 
 def static_en(request):
     '''
     Static site english version
     '''
 
-    context = {}
+    if request.method == 'POST':
+        contact_form = ContactForm(request.POST)
+        print ('Is valid?', contact_form.is_valid())
+        print ('name:')
+        print (contact_form.cleaned_data['name'])
+    else:
+        contact_form = ContactForm()
+
+    context = {
+        'contact_form': contact_form,
+    }
 
     return render(request, 'static/index_static_en.html', context)
 
