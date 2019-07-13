@@ -68,6 +68,9 @@ logger = logging.getLogger(__name__)
 
 #GLOBAL CONSTANTS
 g = {
+    'SERVER': 'https://www.openbio.eu',
+    'EMAIL': 'noreply@swww.openbio.eu',
+
     'DEFAULT_DEBUG_PORT': 8200,
     'SEARCH_TOOL_TREE_ID': '1',
     'DEPENDENCY_TOOL_TREE_ID': '2',
@@ -343,12 +346,12 @@ def create_validation_url(token, port=''):
     https://stackoverflow.com/a/5767509/5626738
     http://www.example.com/?param1=7&param2=seven.
     '''
-    ret = 'http://staging.openbio.eu{port}/?validation_token={token}'.format(token=token, port=port)
+    ret = '{server}{port}/?validation_token={token}'.format(server=g['SERVER'], token=token, port=port)
     return ret
 
 
 def create_password_email_url(token, port=''):
-    ret = 'http://staging.openbio.eu{port}/?password_reset_token={token}'.format(token=token, port=port)
+    ret = '{server}{port}/?password_reset_token={token}'.format(server=g['SERVER'], token=token, port=port)
     return ret
 
 
@@ -357,7 +360,7 @@ def confirm_email_body(token, port=''):
     The mail verification mail body
     '''
     ret = '''
-Thank you for signing up to openbio.eu
+Thank you for signing up to {server}
 
 To complete your registration please click (or copy-paste to your browser) the following link:
 {validation_url}
@@ -366,7 +369,7 @@ Regards,
 The openbio.eu admin team.
 '''
 
-    return ret.format(validation_url=create_validation_url(token, port))
+    return ret.format(server=g['SERVER'], validation_url=create_validation_url(token, port))
 
 def reset_password_email_body(token, port=''):
     '''
@@ -375,7 +378,7 @@ def reset_password_email_body(token, port=''):
     ret = '''
 Dear user,
 
-Someone (hopefully you) has requested to reset the password at openbio.eu .
+Someone (hopefully you) has requested to reset the password at {server} .
 If this is you, please go to the following link to complete the process:
 {password_reset_url}
 
@@ -385,7 +388,7 @@ Regards,
 The openbio.eu admin team.
 '''
 
-    return ret.format(password_reset_url=create_password_email_url(token, port))
+    return ret.format(server=g['SERVER'], password_reset_url=create_password_email_url(token, port))
 
 def validate_user(token):
     '''
@@ -857,9 +860,9 @@ def register(request, **kwargs):
 
     try:
         send_mail(
-            from_='noreply@staging.openbio.eu', 
+            from_=g['EMAIL'], 
             to=signup_email,
-            subject='[openbio.eu] Please confirm your email',
+            subject='[{server}] Please confirm your email'.format(server=g['SERVER']),
             body=confirm_email_body(uuid_token, port=request_port_to_url(request)),
         )
     except smtplib.SMTPRecipientsRefused:
@@ -902,9 +905,9 @@ def reset_password_email(request, **kwargs):
     #Send email
     try:
         send_mail(
-            from_ = 'noreply@staging.openbio.eu',
+            from_ = g['EMAIL'],
             to = email,
-            subject = '[openbio.eu] Reset your password',
+            subject = '[{server}] Reset your password'.format(server=g['SERVER']),
             body = reset_password_email_body(token, port=request_port_to_url(request))
         )
     except smtplib.SMTPRecipientsRefused:
