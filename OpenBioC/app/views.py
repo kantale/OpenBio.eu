@@ -11,6 +11,7 @@ from django.contrib.auth import logout as django_logout # To distinguish from AJ
 
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import URLValidator
+from django.core.mail import send_mail
 
 from django.db.models import Q # https://docs.djangoproject.com/en/2.1/topics/db/queries/#complex-lookups-with-q-objects
 from django.db.models import Max # https://docs.djangoproject.com/en/2.1/topics/db/aggregation/
@@ -69,7 +70,8 @@ logger = logging.getLogger(__name__)
 #GLOBAL CONSTANTS
 g = {
     'SERVER': 'https://www.openbio.eu',
-    'EMAIL': 'noreply@swww.openbio.eu',
+    'EMAIL': 'info@swww.openbio.eu',
+    'ADMIN': 'kantale@ics.forth.gr', # In case the email fail, use this instead
 
     'DEFAULT_DEBUG_PORT': 8200,
     'SEARCH_TOOL_TREE_ID': '1',
@@ -312,12 +314,13 @@ def create_uuid_token():
     # return str(uuid.uuid4()).split('-')[-1] # Last part: 12 characters
     return str(uuid.uuid4()).replace('-', '') # 32 characters
 
-def send_mail(from_, to, subject, body):
+def send_mail_smtplib(from_, to, subject, body):
     '''
     Standard email send function with SMTP 
 
     Adjusted from here:
     https://docs.python.org/3/library/email.examples.html
+    NOT USED!
     '''
 
     msg = EmailMessage()
@@ -858,17 +861,30 @@ def register(request, **kwargs):
     ## Try to send an email
     uuid_token = create_uuid_token()
 
+    ## smtplib method
+#    try:
+#        send_mail(
+#            from_=g['EMAIL'], 
+#            to=signup_email,
+#            subject='[{server}] Please confirm your email'.format(server=g['SERVER']),
+#            body=confirm_email_body(uuid_token, port=request_port_to_url(request)),
+#        )
+#    except smtplib.SMTPRecipientsRefused:
+#        return fail('Could not sent an email to {}'.format(signup_email))
+#    except Exception as e:
+#        pass ## FIXME 
+    
+    ## django send_mail
     try:
         send_mail(
-            from_=g['EMAIL'], 
-            to=signup_email,
-            subject='[{server}] Please confirm your email'.format(server=g['SERVER']),
-            body=confirm_email_body(uuid_token, port=request_port_to_url(request)),
+            '[{server}] Please confirm your email'.format(server=g['SERVER']), # subject
+            confirm_email_body(uuid_token, port=request_port_to_url(request)), # body message
+            g['EMAIL'], # Sender, FROM
+            [signup_email], # List of recipients
         )
-    except smtplib.SMTPRecipientsRefused:
-        return fail('Could not sent an email to {}'.format(signup_email))
     except Exception as e:
-        pass ## FIXME 
+        return fail('Could not send an email to {signup_email}. Contact {ADMIN}'.format(signup_email=signup_email, ADMIN=g['ADMIN']))
+
 
     #Create user
     user = User.objects.create_user(signup_username, signup_email, signup_password)
@@ -902,18 +918,29 @@ def reset_password_email(request, **kwargs):
     obc_user.password_reset_timestamp = now()
     obc_user.save()
 
-    #Send email
+#    #Send email with SMTPLIB
+#    try:
+#        send_mail(
+#            from_ = g['EMAIL'],
+#            to = email,
+#            subject = '[{server}] Reset your password'.format(server=g['SERVER']),
+#            body = reset_password_email_body(token, port=request_port_to_url(request))
+#        )
+#    except smtplib.SMTPRecipientsRefused:
+#        return fail('Could not send an email to: {}'.format(email))
+#    except Exception as e:
+#        pass # FIX ME
+
+    # With Django send_mail
     try:
         send_mail(
-            from_ = g['EMAIL'],
-            to = email,
-            subject = '[{server}] Reset your password'.format(server=g['SERVER']),
-            body = reset_password_email_body(token, port=request_port_to_url(request))
+            '[{server}] Reset your password'.format(server=g['SERVER']), # subject
+            reset_password_email_body(token, port=request_port_to_url(request)), # body message
+            g['EMAIL'], # from 
+            [email], # to
         )
-    except smtplib.SMTPRecipientsRefused:
-        return fail('Could not send an email to: {}'.format(email))
     except Exception as e:
-        pass # FIX ME
+        return fail('Could not send email to {email}. Please contact {ADMIN}'.format(email=email, ADMIN=g['ADMIN']))
 
     return success()
 
