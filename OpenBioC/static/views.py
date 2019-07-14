@@ -65,6 +65,7 @@ END OF MESSAGE
         contact_form = ContactForm()
 
     context = {
+        'success_message': success_message,
         'error_message': error_message,
         'contact_form': contact_form,
     }
