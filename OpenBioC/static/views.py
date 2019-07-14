@@ -2,12 +2,19 @@ from django.shortcuts import render
 from django.core.mail import send_mail
 
 
-from .forms import ContactForm
+from .forms import ContactForm_en, ContactForm_gr
 
-def static_en(request):
+def create_context(request, language):
     '''
-    Static site english version
+    Create the context of static site
     '''
+
+    assert language in ['en', 'gr']
+
+    if language == 'en':
+        ContactForm = ContactForm_en
+    elif language == 'gr':
+        ContactForm = ContactForm_gr
 
     error_message = ''
     success_message = ''
@@ -40,12 +47,20 @@ END OF MESSAGE
             try:
                 send_mail(send_subject, send_message, 'info@openbio.eu', ['alexandros.kanterakis@gmail.com'])
             except Exception as e:
-                error_message = 'Could not send message.'
+                if language == 'en':
+                    error_message = 'Could not send message. Please send mail to: kantale@ics.forth.gr'
+                elif language == 'gr':
+                    error_message = 'Εμφανίστηκε σφάλμα. Το μήνυμα δεν στάλθηκε. Μπορείτε να επικοινωνήσετε στο kantale@ics.forth.gr'
             else:
-                success_message = 'Your message was sent.'
+                if language == 'en':
+                    success_message = 'Your message was sent.'
+                elif language == 'gr':
+                    success_message = 'Το μήνυμα στάλθηκε.'
         else:
-            error_message = 'Could not send message. Please update invalid fields.'
-
+            if language == 'en':
+                error_message = 'Could not send message. Please update invalid fields.'
+            elif language == 'gr':
+                error_message = 'Το μήνυμα δεν στάληθκε. Κάποια πεδία δεν είναι σωστά συμπληρωμένα.'
     else:
         contact_form = ContactForm()
 
@@ -54,6 +69,15 @@ END OF MESSAGE
         'contact_form': contact_form,
     }
 
+    return context
+
+
+def static_en(request):
+    '''
+    Static site english version
+    '''
+
+    context = create_context(request, 'en')
     return render(request, 'static/index_static_en.html', context)
 
 def static_gr(request):
@@ -61,7 +85,7 @@ def static_gr(request):
     English site english version
     '''
 
-    context = {}
+    context = create_context(request, 'gr')
 
     return render(request, 'static/index_static_gr.html', context)
 

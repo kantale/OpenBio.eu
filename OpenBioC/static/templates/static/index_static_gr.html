@@ -100,6 +100,20 @@ http://www.tooplate.com/view/2098-health
      <!-- HOME -->
      <section id="home" class="slider" data-stellar-background-ratio="0.5">
           <div class="container">
+               {% if error_message %}
+               <div class="row">
+                    <div class="col-md-12">
+                         <strong style="color:red;">{{ error_message }}</strong>
+                    </div>
+               </div>
+               {% endif %}
+               {% if success_message %}
+               <div class="row">
+                    <div class="col-md-12">
+                         <strong>{{ success_message }}</strong>
+                    </div>
+               </div>
+               {% endif %}
                <div class="row">
 						
                          <div class="owl-carousel owl-theme">
@@ -408,7 +422,7 @@ http://www.tooplate.com/view/2098-health
 
 					<!--
                     <div class="col-md-4 col-sm-6">
-                         <!-- NEWS THUMB -->
+                         -- NEWS THUMB -->
 						 <!--
                          <div class="news-thumb wow fadeInUp" data-wow-delay="0.8s">
 
@@ -443,7 +457,8 @@ http://www.tooplate.com/view/2098-health
 
                     <div class="col-md-6 col-sm-6">
                          <!-- CONTACT FORM HERE -->
-                         <form id="appointment-form" role="form" method="post" action="#">
+                         <form id="appointment-form" role="form" method="post" action="/gr/">
+                              {% csrf_token %}
 
                               <!-- SECTION TITLE -->
                               <div class="section-title wow fadeInUp" data-wow-delay="0.4s">
@@ -452,21 +467,31 @@ http://www.tooplate.com/view/2098-health
 
                               <div class="wow fadeInUp" data-wow-delay="0.8s">
                                    <div class="col-md-6 col-sm-6">
-                                        <label for="name">Όνομα</label>
-                                        <input type="text" class="form-control" id="name" name="name" placeholder="Όνομα">
+                                        {{ contact_form.name.errors }}
+                                        <label for="{{ contact_form.name.id_for_label }}">Όνομα</label>
+                                        <!-- <input type="text" class="form-control" id="name" name="name" placeholder="Full Name"> -->
+                                        {{ contact_form.name }}
                                    </div>
 
                                    <div class="col-md-6 col-sm-6">
-                                        <label for="email">Email</label>
-                                        <input type="email" class="form-control" id="email" name="email" placeholder="Email">
+                                        {{ contact_form.sender.errors }}
+                                        <label for="{{ contact_form.sender.id_for_label }}">Διεύθυνση email</label>
+                                        <!-- <input type="email" class="form-control" id="email" name="email" placeholder="Your Email"> -->
+                                        {{ contact_form.sender }}
                                    </div>
 
                                    <div class="col-md-12 col-sm-12">
-                                        <label for="telephone">Θέμα</label>
-                                        <input type="tel" class="form-control" id="phone" name="phone" placeholder="Θέμα">
-                                        <label for="Message">Μήνυμα</label>
-                                        <textarea class="form-control" rows="5" id="message" name="message" placeholder="Μήνυμα"></textarea>
-										<button type="submit" class="form-control" id="cf-submit" name="submit" style="color:#48BCCB";>Αποστολή</button>
+                                        {{ contact_form.subject.errors }}
+                                        <label for="{{ contact_form.subject.id_for_label }}">Θέμα</label>
+                                        <!-- <input type="text" class="form-control" id="subject" name="subject" placeholder="Subject"> -->
+                                        {{ contact_form.subject }}
+                                        {{ contact_form.message.errors }}
+                                        <label for="{{ contact_form.message.id_for_label }}">Μήνυμα</label>
+                                        <!-- <textarea class="form-control" rows="5" id="message" name="message" placeholder="Message"></textarea> -->
+                                        {{ contact_form.message }}
+                                        <!-- <button type="submit" class="form-control" id="cf-submit" name="submit" style="color:#48BCCB";>Submit</button> -->
+                                        <input type="submit" class="form-control" id="cf-submit" name="submit" value="Αποστολή" style="color:#48BCCB">
+
                                    </div>
                               </div>
 							  
