@@ -106,6 +106,15 @@
                             <a href="#">Forgot Password?</a>
                         </small>
                     </p>
+                    <div class="row" ng-show="signup_forgot_password_show">
+                        <div class="input-field col s6">
+                            <label for="forgotPasswordEmail">Please enter your email</label>
+                            <input id="forgotPasswordEmail" type="email" class="validate">
+                        </div>
+                        <div class="col s6">
+                            <button class="btn waves-effect waves-light">Send account information</button>
+                        </div>
+                    </div>
                     <p class="center-align">New user? <a href="#" id="modalSignUpBtn">Sign up</a></p>
                 </div>
             </form>
