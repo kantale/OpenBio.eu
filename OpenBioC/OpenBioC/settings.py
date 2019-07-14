@@ -15,7 +15,7 @@ import os
 try:
 	from .obc_private import ALLOWED_HOSTS
 except ImportError:
-	ALLOWED_HOSTS = ['0.0.0.0']
+	ALLOWED_HOSTS = ['0.0.0.0', 'localhost']
 
 try:
 	from .obc_private import SECRET_KEY
@@ -24,6 +24,11 @@ except ImportError:
 
 if 'thisisnotasecretkey' in SECRET_KEY:
 	print ('WARNING: SECRET KEY IS NOT SET!!')
+
+try:
+	from .obc_private import POSTGRESQL_PARAMS
+except ImportError:
+	POSTGRESQL_PARAMS = None
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -89,11 +94,13 @@ WSGI_APPLICATION = 'OpenBioC.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
+SQLITE3_PARAMS = {
+	'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+}
+
+DATABASES = {
+    'default': POSTGRESQL_PARAMS if POSTGRESQL_PARAMS else SQLITE3_PARAMS
 }
 
 
