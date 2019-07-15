@@ -138,6 +138,23 @@ def valid_url(url):
     else:
         return True
 
+def user_is_validated(request):
+    '''
+    Is the email of the user validated? 
+    Returns True/False
+    '''
+
+    if request.user.is_anonymous:
+        return False
+
+    try:
+        obc_user = OBC_user.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        return False # This should never happen
+
+    return obc_user.email_validated
+
+
 def resolve_doi(doi):
     '''
     https://gist.github.com/jrsmith3/5513926
@@ -780,6 +797,9 @@ def index(request):
     context['password_reset_token'] = ''
     context['reset_signup_username'] = ''
     context['reset_signup_email'] = ''
+
+    #Is user validated
+    context['user_is_validated'] = user_is_validated(request)
 
     #Check for GET variables
     GET = request.GET
