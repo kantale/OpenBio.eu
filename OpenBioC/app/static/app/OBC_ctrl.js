@@ -388,19 +388,22 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             function (data) {
                 $scope.signup_error_message = '';
                 $scope.show_signup = false;
-                $scope.general_success_message = 'Thank you for registering to openbio.eu . A validation link has been sent to ' + $scope.signup_email;
-                $scope.general_alert_message = '';
+                //$scope.general_success_message = 'Thank you for registering to openbio.eu . A validation link has been sent to ' + $scope.signup_email;
+                //$scope.general_alert_message = '';
+                $scope.toast('Thank you for registering to openbio.eu . A validation link has been sent to ' + $scope.signup_email, 'success');
 
                 // Sign up modal close + Sign in modal close.
                 $("#signModal").modal('close');
             },
             function (data) {
-                $scope.signup_error_message = data['error_message'];
-                $scope.general_success_message = '';
+                //$scope.signup_error_message = data['error_message'];
+                //$scope.general_success_message = '';
+                $scope.toast(data['error_message'], 'error');
             },
             function(statusText) {
-                $scope.signup_error_message = statusText;
-                $scope.general_success_message = '';
+                //$scope.signup_error_message = statusText;
+                //$scope.general_success_message = '';
+                $scope.toast(data[statusText, 'error');
             }
         );
 

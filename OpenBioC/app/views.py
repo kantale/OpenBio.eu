@@ -338,7 +338,7 @@ def request_port_to_url(request):
     '''
 
     port = request.META['SERVER_PORT'] # This is a string
-    if port == '80':
+    if port in ['80', '443']: # Do not add port info when http default or https default
         return ''
 
     return ':' + port # For example ':8080'
@@ -819,6 +819,7 @@ def index(request):
 def register(request, **kwargs):
     '''
     View url: 'register/'
+    add user add
     '''
 
     if not 'signup_username' in kwargs:
