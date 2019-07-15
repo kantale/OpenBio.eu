@@ -378,6 +378,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         //$scope.login_error_message = '';
         //$("#signModal").modal('open');
         $scope.show_sign_in = true;
+        $scope.show_sign_up = false;
+        $scope.show_reset_password = false;
         M.Modal.getInstance($("#signModal")).open();
     };
 
@@ -390,6 +392,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         $scope.show_sign_in = false;
         $scope.show_sign_up = true;
+        $scope.show_reset_password = false;
 
         $('#signUpForm').animateCss('fadeIn', function () {});
     };
@@ -402,6 +405,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         //$('#signUpForm').animateCss('fadeOut', function () {});
         $scope.show_sign_in = true;
         $scope.show_sign_up = false;
+        $scope.show_reset_password = false;
         $('#signInForm').animateCss('fadeIn', function () {});
 
     };
@@ -579,6 +583,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             function(data) {
                 $scope.password_reset_token = '';
                 $scope.toast('Your password has been reset', 'success');
+                M.Modal.getInstance($("#signModal")).close();
+
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');
