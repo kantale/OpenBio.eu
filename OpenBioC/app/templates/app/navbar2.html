@@ -103,9 +103,18 @@
                         in</button> <!-- modal-close-->
                     <p>
                         <small class="form-text text-muted">
-                            <a href="#">Forgot Password?</a>
+                            <a ng-click="signup_forgot_password_clicked()">Forgot Password?</a>
                         </small>
                     </p>
+                    <div class="row" ng-show="signup_forgot_password_show">
+                        <div class="input-field col s6">
+                            <label for="forgotPasswordEmail">Please enter your email</label>
+                            <input id="forgotPasswordEmail" type="email" class="validate" ng-model="reset_password_email">
+                        </div>
+                        <div class="col s6">
+                            <button class="btn waves-effect waves-light" ng-click="login_password_reset_email_send_pressed()">Send account information</button>
+                        </div>
+                    </div>
                     <p class="center-align">New user? <a href="#" id="modalSignUpBtn">Sign up</a></p>
                 </div>
             </form>
@@ -143,6 +152,7 @@
                 </div>
                 <div class="row col s12"> 
                     <button class="btn waves-effect waves-light" ng-click="signup_signup_pressed()">Sign up</button> <!-- modal-close --> 
+                    <div ng-show="false">
                     <p>
                         <small class="form-text text-muted">
                             By clicking Sign Up, you agree to our <a href="#">Terms</a>
@@ -150,6 +160,7 @@
                             have read our <a href="#">Data Use Policy</a>, including our <a href="#">Cookie Use</a>
                         </small>
                     </p>
+                    </div>
                     <p class="center-align">Already a member? <a href="#" id="modalSignInBtn">Sign in</a></p>
                 </div>
             </form>

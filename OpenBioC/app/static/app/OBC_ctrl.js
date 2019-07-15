@@ -127,6 +127,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         };
 
         $scope.scheduled_main_search_changed = false; // https://openfolder.sh/django-tutorial-as-you-type-search-with-ajax
+        $scope.signup_forgot_password_show = false; 
 
         $scope.get_init_data();
 
@@ -299,6 +300,12 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 //        $scope.profile_container_show = false;
 //    };
 
+    /*
+    * Signup --> forgot password (link) --> clicked 
+    */
+    $scope.signup_forgot_password_clicked = function() {
+        $scope.signup_forgot_password_show = !$scope.signup_forgot_password_show;
+    };
 
     /*
     * Hide everything 
@@ -381,19 +388,22 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             function (data) {
                 $scope.signup_error_message = '';
                 $scope.show_signup = false;
-                $scope.general_success_message = 'Thank you for registering to openbio.eu . A validation link has been sent to ' + $scope.signup_email;
-                $scope.general_alert_message = '';
+                //$scope.general_success_message = 'Thank you for registering to openbio.eu . A validation link has been sent to ' + $scope.signup_email;
+                //$scope.general_alert_message = '';
+                $scope.toast('Thank you for registering to openbio.eu . A validation link has been sent to ' + $scope.signup_email, 'success');
 
                 // Sign up modal close + Sign in modal close.
                 $("#signModal").modal('close');
             },
             function (data) {
-                $scope.signup_error_message = data['error_message'];
-                $scope.general_success_message = '';
+                //$scope.signup_error_message = data['error_message'];
+                //$scope.general_success_message = '';
+                $scope.toast(data['error_message'], 'error');
             },
             function(statusText) {
-                $scope.signup_error_message = statusText;
-                $scope.general_success_message = '';
+                //$scope.signup_error_message = statusText;
+                //$scope.general_success_message = '';
+                $scope.toast(statusText, 'error');
             }
         );
 
@@ -490,16 +500,16 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 //    };
 
 
-    /*
-    * Navbar -> Login -> password reset -> clicked
-    */
-    $scope.login_password_reset_pressed = function() {
-        $scope.inner_hide_all_navbar();
-        $scope.show_reset_password_email = true;
-    };
+//    /*
+//    * Navbar -> Login -> password reset -> clicked
+//    */
+//    $scope.login_password_reset_pressed = function() {
+//        $scope.inner_hide_all_navbar();
+//        $scope.show_reset_password_email = true;
+//    };
 
     /*
-    * Navbar --> Login -> password reset -> clicked -> Send -> clicked
+    * Signup --> forgot password (link) clicked --> send account information (button) clicked
     */
     $scope.login_password_reset_email_send_pressed = function() {
         // reset_password_email 
@@ -509,14 +519,14 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 'reset_password_email': $scope.reset_password_email
             },
             function(data) {
-                $scope.show_reset_password_email = false;
-                $scope.general_success_message = 'An email with instructions to reset your password was sent to ' + $scope.reset_password_email;
+                $scope.signup_forgot_password_show = false;
+                $scope.toast('An email with instructions to reset your password was sent to ' + $scope.reset_password_email, 'success');
             },
             function(data) {
-                $scope.reset_password_email_error_message = data['error_message'];
+                $scope.toast(data['error_message'], 'error');
             },
             function(statusText) {
-                $scope.reset_password_email_error_message = statusText;
+                $scope.toast(statusText, 'error');
             }
         );
     }
