@@ -135,6 +135,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         $scope.get_init_data();
 
+        if ($scope.password_reset_token) {
+            $scope.show_reset_password = true;
+            M.Modal.getInstance($("#signModal")).open();
+        }
 
     };
 
@@ -374,6 +378,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         //$scope.login_error_message = '';
         //$("#signModal").modal('open');
         $scope.show_sign_in = true;
+        $scope.show_sign_up = false;
+        $scope.show_reset_password = false;
         M.Modal.getInstance($("#signModal")).open();
     };
 
@@ -386,6 +392,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         $scope.show_sign_in = false;
         $scope.show_sign_up = true;
+        $scope.show_reset_password = false;
 
         $('#signUpForm').animateCss('fadeIn', function () {});
     };
@@ -398,6 +405,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         //$('#signUpForm').animateCss('fadeOut', function () {});
         $scope.show_sign_in = true;
         $scope.show_sign_up = false;
+        $scope.show_reset_password = false;
         $('#signInForm').animateCss('fadeIn', function () {});
 
     };
@@ -568,20 +576,21 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.ajax(
             'password_reset/',
             {
-                'password_reset_password': $scope.password_reset_password,
-                'password_reset_confirm_password': $scope.password_reset_confirm_password,
+                'password_reset_password': $scope.reset_signup_password,
+                'password_reset_confirm_password': $scope.reset_signup_confirm_password,
                 'password_reset_token': $scope.password_reset_token
             },
             function(data) {
                 $scope.password_reset_token = '';
-                $scope.show_password_reset = false;
-                $scope.general_success_message = 'Your password has been reset';
+                $scope.toast('Your password has been reset', 'success');
+                M.Modal.getInstance($("#signModal")).close();
+
             },
             function(data) {
-                $scope.password_reset_error_message = data['error_message'];
+                $scope.toast(data['error_message'], 'error');
             },
             function(statusText) {
-                $scope.password_reset_error_message = statusText;
+                $scope.toast(statusText, 'error');
             }
         );
     };
@@ -3869,6 +3878,21 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         //console.log(index);
 
         $scope.workflow_input_outputs[index].out = !$scope.workflow_input_outputs[index].out;
+    };
+
+    /*
+    * This should be at the bottom(!) of the controller: 
+    * https://stackoverflow.com/questions/15458609/how-to-execute-angularjs-controller-function-on-page-load
+    */
+    $scope.show_reset_password_from_ui = function() {
+        if ($scope.password_reset_token) {
+            $scope.show_reset_password = true;
+            $scope.reset_signup_username = window.reset_signup_username;
+            $scope.reset_signup_email = window.reset_signup_email;
+            M.Modal.getInstance($("#signModal")).open();
+
+            $timeout(function(){M.updateTextFields()}, 10);
+        }
     };
 
 }); 
