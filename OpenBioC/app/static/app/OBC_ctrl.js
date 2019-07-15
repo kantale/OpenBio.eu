@@ -233,6 +233,13 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     };
 
     /*
+    * Generate a "Validate" toast
+    */
+    $scope.validation_toast = function(message) {
+        $scope.toast(message + ' <button class="waves-effect waves-light btn red lighten-3 black-text" onclick="window.OBCUI.send_validation_mail()">Validate</button>', 'error');
+    };
+
+    /*
     * Profile --> Cancel --> clicked 
     */
     $scope.profile_cancel_clicked = function() {
@@ -410,6 +417,25 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.show_reset_password = false;
         $('#signInForm').animateCss('fadeIn', function () {});
 
+    };
+
+    /*
+    * Send a validation email
+    */
+    $scope.send_validation_email = function() {
+        $scope.ajax(
+            'send_validation_email/',
+            {},
+            function(data) {
+                $scope.toast('A validation email has been sent to: ' + data['email'], 'success');
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
     };
 
     /*
@@ -991,7 +1017,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         //Is user's email validated?
         if (!$scope.user_is_validated) {
-            $scope.toast('Please confirm your email to create a new Tool or Data! <button class="waves-effect waves-light btn red lighten-3 black-text">Confirm</button>', 'error');
+            $scope.validation_toast('Validate your email to create a new Tool or Data!');
             return;
         }
 
@@ -1168,6 +1194,12 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             return
         }
 
+        //Is user's email validated?
+        if (!$scope.user_is_validated) {
+            $scope.validation_toast('Validate your email to create a new workflow!');
+            return;
+        }
+
         //Close tool accordion
         //$scope.set_tools_info_editable(false);
         //$scope.tools_info_editable = false;
@@ -1340,6 +1372,12 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         if (!$scope.username) {
             $scope.tools_info_error_message = 'Login to create new tools';
+            return;
+        }
+
+        //Is user's email validated?
+        if (!$scope.user_is_validated) {
+            $scope.validation_toast('Validate your email to create a new Tool or Data!')
             return;
         }
 
@@ -2147,6 +2185,13 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             $scope.toast('Login to create a new reference!', 'error');
             return;
         }
+
+        //Is user's email validated?
+        if (!$scope.user_is_validated) {
+            $scope.validation_toast('Validate your email to create a new reference!');
+            return;
+        }
+
 
         $scope.hide_all_right_accordions('references');
 
@@ -3284,6 +3329,12 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             return;
         }
 
+        //Is user's email validated?
+        if (!$scope.user_is_validated) {
+            $scope.validation_toast('Validate your email to create a new Workflow!');
+            return;
+        }
+
         //After fork, we should change the IDs 
         window.forkWorkflow();
 
@@ -3599,6 +3650,13 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             $scope.toast('Login to post a new question!', 'error');
             return;
         }
+
+        //Is user's email validated?
+        if (!$scope.user_is_validated) {
+            $scope.validation_toast('Validate your email to post a new question!');
+            return;
+        }
+
 
         $scope.hide_all_right_accordions('qas');
 

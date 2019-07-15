@@ -2882,6 +2882,15 @@ window.onload = function () {
 	generateToast(window.general_alert_message, 'red lighten-2 black-text', 'stay on');
     }
 
+    /*
+    * Send a validation mail
+    */
+    window.OBCUI.send_validation_mail = function() {
+        angular.element($('#angular_div')).scope().$apply(function () {
+            angular.element($('#angular_div')).scope().send_validation_email();
+        });
+    };
+
     angular.element($('#angular_div')).scope().$apply(function () {
          angular.element($('#angular_div')).scope().show_reset_password_from_ui();
     });
