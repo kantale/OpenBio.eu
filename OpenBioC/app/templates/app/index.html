@@ -9,6 +9,8 @@
 		window.general_alert_message = {% autoescape off %}"{{ general_alert_message }}"{% endautoescape %};
 		window.general_success_message = {% autoescape off %}"{{ general_success_message }}"{% endautoescape %};
 		window.password_reset_token = "{{ password_reset_token }}";
+		window.reset_signup_username = "{{ reset_signup_username }}";
+		window.reset_signup_email = "{{ reset_signup_email }}";
 		window.OBC_PORT = {{ port }};
 		window.OBC_CONTROLLER_URL = "{{controller_url}}";
 		window.OBC_OS_CHOICES = {{ os_choices | safe }};
