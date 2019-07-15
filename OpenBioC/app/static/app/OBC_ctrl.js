@@ -135,6 +135,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         $scope.get_init_data();
 
+        if ($scope.password_reset_token) {
+            $scope.show_reset_password = true;
+            M.Modal.getInstance($("#signModal")).open();
+        }
 
     };
 
@@ -3869,6 +3873,21 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         //console.log(index);
 
         $scope.workflow_input_outputs[index].out = !$scope.workflow_input_outputs[index].out;
+    };
+
+    /*
+    * This should be at the bottom(!) of the controller: 
+    * https://stackoverflow.com/questions/15458609/how-to-execute-angularjs-controller-function-on-page-load
+    */
+    $scope.show_reset_password_from_ui = function() {
+        if ($scope.password_reset_token) {
+            $scope.show_reset_password = true;
+            $scope.reset_signup_username = window.reset_signup_username;
+            $scope.reset_signup_email = window.reset_signup_email;
+            M.Modal.getInstance($("#signModal")).open();
+
+            $timeout(function(){M.updateTextFields()}, 10);
+        }
     };
 
 }); 
