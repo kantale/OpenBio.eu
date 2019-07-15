@@ -887,7 +887,7 @@ def register(request, **kwargs):
 
 
     #Create user
-    user = User.objects.create_user(signup_username, signup_email, signup_password)
+    user = User.objects.create_user(signup_username, signup_email, signup_password, last_login=now()) # https://stackoverflow.com/questions/33683619/null-value-in-column-last-login-violates-not-null-constraint/42502311
 
     #Create OBC_user
     obc_user = OBC_user(user=user, email_validated=False, email_validation_token=uuid_token)
