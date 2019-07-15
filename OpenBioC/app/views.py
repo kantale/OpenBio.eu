@@ -348,13 +348,20 @@ def create_validation_url(token, port=''):
     '''
     https://stackoverflow.com/a/5767509/5626738
     http://www.example.com/?param1=7&param2=seven.
+
+    FIXME: "platform" should be derived from request.
+    SEE: https://stackoverflow.com/questions/2491605/how-to-get-the-current-url-name-using-django 
     '''
-    ret = '{server}{port}/?validation_token={token}'.format(server=g['SERVER'], token=token, port=port)
+    ret = '{server}{port}/platform/?validation_token={token}'.format(server=g['SERVER'], token=token, port=port)
     return ret
 
 
 def create_password_email_url(token, port=''):
-    ret = '{server}{port}/?password_reset_token={token}'.format(server=g['SERVER'], token=token, port=port)
+    '''
+    See also create_validation_url for FIXME issue 
+    '''
+
+    ret = '{server}{port}/platform/?password_reset_token={token}'.format(server=g['SERVER'], token=token, port=port)
     return ret
 
 
@@ -433,11 +440,11 @@ def password_reset_check_token(token):
         timestamp = obc_user.password_reset_timestamp
         seconds = (now() - timestamp).total_seconds()
         if seconds > 3600 * 2: # 2 Hours
-            return False, 'Password Reset Token expires after 2 Hours'
+            return False, 'Password Reset Token expires after 2 Hours', None
         else:
-            return True, ''
+            return True, '', obc_user
     else:
-        return False, "Unknown token"
+        return False, "Unknown token", None
 
 
 def now():
@@ -770,6 +777,9 @@ def index(request):
     context['username'] = username
     context['general_alert_message'] = ''
     context['general_success_message'] = ''
+    context['password_reset_token'] = ''
+    context['reset_signup_username'] = ''
+    context['reset_signup_email'] = ''
 
     #Check for GET variables
     GET = request.GET
@@ -787,9 +797,11 @@ def index(request):
     password_reset_token = GET.get('password_reset_token', '')
     context['password_reset_token'] = '' # It will be set after checks
     if password_reset_token:
-        password_reset_check_success, password_reset_check_message = password_reset_check_token(password_reset_token)
+        password_reset_check_success, password_reset_check_message, obc_user = password_reset_check_token(password_reset_token)
         if password_reset_check_success:
             context['password_reset_token'] = password_reset_token
+            context['reset_signup_username'] = obc_user.user.username
+            context['reset_signup_email'] = obc_user.user.email
         else:
             context['general_alert_message'] = password_reset_check_message
 	

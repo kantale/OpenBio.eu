@@ -303,23 +303,23 @@ window.onload = function () {
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     // ------------------------------------------ Sign up button clicked ---------------------------------------------
-    document.getElementById('modalSignUpBtn').addEventListener('click', function () {
-        $('#signInForm').animateCss('fadeOut', function () {
-            document.getElementById('signInForm').style.display = 'none';
-            document.getElementById('signUpForm').style.display = 'block';
-            $('#signUpForm').animateCss('fadeIn', function () {
-            });
-        });
-    });
-    // ------------------------------------------ Sign in button clicked ---------------------------------------------
-    document.getElementById('modalSignInBtn').addEventListener('click', function () {
-        $('#signUpForm').animateCss('fadeOut', function () {
-            document.getElementById('signUpForm').style.display = 'none';
-            document.getElementById('signInForm').style.display = 'block';
-            $('#signInForm').animateCss('fadeIn', function () {
-            });
-        });
-    });
+//    document.getElementById('modalSignUpBtn').addEventListener('click', function () {
+//        $('#signInForm').animateCss('fadeOut', function () {
+//            document.getElementById('signInForm').style.display = 'none';
+//            document.getElementById('signUpForm').style.display = 'block';
+//            $('#signUpForm').animateCss('fadeIn', function () {
+//            });
+//        });
+//    });
+//    // ------------------------------------------ Sign in button clicked ---------------------------------------------
+//    document.getElementById('modalSignInBtn').addEventListener('click', function () {
+//        $('#signUpForm').animateCss('fadeOut', function () {
+//            document.getElementById('signUpForm').style.display = 'none';
+//            document.getElementById('signInForm').style.display = 'block';
+//            $('#signInForm').animateCss('fadeIn', function () {
+//            });
+//        });
+//    });
 
     // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // -------------------------------------------------------- Create Tool Data Button Click ---------------------------------------------------------------------------------------
@@ -2872,6 +2872,15 @@ window.onload = function () {
             angular.element($('#angular_div')).scope().interlink(args); 
         });
     };
+
+
+    if (window.general_success_message) {
+	generateToast(window.general_success_message, 'green lighten-2 black-text', 'stay on');
+    }
+
+    if (window.general_alert_message) {
+	generateToast(window.general_alert_message, 'red lighten-2 black-text', 'stay on');
+    }
 
 
 };
