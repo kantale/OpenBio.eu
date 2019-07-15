@@ -1317,7 +1317,11 @@ def tool_get_dependencies(request, **kwargs):
 
     return success(ret)
 
-
+def validate_toast_button():
+    '''
+    This button should be similar with the one generated from angular
+    '''
+    return '<button class="waves-effect waves-light btn red lighten-3 black-text" onclick="window.OBCUI.send_validation_mail()">Validate</button>'
 
 @has_data
 def tools_add(request, **kwargs):
@@ -1330,6 +1334,9 @@ def tools_add(request, **kwargs):
 
     if request.user.is_anonymous: # Server should always check..
         return fail('Please login to create new tools')
+
+    if not user_is_validated(request):
+        return fail('Please validate your email to create new tools ' + validate_toast_button());
     
     tool_website = kwargs.get('tool_website', '')
     #if not tool_website:
@@ -1607,6 +1614,8 @@ def workflows_add(request, **kwargs):
     if request.user.is_anonymous: # Server should always check..
         return fail('Please login to create new workflow')
 
+    if not user_is_validated(request):
+        return fail('Please validate your email to create new workflows ' + validate_toast_button());
 
     workflow_info_name = kwargs.get('workflow_info_name', '')
     if not workflow_info_name.strip():
@@ -1793,11 +1802,15 @@ def run_workflow(request, **kwargs):
         workflow_tool['data']['os_choices'] = [choice.os_choices for choice in workflow_tool_obj.os_choices.all()]
         workflow_tool['data']['dependencies'] = [str(tool) for tool in workflow_tool_obj.dependencies.all()]
 
-    # Create a new Report object
-    if request.user.is_anonymous:
+    # Create a new Report object 
+    if not user_is_validated(request):
+        '''
+        If user is anonymous or with non-validated email, we do not create a report!
+        '''
         run_report = None
         nice_id = None
         token = None
+        report_created = False # Do we create a report upon execution of this workflow?
     else:
         run_report = Report(
             obc_user = OBC_user.objects.get(user=request.user),
@@ -1813,6 +1826,7 @@ def run_workflow(request, **kwargs):
         run_report.tokens.add(report_token)
         run_report.save()
         token = str(report_token.token)
+        report_created = True
 
     output_object = {
         'arguments': workflow_options_arg,
@@ -1830,7 +1844,8 @@ def run_workflow(request, **kwargs):
     #response = HttpResponse(the_script, content_type='application/x-sh')
     #response['Content-Disposition'] = 'attachment; filename="script.sh"'
     ret = {
-        'output_object': output_object
+        'output_object': output_object,
+        'report_created': report_created,
     }
 
     return success(ret)
@@ -2262,6 +2277,10 @@ def references_add(request, **kwargs):
     if request.user.is_anonymous:
         return fail('Please login to create References')
 
+    # Check if user is validated
+    if not user_is_validated(request):
+        return fail('Please validate your email to create new references ' + validate_toast_button());
+
     references_name = kwargs.get('references_name', '')
     if not references_name:
         return fail('References Name is required')
@@ -2665,6 +2684,9 @@ def qa_add_comment(request, **kwargs):
     if request.user.is_anonymous:
         return fail('Please login to add a new comment')
 
+    if not user_is_validated(request):
+        return fail('Please validate your email to add a new comment' + validate_toast_button());
+
     id_ = kwargs.get('qa_id', None)
     if id_ is None:
         return fail('Could not find Q&A id')
@@ -2705,6 +2727,9 @@ def gen_qa_add_comment(request, **kwargs):
     '''
     if request.user.is_anonymous:
         return fail('Please login to add a new comment')
+
+    if not user_is_validated(request):
+        return fail('Please validate your email to add a new comment ' + validate_toast_button());
 
     comment_pk = kwargs['comment_pk'] 
     object_pk = kwargs['object_pk']

@@ -227,6 +227,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         else if (type == 'success') {
             generateToast(message, 'green lighten-2 black-text', 'stay on');
         }
+        else if (type == 'warning') {
+            generateToast(message, 'orange lighten-2 black-text', 'stay on');
+        }
         else {
             console.warn('Error: 8133 Unknown toast type: ' + type);
         }
@@ -3467,6 +3470,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 }).get(0).click();
 
                 //$scope.toast('Run workflow problem: ' + data['error_message'], 'error');
+                if (!data['report_created']) {
+                    $scope.toast('You are not a registered user or your email is not validated. Although this workflow can be executed, the execution will not generate a report.', 'warning')
+                }
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');
