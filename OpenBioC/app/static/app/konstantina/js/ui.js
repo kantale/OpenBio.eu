@@ -2874,4 +2874,13 @@ window.onload = function () {
     };
 
 
+    if (window.general_success_message) {
+	generateToast(window.general_success_message, 'green lighten-2 black-text', 'stay on');
+    }
+
+    if (window.general_alert_message) {
+	generateToast(window.general_alert_message, 'red lighten-2 black-text', 'stay on');
+    }
+
+
 };

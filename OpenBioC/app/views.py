@@ -348,13 +348,20 @@ def create_validation_url(token, port=''):
     '''
     https://stackoverflow.com/a/5767509/5626738
     http://www.example.com/?param1=7&param2=seven.
+
+    FIXME: "platform" should be derived from request.
+    SEE: https://stackoverflow.com/questions/2491605/how-to-get-the-current-url-name-using-django 
     '''
-    ret = '{server}{port}/?validation_token={token}'.format(server=g['SERVER'], token=token, port=port)
+    ret = '{server}{port}/platform/?validation_token={token}'.format(server=g['SERVER'], token=token, port=port)
     return ret
 
 
 def create_password_email_url(token, port=''):
-    ret = '{server}{port}/?password_reset_token={token}'.format(server=g['SERVER'], token=token, port=port)
+    '''
+    See also create_validation_url for FIXME issue 
+    '''
+
+    ret = '{server}{port}/platform/?password_reset_token={token}'.format(server=g['SERVER'], token=token, port=port)
     return ret
 
 
