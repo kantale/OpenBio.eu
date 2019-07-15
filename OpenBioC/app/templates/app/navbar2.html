@@ -72,7 +72,7 @@
         <!-- ------------------------------------------------------------------------------- -->
         <!-- ---------------- Sign In Form ------------------------------------------------- -->
         <!-- ------------------------------------------------------------------------------- -->
-        <div class="row faster" id="signInForm" ng-show="show_sign_in">
+        <div class="row faster" id="signInForm" ng-show="show_sign_in" style="margin-bottom: 0px;">
             <div class="row">
                 <h4>Sign In</h4>
             </div>
@@ -82,7 +82,7 @@
                         <span class="white-text" ng-bind="login_error_message"></span>
                     </div>
                 </div>
-                <div class="row col s12">
+                <div class="row col s12" style="margin: 0px; padding: 0px;">
                     <div class="input-field col s12">
                         <input id="signInUsername" type="text" class="validate" ng-model="login_username">
                         <label for="signInUsername">Username</label>
@@ -91,22 +91,26 @@
                         <input id="signInPassword" type="password" class="validate" ng-model="login_password">
                         <label for="signInPassword">Password</label>
                     </div>
-                    <p>
+                    <p style="padding-left: 11px;">
                         <label>
                             <input type="checkbox" />
                             <span>Remember me</span>
                         </label>
                     </p>
                 </div>
-                <div class="row col s12">
+                <div class="row col s12" style="margin-bottom: 0px;">
                     <button class="btn waves-effect waves-light" name="action" ng-click="login_login_pressed()">Sign
                         in</button> <!-- modal-close-->
-                    <p>
+                    <p style="margin: 0px;">
                         <small class="form-text text-muted">
                             <a ng-click="signup_forgot_password_clicked()">Forgot Password?</a>
                         </small>
                     </p>
-                    <div class="row" ng-show="signup_forgot_password_show">
+                </div>
+                <!-- Forgot password form -->
+                <div class="row col s12" style="margin: 0px; padding: 0px;">
+                    <div class="col s12" ng-show="signup_forgot_password_show">
+                        <p>Please enter your email address below and we'll send you a link to reset your password</p>
                         <div class="input-field col s6">
                             <label for="forgotPasswordEmail">Please enter your email</label>
                             <input id="forgotPasswordEmail" type="email" class="validate" ng-model="reset_password_email">
@@ -115,7 +119,7 @@
                             <button class="btn waves-effect waves-light" ng-click="login_password_reset_email_send_pressed()">Send account information</button>
                         </div>
                     </div>
-                    <p class="center-align">New user? <a id="modalSignUpBtn" ng-click="new_user_sign_up()">Sign up</a></p>
+                    <p class="center-align" style="margin-bottom: 0px;">New user? <a id="modalSignUpBtn" ng-click="new_user_sign_up()">Sign up</a></p>
                 </div>
             </form>
         </div>
