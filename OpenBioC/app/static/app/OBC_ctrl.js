@@ -574,14 +574,13 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             },
             function(data) {
                 $scope.password_reset_token = '';
-                $scope.show_password_reset = false;
-                $scope.general_success_message = 'Your password has been reset';
+                $scope.toast('Your password has been reset', 'success');
             },
             function(data) {
-                $scope.password_reset_error_message = data['error_message'];
+                $scope.toast(data['error_message'], 'error');
             },
             function(statusText) {
-                $scope.password_reset_error_message = statusText;
+                $scope.toast(statusText, 'error');
             }
         );
     };
