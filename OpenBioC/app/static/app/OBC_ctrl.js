@@ -990,7 +990,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         //Is user's email validated?
         if (!$scope.user_is_validated) {
-            $scope.toast('Please <button class="btn-flat">validate</button> your email to create a new Tool or Data!', 'error');
+            $scope.toast('Please confirm your email to create a new Tool or Data! <button class="waves-effect waves-light btn red lighten-3 black-text">Confirm</button>', 'error');
             return;
         }
 
