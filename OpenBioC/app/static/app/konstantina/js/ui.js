@@ -114,11 +114,11 @@ window.onload = function () {
 
         // ----------------------------------------- Sign up / Sign in Modal ---------------------------------------------
         $('#signModal').modal({
-            // Callback for Modal close
-            onCloseEnd: function () {
-                document.getElementById('signUpForm').style.display = 'none';
-                document.getElementById('signInForm').style.display = 'block';
-            }
+//            // Callback for Modal close
+//            onCloseEnd: function () {
+//                document.getElementById('signUpForm').style.display = 'none';
+//                document.getElementById('signInForm').style.display = 'block';
+//            }
         });
 
         // ---------------------------------------------- Accordion ------------------------------------------------------
