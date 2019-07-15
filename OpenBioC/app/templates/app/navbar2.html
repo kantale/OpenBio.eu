@@ -69,10 +69,10 @@
 <!-- Sign Modal Structure -->
 <div id="signModal" class="modal">
     <div class="modal-content">
-        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
-        <!-- ----------------------------------------------------------- Sign In Form ------------------------------------------------------------------------ -->
-        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
-        <div class="row faster" id="signInForm">
+        <!-- ------------------------------------------------------------------------------- -->
+        <!-- ---------------- Sign In Form ------------------------------------------------- -->
+        <!-- ------------------------------------------------------------------------------- -->
+        <div class="row faster" id="signInForm" ng-show="show_sign_in">
             <div class="row">
                 <h4>Sign In</h4>
             </div>
@@ -115,14 +115,14 @@
                             <button class="btn waves-effect waves-light" ng-click="login_password_reset_email_send_pressed()">Send account information</button>
                         </div>
                     </div>
-                    <p class="center-align">New user? <a href="#" id="modalSignUpBtn">Sign up</a></p>
+                    <p class="center-align">New user? <a id="modalSignUpBtn" ng-click="new_user_sign_up()">Sign up</a></p>
                 </div>
             </form>
         </div>
         <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
         <!-- ----------------------------------------------------------- Sign Up Form ------------------------------------------------------------------------ -->
         <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
-        <div class="row faster" id="signUpForm" style="display: none;">
+        <div class="row faster" id="signUpForm" ng-show="show_sign_up">
             <div class="row">
                 <h4>Sign Up</h4>
             </div>
@@ -161,7 +161,38 @@
                         </small>
                     </p>
                     </div>
-                    <p class="center-align">Already a member? <a href="#" id="modalSignInBtn">Sign in</a></p>
+                    <p class="center-align">Already a member? <a id="modalSignInBtn" ng-click="new_user_sign_in()">Sign in</a></p>
+                </div>
+            </form>
+        </div>
+        <!-- ----------------->
+        <!-- RESET PASSWORD -->
+        <!-------------------->
+        <div class="row faster" id="resetPasswordForm" ng-show="show_reset_password">
+            <div class="row">
+                <h4>Reset your password</h4>
+            </div>
+            <form>
+                <div class="row">
+                    <div class="input-field col s12 m6 grid-s12-m6-l6">
+                        <input id="resetsignUpUsername" type="text" class="validate" ng-model="reset_signup_username" ng-disabled="true">
+                        <label for="resetsignUpUsername">Username</label>
+                    </div>
+                    <div class="input-field col s12 m6 grid-s12-m6-l6">
+                        <input id="resetsignUpEmail" type="email" class="validate" ng-model="reset_signup_email" ng-disabled="true">
+                        <label for="resetsignUpEmail">Email</label>
+                    </div>
+                    <div class="input-field col s12 m6 grid-s12-m6-l6">
+                        <input id="resetsignUpPassword" type="password" class="validate" ng-model="reset_signup_password">
+                        <label for="resetsignUpPassword">Password</label>
+                    </div>
+                    <div class="input-field col s12 m6 grid-s12-m6-l6">
+                        <input id="resetsignUpConfirmPassword" type="password" class="validate" ng-model="reset_signup_confirm_password">
+                        <label for="resetsignUpConfirmPassword">Confirm Password</label>
+                    </div>
+                </div>
+                <div class="row col s12">
+                    <button class="btn waves-effect waves-light" ng-click="reset_password_pressed()">Reset</button>
                 </div>
             </form>
         </div>
