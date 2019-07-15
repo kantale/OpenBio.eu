@@ -260,6 +260,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.profile_website = data['profile_website'];
                 $scope.profile_affiliation = data['profile_affiliation'];
                 $scope.profile_publicinfo = data['profile_publicinfo'];
+                $scope.profile_created_at = data['profile_created_at'];
 
                 $timeout(function(){M.updateTextFields()}, 10);
             },
