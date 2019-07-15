@@ -481,6 +481,27 @@ def check_password(password):
 
     return True, ''
 
+def send_validation_email_inner(request, email):
+    '''
+    Send an email validation email
+    Returns 
+    suc, error_message, uuid_token
+    '''
+
+    uuid_token = create_uuid_token()
+    try:
+        send_mail(
+            '[{server}] Please confirm your email'.format(server=g['SERVER']), # subject
+            confirm_email_body(uuid_token, port=request_port_to_url(request)), # body message
+            g['EMAIL'], # Sender, FROM
+            [email], # List of recipients
+        )
+    except Exception as e:
+        return False, 'Could not send an email to {email}. Contact {ADMIN}'.format(email=email, ADMIN=g['ADMIN']), None
+
+    return True, '', uuid_token
+
+
 def None_if_empty_or_nonexisting(d, key):
     '''
     Useful if want to set None values to empty values that we got from Ajax
@@ -891,9 +912,6 @@ def register(request, **kwargs):
         # An exception did NOT happen (as it should)
         return fail('A user with this email already exists')
 
-    ## Try to send an email
-    uuid_token = create_uuid_token()
-
     ## smtplib method
 #    try:
 #        send_mail(
@@ -908,16 +926,10 @@ def register(request, **kwargs):
 #        pass ## FIXME 
     
     ## django send_mail
-    try:
-        send_mail(
-            '[{server}] Please confirm your email'.format(server=g['SERVER']), # subject
-            confirm_email_body(uuid_token, port=request_port_to_url(request)), # body message
-            g['EMAIL'], # Sender, FROM
-            [signup_email], # List of recipients
-        )
-    except Exception as e:
-        return fail('Could not send an email to {signup_email}. Contact {ADMIN}'.format(signup_email=signup_email, ADMIN=g['ADMIN']))
 
+    suc, error_message, uuid_token = send_validation_email_inner(request, signup_email)
+    if not suc:
+        return fail(error_message)
 
     #Create user
     user = User.objects.create_user(signup_username, signup_email, signup_password, last_login=now()) # https://stackoverflow.com/questions/33683619/null-value-in-column-last-login-violates-not-null-constraint/42502311
@@ -1004,6 +1016,32 @@ def password_reset(request, **kwargs):
 
     #Invalidate token
     obc_user.password_reset_token = None
+    obc_user.save()
+
+    return success()
+
+@has_data
+def send_validation_email(request, **kwargs):
+    '''
+    url: send_validation_email/
+    '''
+
+    if request.user.is_anonymous:
+        return fail('Error 8912'); # This should never happen
+
+    try:
+        obc_user = OBC_user.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        return fail('Error 8711'); # This should never happen
+
+    email = request.user.email
+
+    suc, error_message, uuid_token = send_validation_email_inner(request, email)
+    if not suc:
+        return fail(error_message)
+
+    #Set the validation token
+    obc_user.email_validation_token = uuid_token
     obc_user.save()
 
     return success()
