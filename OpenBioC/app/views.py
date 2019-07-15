@@ -440,11 +440,11 @@ def password_reset_check_token(token):
         timestamp = obc_user.password_reset_timestamp
         seconds = (now() - timestamp).total_seconds()
         if seconds > 3600 * 2: # 2 Hours
-            return False, 'Password Reset Token expires after 2 Hours'
+            return False, 'Password Reset Token expires after 2 Hours', None
         else:
-            return True, ''
+            return True, '', obc_user
     else:
-        return False, "Unknown token"
+        return False, "Unknown token", None
 
 
 def now():
@@ -777,6 +777,9 @@ def index(request):
     context['username'] = username
     context['general_alert_message'] = ''
     context['general_success_message'] = ''
+    context['password_reset_token'] = ''
+    context['reset_signup_username'] = ''
+    context['reset_signup_email'] = ''
 
     #Check for GET variables
     GET = request.GET
@@ -794,9 +797,11 @@ def index(request):
     password_reset_token = GET.get('password_reset_token', '')
     context['password_reset_token'] = '' # It will be set after checks
     if password_reset_token:
-        password_reset_check_success, password_reset_check_message = password_reset_check_token(password_reset_token)
+        password_reset_check_success, password_reset_check_message, obc_user = password_reset_check_token(password_reset_token)
         if password_reset_check_success:
             context['password_reset_token'] = password_reset_token
+            context['reset_signup_username'] = obc_user.user.username
+            context['reset_signup_email'] = obc_user.user.email
         else:
             context['general_alert_message'] = password_reset_check_message
 	

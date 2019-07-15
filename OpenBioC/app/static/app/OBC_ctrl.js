@@ -129,6 +129,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.scheduled_main_search_changed = false; // https://openfolder.sh/django-tutorial-as-you-type-search-with-ajax
         $scope.signup_forgot_password_show = false; 
 
+        $scope.show_sign_in = false;
+        $scope.show_sign_up = false;
+        $scope.show_reset_password = false;
+
         $scope.get_init_data();
 
 
@@ -209,7 +213,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     };
 
     /*
-    *
+    * Generate a toast
     */
     $scope.toast = function(message, type) {
         if (type == 'error') {
@@ -219,7 +223,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             generateToast(message, 'green lighten-2 black-text', 'stay on');
         }
         else {
-            console.warn('Error: 8133 Unknown toast type:' + type);
+            console.warn('Error: 8133 Unknown toast type: ' + type);
         }
     };
 
@@ -312,7 +316,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     */
     $scope.inner_hide_all_navbar = function() {
     	$scope.show_login = false;
-        $scope.show_signup = false;
+        //$scope.show_signup = false;
         $scope.show_reset_password_email = false;
         $scope.show_password_reset = $scope.password_reset_token ? true : false;
         $scope.show_user_profile = false;
@@ -358,7 +362,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     };
 
     /*
-    * Navbar --> Signup --> pressed 
+    * Navbar --> Sign in --> pressed 
     */
     $scope.navbar_signup_pressed = function() {
     	// $scope.inner_hide_all_navbar(); // FROM OLD UI. NOT RELEVANT IN M
@@ -366,10 +370,36 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         //$scope.show_signup = true; // FROM OLD UI. NOT RELEVANT IN M
 
-        $scope.signup_error_message = '';
-        $scope.login_error_message = '';
+        //$scope.signup_error_message = '';
+        //$scope.login_error_message = '';
         //$("#signModal").modal('open');
+        $scope.show_sign_in = true;
         M.Modal.getInstance($("#signModal")).open();
+    };
+
+    /*
+    * Navbar --> Sign in (pressed) --> New user? Sign up! (link) --> pressed
+    */
+    $scope.new_user_sign_up = function() {
+
+        //$('#signInForm').animateCss('fadeOut', function () {});
+
+        $scope.show_sign_in = false;
+        $scope.show_sign_up = true;
+
+        $('#signUpForm').animateCss('fadeIn', function () {});
+    };
+
+    /*
+    * Navbar --> Sign in (pressed) --> New user? Sign up! (link) --> pressed --> Already a member? Sign in! (link) --> pressed
+    */
+    $scope.new_user_sign_in = function() {
+
+        //$('#signUpForm').animateCss('fadeOut', function () {});
+        $scope.show_sign_in = true;
+        $scope.show_sign_up = false;
+        $('#signInForm').animateCss('fadeIn', function () {});
+
     };
 
     /*
@@ -387,7 +417,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             },
             function (data) {
                 $scope.signup_error_message = '';
-                $scope.show_signup = false;
+                //$scope.show_signup = false;
                 //$scope.general_success_message = 'Thank you for registering to openbio.eu . A validation link has been sent to ' + $scope.signup_email;
                 //$scope.general_alert_message = '';
                 $scope.toast('Thank you for registering to openbio.eu . A validation link has been sent to ' + $scope.signup_email, 'success');
