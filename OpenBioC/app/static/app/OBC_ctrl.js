@@ -572,8 +572,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.ajax(
             'password_reset/',
             {
-                'password_reset_password': $scope.password_reset_password,
-                'password_reset_confirm_password': $scope.password_reset_confirm_password,
+                'password_reset_password': $scope.reset_signup_password,
+                'password_reset_confirm_password': $scope.reset_signup_confirm_password,
                 'password_reset_token': $scope.password_reset_token
             },
             function(data) {
