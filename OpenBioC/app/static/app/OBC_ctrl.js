@@ -403,7 +403,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             function(statusText) {
                 //$scope.signup_error_message = statusText;
                 //$scope.general_success_message = '';
-                $scope.toast(data[statusText, 'error');
+                $scope.toast(statusText, 'error');
             }
         );
 
