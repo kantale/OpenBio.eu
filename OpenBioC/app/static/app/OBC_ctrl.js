@@ -61,6 +61,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.general_success_message = window.general_success_message;
         $scope.general_alert_message = window.general_alert_message;
         $scope.password_reset_token = window.password_reset_token;
+        $scope.user_is_validated = window.user_is_validated;
 
         $scope.main_container_show = true;
         $scope.profile_container_show = false;
@@ -259,6 +260,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.profile_website = data['profile_website'];
                 $scope.profile_affiliation = data['profile_affiliation'];
                 $scope.profile_publicinfo = data['profile_publicinfo'];
+                $scope.profile_created_at = data['profile_created_at'];
 
                 $timeout(function(){M.updateTextFields()}, 10);
             },
@@ -984,6 +986,12 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         //Is user registered?
         if (!$scope.username) {
             $scope.toast('Login to create a new Tool or Data!', 'error');
+            return;
+        }
+
+        //Is user's email validated?
+        if (!$scope.user_is_validated) {
+            $scope.toast('Please <button class="btn-flat">validate</button> your email to create a new Tool or Data!', 'error');
             return;
         }
 
