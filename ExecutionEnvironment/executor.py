@@ -51,7 +51,7 @@ fi
 function update_server_status()
 {
 
-    local command="curl -s --header \"Content-Type: application/json\" --request POST -d '{\"token\": \"$obc_current_token\", \"status\": \"$1\"}' http://0.0.0.0:8200/report/"
+    local command="curl -s --header \"Content-Type: application/json\" --request POST -d '{\"token\": \"$obc_current_token\", \"status\": \"$1\"}' {server}/report/"
 
     local c=$(eval "$command")
 
@@ -85,6 +85,14 @@ function obc_validate() {
 }
 
 bash_patterns['get_json_value'] = '{variable}=$(obc_parse_json "${json_variable}" "{json_key}")'
+
+def setup_bash_patterns(args):
+    '''
+    Change some values of te bash patterns according to arg arguments
+    '''
+    bash_patterns['update_server_status'] = bash_patterns['update_server_status'].replace('{server}', args.server) # .format does not work since it contains "{"
+
+
 
 ## Helper functions
 def base64_encode(s):
@@ -632,9 +640,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='OpenBio-C worfklow execute-or')
 
     parser.add_argument('-W', '--workflow', dest='workflow_filename', help='JSON filename of the workflow to run', required=True)
+    parser.add_argument('-S', '--server', dest='server', help='The Server\'s url. It should contain http or https', default='https://www.openbio.eu/platform')
 
     args = parser.parse_args()
-
+    setup_bash_patterns(args)
 
     w = Workflow(args.workflow_filename)
     #print (w.root_inputs_outputs)
