@@ -1850,6 +1850,7 @@ def run_workflow(request, **kwargs):
     ret = {
         'output_object': output_object,
         'report_created': report_created,
+        'nice_id': nice_id,
     }
 
     return success(ret)
