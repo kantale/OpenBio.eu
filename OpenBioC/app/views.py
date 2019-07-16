@@ -481,6 +481,27 @@ def check_password(password):
 
     return True, ''
 
+def send_validation_email_inner(request, email):
+    '''
+    Send an email validation email
+    Returns 
+    suc, error_message, uuid_token
+    '''
+
+    uuid_token = create_uuid_token()
+    try:
+        send_mail(
+            '[{server}] Please confirm your email'.format(server=g['SERVER']), # subject
+            confirm_email_body(uuid_token, port=request_port_to_url(request)), # body message
+            g['EMAIL'], # Sender, FROM
+            [email], # List of recipients
+        )
+    except Exception as e:
+        return False, 'Could not send an email to {email}. Contact {ADMIN}'.format(email=email, ADMIN=g['ADMIN']), None
+
+    return True, '', uuid_token
+
+
 def None_if_empty_or_nonexisting(d, key):
     '''
     Useful if want to set None values to empty values that we got from Ajax
@@ -891,9 +912,6 @@ def register(request, **kwargs):
         # An exception did NOT happen (as it should)
         return fail('A user with this email already exists')
 
-    ## Try to send an email
-    uuid_token = create_uuid_token()
-
     ## smtplib method
 #    try:
 #        send_mail(
@@ -908,16 +926,10 @@ def register(request, **kwargs):
 #        pass ## FIXME 
     
     ## django send_mail
-    try:
-        send_mail(
-            '[{server}] Please confirm your email'.format(server=g['SERVER']), # subject
-            confirm_email_body(uuid_token, port=request_port_to_url(request)), # body message
-            g['EMAIL'], # Sender, FROM
-            [signup_email], # List of recipients
-        )
-    except Exception as e:
-        return fail('Could not send an email to {signup_email}. Contact {ADMIN}'.format(signup_email=signup_email, ADMIN=g['ADMIN']))
 
+    suc, error_message, uuid_token = send_validation_email_inner(request, signup_email)
+    if not suc:
+        return fail(error_message)
 
     #Create user
     user = User.objects.create_user(signup_username, signup_email, signup_password, last_login=now()) # https://stackoverflow.com/questions/33683619/null-value-in-column-last-login-violates-not-null-constraint/42502311
@@ -1007,6 +1019,36 @@ def password_reset(request, **kwargs):
     obc_user.save()
 
     return success()
+
+@has_data
+def send_validation_email(request, **kwargs):
+    '''
+    url: send_validation_email/
+    '''
+
+    if request.user.is_anonymous:
+        return fail('Error 8912'); # This should never happen
+
+    try:
+        obc_user = OBC_user.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        return fail('Error 8711'); # This should never happen
+
+    email = request.user.email
+
+    suc, error_message, uuid_token = send_validation_email_inner(request, email)
+    if not suc:
+        return fail(error_message)
+
+    #Set the validation token
+    obc_user.email_validation_token = uuid_token
+    obc_user.save()
+
+    ret = {
+        'email': request.user.email
+    }
+
+    return success(ret)
 
 
 @has_data
@@ -1279,7 +1321,11 @@ def tool_get_dependencies(request, **kwargs):
 
     return success(ret)
 
-
+def validate_toast_button():
+    '''
+    This button should be similar with the one generated from angular
+    '''
+    return '<button class="waves-effect waves-light btn red lighten-3 black-text" onclick="window.OBCUI.send_validation_mail()">Validate</button>'
 
 @has_data
 def tools_add(request, **kwargs):
@@ -1292,6 +1338,9 @@ def tools_add(request, **kwargs):
 
     if request.user.is_anonymous: # Server should always check..
         return fail('Please login to create new tools')
+
+    if not user_is_validated(request):
+        return fail('Please validate your email to create new tools ' + validate_toast_button());
     
     tool_website = kwargs.get('tool_website', '')
     #if not tool_website:
@@ -1569,6 +1618,8 @@ def workflows_add(request, **kwargs):
     if request.user.is_anonymous: # Server should always check..
         return fail('Please login to create new workflow')
 
+    if not user_is_validated(request):
+        return fail('Please validate your email to create new workflows ' + validate_toast_button());
 
     workflow_info_name = kwargs.get('workflow_info_name', '')
     if not workflow_info_name.strip():
@@ -1755,11 +1806,15 @@ def run_workflow(request, **kwargs):
         workflow_tool['data']['os_choices'] = [choice.os_choices for choice in workflow_tool_obj.os_choices.all()]
         workflow_tool['data']['dependencies'] = [str(tool) for tool in workflow_tool_obj.dependencies.all()]
 
-    # Create a new Report object
-    if request.user.is_anonymous:
+    # Create a new Report object 
+    if not user_is_validated(request):
+        '''
+        If user is anonymous or with non-validated email, we do not create a report!
+        '''
         run_report = None
         nice_id = None
         token = None
+        report_created = False # Do we create a report upon execution of this workflow?
     else:
         run_report = Report(
             obc_user = OBC_user.objects.get(user=request.user),
@@ -1775,6 +1830,7 @@ def run_workflow(request, **kwargs):
         run_report.tokens.add(report_token)
         run_report.save()
         token = str(report_token.token)
+        report_created = True
 
     output_object = {
         'arguments': workflow_options_arg,
@@ -1792,7 +1848,8 @@ def run_workflow(request, **kwargs):
     #response = HttpResponse(the_script, content_type='application/x-sh')
     #response['Content-Disposition'] = 'attachment; filename="script.sh"'
     ret = {
-        'output_object': output_object
+        'output_object': output_object,
+        'report_created': report_created,
     }
 
     return success(ret)
@@ -2224,6 +2281,10 @@ def references_add(request, **kwargs):
     if request.user.is_anonymous:
         return fail('Please login to create References')
 
+    # Check if user is validated
+    if not user_is_validated(request):
+        return fail('Please validate your email to create new references ' + validate_toast_button());
+
     references_name = kwargs.get('references_name', '')
     if not references_name:
         return fail('References Name is required')
@@ -2627,6 +2688,9 @@ def qa_add_comment(request, **kwargs):
     if request.user.is_anonymous:
         return fail('Please login to add a new comment')
 
+    if not user_is_validated(request):
+        return fail('Please validate your email to add a new comment' + validate_toast_button());
+
     id_ = kwargs.get('qa_id', None)
     if id_ is None:
         return fail('Could not find Q&A id')
@@ -2667,6 +2731,9 @@ def gen_qa_add_comment(request, **kwargs):
     '''
     if request.user.is_anonymous:
         return fail('Please login to add a new comment')
+
+    if not user_is_validated(request):
+        return fail('Please validate your email to add a new comment ' + validate_toast_button());
 
     comment_pk = kwargs['comment_pk'] 
     object_pk = kwargs['object_pk']
