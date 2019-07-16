@@ -819,9 +819,6 @@ def index(request):
     context['reset_signup_username'] = ''
     context['reset_signup_email'] = ''
 
-    #Is user validated
-    context['user_is_validated'] = user_is_validated(request)
-
     #Check for GET variables
     GET = request.GET
 
@@ -833,6 +830,9 @@ def index(request):
             context['general_success_message'] = validation_message
         else:
             context['general_alert_message'] = validation_message
+
+    #Is user validated
+    context['user_is_validated'] = user_is_validated(request)
 
     # PASSWORD RESET
     password_reset_token = GET.get('password_reset_token', '')
