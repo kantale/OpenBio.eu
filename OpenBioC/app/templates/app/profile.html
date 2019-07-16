@@ -13,10 +13,10 @@
             </ul>
         </div>
     </div>
-    <div class="card red lighten-2" style="margin-top: 14px;">
+    <div class="card red lighten-2" style="margin-top: 14px;" ng-show="!user_is_validated">
             <div class="card-content">
-                <p>Please confirm your email address</p>
-                <a class="waves-effect btn-flat red lighten-3 right" style="margin-top: -30px;">Confirm email</a>
+                <p>Please validate your email address</p>
+                <a class="waves-effect btn-flat red lighten-3 right" style="margin-top: -30px;" onclick="window.OBCUI.send_validation_mail()">Validate email</a>
             </div>
         </div>
     <div id="profileContent" class="col s12 m12 l10">
