@@ -61,6 +61,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.general_success_message = window.general_success_message;
         $scope.general_alert_message = window.general_alert_message;
         $scope.password_reset_token = window.password_reset_token;
+        $scope.user_is_validated = window.user_is_validated;
 
         $scope.main_container_show = true;
         $scope.profile_container_show = false;
@@ -221,9 +222,19 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         else if (type == 'success') {
             generateToast(message, 'green lighten-2 black-text', 'stay on');
         }
+        else if (type == 'warning') {
+            generateToast(message, 'orange lighten-2 black-text', 'stay on');
+        }
         else {
             console.warn('Error: 8133 Unknown toast type: ' + type);
         }
+    };
+
+    /*
+    * Generate a "Validate" toast
+    */
+    $scope.validation_toast = function(message) {
+        $scope.toast(message + ' <button class="waves-effect waves-light btn red lighten-3 black-text" onclick="window.OBCUI.send_validation_mail()">Validate</button>', 'error');
     };
 
     /*
@@ -254,6 +265,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.profile_website = data['profile_website'];
                 $scope.profile_affiliation = data['profile_affiliation'];
                 $scope.profile_publicinfo = data['profile_publicinfo'];
+                $scope.profile_created_at = data['profile_created_at'];
 
                 $timeout(function(){M.updateTextFields()}, 10);
             },
@@ -403,6 +415,25 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.show_reset_password = false;
         $('#signInForm').animateCss('fadeIn', function () {});
 
+    };
+
+    /*
+    * Send a validation email
+    */
+    $scope.send_validation_email = function() {
+        $scope.ajax(
+            'send_validation_email/',
+            {},
+            function(data) {
+                $scope.toast('A validation email has been sent to: ' + data['email'], 'success');
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
     };
 
     /*
@@ -982,6 +1013,12 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             return;
         }
 
+        //Is user's email validated?
+        if (!$scope.user_is_validated) {
+            $scope.validation_toast('Validate your email to create a new Tool or Data!');
+            return;
+        }
+
         $scope.tools_search_warning = '';
 
         //Close Workflow right panel
@@ -1153,6 +1190,12 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         if (!$scope.username) {
             $scope.toast('Login to create a new workflow!', 'error');
             return
+        }
+
+        //Is user's email validated?
+        if (!$scope.user_is_validated) {
+            $scope.validation_toast('Validate your email to create a new workflow!');
+            return;
         }
 
         //Close tool accordion
@@ -1327,6 +1370,12 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         if (!$scope.username) {
             $scope.tools_info_error_message = 'Login to create new tools';
+            return;
+        }
+
+        //Is user's email validated?
+        if (!$scope.user_is_validated) {
+            $scope.validation_toast('Validate your email to create a new Tool or Data!')
             return;
         }
 
@@ -2134,6 +2183,13 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             $scope.toast('Login to create a new reference!', 'error');
             return;
         }
+
+        //Is user's email validated?
+        if (!$scope.user_is_validated) {
+            $scope.validation_toast('Validate your email to create a new reference!');
+            return;
+        }
+
 
         $scope.hide_all_right_accordions('references');
 
@@ -3271,6 +3327,12 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             return;
         }
 
+        //Is user's email validated?
+        if (!$scope.user_is_validated) {
+            $scope.validation_toast('Validate your email to create a new Workflow!');
+            return;
+        }
+
         //After fork, we should change the IDs 
         window.forkWorkflow();
 
@@ -3403,6 +3465,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 }).get(0).click();
 
                 //$scope.toast('Run workflow problem: ' + data['error_message'], 'error');
+                if (!data['report_created']) {
+                    $scope.toast('You are not a registered user or your email is not validated. Although this workflow can be executed, the execution will not generate a report.', 'warning')
+                }
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');
@@ -3586,6 +3651,13 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             $scope.toast('Login to post a new question!', 'error');
             return;
         }
+
+        //Is user's email validated?
+        if (!$scope.user_is_validated) {
+            $scope.validation_toast('Validate your email to post a new question!');
+            return;
+        }
+
 
         $scope.hide_all_right_accordions('qas');
 
