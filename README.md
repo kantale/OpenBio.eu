@@ -16,16 +16,18 @@ Main features include:
 * Fork existing tools/workflows to create your own versions.
 * Add markdown descriptions to these objects. Use ```t/tool_name/tool_version/id``` and ```w/worfklow_name/id``` to link to an object anywhere in the site. 
 * Each object has a Questions and Answers section.
-* Add scientific references. Link with ```r/reference_name```. Bored to add all bibliographic details for a paper?. Just add the [DOI](https://www.doi.org/). The system will get the rest. 
-* Execute workflows on your own enviroment (you do not have to share data with openbio.eu). Monitor the execution, privately, during runtime in a graphic interface.
+* Add scientific references. Link with ```r/reference_name```. Bored to add all bibliographic details for a paper? Just add the [DOI](https://www.doi.org/). The system will get the rest. 
+* Execute workflows on your own enviroment. You do not have to share code or data with openbio.eu. Only the bash commands that install/download them. Monitor the execution, privately, during runtime in a graphic interface.
 * ...more to come 
 
 
 ## Directories
-* OpenBioC: The awesome OpenBioC platform!
+* OpenBioC: The awesome OpenBioC platform! This directory also contains:
+    * app/ The Django application of the project
+    * static/ A Django application for the frontend site that is specific to this project. 
 * [deployment_notes.md](deployment_notes.md): Some notes on how to deploy on an Ubuntu 16.04 server 
-* ExecutionEnvironment. The Execution Environment of openbio.eu . Use [executor.py](ExecutionEnvironment/executor.py) to execute a worfklow in json format.
-* [discourse-graph]. A very experimental effort to add a discourse graph to the discussion of objects in openbio.eu.
+* ExecutionEnvironment. The Execution Environment of openbio.eu . Use [executor.py](ExecutionEnvironment/executor.py) to execute a worfklow in json format that downloaded from openbio.eu.
+* discourse-graph. A very experimental effort to add a discourse graph to the discussion of objects in openbio.eu.
 
 
 ## For Developers
