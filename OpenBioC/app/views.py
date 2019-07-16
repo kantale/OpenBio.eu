@@ -1044,7 +1044,11 @@ def send_validation_email(request, **kwargs):
     obc_user.email_validation_token = uuid_token
     obc_user.save()
 
-    return success()
+    ret = {
+        'email': request.user.email
+    }
+
+    return success(ret)
 
 
 @has_data
