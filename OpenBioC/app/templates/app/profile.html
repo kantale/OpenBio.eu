@@ -4,7 +4,7 @@
     <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
     <div>
         <div id="scrollspyMenu" class="col s12 m12 l2 hide-on-med-and-down pushpin pushpin-demo-nav"
-            style="position:fixed; padding-top: 100px">
+            style="position:fixed; padding-top: 200px">
             <ul class="section table-of-contents">
                 <li><a class="lien_projet" href="#profileCard">Profile</a></li>
                 <li><a class="lien_projet" href="#inboxCard" ng-show="false">Inbox</a></li>
@@ -13,6 +13,12 @@
             </ul>
         </div>
     </div>
+    <div class="card red lighten-2" style="margin-top: 14px;" ng-show="!user_is_validated">
+            <div class="card-content">
+                <p>Please validate your email address</p>
+                <a class="waves-effect btn-flat red lighten-3 right" style="margin-top: -30px;" onclick="window.OBCUI.send_validation_mail()">Validate email</a>
+            </div>
+        </div>
     <div id="profileContent" class="col s12 m12 l10">
         <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
         <!-- ------------------------------------------------------- Profile --------------------------------------------------------------------------------- -->
@@ -64,7 +70,7 @@
                                             <label for="profileEmail">Email</label>
                                         </div>
                                         <div class="input-field col s12">
-                                            <input id="profileMember" type="text" class="validate" disabled value="10/10/10">
+                                            <input id="profileMember" type="text" class="validate" ng-model="profile_created_at" disabled>
                                             <label for="profileMember">Member Since</label>
                                         </div>
                                         <div class="input-field col s12">
