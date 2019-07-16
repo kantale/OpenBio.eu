@@ -20,7 +20,6 @@ Main features include:
 * Execute workflows on your own enviroment. You do not have to share code or data with openbio.eu. Only the bash commands that install/download them. Monitor the execution, privately, during runtime in a graphic interface.
 * ...more to come 
 
-
 ## Directories
 * OpenBioC: The awesome OpenBioC platform! This directory also contains:
     * app/ The Django application of the project
@@ -29,14 +28,15 @@ Main features include:
 * ExecutionEnvironment. The Execution Environment of openbio.eu . Use [executor.py](ExecutionEnvironment/executor.py) to execute a worfklow in json format that you downloaded from openbio.eu.
 * discourse-graph. A very experimental effort to add a discourse graph to the discussion of objects in openbio.eu.
 
-
 ## For Developers
 We will be very happy to accept Pull Requests. The project does not have any active development or contribution guidelines at the moment. 
 
 ## Contributors
-Main developer is [Alexandros Kanterakis](https://www.ics.forth.gr/cbml/index_main.php?l=e&c=730). For a complete list of current contributors see [CONTRIBUTORS.md](CONTRIBUTORS.md)
+Main developer is [Alexandros Kanterakis](https://www.ics.forth.gr/cbml/index_main.php?l=e&c=730) [mail](mailto:alexandros.kanterakis@gmail.com), [twitter](https://www.twitter.com/kanterakis). For a complete list of current contributors see [CONTRIBUTORS.md](CONTRIBUTORS.md)
 
 ## Funding
 This research has been co‐financed by the European Union and Greek national funds through the Operational Program Competitiveness, Entrepreneurship and Innovation, under the call RESEARCH – CREATE – INNOVATE (project code: T1EDK - 05275)
 
+## More
+* Twitter: https://twitter.com/openbioe/ 
 
