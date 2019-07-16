@@ -65,6 +65,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         $scope.main_container_show = true;
         $scope.profile_container_show = false;
+        $scope.documentation_container_show = false;
 
         $scope.inner_hide_all_navbar();
         $scope.inner_hide_all_error_messages();
@@ -243,10 +244,27 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     };
 
     /*
+    * Navbar --> Documentation (link) --> Clicked
+    */
+    $scope.documenation_navbar_clicked = function() {
+        $scope.profile_container_show = false;
+        $scope.main_container_show = false;
+        $scope.documentation_container_show = true;
+    };
+
+    /*
+    * Navbar --> Documentation (link) --> Clicked --> Cancel (link) --> Clicked
+    */
+    $scope.documentation_cancel_clicked = function() {
+        $scope.profile_cancel_clicked();
+    };
+
+    /*
     * Profile --> Cancel --> clicked 
     */
     $scope.profile_cancel_clicked = function() {
         $scope.profile_container_show = false;
+        $scope.documentation_container_show = false;
         $scope.main_container_show = true;
     };
 
@@ -255,6 +273,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     */
     $scope.navbar_profile_clicked = function() {
         $scope.main_container_show = false;
+        $scope.documentation_container_show = false;
         $scope.profile_container_show = true;
 
         //Fetch profile info
