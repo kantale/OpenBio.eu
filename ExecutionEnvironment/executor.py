@@ -152,7 +152,7 @@ class Workflow:
         self.current_token = self.workflow['token']
 
 
-        logging.info('Workflow Name: {}   Edit: {}   Run: {}'.format(
+        logging.info('Workflow Name: {}   Edit: {}   Report: {}'.format(
             self.root_workflow['name'], self.root_workflow['edit'], self.nice_id,
             ))
 

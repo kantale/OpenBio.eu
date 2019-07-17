@@ -2891,9 +2891,16 @@ window.onload = function () {
         });
     };
 
-    angular.element($('#angular_div')).scope().$apply(function () {
-         angular.element($('#angular_div')).scope().show_reset_password_from_ui();
-    });
+    if (window.password_reset_token) {
+        setTimeout(function(){ 
+
+            angular.element($('#angular_div')).scope().$apply(function () {
+                 angular.element($('#angular_div')).scope().show_reset_password_from_ui();
+            });
+
+        }, 1000);
+
+    }
  
 
 };
