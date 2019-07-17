@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [
 	path('', views.index),
+	re_path(r'^[td]/(?P<tool_name>[\w]+)/(?P<tool_version>[\w\.]+)/(?P<tool_edit>[\d]+)/$', views.index),
 	path('register/', views.register), # Register a new user 
 	path('login/', views.login), # Login a user
 	path('logout/', views.logout), # Logout a user
