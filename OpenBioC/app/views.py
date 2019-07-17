@@ -145,14 +145,19 @@ def user_is_validated(request):
     '''
 
     if request.user.is_anonymous:
+        #print ('User is anonymous')
         return False
 
     try:
         obc_user = OBC_user.objects.get(user=request.user)
     except ObjectDoesNotExist:
+        #print ('User does not exist')
         return False # This should never happen
 
-    return obc_user.email_validated
+    ret = obc_user.email_validated
+    #print ('User is validated:', ret)
+
+    return ret
 
 
 def resolve_doi(doi):
@@ -497,7 +502,7 @@ def send_validation_email_inner(request, email):
             [email], # List of recipients
         )
     except Exception as e:
-        return False, 'Could not send an email to {email}. Contact {ADMIN}'.format(email=email, ADMIN=g['ADMIN']), None
+        return False, 'Could not send an email to {email}. Contact {ADMIN}'.format(email=email, ADMIN=g['ADMIN']), None # Better to add None
 
     return True, '', uuid_token
 
@@ -1044,6 +1049,8 @@ def send_validation_email(request, **kwargs):
     obc_user.email_validation_token = uuid_token
     obc_user.save()
 
+    #print ('Validation token:', uuid_token)
+
     ret = {
         'email': request.user.email
     }
@@ -1072,10 +1079,15 @@ def login(request, **kwargs):
 
     django_login(request, user)
 
+    obc_user = OBC_user.objects.get(user=user)
+
+    #print ('LOGIN: user_is_validated', obc_user.email_validated)
+
     # Since we logged in the csrf token has changed.
     ret = {
         'username': login_username,
         'csrf_token': get_token(request),
+        'user_is_validated': obc_user.email_validated,
     }
 
     return success(ret)
