@@ -7,8 +7,7 @@
                 style="position:fixed; padding-top: 200px">
                 <ul class="section table-of-contents">
                     <li><a class="lien_projet" href="#card1">Execute a workflow</a></li>
-                    <li><a class="lien_projet" href="#card2">Card2</a></li>
-                        <!--
+                    <!--
                     <li><a class="lien_projet" href="#card3">card3</a></li>
                     <li><a class="lien_projet" href="#card4">card4</a></li>
                     -->
@@ -33,46 +32,9 @@
                                     </div>
                                     <blockquote><span class="card-title">Execute a Workflow</span></blockquote>
                                     <div class="row">
-                                        When pressing the "Run" button on a workflow, a JSON file gets downloaded. This file contains all the information required to execute the workflow in a local environment. 
-                                        To execute it, you need to convert this file into a BASH executable format, or else into a BASH script. 
-                                        To do this, the following file <a href="https://github.com/kantale/OpenBioC/blob/master/ExecutionEnvironment/executor.py" target="_blank">executor.py</a> is required. This file requires <a href="https://www.python.org/downloads/" target="_blank">python 3</a> and has no other dependency. Assuming that you have downloaded this file, you can run:<br> 
-
-                                        <code class="documentationCodeTag">python executor.py -W workflow.json</code>
-                                        <br>
-
-                                        This will generate the file: <code>script.sh</code>. It will also print some information regarding the attempted execution:<br>
-                                        <code class="documentationCodeTag">INFO:root:Workflow Name: myworkflow   Edit: 1   Report: 7Lt2o</code><br>
-
-                                        This information contains the name (i.e. <strong>myworkflow</strong>), edit (i.e. <strong>1</strong>) and the id of the generated <strong>Report</strong>. If you are in a BASH shell, you can simply execute the <code>script.sh</code> file with:<br>
-                                        <code class="documentationCodeTag">bash script.sh</code>
-                                        <br>
-
-                                        During the execution, the script attempts to inform the server (openbio.eu) on the execution status. 
-                                        To access this information simply search for the Report code (i.e. <strong>7Lt2o</strong>) on the main search. Then you can click the relevant report that appears. 
-
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-                    </div>
-
-
-
-                    <!-- --------------------------------------------------------------------------------------- -->
-                    <!-- ------------------------------------ Profile Card ------------------------------------- -->
-                    <!-- --------------------------------------------------------------------------------------- -->
-                    <div class="col s12">
-                        <section id="card2" class="scrollspy section_projet">
-                            <div class="card">
-                                <div class="card-content">
-                                    <div class="row right">
-                                        <a class="waves-effect waves-teal btn-flat" ng-click="documentation_cancel_clicked()">Cancel</a>
-                                    </div>
-                                    <blockquote><span class="card-title">Example</span></blockquote>
-                                    <div class="row">
                                         Upon pressing the "Run" button on a workflow, a JSON file gets downloaded. This file contains all the information required to execute the workflow in a local environment. 
-                                        In order to execute it, you need to convert this file either into a BASH executable format, or into a BASH script. 
-                                        To do this, you need to download the file <a href="https://github.com/kantale/OpenBioC/blob/master/ExecutionEnvironment/executor.py" target="_blank">executor.py</a>. This file requires <a href="https://www.python.org/downloads/" target="_blank">python 3</a> and has no other dependency. After you have downloaded this file, you can run the command:<br> 
+                                        In order to execute it, you need to convert this file into an executable BASH script. 
+                                        To do this, you need to download the file <a href="https://github.com/kantale/OpenBioC/blob/master/ExecutionEnvironment/executor.py" target="_blank">executor.py</a>. This file requires <a href="https://www.python.org/downloads/" target="_blank">python 3</a> and has no other dependencies. After you have downloaded this file, you can run the command:<br> 
 
                                         <code class="documentationCodeTag">python executor.py -W workflow.json</code>
                                         <br>
@@ -92,15 +54,6 @@
                             </div>
                         </section>
                     </div>
-
-
-
-
-
-
-
-
-
 
 
                     <!-- --------------------------------------------------------------------------------------- -->
