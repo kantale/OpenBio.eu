@@ -51,13 +51,14 @@
             </ul>
             <!-- Sidenav Content -->
             <ul class="sidenav" id="mobile-nav">
-                <li><a href="#">Home</a></li>
-                <li><a id="signInBtn" href="#signModal" class="modal-trigger">Sign in</a></li>
+                <!-- <li ng-show="false"><a href="#">Home</a></li> -->
+                <li ng-click="documenation_navbar_clicked()"><a>Documentation</a></li>
+                <li ng-show="!username"><a id="signInBtn" href="#signModal" class="modal-trigger" ng-click="navbar_signup_pressed()">Sign in</a></li>
+                <li ng-show="username"><a href ng-click="navbar_profile_clicked()">Profile</a></li>
+                <!-- <li ng-show="false"><a href="#!">Inbox</a></li> -->
+                <!-- <li ng-show="false"><a href="#!">Notifications</a></li> -->
+                <!-- <li ng-show="false"><a href="#!">Settings</a></li> -->
                 <li class="divider"></li>
-                <li><a href ng-click="navbar_profile_clicked()">Profile</a></li>
-                <li ng-show="false"><a href="#!">Inbox</a></li>
-                <li ng-show="false"><a href="#!">Notifications</a></li>
-                <li ng-show="false"><a href="#!">Settings</a></li>
                 <li><a href="logout/">Logout</a></li>
                 <li class="divider"></li>
                 <li><img style="height: 63px;" src="/static/app/images/konstantina/epanek_logo_transparent_x60.png"></li>
