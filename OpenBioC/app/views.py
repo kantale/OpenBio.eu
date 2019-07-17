@@ -810,12 +810,30 @@ def users_search_2(
 
 ### END OF USERS 
 
-def index(request):
+def index(request, **kwargs):
     '''
     View url: ''
     '''
+    print ('kwargs')
+    print (kwargs)
 
     context = {}
+
+    # Are we linking to a specific RO?
+    # tool linking
+    tool_name = kwargs.get('tool_name', '')
+    tool_version = kwargs.get('tool_version', '')
+    tool_edit = kwargs.get('tool_edit', '')
+    if tool_name and tool_version and tool_edit:
+        if Tool.objects.filter(name=tool_name, version=tool_version, edit=int(tool_edit)).exists():
+            init_interlink_args = {
+                'name': tool_name,
+                'version': tool_version,
+                'edit': int(tool_edit)
+            }
+
+
+
 
     # Is this user already logged in?
     # https://stackoverflow.com/questions/4642596/how-do-i-check-whether-this-user-is-anonymous-or-actually-a-user-on-my-system 
