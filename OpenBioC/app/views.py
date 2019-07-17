@@ -818,19 +818,42 @@ def index(request, **kwargs):
     print (kwargs)
 
     context = {}
+    context['general_alert_message'] = ''
+    context['general_success_message'] = ''
+
 
     # Are we linking to a specific RO?
+    init_interlink_args = {}
     # tool linking
     tool_name = kwargs.get('tool_name', '')
     tool_version = kwargs.get('tool_version', '')
-    tool_edit = kwargs.get('tool_edit', '')
+    tool_edit = kwargs.get('tool_edit', 0)
     if tool_name and tool_version and tool_edit:
         if Tool.objects.filter(name=tool_name, version=tool_version, edit=int(tool_edit)).exists():
             init_interlink_args = {
+                'type': 't',
                 'name': tool_name,
                 'version': tool_version,
-                'edit': int(tool_edit)
+                'edit': int(tool_edit),
             }
+        else:
+            contect['general_alert_message'] = 'Tool {}/{}/{} does not does not exist'.format(tool_name, tool_version, tool_edit)
+
+    # workflow linking
+    workflow_name = kwargs.get('workflow_name', '')
+    workflow_edit = kwargs.get('workflow_edit', 0)
+    if workflow_name and workflow_edit:
+        if Workflow.objects.filter(name=workflow_name, edit=int(workflow_edit)).exists():
+            init_interlink_args = {
+                'type': 'w',
+                'name': workflow_name,
+                'edit': int(workflow_edit),
+            }
+        else:
+            contect['general_alert_message'] = 'Workflow {}/{} does not does not exist'.format(workflow_name, workflow_edit)
+
+
+    context['init_interlink_args'] = simplejson.dumps(init_interlink_args)
 
 
 
@@ -845,8 +868,6 @@ def index(request, **kwargs):
         #print ('Username: {}'.format(username))
 
     context['username'] = username
-    context['general_alert_message'] = ''
-    context['general_success_message'] = ''
     context['password_reset_token'] = ''
     context['reset_signup_username'] = ''
     context['reset_signup_email'] = ''

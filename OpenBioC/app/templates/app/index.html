@@ -22,6 +22,7 @@
 		window.reset_signup_username = "{{ reset_signup_username }}";
 		window.reset_signup_email = "{{ reset_signup_email }}";
 		window.user_is_validated =  {% if user_is_validated %}true;{% else %}false;{% endif %} 
+		window.init_interlink_args = {{ init_interlink_args | safe }};
 		window.OBC_PORT = {{ port }};
 		window.OBC_CONTROLLER_URL = "{{controller_url}}";
 		window.OBC_OS_CHOICES = {{ os_choices | safe }};
