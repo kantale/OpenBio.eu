@@ -386,9 +386,9 @@
                     </small>
                 </p>
                 <!-- Buttons -->
-                <div class="row right-align">
+                <div class="row right-align" style="margin-bottom: 0px;">
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
-                        data-tooltip="See documentation on how to execute a workflow" ng-click="workflow_info_run_pressed()"
+                        data-tooltip="Run" ng-click="workflow_info_run_pressed()"
                         ng-disabled="workflows_info_editable">Run</a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fit" ng-click="workflow_info_fit_pressed()">Fit</a>
@@ -401,6 +401,9 @@
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fork" ng-click="workflows_info_fork_pressed()" ng-show="!workflows_info_editable"
                         ng-class="{'disabled': !username}"><i class="material-icons">call_split</i></a>
+                </div>
+                <div class="left-align" style="margin-top: 5px; margin-bottom: 5px;">
+                    See <a>Documentation</a> on how to execute a workflow
                 </div>
             </div>
 
