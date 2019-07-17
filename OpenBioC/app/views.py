@@ -30,7 +30,7 @@ from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations, \
     OS_types, Keyword, Report, ReportToken, Reference, ReferenceField, Comment
 
 #Import executor
-from ExecutionEnvironment import 
+#from ExecutionEnvironment import 
 
 # Email imports
 import smtplib
