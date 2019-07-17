@@ -29,6 +29,9 @@ from django.middleware.csrf import get_token
 from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations, \
     OS_types, Keyword, Report, ReportToken, Reference, ReferenceField, Comment
 
+#Import executor
+from ExecutionEnvironment import 
+
 # Email imports
 import smtplib
 from email.message import EmailMessage
@@ -494,6 +497,12 @@ def send_validation_email_inner(request, email):
     '''
 
     uuid_token = create_uuid_token()
+
+    if settings.DEBUG:
+        print ('VALIDATION EMAIL TOKEN:', uuid_token)
+        print ('URL: http://0.0.0.0:{}/platform/?validation_token={}'.format(request.META['SERVER_PORT'], uuid_token)) 
+        return True, '', uuid_token
+
     try:
         send_mail(
             '[{server}] Please confirm your email'.format(server=g['SERVER']), # subject
