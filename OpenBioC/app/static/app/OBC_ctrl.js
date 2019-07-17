@@ -137,11 +137,6 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         $scope.get_init_data();
 
-        if ($scope.password_reset_token) {
-            $scope.show_reset_password = true;
-            M.Modal.getInstance($("#signModal")).open();
-        }
-
     };
 
     //TODO. BETTER NAME?
