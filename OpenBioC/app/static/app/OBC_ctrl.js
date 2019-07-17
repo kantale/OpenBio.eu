@@ -510,11 +510,16 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             function(data) {
                 $scope.login_error_message = '';
                 window.CSRF_TOKEN = data['csrf_token'];
+                window.user_is_validated = data['user_is_validated'];
+                $scope.user_is_validated = data['user_is_validated'];
                 $scope.username = data['username'];
                 $scope.show_login = false;
 
                 //Close modal sign in 
                 $("#signModal").modal('close');
+
+                //console.log('$scope.user_is_validated:');
+                //console.log($scope.user_is_validated);
             },
             function(data) {
                 $scope.login_error_message = data['error_message'];
