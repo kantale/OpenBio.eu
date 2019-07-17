@@ -181,12 +181,12 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $http({
             headers: {
                 "Content-Type": 'application/json',
-                "Access-Control-Allow-Origin": "*", // TODO : REMOVE THIS!
+                //"Access-Control-Allow-Origin": "*", // TODO : REMOVE THIS!
                 //"X-CSRFToken" : getCookie('csrftoken'),
                 "X-CSRFToken" : window.CSRF_TOKEN,
             },
             method : "POST",
-            url : url,
+            url : "/platform/" + url, 
             data : data
         }).then(function mySucces(response) {
             // $scope.myWelcome = response.data;

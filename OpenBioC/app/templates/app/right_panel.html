@@ -22,6 +22,9 @@
                     <small class="form-text text-muted" ng-show="!tools_info_editable">
                         <a ng-click="interlink({type: 'u', username: tool_info_username})">u/<span ng-bind="tool_info_username"></span></a>, created at <span
                             ng-bind="tool_info_created_at"></span>
+                        {% verbatim %}
+                        <a href="/platform/t/{{tools_info_name}}/{{tools_info_version}}/{{tools_info_edit}}">link</a>
+                        {% endverbatim %}
                         <span ng-show="tools_info_forked_from">, forked from <a href
                                 ng-click="tools_search_show_item(tools_info_forked_from)">t/<span
                                     ng-bind="tools_info_forked_from | tool_label"></span></a></span>
@@ -380,6 +383,9 @@
                     <small class="form-text text-muted" ng-show="!workflows_info_editable">
                         <a ng-click="interlink({type: 'u', username: workflows_info_username})">u/<span ng-bind="workflows_info_username"></span></a>
                         <span>, created at <span ng-bind="workflow_info_created_at"></span></span>
+                        {% verbatim %}
+                        <a href="/platform/w/{{workflow_info_name}}/{{workflow_info_edit}}">link</a>
+                        {% endverbatim %}
                         <span ng-show="workflow_info_forked_from">, forked from <a href
                                 ng-click="workflows_search_show_item(workflow_info_forked_from)">w/<span
                                     ng-bind="workflow_info_forked_from | workflow_label"></span></a></span>

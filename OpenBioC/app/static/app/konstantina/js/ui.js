@@ -2891,16 +2891,24 @@ window.onload = function () {
         });
     };
 
+    // Show reset password modal?
     if (window.password_reset_token) {
         setTimeout(function(){ 
-
             angular.element($('#angular_div')).scope().$apply(function () {
                  angular.element($('#angular_div')).scope().show_reset_password_from_ui();
             });
-
         }, 1000);
 
     }
- 
 
+    // Link to a specific RO?
+    if (window.init_interlink_args) {
+        setTimeout(function(){
+            window.OBCUI.interlink(window.init_interlink_args);
+        }, 1000);
+    }
+
+    //console.log('window.init_interlink_args:');
+    //console.log(window.init_interlink_args);
+ 
 };
