@@ -32,22 +32,33 @@
                                     </div>
                                     <blockquote><span class="card-title">Execute a Workflow</span></blockquote>
                                     <div class="row">
-                                        Upon pressing the "Run" button on a workflow, a JSON file gets downloaded. This file contains all the information required to execute the workflow in a local environment. 
-                                        In order to execute it, you need to convert this file into an executable BASH script. 
-                                        To do this, you need to download the file <a href="https://github.com/kantale/OpenBioC/blob/master/ExecutionEnvironment/executor.py" target="_blank">executor.py</a>. This file requires <a href="https://www.python.org/downloads/" target="_blank">python 3</a> and has no other dependencies. After you have downloaded this file, you can run the command:<br> 
+                                        Upon pressing the "Download" button on a workflow, you can choose to download a BASH script or a JSON representation of the workflow.
+                                        <ul>
+                                            <li> 
+                                                <strong>BASH script:</strong> The BASH script is a directly executable file. Assuming the BASH script filename is <code>bash_7Lt2o.sh</code> and you are in a BASH shell you can type:<br>
+                                                <code class="documentationCodeTag">bash script_7Lt2o.sh</code><br>
+                                                This will execute the workflow.
+                                            </li>
+                                            <li>
+                                                <strong>JSON:</strong> This method will download a file <code>workflow.json</code> that contains all the information required to execute the workflow in a local environment. In order to execute it, you need to convert this file into an executable BASH script. To do this, you need to download the file <a href="https://github.com/kantale/OpenBioC/blob/master/OpenBioC/ExecutionEnvironment/executor.py" target="_blank">executor.py</a>. This file requires <a href="https://www.python.org/downloads/" target="_blank">python 3</a> and has no other dependencies. After you have downloaded this file, you can run the command:<br> 
+                                                <code class="documentationCodeTag">python executor.py -W workflow.json</code><br>
+                                                This will generate the file: <code>script.sh</code> that you can execute as described above. 
+                                            </li>
+                                        </ul>
 
-                                        <code class="documentationCodeTag">python executor.py -W workflow.json</code>
-                                        <br>
+                                        Both methods will print some information regarding the attempted execution:<br>
+                                        <code class="documentationCodeTag">Workflow Name: myworkflow   Edit: 1   Report: 7Lt2o</code><br>
 
-                                        This will generate the file: <code>script.sh</code>. It will also print some information regarding the attempted execution:<br>
-                                        <code class="documentationCodeTag">INFO:root:Workflow Name: myworkflow   Edit: 1   Report: 7Lt2o</code><br>
-
-                                        This information contains the name (i.e. <strong>myworkflow</strong>), edit (i.e. <strong>1</strong>) and the id of the generated <strong>Report</strong>. If you are in a BASH shell, you can simply execute the <code>script.sh</code> file with:<br>
-                                        <code class="documentationCodeTag">bash script.sh</code>
-                                        <br>
+                                        This information contains the name (i.e. <strong>myworkflow</strong>), edit (i.e. <strong>1</strong>) and the id of the generated <strong>Report</strong> (i.e. <strong>7Lt2o</strong>).
 
                                         During the execution, the script attempts to inform the server (openbio.eu) on the execution status. 
-                                        To access this information simply search for the Report code (i.e. <strong>7Lt2o</strong>) on the main search. Then you can click the relevant report that appears. 
+                                        To access this information simply search for the Report id (i.e. <strong>7Lt2o</strong>) on the main search. Then you can click the relevant report that appears. <br>
+
+                                        <strong>Important:</strong> If you have downloaded these files as an unregistered user. The execution will <strong>not</strong> generate a report.<br>
+
+                                        <h5><strong>SECURITY WARNING: Always execute the downloaded scripts in a sandboxed environment! There is absolutely no guarantee regarding the security and safety of these scripts. Openbio.eu does not take any responsibility on damages caused by the execution of scripts provided by the platform.</strong><h5>
+
+
 
                                     </div>
                                 </div>

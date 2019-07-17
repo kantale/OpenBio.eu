@@ -3490,8 +3490,13 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                     }).get(0).click();
                 }
                 else if (download_type == 'BASH') {
+                    var output_filename = 'bash.sh';
+                    if (data['nice_id']) {
+                        output_filename = 'bash_' + data['nice_id'] + '.sh';
+                    }
+
                     $("#hiddena").attr({
-                        "download" : 'bash.sh',      
+                        "download" : output_filename,      
                         "href" : "data:," + data['output_object']
                     }).get(0).click();
                 }
@@ -3503,6 +3508,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 if (!data['report_created']) {
                     $scope.toast('You are not a registered user or your email is not validated. Although this workflow can be executed, the execution will not generate a report.', 'warning')
                 }
+                $scope.toast('SECURITY WARNING: always run scripts in a sandboxed environment!', 'warning');
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');

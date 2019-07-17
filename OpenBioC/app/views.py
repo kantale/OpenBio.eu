@@ -1108,7 +1108,7 @@ def logout(request):
     '''
 
     django_logout(request)
-    return redirect('/')
+    return redirect('/platform/')
 
 #def user_data_get(request):
 #    '''
