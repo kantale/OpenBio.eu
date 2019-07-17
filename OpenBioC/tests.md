@@ -1,4 +1,6 @@
 
+This is a list of possible tests. In the future we will build selenium auto tests.
+
 1. Empty WF . Add Description, Website --> Save. Name: WF1 
 2. Empty WF . Add Description, Website --> Drag n Drop WF1 . Name: WF2 . Confirm that it is plotted correctly 
 3. Empty Wf . Add Description, Website --> Drag n Drop WF2 . Name: WF3
