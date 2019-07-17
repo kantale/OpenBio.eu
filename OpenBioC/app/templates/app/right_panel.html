@@ -387,9 +387,11 @@
                 </p>
                 <!-- Buttons -->
                 <div class="row right-align" style="margin-bottom: 0px;">
-                    <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
+                    <!-- <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Run" ng-click="workflow_info_run_pressed()"
-                        ng-disabled="workflows_info_editable">Run</a>
+                        ng-disabled="workflows_info_editable">Run</a> -->
+                    <a class="dropdown-trigger btn tooltipped" data-target='downloadDropdown' style="margin-bottom:2px" data-position="bottom"
+                        data-tooltip="Download" ng-click="workflow_info_run_pressed()" ng-disabled="workflows_info_editable">Download</a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fit" ng-click="workflow_info_fit_pressed()">Fit</a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
@@ -401,6 +403,11 @@
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fork" ng-click="workflows_info_fork_pressed()" ng-show="!workflows_info_editable"
                         ng-class="{'disabled': !username}"><i class="material-icons">call_split</i></a>
+                    <!-- Download Dropdown -->
+                    <ul id='downloadDropdown' class='dropdown-content'>
+                        <li><a href="#!">one</a></li>
+                        <li><a href="#!">two</a></li>
+                    </ul>
                 </div>
                 <div class="left-align" style="margin-top: 5px; margin-bottom: 5px;">
                     See <a>Documentation</a> on how to execute a workflow
