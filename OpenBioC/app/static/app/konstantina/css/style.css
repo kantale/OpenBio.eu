@@ -360,8 +360,8 @@ nav {
 
 /* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
 
-#profileContent {
-    float: right;
+.scrollspyContent {
+    float: right !important;
 }
 
 /* Class for when element is above threshold */
@@ -382,10 +382,10 @@ nav {
     position: fixed !important;
 }
 
-#scrollspyMenu a.active {
-    font-weight: 500;
-    padding-left: 14px;
-    border-left: 2px solid #ee6e73
+.scrollspyMenu a.active {
+    font-weight: 500 !important;
+    padding-left: 14px !important;
+    border-left: 2px solid #ee6e73 !important;
 }
 
 /* Switch colors */
