@@ -2454,6 +2454,13 @@ def qa_search_2(main_search):
         else:
             entries_in_tree.add(result_parent.pk)
 
+        # Remove <a></a> hyperlinks from question answers
+        # See issue #106
+        if re.search(r'<a.*a>', result_parent.title):
+            to_substitute = re.search(r'<a.*a>', result_parent.title).group(0)
+            substitute_with = re.search(r'>(.*)</a>', re.search(r'<a.*a>', result_parent.title).group(0)).group(1)
+            result_parent.title = result_parent.title.replace(to_substitute, substitute_with)
+
         to_add = {
             'data': {'id': result_parent.pk},
             'text': result_parent.title + jstree_icon_html('qas'),
