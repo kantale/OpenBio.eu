@@ -266,6 +266,19 @@ class Workflow:
         '''
         return 'obc_current_token="{}"'.format(self.current_token)
 
+    def show_basic_info(self,):
+        '''
+        self.root_workflow['name'], self.root_workflow['edit'], self.nice_id,
+        '''
+
+        ret = '\n'
+        ret += 'echo "Workflow name: {}"\n'.format(self.root_workflow['name'])
+        ret += 'echo "Workflow edit: {}"\n'.format(self.root_workflow['edit'])
+        ret += f'echo "Workflow report: {self.nice_id}"\n'
+        ret += '\n'
+        return ret
+
+
     def get_tool_bash_commands(self, tool, validation=True):
         '''
         '''
@@ -619,6 +632,9 @@ class LocalExecutor(BaseExecutor):
         ret = None
 
         with opener(*opener_args, **opener_kwargs) as f:
+
+            # Print basic info of executed workflow
+            f.write(self.workflow.show_basic_info())
 
             # Set current token
             f.write(self.workflow.get_token_set_bash_commands())
