@@ -30,7 +30,7 @@ from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations, \
     OS_types, Keyword, Report, ReportToken, Reference, ReferenceField, Comment
 
 #Import executor
-#from ExecutionEnvironment import 
+from ExecutionEnvironment.executor import create_bash_script
 
 # Email imports
 import smtplib
@@ -1808,6 +1808,7 @@ def run_workflow(request, **kwargs):
 
     workflow_arg = kwargs['workflow']
     workflow_options_arg = kwargs['workflow_options']
+    download_type = kwargs['download_type'] # download_type can be "BASH" or "JSON"
 
     workflow = Workflow.objects.get(**workflow_arg)
     workflow_cy = simplejson.loads(workflow.workflow)
@@ -1860,7 +1861,7 @@ def run_workflow(request, **kwargs):
         'nice_id': nice_id,
     }
     #output_object = simplejson.dumps(output_object) # .replace('#', 'aa')
-    output_object = urllib.parse.quote(simplejson.dumps(output_object))
+    
     #output_object = escape(simplejson.dumps(output_object))
 
     #print ('output_object')
@@ -1868,11 +1869,18 @@ def run_workflow(request, **kwargs):
 
     #response = HttpResponse(the_script, content_type='application/x-sh')
     #response['Content-Disposition'] = 'attachment; filename="script.sh"'
-    ret = {
-        'output_object': output_object,
-        'report_created': report_created,
-        'nice_id': nice_id,
-    }
+
+    ret = {}
+
+    if download_type == 'JSON':
+        output_object = urllib.parse.quote(simplejson.dumps(output_object))
+        ret['output_object'] = output_object
+    elif download_type == 'BASH':
+        output_object = urllib.parse.quote(create_bash_script(output_object))
+        ret['output_object'] = output_object
+
+    ret['report_created'] = report_created
+    ret['nice_id'] = nice_id
 
     return success(ret)
 

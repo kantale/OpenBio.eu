@@ -405,8 +405,8 @@
                         ng-class="{'disabled': !username}"><i class="material-icons">call_split</i></a>
                     <!-- Download Dropdown -->
                     <ul id='downloadDropdown' class='dropdown-content'>
-                        <li><a >BASH executable</a></li>
-                        <li><a ng-click="workflow_info_run_pressed()">JSON</a></li>
+                        <li><a ng-click="workflow_info_run_pressed('BASH')">BASH executable</a></li>
+                        <li><a ng-click="workflow_info_run_pressed('JSON')">JSON</a></li>
                     </ul>
                 </div>
                 <div class="left-align" style="margin-top: 5px; margin-bottom: 5px;">

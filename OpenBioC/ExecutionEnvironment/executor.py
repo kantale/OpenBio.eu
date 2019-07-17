@@ -1,4 +1,5 @@
 
+import io
 import os
 import json
 import base64
@@ -111,14 +112,22 @@ class Workflow:
     STEP_TYPE = 'step'
     TOOL_TYPE = 'tool'
 
-    def __init__(self, workflow_filename):
+    def __init__(self, workflow_filename=None, workflow_object=None):
         '''
+        workflow_filename: the JSON filename of the workflow
+        workflow_object: The representation of the workflow
+        One of these should not be None
         '''
 
-        if not os.path.exists(workflow_filename):
-            raise OBC_Executor_Exception(f'File {workflow_filename} does not exist')
+        if workflow_filename:
+            if not os.path.exists(workflow_filename):
+                raise OBC_Executor_Exception(f'File {workflow_filename} does not exist')
+        else:
+            if not workflow_object:
+                raise OBC_Executor_Exception('Both workflow_filename and workflow_string are empty')
 
         self.workflow_filename = workflow_filename
+        self.workflow_object = workflow_object
         self.parse_workflow_filename()
 
     def __str__(self,):
@@ -140,8 +149,13 @@ class Workflow:
         Parse and perform sanity tests
         '''
 
-        with open(self.workflow_filename) as f:
-            self.workflow = json.load(f)
+        if self.workflow_filename:
+            with open(self.workflow_filename) as f:
+                self.workflow = json.load(f)
+        elif self.workflow_object:
+            self.workflow = self.workflow_object
+        else:
+            raise OBC_Executor_Exception('Both workflow_filename and workflow_string are empty')
 
         self.input_parameters = self.get_input_parameters()
         self.root_workflow = self.get_root_workflow()
@@ -585,8 +599,26 @@ class LocalExecutor(BaseExecutor):
     Creates a unique BIG script!
     '''
 
-    def build(self, output_filename):
-        with open(output_filename, 'w') as f:
+    def build(self, output):
+        '''
+        output: if string then consider this a file name
+                if None then create a in-memory file and return the string 
+        '''
+
+        if type(output) is str:
+            opener = open
+            opener_args = [output, 'w']
+            opener_kwargs = {}
+        elif output is None:
+            opener = io.StringIO
+            opener_args = ['w']
+            opener_kwargs = {'newline': '\n'}
+        else:
+            raise OBC_Executor_Exception('Unknown type of output in build: {}'.format(type(output).__name__))
+
+        ret = None
+
+        with opener(*opener_args, **opener_kwargs) as f:
 
             # Set current token
             f.write(self.workflow.get_token_set_bash_commands())
@@ -617,8 +649,15 @@ class LocalExecutor(BaseExecutor):
 
             f.write(Workflow.bash_workflow_ends(self.workflow.root_workflow))
 
+            # Get srtring content of file
+            if output is None:
+                f.flush()
+                ret = f.getvalue()
 
-        logging.info(f'Created file: {output_filename}')
+        if type(output) is str:
+            logging.info(f'Created file: {output}')
+
+        return ret
 
 
 
@@ -631,6 +670,19 @@ class AmazonExecutor(BaseExecutor):
     '''
     '''
     pass
+
+def create_bash_script(workflow_object):
+    '''
+    convenient function called by server
+    '''
+
+    args = type('A', (), {'server':'https://www.openbio.eu/platform'})
+
+    setup_bash_patterns(args)
+    w = Workflow(workflow_object = workflow_object)
+    le = LocalExecutor(w)
+    return le.build(output=None)
+
 
 if __name__ == '__main__':
     '''
@@ -652,7 +704,8 @@ if __name__ == '__main__':
     #list(w.tool_bash_script_generator())
 
     le = LocalExecutor(w)
-    le.build(output_filename='script.sh')
+    le.build(output = 'script.sh')
+
 
 	
 

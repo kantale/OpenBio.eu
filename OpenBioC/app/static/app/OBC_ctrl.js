@@ -3448,8 +3448,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
     /*
     * worfklows --> info (right panel) --> button "Run" --> Pressed
+    * download_type = "JSON" or "BASH"
     */
-    $scope.workflow_info_run_pressed = function() {
+    $scope.workflow_info_run_pressed = function(download_type) {
         var workflow_options = window.OBCUI.get_workflow_options();
 
         // Check for uncheck options
@@ -3474,19 +3475,29 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 'workflow': {
                     'name': $scope.workflow_info_name,
                     'edit': $scope.workflow_info_edit
-                }
+                },
+                "download_type": download_type
             },
             function(data) {
                 //console.log('data:');
                 //console.log(data);
 
                 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs
-                $("#hiddena").attr({
-                    "download" : 'workflow.json',
-                    //"href" : "data:text/plain;charset=US-ASCII," + data['output_object']      
-                    "href" : "data:," + data['output_object']
-                    //"href": "http://www.google.com" 
-                }).get(0).click();
+                if (download_type == 'JSON') {
+                    $("#hiddena").attr({
+                        "download" : 'workflow.json',      
+                        "href" : "data:," + data['output_object']
+                    }).get(0).click();
+                }
+                else if (download_type == 'BASH') {
+                    $("#hiddena").attr({
+                        "download" : 'bash.sh',      
+                        "href" : "data:," + data['output_object']
+                    }).get(0).click();
+                }
+                else {
+                    throw "ERROR: 4576"; // This should never happen
+                }
 
                 //$scope.toast('Run workflow problem: ' + data['error_message'], 'error');
                 if (!data['report_created']) {
