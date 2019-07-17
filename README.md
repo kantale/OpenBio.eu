@@ -24,8 +24,8 @@ Main features include:
 * OpenBioC: The awesome OpenBioC platform! This directory also contains:
     * app/ The Django application of the project
     * static/ A Django application for the frontend site that is specific to this project. 
+    * ExecutionEnvironment. The Execution Environment of openbio.eu . Use [executor.py](ExecutionEnvironment/executor.py) to execute a worfklow in json format that you downloaded from openbio.eu.
 * [deployment_notes.md](deployment_notes.md): Some notes on how to deploy on an Ubuntu 16.04 server 
-* ExecutionEnvironment. The Execution Environment of openbio.eu . Use [executor.py](ExecutionEnvironment/executor.py) to execute a worfklow in json format that you downloaded from openbio.eu.
 * discourse-graph. A very experimental effort to add a discourse graph to the discussion of objects in openbio.eu.
 
 ## For Developers
