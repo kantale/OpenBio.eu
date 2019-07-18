@@ -338,6 +338,18 @@ def create_uuid_token():
     '''
     # return str(uuid.uuid4()).split('-')[-1] # Last part: 12 characters
     return str(uuid.uuid4()).replace('-', '') # 32 characters
+    
+def uuid_is_valid(uuid_token):
+    '''
+    https://gist.github.com/ShawnMilo/7777304
+    '''
+
+    try:
+        val = uuid.UUID(uuid_token, version=4)
+    except ValueError:
+        return False
+
+    return val.hex == uuid_token.replace('-', '')
 
 def send_mail_smtplib(from_, to, subject, body):
     '''
@@ -885,6 +897,17 @@ def index(request, **kwargs):
             }
         else:
             context['general_alert_message'] = 'Comment with id={} does not exist'.format(comment_id)
+
+    # Report link
+    report_run = kwargs.get('report_run', '')
+    if report_run:
+        if Report.objects.filter(nice_id=report_run).exists():
+            init_interlink_args = {
+                'type': 'report',
+                'run': report_run,
+            }
+        else:
+            context['general_alert_message'] = 'Report {} does not exist'.format(report_run)
 
     context['init_interlink_args'] = simplejson.dumps(init_interlink_args)
 
@@ -1970,6 +1993,9 @@ def report(request, **kwargs):
     if not token:
         return fail('Could not find token field')
     #print ('token: {}'.format(token))
+
+    if not uuid_is_valid(token):
+        return fail('bad token format')
 
     status_received = kwargs.get('status', None)
     if not status_received:
