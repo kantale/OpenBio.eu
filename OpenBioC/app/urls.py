@@ -4,8 +4,11 @@ from . import views
 
 urlpatterns = [
 	path('', views.index),
-	re_path(r'^[td]/(?P<tool_name>[\w]+)/(?P<tool_version>[\w\.]+)/(?P<tool_edit>[\d]+)/$', views.index),
-	re_path(r'^w/(?P<workflow_name>[\w]+)/(?P<workflow_edit>[\d]+)', views.index),
+	re_path(r'^[td]/(?P<tool_name>[\w]+)/(?P<tool_version>[\w\.]+)/(?P<tool_edit>[\d]+)/$', views.index), # tool link
+	re_path(r'^w/(?P<workflow_name>[\w]+)/(?P<workflow_edit>[\d]+)', views.index), # workflow link
+	re_path(r'^r/(?P<reference_name>[\w]+)', views.index), # reference link
+	re_path(r'^u/(?P<user_username>[\w]+)', views.index), # user link
+	re_path(r'^c/(?P<comment_id>[\d]+)', views.index), # comment link
 	path('register/', views.register), # Register a new user 
 	path('login/', views.login), # Login a user
 	path('logout/', views.logout), # Logout a user

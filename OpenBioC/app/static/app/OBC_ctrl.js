@@ -1939,6 +1939,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
                 $scope.hide_all_right_accordions('users'); // Hide everything except users
 
+                $scope.user_username = data['profile_username'];
                 $scope.user_firstname = data['profile_firstname'];
                 $scope.user_lastname = data['profile_lastname'];
                 $scope.user_email = data['profile_email'];
