@@ -338,6 +338,18 @@ def create_uuid_token():
     '''
     # return str(uuid.uuid4()).split('-')[-1] # Last part: 12 characters
     return str(uuid.uuid4()).replace('-', '') # 32 characters
+    
+def uuid_is_valid(uuid_token):
+    '''
+    https://gist.github.com/ShawnMilo/7777304
+    '''
+
+    try:
+        val = uuid.UUID(uuid_token, version=4)
+    except ValueError:
+        return False
+
+    return val.hex == uuid_token.replace('-', '')
 
 def send_mail_smtplib(from_, to, subject, body):
     '''
@@ -1981,6 +1993,9 @@ def report(request, **kwargs):
     if not token:
         return fail('Could not find token field')
     #print ('token: {}'.format(token))
+
+    if not uuid_is_valid(token):
+        return fail('bad token format')
 
     status_received = kwargs.get('status', None)
     if not status_received:
