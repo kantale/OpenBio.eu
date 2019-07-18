@@ -30,6 +30,11 @@ try:
 except ImportError:
 	POSTGRESQL_PARAMS = None
 
+try:
+	from .obc_private import DEBUG
+except ImportError:
+	DEBUG = True
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -41,7 +46,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECRET_KEY = '!!!!!!!!!!!!!!!thisisnotasecretkey!!!!!!!!!!!!!!!!'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+#DEBUG = True
 
 #ALLOWED_HOSTS = ['0.0.0.0']
 
