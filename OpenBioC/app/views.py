@@ -2297,7 +2297,10 @@ def bibtex_to_html(content):
     data_formatted = pybtex_style.format_entries(six.itervalues(data.entries))
 
     output = io.StringIO()
-    pybtex_html_backend.write_to_stream(data_formatted, output)
+    try:
+        pybtex_html_backend.write_to_stream(data_formatted, output)
+    except pybtex.style.template.FieldIsMissing as e:
+        return False, str(e), None
     html = output.getvalue()
 
     html_s = html.split('\n')
