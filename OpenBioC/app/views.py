@@ -726,6 +726,7 @@ def users_search_3(request, **kwargs):
         return fail('Could not find user with this username')
 
     ret = {
+        'profile_username': username,
         'profile_firstname': u.first_name,
         'profile_lastname': u.last_name,
         'profile_website': u.website,
@@ -814,8 +815,8 @@ def index(request, **kwargs):
     '''
     View url: ''
     '''
-    print ('kwargs')
-    print (kwargs)
+    #print ('kwargs')
+    #print (kwargs)
 
     context = {}
     context['general_alert_message'] = ''
@@ -837,7 +838,7 @@ def index(request, **kwargs):
                 'edit': int(tool_edit),
             }
         else:
-            contect['general_alert_message'] = 'Tool {}/{}/{} does not does not exist'.format(tool_name, tool_version, tool_edit)
+            context['general_alert_message'] = 'Tool {}/{}/{} does not exist'.format(tool_name, tool_version, tool_edit)
 
     # workflow linking
     workflow_name = kwargs.get('workflow_name', '')
@@ -850,8 +851,40 @@ def index(request, **kwargs):
                 'edit': int(workflow_edit),
             }
         else:
-            contect['general_alert_message'] = 'Workflow {}/{} does not does not exist'.format(workflow_name, workflow_edit)
+            context['general_alert_message'] = 'Workflow {}/{} does not exist'.format(workflow_name, workflow_edit)
 
+    #references linking
+    reference_name = kwargs.get('reference_name', '')
+    if reference_name:
+        if Reference.objects.filter(name__iexact=reference_name).exists():
+            init_interlink_args = {
+                'type': 'r',
+                'name': reference_name,
+            }
+        else:
+            context['general_alert_message'] = 'Reference {} does not exist'.format(reference_name)
+
+    # user linking 
+    user_username = kwargs.get('user_username', '')
+    if user_username:
+        if OBC_user.objects.filter(user__username=user_username).exists():
+            init_interlink_args = {
+                'type': 'u',
+                'username': user_username,
+            }
+        else:
+            context['general_alert_message'] = 'User {} does not exist'.format(user_username)
+
+    # comment link
+    comment_id = kwargs.get('comment_id', '')
+    if comment_id:
+        if Comment.objects.filter(pk=int(comment_id)).exists():
+            init_interlink_args = {
+                'type': 'c',
+                'id': int(comment_id),
+            }
+        else:
+            context['general_alert_message'] = 'Comment with id={} does not exist'.format(comment_id)
 
     context['init_interlink_args'] = simplejson.dumps(init_interlink_args)
 
