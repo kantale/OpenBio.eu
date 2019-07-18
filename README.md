@@ -17,7 +17,7 @@ Main features include:
 * Add markdown descriptions to these objects. Use ```t/tool_name/tool_version/id``` and ```w/worfklow_name/id``` to link to an object anywhere in the site. 
 * Each object has a Questions and Answers section.
 * Add scientific references. Link with ```r/reference_name```. Bored to add all bibliographic details for a paper? Just add the [DOI](https://www.doi.org/). The system will get the rest. 
-* Execute workflows on your own enviroment. You do not have to share code or data with openbio.eu. Only the bash commands that install/download them. Monitor the execution, privately, during runtime in a graphic interface.
+* Execute workflows on your own enviroment. You do not have to share code or data with openbio.eu. Only the bash commands that install/download them. Monitor the execution, during runtime in a graphic interface.
 * ...more to come 
 
 ## Directories

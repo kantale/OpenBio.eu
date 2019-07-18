@@ -52,7 +52,7 @@ fi
 function update_server_status()
 {
 
-    local command="curl -s --header \"Content-Type: application/json\" --request POST -d '{\"token\": \"$obc_current_token\", \"status\": \"$1\"}' {server}/report/"
+    local command="curl {insecure}-s --header \"Content-Type: application/json\" --request POST -d '{\"token\": \"$obc_current_token\", \"status\": \"$1\"}' {server}/report/"
 
     local c=$(eval "$command")
 
@@ -92,7 +92,7 @@ def setup_bash_patterns(args):
     Change some values of te bash patterns according to arg arguments
     '''
     bash_patterns['update_server_status'] = bash_patterns['update_server_status'].replace('{server}', args.server) # .format does not work since it contains "{"
-
+    bash_patterns['update_server_status'] = bash_patterns['update_server_status'].replace('{insecure}', '-k ' if args.insecure else '')
 
 
 ## Helper functions
@@ -692,7 +692,10 @@ def create_bash_script(workflow_object):
     convenient function called by server
     '''
 
-    args = type('A', (), {'server':'https://www.openbio.eu/platform'})
+    args = type('A', (), {
+        'server':'https://www.openbio.eu/platform',
+        'insecure': False,
+    })
 
     setup_bash_patterns(args)
     w = Workflow(workflow_object = workflow_object)
@@ -709,8 +712,10 @@ if __name__ == '__main__':
 
     parser.add_argument('-W', '--workflow', dest='workflow_filename', help='JSON filename of the workflow to run', required=True)
     parser.add_argument('-S', '--server', dest='server', help='The Server\'s url. It should contain http or https', default='https://www.openbio.eu/platform')
+    parser.add_argument('--insecure', dest='insecure', help="Pass insecure option (-k) to curl", default=False, action="store_true")
 
     args = parser.parse_args()
+
     setup_bash_patterns(args)
 
     w = Workflow(args.workflow_filename)

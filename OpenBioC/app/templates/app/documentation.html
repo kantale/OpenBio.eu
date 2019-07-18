@@ -28,7 +28,7 @@
                             <div class="card">
                                 <div class="card-content">
                                     <div class="row right">
-                                        <a class="waves-effect waves-teal btn-flat" ng-click="documentation_cancel_clicked()">Cancel</a>
+                                        <a class="waves-effect waves-teal btn-flat" ng-click="documentation_cancel_clicked()">Return</a>
                                     </div>
                                     <blockquote><span class="card-title">Execute a Workflow</span></blockquote>
                                     <div class="row">
@@ -55,10 +55,13 @@
                                         To access this information simply search for the Report id (i.e. <strong>7Lt2o</strong>) on the main search. Then you can click the relevant report that appears. <br>
 
                                         <strong>Important:</strong> If you have downloaded these files as an unregistered user. The execution will <strong>not</strong> generate a report.<br>
+                                        <strong>Troubleshooting:</strong> In environments where curl cannot validate the SSL certificate of openbio.eu, you can pass the option <code>--insecure</code> to <code>executor.py</code><br>
 
-                                        <h5><strong>SECURITY WARNING: Always execute the downloaded scripts in a sandboxed environment! There is absolutely no guarantee regarding the security and safety of these scripts. Openbio.eu does not take any responsibility on damages caused by the execution of scripts provided by the platform.</strong><h5>
-
-
+                                        <div class="row col s12">
+                                            <div class="card-panel red lighten-1" style="padding:10px">
+                                                <h5><strong>SECURITY WARNING: Always execute the downloaded scripts in a sandboxed environment! There is absolutely no guarantee regarding the security and safety of these scripts. Openbio.eu does not take any responsibility on damages caused by the execution of scripts provided by the platform.</strong><h5>
+                                            </div>
+                                        </div>
 
                                     </div>
                                 </div>
