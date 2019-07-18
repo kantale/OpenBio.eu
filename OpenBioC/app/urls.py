@@ -9,6 +9,7 @@ urlpatterns = [
 	re_path(r'^r/(?P<reference_name>[\w]+)', views.index), # reference link
 	re_path(r'^u/(?P<user_username>[\w]+)', views.index), # user link
 	re_path(r'^c/(?P<comment_id>[\d]+)', views.index), # comment link
+	re_path(r'^report/(?P<report_run>[\w]+)', views.index), # report link
 	path('register/', views.register), # Register a new user 
 	path('login/', views.login), # Login a user
 	path('logout/', views.logout), # Logout a user

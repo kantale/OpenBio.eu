@@ -886,6 +886,17 @@ def index(request, **kwargs):
         else:
             context['general_alert_message'] = 'Comment with id={} does not exist'.format(comment_id)
 
+    # Report link
+    report_run = kwargs.get('report_run', '')
+    if report_run:
+        if Report.objects.filter(nice_id=report_run).exists():
+            init_interlink_args = {
+                'type': 'report',
+                'run': report_run,
+            }
+        else:
+            context['general_alert_message'] = 'Report {} does not exist'.format(report_run)
+
     context['init_interlink_args'] = simplejson.dumps(init_interlink_args)
 
 

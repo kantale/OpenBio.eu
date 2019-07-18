@@ -741,6 +741,9 @@
                 </div>
                 <small class="form-text text-muted">
                     <a ng-click="interlink({type: 'u', username: report_username})">u/<span ng-bind="report_username"></span></a>, created at: <span ng-bind="report_created_at"></span>
+                    {% verbatim %}
+                    <a href="/platform/report/{{report_workflow_run}}">link</a>
+                    {% endverbatim %}
                 </small>
             </div>
             <ul id="reportsRightPanelAccordion" class="collapsible expandable popout faster">
