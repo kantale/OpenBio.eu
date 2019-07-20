@@ -820,6 +820,20 @@ def users_search_2(
 
     return ret
 
+def get_scheme(request):
+    '''
+    https://stackoverflow.com/a/36817763/5626738
+    http or https ?
+    '''
+    scheme = 'https' if request.is_secure() else "http"
+    return scheme
+
+def get_server_url(request):
+    '''
+    Get the URL of the server
+    '''
+
+    return '{}://{}/platform'.format(get_scheme(request), request.get_host())
 
 ### END OF USERS 
 
@@ -1971,7 +1985,7 @@ def run_workflow(request, **kwargs):
         output_object = urllib.parse.quote(simplejson.dumps(output_object))
         ret['output_object'] = output_object
     elif download_type == 'BASH':
-        output_object = urllib.parse.quote(create_bash_script(output_object))
+        output_object = urllib.parse.quote(create_bash_script(output_object, get_server_url(request)))
         ret['output_object'] = output_object
 
     ret['report_created'] = report_created
@@ -2300,7 +2314,7 @@ def bibtex_to_html(content):
     try:
         pybtex_html_backend.write_to_stream(data_formatted, output)
     except pybtex.style.template.FieldIsMissing as e:
-        return False, str(e), None
+        return False, str(e), None # This DOI for example: 10.1038/nature09298 . Error: missing author in 2010.
     html = output.getvalue()
 
     html_s = html.split('\n')

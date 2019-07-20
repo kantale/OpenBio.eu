@@ -87,6 +87,19 @@ function obc_validate() {
 
 bash_patterns['get_json_value'] = '{variable}=$(obc_parse_json "${json_variable}" "{json_key}")'
 
+# Global parameters
+g = {
+    'silent': False,
+}
+
+def log_info(message):
+    '''
+    '''
+    if not g['silent']:
+        logging.info(message)
+
+
+
 def setup_bash_patterns(args):
     '''
     Change some values of te bash patterns according to arg arguments
@@ -112,10 +125,13 @@ class Workflow:
     STEP_TYPE = 'step'
     TOOL_TYPE = 'tool'
 
-    def __init__(self, workflow_filename=None, workflow_object=None):
+    def __init__(self, workflow_filename=None, workflow_object=None, askinput='JSON'):
         '''
         workflow_filename: the JSON filename of the workflow
         workflow_object: The representation of the workflow
+        askinput: 
+            JSON: Ask for input during convertion to BASH
+            BASH: Ask for input in BASH
         One of these should not be None
         '''
 
@@ -128,6 +144,7 @@ class Workflow:
 
         self.workflow_filename = workflow_filename
         self.workflow_object = workflow_object
+        self.askinput = askinput
         self.parse_workflow_filename()
 
     def __str__(self,):
@@ -140,7 +157,7 @@ class Workflow:
         '''
         tool_installation_order = self.get_tool_installation_order()
         for tool in tool_installation_order:
-            logging.info('Building installation bash commands for: {}'.format(tool['label']))
+            log_info('Building installation bash commands for: {}'.format(tool['label']))
             yield tool
 
 
@@ -166,7 +183,7 @@ class Workflow:
         self.current_token = self.workflow['token']
 
 
-        logging.info('Workflow Name: {}   Edit: {}   Report: {}'.format(
+        log_info('Workflow Name: {}   Edit: {}   Report: {}'.format(
             self.root_workflow['name'], self.root_workflow['edit'], self.nice_id,
             ))
 
@@ -191,22 +208,28 @@ class Workflow:
 
         # Check that all root input are set
         self.input_parameter_values = {}
-        logging.info('Checking for input values:')
+        self.input_parameters_read_bash_commands = []
+        log_info('Checking for input values:')
         for root_input_node in self.root_inputs_outputs['inputs']:
             var_set = False
             for arg_input_name, arg_input_value in self.input_parameters.items():
                 if arg_input_value is None:
                     break
                 if arg_input_name == root_input_node['id']:
-                    logging.info('  {}={}'.format(root_input_node['id'], arg_input_value))
+                    log_info('  {}={}'.format(root_input_node['id'], arg_input_value))
                     self.input_parameter_values[root_input_node['id']] = {'value': arg_input_value, 'description': root_input_node['description']}
                     var_set = True
                     break
             if not var_set:
                 #message = 'Input parameter: {} has not been set!'.format(root_input_node['id'])
                 #raise OBC_Executor_Exception(message)
-                local_input_parameter = input('Input parameter: {} ({}) has not been set. Enter value: '.format(root_input_node['id'], root_input_node['description']))
-                self.input_parameter_values[root_input_node['id']] = {'value': local_input_parameter, 'description': root_input_node['description']}
+                user_message = 'Input parameter: {} ({}) has not been set. Enter value: '.format(root_input_node['id'], root_input_node['description'])
+                if self.askinput == 'JSON':
+                    local_input_parameter = input(user_message)
+                    self.input_parameter_values[root_input_node['id']] = {'value': local_input_parameter, 'description': root_input_node['description']}
+
+                bash_command = 'read -p "{}" input__{}\n'.format(user_message, root_input_node['id'])
+                self.input_parameters_read_bash_commands.append(bash_command)
 
         # Check that all outpus will be eventually set
         self.output_parameter_step_setters = {}
@@ -276,6 +299,20 @@ class Workflow:
         ret += 'echo "Workflow edit: {}"\n'.format(self.root_workflow['edit'])
         ret += f'echo "Workflow report: {self.nice_id}"\n'
         ret += '\n'
+        return ret
+
+    def get_input_parameters_read_bash_commands(self, ):
+        '''
+        Bash commands for reading input/output
+        '''
+
+        ret = '\n'
+        if self.input_parameters_read_bash_commands:
+            ret += 'echo "The following input commands have not been set by any step. Please define input values:"\n'
+            for input_parameters_read_bash_command in self.input_parameters_read_bash_commands:
+                ret += input_parameters_read_bash_command
+            ret += '\n'
+
         return ret
 
 
@@ -636,6 +673,9 @@ class LocalExecutor(BaseExecutor):
             # Print basic info of executed workflow
             f.write(self.workflow.show_basic_info())
 
+            # Ask for input parameters
+            f.write(self.workflow.get_input_parameters_read_bash_commands())
+
             # Set current token
             f.write(self.workflow.get_token_set_bash_commands())
 
@@ -671,7 +711,7 @@ class LocalExecutor(BaseExecutor):
                 ret = f.getvalue()
 
         if type(output) is str:
-            logging.info(f'Created file: {output}')
+            log_info(f'Created file: {output}')
 
         return ret
 
@@ -687,18 +727,23 @@ class AmazonExecutor(BaseExecutor):
     '''
     pass
 
-def create_bash_script(workflow_object):
+def create_bash_script(workflow_object, server):
     '''
     convenient function called by server
+    server: the server to report to
     '''
 
     args = type('A', (), {
-        'server':'https://www.openbio.eu/platform',
+        'server': server,
         'insecure': False,
     })
 
     setup_bash_patterns(args)
-    w = Workflow(workflow_object = workflow_object)
+
+    # Setup global variables
+    g['silent'] = True
+
+    w = Workflow(workflow_object = workflow_object, askinput='BASH')
     le = LocalExecutor(w)
     return le.build(output=None)
 
@@ -713,12 +758,20 @@ if __name__ == '__main__':
     parser.add_argument('-W', '--workflow', dest='workflow_filename', help='JSON filename of the workflow to run', required=True)
     parser.add_argument('-S', '--server', dest='server', help='The Server\'s url. It should contain http or https', default='https://www.openbio.eu/platform')
     parser.add_argument('--insecure', dest='insecure', help="Pass insecure option (-k) to curl", default=False, action="store_true")
+    parser.add_argument('--silent', dest='silent', help="Do not print logging info", default=False, action="store_true")
+    parser.add_argument('--askinput', dest='askinput', 
+        help="Where to get input parameters from. Available options are: 'JSON', during convert JSON to BASH, 'BASH' ask for input in bash", 
+        default='JSON', choices=['JSON', 'BASH'])
 
     args = parser.parse_args()
 
     setup_bash_patterns(args)
 
-    w = Workflow(args.workflow_filename)
+    # Setup global variables
+    if args.silent:
+        g['silent'] = True
+
+    w = Workflow(args.workflow_filename, askinput=args.askinput)
     #print (w.root_inputs_outputs)
     #print (w)
     #w.get_tool_installation_order()
