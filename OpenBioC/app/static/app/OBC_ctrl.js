@@ -3422,6 +3422,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 workflow_cytoscape.elements.nodes.forEach(function(node){ nodes_to_add.push(node.data) });
                 //window.buildTree(nodes_to_add, {name: $scope.workflow_info_name, edit: null});
                 window.buildTree(nodes_to_add, {name: 'root', edit: null});
+                $scope.workflow_update_tab_completion_info_to_step();
 				
 				//TODO  check if it is correct (added by Galateia)
 				window.cy_close_successors();
