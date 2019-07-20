@@ -335,10 +335,9 @@ class Workflow:
             #ret += tool['validation_commands'] + '\n'
             validation_script_filename = tool['label'].replace('/', '__') + '__validation.sh'
             ret += "cat > {} << 'ENDOFFILE'\n".format(validation_script_filename)
-            ret += tool['validation_commands']
+            ret += tool['validation_commands'] + '\n'
             ret += 'ENDOFFILE\n\n'
             ret += 'chmod +x {}\n'.format(validation_script_filename)
-            #ret +=  "mitsos="+base64_encode(tool['validation_commands']) + '\n'
             ret += './{}\n'.format(validation_script_filename)
             ret += 'if [ $? -eq 0 ] ; then\n'
             ret += '   echo "OBC: VALIDATION FOR TOOL: {} SUCCEEDED"\n'.format(tool['label'])
