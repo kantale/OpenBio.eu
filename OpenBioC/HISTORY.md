@@ -1,6 +1,37 @@
 
 # Version changes and updates
 
+### 0.1 (22 July 2019)
+* First major release!
+* Completely redesigned the UI with Materialize
+* Simple, unique Search function. A search returns all relevant ROs.
+* Added Questions And Answers as ROs
+* Every Tool and Workflow has a Discussion section
+* Added Reports
+    * Workflows can get downloaded in JSON format or in standaline BASH scripts
+    * Upon execution, a "Report" is generated with a unique random id. 
+    * Reports are visualized in a Timeline
+    * Click in a node in the timeline to see the relevant nodes and edges that are running
+* Added References
+    * Get the details of a Reference from a DOI (with the "PROCESS" button)
+    * Get the details of a Reference from a BIBTEX (with the "PROCESS BIBTEX" button)
+* Added Users as ROs.
+    * Edit the profile of the signed-in user.
+    * Show profile info for any user
+* Created executor.py that undertakes the task of creating an executable BASH script from a workflow.
+* Text in documentation of ROs and in discussion supports markdown.
+* Created "innerlinks" Link a RO from another RO:
+    * Tools: t/name/version/edit
+    * Datasets: d/name/version/edit
+    * Workflow: w/name
+    * References: r/name
+    * Report: report/id
+    * question and comments: c/id
+* Create permanent links that are clickable from outside the platform
+* Edit a RO while browsing other ROs (you can only edit one type of RO at a time though)
+* Added (draft) documentation in platform
+* Fixed many bugs..
+
 ### 0.0.3 (20 September 2018)
 * Checked 3 different libraries for tree integration in angular:
    * https://github.com/wix/angular-tree-control
