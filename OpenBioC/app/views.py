@@ -65,7 +65,7 @@ import requests # Used in DOI resolution
 import mistune
 
 
-__version__ = '0.1'
+__version__ = '0.1.1rc'
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
