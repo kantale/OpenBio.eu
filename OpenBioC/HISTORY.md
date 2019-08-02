@@ -1,6 +1,11 @@
 
 # Version changes and updates
 
+### 0.1.1 (Not yet released)
+* Features:
+   * Disable "Process DOI" button during process [issue](https://github.com/kantale/OpenBioC/issues/122)
+
+
 ### 0.1 (22 July 2019)
 * First major release!
 * Completely redesigned the UI with Materialize
