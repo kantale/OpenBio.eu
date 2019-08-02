@@ -135,6 +135,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.show_sign_up = false;
         $scope.show_reset_password = false;
 
+         $scope.references_button_process_doi_activated = true;
+
         $scope.get_init_data();
 
     };
@@ -3565,6 +3567,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * References --> Insert DOI --> Button "Process DOI" --> clicked
     */
     $scope.references_process_doi_pressed = function() {
+
+        //Deactivate "PROCESS DOI" button
+        $scope.references_button_process_doi_activated = false;
+
         $scope.ajax(
             'references_process_doi/',
             {
@@ -3582,12 +3588,15 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.references_url = data['references_url'];
 
                 $timeout(function(){M.updateTextFields()}, 10);
+                $scope.references_button_process_doi_activated = true; //Reactivate PROCESS DOI button
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');
+                $scope.references_button_process_doi_activated = true; //Reactivate PROCESS DOI button
             },
             function(statusText) {
-                $scope.toast(statusText, 'error');
+                $scope.toast(statusText, 'error'); 
+                $scope.references_button_process_doi_activated = true; //Reactivate PROCESS DOI button
             }
         );
     };

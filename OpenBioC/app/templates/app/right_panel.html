@@ -940,7 +940,7 @@
                                         <input id="referencesGeneralDOI" type="text" class="validate" ng-model="references_doi">
                                         <label for="referencesGeneralDOI">DOI</label>
                                         <span style="display: table-cell; width:120px;">
-                                            <a class="waves-effect waves-light btn-small" ng-click="references_process_doi_pressed()">Process DOI</a>
+                                            <a class="waves-effect waves-light btn-small" ng-click="references_process_doi_pressed()" ng-disabled="!references_button_process_doi_activated">Process DOI</a>
                                         </span>
                                     </div>
                                 </div>
