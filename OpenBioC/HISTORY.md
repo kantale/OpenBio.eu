@@ -4,7 +4,8 @@
 ### 0.1.1 (Not yet released)
 * Features:
    * Disable "Process DOI" button during process [issue](https://github.com/kantale/OpenBioC/issues/122)
-
+* Bugs Fixed:
+   * [step is lost while being edit in workflow fork action #121](https://github.com/kantale/OpenBioC/issues/121)
 
 ### 0.1 (22 July 2019)
 * First major release!
