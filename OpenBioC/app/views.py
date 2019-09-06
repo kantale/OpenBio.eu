@@ -1742,7 +1742,7 @@ def check_workflow_step_main(cy, root_workflow):
 @has_data
 def workflows_add(request, **kwargs):
     '''
-    add workflow, workflow add, save workflow, workflow save
+    add workflow, workflow add, save workflow, workflow save, save wf
     '''
 
     if request.user.is_anonymous: # Server should always check..

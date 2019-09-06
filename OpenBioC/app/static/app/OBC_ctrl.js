@@ -3013,6 +3013,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         var step_node = [{
             name: $scope.workflows_step_name,
             main: $scope.workflows_step_main,
+            sub_main: false,
             type: 'step',
             bash: bash_commands,
             steps: steps,
@@ -3421,7 +3422,21 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 //the information regarding edges exists on the nodes. 
                 //We do not have to pass the complete worfklow, or edge information.
                 var nodes_to_add = []
-                workflow_cytoscape.elements.nodes.forEach(function(node){ nodes_to_add.push(node.data) });
+                workflow_cytoscape.elements.nodes.forEach(function(node){
+                    if (node.data.type == 'step') {
+                        //We store the information whether or not this step used to be the main step of the DND'd WF
+
+                        //If it is already a sub_main, do not change it.
+                        if (!node.data.sub_main) {
+                            node.data.sub_main = node.data.main;
+                        }
+                        //There can only be one main step on the workflow! See issue: #121
+                        node.data.main=false;
+                    }
+
+                    //Add All Nodes 
+                    nodes_to_add.push(node.data);
+                });
                 //window.buildTree(nodes_to_add, {name: $scope.workflow_info_name, edit: null});
                 window.buildTree(nodes_to_add, {name: 'root', edit: null});
                 $scope.workflow_update_tab_completion_info_to_step();
