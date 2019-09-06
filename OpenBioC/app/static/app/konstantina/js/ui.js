@@ -1523,7 +1523,7 @@ window.onload = function () {
                     //Why this redundancy?
                     //jstree uses d.name, cytoscape uses d.label and we also need an id...
                     var this_step_id = create_step_id(d, this_node_wf_belong_to);
-                    var myNode = { data: { id: this_step_id, name: d.name, label: d.name, type: d.type, bash: d.bash, main:d.main, tools: d.tools, steps: d.steps, inputs: d.inputs, outputs: d.outputs, belongto: this_node_wf_belong_to } };
+                    var myNode = { data: { id: this_step_id, name: d.name, label: d.name, type: d.type, bash: d.bash, main:d.main, sub_main:d.sub_main, tools: d.tools, steps: d.steps, inputs: d.inputs, outputs: d.outputs, belongto: this_node_wf_belong_to } };
                     myNodes.push(myNode);
 
                     //Connect with belong workflow
@@ -1990,10 +1990,36 @@ window.onload = function () {
                         }
                     },
                     {
-                        selector: 'node[type="step"]',
+                        selector: 'node[type="step"][!sub_main][?main]', // http://js.cytoscape.org/#selectors/data 
                         "style": {
                             'shape': 'ellipse',
                             'background-color': '#007167',
+                            'border-width': '3',
+                            'border-color': '#E53935' // red
+                            //'background-color': '#E8E406',
+                            //"height": 15,
+                            //"width": 15
+                        }
+                    },
+                    {
+                        selector: 'node[type="step"][!sub_main][!main]', // http://js.cytoscape.org/#selectors/data 
+                        "style": {
+                            'shape': 'ellipse',
+                            'background-color': '#007167'
+                            //'border-width': '3',
+                            //'border-color': '#E53935' // red
+                            //'background-color': '#E8E406',
+                            //"height": 15,
+                            //"width": 15
+                        }
+                    },
+                    {
+                        selector: 'node[type="step"][?sub_main]', // http://js.cytoscape.org/#selectors/data 
+                        "style": {
+                            'shape': 'ellipse',
+                            'background-color': '#007167',
+                            'border-width': '3',
+                            'border-color': '#000000' // black
                             //'background-color': '#E8E406',
                             //"height": 15,
                             //"width": 15
@@ -2005,7 +2031,7 @@ window.onload = function () {
                             'shape': 'round-rectangle',
                             'border-width': '3',
                             'border-color': '#43A047', 
-                            'background-color': '#5A5A5A',
+                            'background-color': '#5A5A5A'
                             //"height": 15,
                             //"width": 15
                         }
@@ -2016,7 +2042,7 @@ window.onload = function () {
                             'shape': 'round-rectangle',
                             'border-width': '3',
                             'border-color': '#E53935',
-                            'background-color': '#5A5A5A',
+                            'background-color': '#5A5A5A'
                             //"height": 15,
                             //"width": 15
                         }
