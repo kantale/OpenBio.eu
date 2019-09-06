@@ -2965,20 +2965,6 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         }
 
 
-        //Is this an UPDATE or an ADD?
-        if ($scope.workflow_step_add_update_label == 'Update') {
-            // If this is an update then delete the previous node
-            cy.$('node[id="' +  $scope.workflow_step_previous_step.id + '"]').remove();
-        }
-        else if ($scope.workflow_step_add_update_label == 'Add') {
-            // If this is an add then check if we are adding a step with a name that already exists.
-            var this_step_id = window.create_step_id({name: $scope.workflows_step_name}, {name: $scope.workflow_info_name, edit: null});
-            if (cy.$('node[id="' +  this_step_id + '"]').length) {
-                $scope.toast('There is already a step with this name', 'error');
-                return;
-            }
-        }
-
         // Check that ONLY ONE step is declared as "main" on THAT workflow (nested workflow can have other main steps)
         // If we setting this value to true and there is already a main step, throw an error
         if ($scope.workflows_step_main) {
@@ -2996,6 +2982,19 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             }
         }
 
+        //Is this an UPDATE or an ADD?
+        if ($scope.workflow_step_add_update_label == 'Update') {
+            // If this is an update then delete the previous node
+            cy.$('node[id="' +  $scope.workflow_step_previous_step.id + '"]').remove();
+        }
+        else if ($scope.workflow_step_add_update_label == 'Add') {
+            // If this is an add then check if we are adding a step with a name that already exists.
+            var this_step_id = window.create_step_id({name: $scope.workflows_step_name}, {name: $scope.workflow_info_name, edit: null});
+            if (cy.$('node[id="' +  this_step_id + '"]').length) {
+                $scope.toast('There is already a step with this name', 'error');
+                return;
+            }
+        }
 
         $scope.workflow_step_error_message = '';
 
