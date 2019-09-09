@@ -27,6 +27,7 @@ Main features include:
     * ExecutionEnvironment. The Execution Environment of openbio.eu . Use [executor.py](ExecutionEnvironment/executor.py) to execute a worfklow in json format that you downloaded from openbio.eu.
 * [deployment_notes.md](deployment_notes.md): Some notes on how to deploy on an Ubuntu 16.04 server 
 * discourse-graph. A very experimental effort to add a discourse graph to the discussion of objects in openbio.eu.
+* tests/. Selenium tests. 
 
 ## For Developers
 We will be very happy to accept Pull Requests. The project does not have any active development or contribution guidelines at the moment. 
