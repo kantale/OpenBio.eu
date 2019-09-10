@@ -6,6 +6,7 @@
    * Disable "Process DOI" button during process [issue](https://github.com/kantale/OpenBioC/issues/122)
 * Bugs Fixed:
    * [step is lost while being edit in workflow fork action #121](https://github.com/kantale/OpenBioC/issues/121)
+   * [Forked WFs were not visible in JStree #120](https://github.com/kantale/OpenBioC/issues/120)
 
 ### 0.1 (22 July 2019)
 * First major release!
