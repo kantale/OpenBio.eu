@@ -330,27 +330,185 @@ http://www.tooplate.com/view/2098-health
 	 </section>		   
 
 
+
      <!-- NEWS -->
      <section id="news" data-stellar-background-ratio="2.5">
           <div class="container">
                <div class="row">
+			   <style>
+					/* carousel */
+					#quote-carousel 
+					{
+					  padding: 0 10px 30px 10px;
+					  margin-top: 30px;
+					}
 
-                    <div class="col-md-12 col-sm-12">
-                         <!-- SECTION TITLE -->
-                         <div class="section-title wow fadeInUp" data-wow-delay="0.1s">
-                              <h2>Latest News</h2>
-                         </div>
-                    </div>
+					/* Control buttons  */
+					#quote-carousel .carousel-control
+					{
+					  background: none;
+					  color: #222;
+					  font-size: 2.3em;
+					  text-shadow: none;
+					  margin-top: 30px;
+					}
+					/* Previous button  */
+					#quote-carousel .carousel-control.left 
+					{
+					  left: -12px;
+					}
+					/* Next button  */
+					#quote-carousel .carousel-control.right 
+					{
+					  right: -12px !important;
+					}
+					/* Changes the position of the indicators */
+					#quote-carousel .carousel-indicators 
+					{
+					  right: 50%;
+					  top: auto;
+					  bottom: 0px;
+					  margin-right: -19px;
+					}
+					/* Changes the color of the indicators */
+					#quote-carousel .carousel-indicators li 
+					{
+					  background: #c0c0c0;
+					}
+					#quote-carousel .carousel-indicators .active 
+					{
+					  background: #333333;
+					}
+					#quote-carousel img
+					{
+					  width: 250px;
+					  height: 100px
+					}
+					/* End carousel */
+
+					.item blockquote {
+						border-left: none; 
+						margin: 0;
+					}
+
+					.item blockquote img {
+						margin-bottom: 10px;
+					}
+
+					.item blockquote p:before {
+						content: "\f10d";
+						font-family: 'Fontawesome';
+						float: left;
+						margin-right: 10px;
+					}
+
+
+
+					/**
+					  MEDIA QUERIES
+					*/
+
+					/* Small devices (tablets, 768px and up) */
+					@media (min-width: 768px) { 
+						#quote-carousel 
+						{
+						  margin-bottom: 0;
+						  padding: 0 40px 30px 40px;
+						}
+						
+					}
+
+					/* Small devices (tablets, up to 768px) */
+					@media (max-width: 768px) { 
+						
+						/* Make the indicators larger for easier clicking with fingers/thumb on mobile */
+						
+						#quote-carousel .carousel-indicators {
+							bottom: -20px !important;  
+						}
+						#quote-carousel .carousel-indicators li {
+							display: inline-block;
+							margin: 0px 5px;
+							width: 15px;
+							height: 15px;
+						}
+						#quote-carousel .carousel-indicators li.active {
+							margin: 0px 5px;
+							width: 20px;
+							height: 20px;
+						}
+					}
+			   </style>
+			   
+			    <!-- NEWS CAROUSEL -->
+			<div class='col-md-offset-2 col-md-8 text-center'>
+				<h2>Latest News</h2>
+				</div>
+			  </div>
+			  <div class='row'>
+				<div class='col-md-offset-2 col-md-8'>
+				  <div class="carousel slide" data-ride="carousel" id="quote-carousel">
+					<!-- Bottom Carousel Indicators -->
+					<ol class="carousel-indicators">
+					  <li data-target="#quote-carousel" data-slide-to="0" class="active"></li>
+					  <li data-target="#quote-carousel" data-slide-to="1"></li>
+					  <li data-target="#quote-carousel" data-slide-to="2"></li>
+					  <li data-target="#quote-carousel" data-slide-to="3"></li>
+					  <li data-target="#quote-carousel" data-slide-to="4"></li>
+					</ol>
 					
-					 <div class="col-md-4 col-sm-6">
-                         <!-- NEWS THUMB -->
-                         <div class="news-thumb wow fadeInUp" data-wow-delay="0.4s">
-						 <!--
-                              <a href="news-detail.html">
-                                   <img src="/static/static/static/images/news-image1.jpg" class="img-responsive" alt="">
-                              </a>
-						 -->
-                              <div class="news-info">
+					<!-- Carousel Slides / News -->
+					<div class="carousel-inner">
+					 <!--  1 -->
+					  <div class="item active">
+											  
+						 <div class="news-info">
+                                   <span>October 28-30, 2019 | Athens, GR</span>
+                                   <h3><a href="https://bibe2019.ics.forth.gr/" target="_blank">BIBE 2019</a></h3>
+								   <br>
+								    <p>Our paper:</p>
+									<p style="font-weight: bold;">
+										Towards Reproducible Bioinformatics: The OpenBio-C Scientific Workflow Environment
+									</p>
+									<p>
+										has been accepted in IEEE conference: BIBE 2019</p>
+                                   <div class="author">
+                                        <div class="author-info">
+                                             <h5>OpenBio-C</h5>
+                                             <!--<p>CEO / Founder</p>-->
+                                        </div>
+                                   </div>
+                              </div>  
+						
+					  </div>
+					  
+					   <!--  2 -->
+					  <div class="item">
+											  
+						 <div class="news-info">
+                                   <span>October 11-13 2019 | FORTH | Heraklion | Greece</span>
+                                   <h3><a href="https://hscbio.wordpress.com/conferences-when/2019-2/" target="_blank">H.bioinfo 2019</a></h3>
+								   <br>
+								    <p>Our paper:</p>
+									<p style="font-weight: bold;">
+										<a href="https://www.openbio.eu/" target="_blank">openbio.eu</a>: A Social Workflow Management System and Research Object Repository for open and reproducible bioinformatics
+									</p>
+									<p>
+										has been accepted for an oral presentation in the H.bioinfo 2019 conference</p>
+                                   <div class="author">
+                                        <div class="author-info">
+                                             <h5>OpenBio-C</h5>
+                                             <!--<p>CEO / Founder</p>-->
+                                        </div>
+                                   </div>
+                              </div>  
+						
+					  </div>
+					
+					  <!--  3 -->
+					  <div class="item">
+											  
+						 <div class="news-info">
                                    <span>July 24-25, 2019</span>
                                    <h3><a href="https://www.open-bio.org/events/bosc/" target="_blank">BOSC 2019</a></h3>
 								   <br>
@@ -362,19 +520,12 @@ http://www.tooplate.com/view/2098-health
                                              <!--<p>CEO / Founder</p>-->
                                         </div>
                                    </div>
-                              </div>
-                         </div>
-                    </div>
-
-                    <div class="col-md-4 col-sm-6">
-                         <!-- NEWS THUMB -->
-                         <div class="news-thumb wow fadeInUp" data-wow-delay="0.4s">
-						 <!--
-                              <a href="news-detail.html">
-                                   <img src="/static/static/static/images/news-image1.jpg" class="img-responsive" alt="">
-                              </a>
-						 -->
-                              <div class="news-info">
+                              </div>  
+						
+					  </div>
+					  <!--  4 -->
+					  <div class="item">
+						     <div class="news-info">
                                    <span>February 19, 2019</span>
                                    <h3><a href="#">OpenBioC questionnaire</a></h3>
                                    <a href="https://goo.gl/forms/dziu7R9bVQ6DzoKi1 " target="_blank"><p>https://goo.gl/forms/dziu7R9bVQ6DzoKi1 </p></a>
@@ -387,18 +538,11 @@ http://www.tooplate.com/view/2098-health
                                         </div>
                                    </div>
                               </div>
-                         </div>
-                    </div>
-
-                    <div class="col-md-4 col-sm-6">
-                         <!-- NEWS THUMB -->
-                         <div class="news-thumb wow fadeInUp" data-wow-delay="0.6s">
-						 <!--
-                              <a href="news-detail.html">
-                                   <img src="/static/static/static/images/news-image2.jpg" class="img-responsive" alt="">
-                              </a>
-						 -->
-                              <div class="news-info">
+					  </div>
+					  <!--  5 -->
+					  <div class="item">
+						
+						  <div class="news-info">
                                    <span>January 19, 2019</span>
                                    <h3><a href="https://bibe2019.ics.forth.gr/" target="_blank">BIBE 2019 Conference</a></h3>
                                    <p>19th annual IEEE International Conference on Bioinformatics and Bioengineering .</p>
@@ -410,36 +554,28 @@ http://www.tooplate.com/view/2098-health
                                         </div>
                                    </div>
                               </div>
-                         </div>
-                    </div>
-
-					<!--
-                    <div class="col-md-4 col-sm-6">
-                         -- NEWS THUMB -->
-						 <!--
-                         <div class="news-thumb wow fadeInUp" data-wow-delay="0.8s">
-
-                              <a href="news-detail.html">
-                                   <img src="/static/static/static/images/news-image3.jpg" class="img-responsive" alt="">
-                              </a>
-                              <div class="news-info">
-                                   <span>January 19, 2018</span>
-                                   <h3><a href="news-detail.html">Review Annual Medical Research</a></h3>
-                                   <p>Vivamus non nulla semper diam cursus maximus. Pellentesque dignissim.</p>
-                                   <div class="author">
-                                        <img src="/static/static/static/images/author-image.jpg" class="img-responsive" alt="">
-                                        <div class="author-info">
-                                             <h5>Andrio Abero</h5>
-                                             <p>Online Advertising</p>
-                                        </div>
-                                   </div>
-                              </div>
-                         </div>
-                    </div>
-					-->
+						
+						
+						
+					  </div>
+					</div>
+					
+					<!-- Carousel Buttons Next/Prev -->
+					<a data-slide="prev" href="#quote-carousel" class="left carousel-control"><i class="fa fa-chevron-left"></i></a>
+					<a data-slide="next" href="#quote-carousel" class="right carousel-control"><i class="fa fa-chevron-right"></i></a>
+				  </div>                          
+				</div>
+				<!-- END OF CAROUSEL -->
+					
+			   
+			   
+			
+				
 
                </div>
           </div>
+		  
+		  
      </section>
 
 
@@ -570,5 +706,6 @@ http://www.tooplate.com/view/2098-health
      <script src="/static/static/static/js/owl.carousel.min.js"></script>
      <script src="/static/static/static/js/custom.js"></script>
 
+	 
 </body>
 </html>
