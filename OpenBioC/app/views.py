@@ -1286,7 +1286,9 @@ def tools_search_2(tools_search_name, tools_search_version, tools_search_edit):
     if tools_search_edit:
         Qs.append(Q(edit = int(tools_search_edit)))
 
-    results = Tool.objects.filter(*Qs) # This applies an AND operator. https://docs.djangoproject.com/en/2.2/topics/db/queries/#complex-lookups-with-q-objects 
+    # This applies an AND operator. https://docs.djangoproject.com/en/2.2/topics/db/queries/#complex-lookups-with-q-objects 
+    # For the order_by part see issue #120
+    results = Tool.objects.filter(*Qs).order_by('created_at') 
 
     # { id : 'ajson1', parent : '#', text : 'KARAPIPERIM', state: { opened: true} }
 
@@ -1325,10 +1327,10 @@ def workflows_search_2(workflows_search_name, workflows_search_edit):
     if workflows_search_edit:
         Qs.append(Q(edit = int(workflows_search_edit)))
 
-    results = Workflow.objects.filter(*Qs)
+    # For the order_by part see issue #120 
+    results = Workflow.objects.filter(*Qs).order_by('created_at')
 
     # Build JS TREE structure
-
     
     workflows_search_jstree = []
     for x in results:
