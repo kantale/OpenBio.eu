@@ -1295,9 +1295,9 @@ window.onload = function () {
         * Creates a "unique" id from a workflow
         * ATTENTION! This should be in accordance with the python function create_workflow_id in views.py
         */
-        function create_workflow_id(workflow) {
+        window.OBCUI.create_workflow_id = function(workflow) {
             return workflow.name + window.OBCUI.sep + workflow.edit; //It is ok if this is wf1__null
-        }
+        };
 
         /*
         * Get the edit of this wotkflow id
@@ -1318,7 +1318,7 @@ window.onload = function () {
         * Create a step ID. This contains: name of step, name of workflow, edit of workflow
         */
         function create_step_id(step, workflow) {
-            return step.name + window.OBCUI.sep + create_workflow_id(workflow);
+            return step.name + window.OBCUI.sep + window.OBCUI.create_workflow_id(workflow);
         }
         window.create_step_id = create_step_id; // Ugliness. FIXME! We need to make these functions visible everywhere without polluting the namespace
 
@@ -1326,14 +1326,14 @@ window.onload = function () {
         * Create a unique input/output variable ID. This contains the input/output name, name workflow and edit of worfkflow
         */
         function create_input_output_id(input_output, workflow) {
-            return input_output.name + window.OBCUI.sep + create_workflow_id(workflow);
+            return input_output.name + window.OBCUI.sep + window.OBCUI.create_workflow_id(workflow);
         }
 
         /*
         * Helper for Step Input Output (SIO)
         */
         function create_SIO_id(SIO, workflow) {
-            return SIO.name + window.OBCUI.sep + create_workflow_id(workflow);
+            return SIO.name + window.OBCUI.sep + window.OBCUI.create_workflow_id(workflow);
         }
 
         /*
@@ -1350,9 +1350,9 @@ window.onload = function () {
         * Create a "unique" id for an edge 
         * ATTENTION! This should be in accordance with the python function create_workflow_edge_id in views.py
         */
-        function create_workflow_edge_id(source_id, target_id) {
+        window.OBCUI.create_workflow_edge_id = function(source_id, target_id) {
             return source_id + '..' + target_id;
-        }
+        };
 
         /*
         * Get the source_id from the edge id
@@ -1377,7 +1377,7 @@ window.onload = function () {
             if (sio_id_splitted.length != 3) {
                 return null;
             }
-            return create_workflow_id({ name: sio_id_splitted[1], edit: sio_id_splitted[2] });
+            return window.OBCUI.create_workflow_id({ name: sio_id_splitted[1], edit: sio_id_splitted[2] });
         }
 
         /*
@@ -1438,6 +1438,14 @@ window.onload = function () {
         };
 
         /*
+        * Does this cy_node belongs to the root WF ?
+        * cy_node a cytoscape node
+        */ 
+        window.OBCUI.cy_belongs_to_root_wf = function(cy_node) {
+            return cy_node.data().belongto.edit === null
+        };
+
+        /*
 		*
         * parse data from openbioc to meet the cytoscape.js requirements
         * Create cytoscape nodes and edges
@@ -1453,7 +1461,7 @@ window.onload = function () {
             incomingData.forEach(function (d) {
 
                 var this_node_wf_belong_to = d.belongto ? d.belongto : belongto; // In which worfklow does this node belong to? 
-                var this_node_wf_belong_to_id = create_workflow_id(this_node_wf_belong_to);
+                var this_node_wf_belong_to_id = window.OBCUI.create_workflow_id(this_node_wf_belong_to);
 
 
                 //INPUTS/OUTPUTS
@@ -1463,7 +1471,7 @@ window.onload = function () {
 						var myNode = { data: { id: this_input_output_id, label: d.name, name: d.name, type: d.type, description: d.description, belongto: this_node_wf_belong_to }};
 						myNodes.push(myNode);
 						//Connect with belongto workflow
-						myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_input_output_id, id: create_workflow_edge_id(this_node_wf_belong_to_id, this_input_output_id), edgebelongto: 'true' }});
+						myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_input_output_id, id: window.OBCUI.create_workflow_edge_id(this_node_wf_belong_to_id, this_input_output_id), edgebelongto: 'true' }});
                 }
 
 
@@ -1493,14 +1501,14 @@ window.onload = function () {
 							var myNode = { data: { id: d.id, text: d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'no', dep_id: d.dep_id, variables: d.variables, belongto: this_node_wf_belong_to }};
 
 							myNodes.push(myNode);
-							var myEdge = { data: { id: create_workflow_edge_id(d.dep_id, d.id), weight: 1, source: d.dep_id, target: d.id } };
+							var myEdge = { data: { id: window.OBCUI.create_workflow_edge_id(d.dep_id, d.id), weight: 1, source: d.dep_id, target: d.id } };
 							myEdges.push(myEdge);
 
 						} else {
 							//var myNode = { data: { id: d.id, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'yes', variables: d.variables } };
 							var myNode = { data: { id: d.id, text: d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'yes', dep_id: d.dep_id, variables: d.variables, belongto: this_node_wf_belong_to } };
 							myNodes.push(myNode);
-							myEdges.push({ data: { source: this_node_wf_belong_to_id, target: d.id, id: create_workflow_edge_id(this_node_wf_belong_to_id, d.id), edgebelongto: 'true' } });
+							myEdges.push({ data: { source: this_node_wf_belong_to_id, target: d.id, id: window.OBCUI.create_workflow_edge_id(this_node_wf_belong_to_id, d.id), edgebelongto: 'true' } });
 						}
 
                 }
@@ -1509,11 +1517,11 @@ window.onload = function () {
                 if (d.type === "workflow") {
 					
                     //TODO add root feature (different than tools): wfroot:yes
-                    var this_workflow_id = create_workflow_id(d);
+                    var this_workflow_id = window.OBCUI.create_workflow_id(d);
 
                     var myNode = { data: { id: this_workflow_id, name: d.name, edit: d.edit, label: create_workflow_label(d), type: 'workflow', belongto: this_node_wf_belong_to } };
                     myNodes.push(myNode);
-                    myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_workflow_id, id: create_workflow_edge_id(this_node_wf_belong_to_id, this_workflow_id), edgebelongto: 'true' } });
+                    myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_workflow_id, id: window.OBCUI.create_workflow_edge_id(this_node_wf_belong_to_id, this_workflow_id), edgebelongto: 'true' } });
 					
                 }
 
@@ -1527,7 +1535,7 @@ window.onload = function () {
                     myNodes.push(myNode);
 
                     //Connect with belong workflow
-                    myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_step_id, id: create_workflow_edge_id(this_node_wf_belong_to_id, this_step_id), edgebelongto: 'true' } });
+                    myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_step_id, id: window.OBCUI.create_workflow_edge_id(this_node_wf_belong_to_id, this_step_id), edgebelongto: 'true' } });
 
                     //create edges to tools and/or steps
                     if (typeof d.tools !== "undefined") {
@@ -1536,7 +1544,7 @@ window.onload = function () {
                         d.tools.forEach(function (element) {
                             //element = element.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
 
-                            var myEdge = { data: { 'id': create_workflow_edge_id(this_step_id, element), 'weight': 1, 'source': this_step_id, 'target': element } };
+                            var myEdge = { data: { 'id': window.OBCUI.create_workflow_edge_id(this_step_id, element), 'weight': 1, 'source': this_step_id, 'target': element } };
                             myEdges.push(myEdge);
 
                         });
@@ -1545,7 +1553,7 @@ window.onload = function () {
                     if (typeof d.steps !== "undefined") {
                         d.steps.forEach(function (element) {
 
-                            var myEdge = { data: { 'id': create_workflow_edge_id(this_step_id, element), 'weight': 1, 'source': this_step_id, 'target': element } };
+                            var myEdge = { data: { 'id': window.OBCUI.create_workflow_edge_id(this_step_id, element), 'weight': 1, 'source': this_step_id, 'target': element } };
                             myEdges.push(myEdge);
 
                         });
@@ -1554,7 +1562,7 @@ window.onload = function () {
 
                     if (typeof d.inputs !== "undefined") {
                         d.inputs.forEach(function (element) {
-                            var myEdge = { data: { 'id': create_workflow_edge_id(element, this_step_id), 'weight': 1, 'source': element, 'target': this_step_id } };
+                            var myEdge = { data: { 'id': window.OBCUI.create_workflow_edge_id(element, this_step_id), 'weight': 1, 'source': element, 'target': this_step_id } };
                             myEdges.push(myEdge);
 
                         });
@@ -1562,7 +1570,7 @@ window.onload = function () {
 
                     if (typeof d.outputs !== "undefined") {
                         d.outputs.forEach(function (element) {
-                            var myEdge = { data: { 'id': create_workflow_edge_id(this_step_id, element), 'weight': 1, 'source': this_step_id, 'target': element } };
+                            var myEdge = { data: { 'id': window.OBCUI.create_workflow_edge_id(this_step_id, element), 'weight': 1, 'source': this_step_id, 'target': element } };
                             myEdges.push(myEdge);
 
                         });
@@ -2106,7 +2114,6 @@ window.onload = function () {
 		// cy should be initialize so that angular can access it
 		window.initializeTree();
 		
-		
 		window.initializeRepTree = function () {
 			
 			var cy_rep = cytoscape({
@@ -2541,7 +2548,7 @@ window.onload = function () {
         /* 
         * add new data to the graph
         * activate the collapse-expand option
-        * This function is getting called from angular
+        * This function is called from angular
         * myworkflow: list of nodes to add
         * belongto: The worfklow node. myworkflow data will be added to belongto
         */
@@ -2635,7 +2642,7 @@ window.onload = function () {
                     //new_root = { name: node.data.name, edit: null };
                     new_root = { name: 'root', edit: null };
 
-                    //new_root_id = create_workflow_id(new_root);
+                    //new_root_id = window.OBCUI.create_workflow_id(new_root);
                     new_root_id = 'root__null';
                     node.data.id = new_root_id;
                     // Update edit. edit = null
@@ -2766,7 +2773,7 @@ window.onload = function () {
                     //
 
                     //Change the id of the edge
-                    edge.data.id = create_workflow_edge_id(edge.data.source, edge.data.target);
+                    edge.data.id = window.OBCUI.create_workflow_edge_id(edge.data.source, edge.data.target);
 
                 });
             }
@@ -2829,7 +2836,7 @@ window.onload = function () {
 
             cy.json({
                 elements: {
-                    nodes: [{ data: { id: create_workflow_id({ name: name, edit: null }), label: name, name: name, edit: null, type: "workflow", belongto: null } }]
+                    nodes: [{ data: { id: window.OBCUI.create_workflow_id({ name: name, edit: null }), label: name, name: name, edit: null, type: "workflow", belongto: null } }]
                 }
             });
 

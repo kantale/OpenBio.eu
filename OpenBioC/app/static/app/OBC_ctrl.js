@@ -3057,6 +3057,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
     /*
     * Called from UI.js . Right Click a node in cytoscape --> delete
+    * Check https://github.com/kantale/OpenBioC/issues/119#issuecomment-530693822 for details on how to do delete a node.
     */
     $scope.workflow_cytoscape_delete_node = function(node_id) {
 
@@ -3066,36 +3067,54 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             return;
         }
 
-        /* Remove the successors of a node */
-        function remove_successors(node) {
-            node.successors().targets().forEach(function (element) {
-                cy.remove(element);                  
-            });
-
-        }
-
         var node = cy.$('node[id="' + node_id + '"]');
         var data = node.data();
-        if (data.type == 'step'){
-            node.remove();
-        }
-        else if (data.type=='tool') {
+        var node_label = data.label;
 
-            //Is there any tool that is dependent from this tool?
-            if (node.incomers('node[type="tool"]').length) {
-                $scope.toast('Cannot remove this tool. Other tools are dependent on this.', 'error');
+        if (data.type == 'step') {
+            // Check if this step is called by another step or calls another step. If yes throw an error message.
+            // Check if this step calls another step
+            var t = node.outgoers('node[type="step"]');
+            if (t.length) {
+                $scope.toast('Cannot delete node: ' + node_label + '. It calls the step: ' + t.first().data().label, "error");
+                return;
+            }
+            // Check if this step is called by another step
+            var t = node.incomers('node[type="step"]');
+            if (t.length) {
+                $scope.toast('Cannot delete node: ' + node_label + '. It is called from step: ' + t.first().data().label, 'error');
+                return;
+            }
+
+            //If both conditions are ok, Delete the step
+            node.remove();
+            //Update tab completion info
+            $scope.workflow_update_tab_completion_info_to_step();
+        }
+        else if (data.type == 'input' || data.type=='output') {
+            if (data.type == 'input') {
+                // Check if this input is read by any step
+                var t = node.outgoers('node[type="step"]');
+                if (t.length) {
+                    $scope.toast('Cannot delete input: ' + node_label + '. Its value is read from step: ' + t.first().data().label, 'error');
+                    return;
+                }
+            }
+            else if (data.type == 'output') {
+                //Check if this output is set by any step
+                var t = node.incomers('node[type="step"]');
+                if (t.length) {
+                    $scope.toast('Cannot delete output: ' + node_label + '. Its value is set from step: ' + t.first().data().label, 'error');
+                    return;
+                }
             }
             else {
-                //Remove successors as well 
-                remove_successors(node);
-                node.remove();
+                console.warn('Error 8911'); // This should never happen
             }
-        }
-        else if (data.type=='input' || data.type=='output') {
-            //Check if it belongs to root WF
-            if (window.is_workflow_root_from_SIO_id(node.id())) {
-                
-                //Locate the index 
+            // If it belongs to the root workflow, we should also update the UI
+            if (window.OBCUI.cy_belongs_to_root_wf(node)) {
+                //Get the index of the input
+ 
                 var index = -1;
                 for (var i=0; i<$scope.workflow_input_outputs.length; i++) {
                     if ($scope.workflow_input_outputs[i].name == data.name && $scope.workflow_input_outputs[i].out == (data.type=='output')) {
@@ -3103,28 +3122,277 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                         break;
                     }
                 }
-                //Remove it
-                if (index>=0) {
-                    $scope.workflow_step_remove_input_output(index);
-                    node.remove();
-                }
-                else {
+                if (index<0) {
+                    //This should never happen
                     console.warn('Error 8161'); // This should never happen
                 }
+ 
+                //Remove from workflow_input_outputs list
+                $scope.workflow_input_outputs.splice(index, 1);
+
+                //workflow_input_outputs should never be empty
+                if (!$scope.workflow_input_outputs.length) {
+                    $scope.workflow_step_add_input_output();
+                }
+
             }
-            else {
-               // If this does not belong to the root node, delete it.
-               node.remove();
+            //Remove from graph 
+            node.remove();
+
+            //Update tab completion 
+            $scope.workflow_update_tab_completion_info_to_step();
+        }
+        else if (data.type == 'tool') {
+            //Check if this tool is used by any step. If yes throw an error
+            var t = node.incomers('node[type="step"]');
+            if (t.length) {
+                $scope.toast('Cannot delete tool: ' + data.label + '. It is used in step: ' + t.first().data().label, 'error');
+                return;
             }
+
+            // Check if this tool is a dependency to another tool that is used by any step. If yes throw an error.
+            var ok = true;
+            //Get the tools that depend from this tool
+            node.predecessors('node[type="tool"]').forEach(function (element){
+                //Get the steps that use this tool
+
+                if (!ok) {
+                    return; // Speed up the test
+                }
+
+                var t = element.incomers('node[type="step"]');
+                if (t.length) {
+                    $scope.toast('Cannot delete tool: ' + data.label + '. It is a dependency to tool: ' + element.data().label + ' which is used in step: ' + t.first().data().label , 'error');
+                    ok = false;  // This does not return from function workflow_cytoscape_delete_node
+                }
+            });
+            if (!ok) {
+                return; //This does
+            }
+
+            // Check if this tool is a dependency to another tool
+            var t = node.predecessors('node[type="tool"]');
+            if (t.length) {
+                $scope.toast('Cannot delete tool: ' + data.label + '. It is a dependency to tool: ' + t.first().data().label, 'error');
+                return;
+            }
+
+            //Check if there are any tools that this tool is directly dependent from, and will be left hanging if we delete this tool
+            //Get all tools that this tool depends from
+            var t = node.outgoers('node[type="tool"]');
+            if (t.length) {
+                //For each tool that this tool is directly dependent, check if it is attached to any workflow
+                t.forEach(function(element) {
+                    //Is this element attached to any workflow?
+                    if (!element.incomers('node[type="workflow"]').length) {
+                        //This element is a tool that if we delete the tool node, will be left hanging
+                        //Create an edge to the workflow where it belongs
+                        var source_id = window.OBCUI.create_workflow_id(element.data().belongto);
+                        var target_id = element.id();
+                        var edge_id = window.OBCUI.create_workflow_edge_id(source_id, target_id);
+                        cy.add([{ group: 'edges', data: { id: edge_id, source: source_id, target: target_id, edgebelongto: 'true' }}]);
+
+                    }
+                });
+            }
+            //Delete the node
+            node.remove()
+
+            //Update tab completion 
+            $scope.workflow_update_tab_completion_info_to_step();
         }
         else if (data.type == 'workflow') {
             if (!data.belongto) {
                 $scope.toast('Cannot remove the root workflow', 'error');
+                return
             }
-            else {
-                remove_successors(node);
-                node.remove();
+            
+            // Get all predecessor of this workflow
+            var wf_predecessors = node.predecessors('node[type="workflow"]');
+
+            // Get all successor workflows
+            var wf_successors = node.successors('node[type="workflow"]');
+
+            // this workflow + successor workflow
+            var all_successor_wf = node.union(wf_successors);
+
+            var nodes_to_delete = all_successor_wf;
+
+            // all workflows
+            var all_workflows = cy.$('node[type="workflow"]');
+
+            // All workflows without all_successor_wf
+            var all_without_node_wfs = all_workflows.difference(all_successor_wf);
+
+            // Get all steps of these workflows
+            var wf_steps = all_successor_wf.outgoers('node[type="step"]');
+            nodes_to_delete = nodes_to_delete.union(wf_steps);
+
+            var ok = true;
+
+            wf_steps.foreach(function(element) {
+
+                if (!ok) {
+                    return;
+                }
+
+                // Check if there is any step that is called by another step that does not belong to all_successor_wf
+                var a = element.incomers('node[type="step"]'); // Take the steps that call this step
+                var b = a.incomers('node[type="workflow"]'); // Take the workflows of these steps
+                var c = b.intersection(all_without_node_wfs); // Check if these workflows do not belong to the successors of this workflow
+
+                if (c.length) {
+                    $scope.toast('Cannot delete workflow: ' + node_label + '. It contains step: ' + element.data().label() + ' which is called by a step that belongs to workflow: ' + c.first().data().label, 'error');
+                    //                                                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ <<-- WHICH STEP?? TODO
+                    ok = false;
+                    return;
+                }
+
+                // Check if there is any step that calls another step that does not belong to all_successor_wf
+                var a = element.outgoers('node[type="step"]'); // Take that steps that are called by this step (element)
+                var b = a.incomers('node[type="workflow"]'); // Take the workflows of these steps
+                var c = b.intersection(all_without_node_wfs); // Checl if these workflows do not belong to all_successor_wf
+                if (c.length) {
+                    $scope.toast('Cannot delete workflow: ' + node_label + '. It contains step: ' + element.data().label() + ' which calls a step that belongs to workflow: ' + c.first().data().label, 'error');
+                    ok = false;
+                    return;
+                }
+
+            });
+
+            if (!ok) {
+                return;
             }
+
+            // Get all inputs of these workflows
+            var wf_input = all_successor_wf.outgoers('node[type="input"]');
+            nodes_to_delete = nodes_to_delete.union(wf_input);
+
+            wf_input.forEach(function(element) {
+
+                if (!ok) {
+                    return;
+                }
+
+                //Check if there is a step outside of all_successor_wf that reads this input
+                var a = element.outgoers('node[type="step"]'); // Take all steps that read this input
+                var b = a.incomers('node[type="workflow"]'); // Take the WFs of these step
+                var c = b.intersection(all_without_node_wfs); // Check that these workflows do not belong to all_successor_wf
+                if (c.length) {
+                    $scope.toast('Cannot delete workflow: ' + node_label + '. It contains the input: ' + element.data().label + ' which is read by a step that belongs to workflow: ' + c.first().data().label, 'error');
+                    ok = false;
+                    return;
+                }
+
+            });
+
+            if (!ok) {
+                return;
+            }
+
+            // Get all outputs of these workflows
+            var wf_output = all_successor_wf.outgoers('node[type="output"]');
+            nodes_to_delete = nodes_to_delete.union(wf_output);
+
+            wf_output.forEach(function(element) {
+                if (!ok) {
+                    return;
+                }
+
+                //Check is there is any step outside of all_successor_wf that sets this output
+                var a = element.incomers('node[type="step"]'); //Take all steps that set this output
+                var b = a.incomers('node[type="workflow"]'); // Take all the workflows of these steps
+                var c = b.intersection(all_without_node_wfs); // Check that these workflows do not belong to all successor_wfs
+                if (c.length) {
+                    $scope.toast('Cannot delete workflow: ' + node_label + '. It contains the output: ' + element.data().label + ' which is set by a step that belongs to workflow: ' + c.first().data().label, 'error');
+                    ok = false;
+                    return;
+                }
+            });
+            if (!ok) {
+                return;
+            }
+
+            //Take all tools 
+            cy.$('node[type="tool"]').forEach(function(tool_element){
+
+                if (!ok) {
+                    return;
+                }
+
+                var tool_data = tool_element.data();
+                //Take all successor wfs
+                all_successor_wf.forEach(function (wf_element){
+
+                    if (!ok) {
+                        return;
+                    }
+
+                    var wf_data = wf_element.data();
+
+                    //Does this tool belong to any all_successor_wf?
+                    if ((tool_data.belongto.name == wf_data.name) && (tool_data.belongto.edit == wf_data.edit)) {
+                        //This tool belong to the successor WFs. We are about to delete this tool. Can we?
+                        nodes_to_delete = nodes_to_delete.union(tool_element);
+
+                        //Is this tool used by any step outside the all_successor_wf?
+                        var a = tool_element.incomers('node[type="step"]'); // Take all steps that use this tool
+                        var b = a.incomers('node[type="workflow"]'); // Take the workflows of these steps
+                        var c = b.intersection(all_without_node_wfs); // Is any of these workflows outside the successor wf (this node)?
+                        if (c.length) {
+                            $scope.toast('Cannot delete workflow: ' + node_label + '. It contains the tool: ' + tool_element.data().label + ' which is used by a step in the workflows: ' + c.first().data().label , 'error');
+                            ok=false;
+                            return;
+                        }
+
+                        //Is this tool a dependency to any tool outside the all_successor_wf ?
+                        var a = tool_element.outgoers('node[type="tool"]'); // Take all tools that have this tool as a dependency
+                        a.forEach(function (dep_tool_element) {
+
+                            if (!ok) {
+                                return;
+                            }
+
+                            var dep_tool_element_data = dep_tool_element.data();
+
+                            //deep_tool_element depends from tool_element
+                            //Take all workflows outside this node
+                            all_without_node_wfs.forEach(function (all_without_node_wfs_element){
+
+                                if (!ok) {
+                                    return
+                                }
+
+                                var all_without_node_wfs_element_data = all_without_node_wfs_element.data();
+
+                                //Is dep_tool_element belongto all_without_node_wfs_element ?
+                                if ((dep_tool_element_data.belongto.name == all_without_node_wfs_element.name) && (dep_tool_element_data.belongto.edit == all_without_node_wfs_element_data.edit)) {
+                                    $scope.toast('Cannot delete workflow: ' + node_label + '. It contains the tool: ' + tool_data.label + ' which is a dependency to tool: ' + dep_tool_element_data.label + ' and belongs to workflow: ' + all_without_node_wfs_element_data.label, 'error');
+                                    ok=false;
+                                    return;
+                                }
+                            });
+                        });
+
+                        if (!ok) {
+                            return;
+                        }
+
+                    }
+                });
+
+                if (!ok) {
+                    return;
+                }
+            });
+
+            if (!ok) {
+                return;
+            }
+
+            // Delete this workflow
+            nodes_to_delete.remove();
+
         }
 
     };
@@ -3182,20 +3450,12 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     */
     $scope.workflow_step_remove_input_output = function(index) {
 
-        //console.log('Node to remove:');
-        //console.log($scope.workflow_input_outputs[index]);
+        //Get the cy_node of input/output with this index
+        var cy_node = cy.$('#' + $scope.workflow_input_outputs[index].name + '__root__null');
 
-        //Remove from graph 
-        cy.$('#' + $scope.workflow_input_outputs[index].name + '__root__null').remove();
-        $scope.workflow_update_tab_completion_info_to_step();
- 
-        //Remove from workflow_input_outputs list
-        $scope.workflow_input_outputs.splice(index, 1);
+        //Remove the node
+        $scope.workflow_cytoscape_delete_node(cy_node);
 
-        //workflow_input_outputs should never be empty
-        if (!$scope.workflow_input_outputs.length) {
-            $scope.workflow_step_add_input_output();
-        }
     };
 
     /*
