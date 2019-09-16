@@ -55,8 +55,8 @@ class TestAddnewtoolwithdependency():
     self.driver.find_element(By.CSS_SELECTOR, "#toolsDataPlusBtn > .material-icons").click()
     # 12 | click | css=.row:nth-child(1) > .m4:nth-child(1) > label |  | 
     self.driver.find_element(By.CSS_SELECTOR, ".row:nth-child(1) > .m4:nth-child(1) > label").click()
-    # 13 | type | id=generalName | visualize | 
-    self.driver.find_element(By.ID, "generalName").send_keys("visualize")
+    # 13 | type | id=generalName | visualizeTest | 
+    self.driver.find_element(By.ID, "generalName").send_keys("visualizeTest")
     # 14 | click | css=.row:nth-child(1) > .m4:nth-child(2) > label |  | 
     self.driver.find_element(By.CSS_SELECTOR, ".row:nth-child(1) > .m4:nth-child(2) > label").click()
     # 15 | type | id=generalVersion | 1 | 
@@ -71,22 +71,48 @@ class TestAddnewtoolwithdependency():
     # 19 | click | id=leftPanelSearch |  | 
     self.driver.find_element_by_xpath("/html/body/div[1]/div[3]/div[1]/div[2]/div/form/div/div/label").click()    
     #self.driver.find_element(By.ID, "leftPanelSearch").click()
-    # 20 | type | id=leftPanelSearch | plink | 
+    
+	# 20 | type | id=leftPanelSearch | plink | 
     self.driver.find_element(By.ID, "leftPanelSearch").send_keys("plink")
-    # 21 | click | css=#toolsData .arrow |  | 
-    self.driver.find_element(By.CSS_SELECTOR, "#toolsData .arrow").click()
-    # 22 | mouseDownAt | id=tools_dep_jstree_id | 145,62 | 
-    element = self.driver.find_element(By.ID, "tools_dep_jstree_id")
+    time.sleep(5)
+
+    # 21 | click | css=#toolsData > .collapsible-header |  | 
+    self.driver.find_element(By.CSS_SELECTOR, "#toolsData > .collapsible-header").click()
+    time.sleep(5)
+    
+    ####source_element =  self.driver.find_elements_by_xpath("//*[contains(@id, 'plinkTest')]")
+    source_element = self.driver.find_element_by_partial_link_text('plink')
+    dest_element = self.driver.find_element_by_xpath("//*[@id='tools_dep_jstree_id']/ul")
+    ####dest_element = self.driver.find_elements_by_xpath("//*[@id='tools_dep_jstree_id']")
+    ####dest_element = self.driver.find_element(By.CSS_SELECTOR,"jstree-container-ul")
+	
+	##dest_element = self.driver.find_element(By.CSS_SELECTOR, "jstree-container-ul")
+	##dest_element = self.driver.find_element(By.ID, "tools_dep_jstree_id")
+    ##ActionChains(self.driver).drag_and_drop(source_element, dest_element).perform()  	
+    ##ActionChains(self.driver).click_and_hold(source_element).move_to_element(dest_element).release(dest_element).perform()
+	
+	
+	
+	
+	# 22 | click | id=["plinkTest", "1", "1", "1"]_anchor |  | 
+    #self.driver.find_elements_by_xpath("//*[contains(@id, 'plinkTest')]").click()
+	#self.driver.find_element(By.ID, "[\"plinkTest\", \"1\", \"1\", \"1\"]_anchor").click()
+    # 23 | mouseDownAt | id=tools_dep_jstree_id | 174,78 | 
+    ##element = self.driver.find_element(By.ID, "tools_dep_jstree_id")
     actions = ActionChains(self.driver)
-    actions.move_to_element(element).click_and_hold().perform()
-    # 23 | mouseMoveAt | id=tools_dep_jstree_id | 145,62 | 
-    element = self.driver.find_element(By.ID, "tools_dep_jstree_id")
+    actions.move_to_element(source_element).click_and_hold().perform()
+    # 24 | mouseMoveAt | id=tools_dep_jstree_id | 145,62 | 
+    ##element = self.driver.find_element(By.ID, "tools_dep_jstree_id")
+    time.sleep(2)
     actions = ActionChains(self.driver)
-    actions.move_to_element(element).perform()
-    # 24 | mouseUpAt | id=tools_dep_jstree_id | 145,62 | 
-    element = self.driver.find_element(By.ID, "tools_dep_jstree_id")
+    actions.move_to_element(dest_element).perform()
+    # 25 | mouseUpAt | id=tools_dep_jstree_id | 145,62 | 
+    ##element = self.driver.find_element(By.ID, "tools_dep_jstree_id")
     actions = ActionChains(self.driver)
-    actions.move_to_element(element).release().perform()
+    actions.move_to_element(dest_element).release().perform()
+	
+	
+	
     # 25 | click | css=.splitter-container |  | 
     self.driver.find_element(By.CSS_SELECTOR, ".splitter-container").click()
     # 26 | click | css=#toolsDataInstallation > .collapsible-header |  | 
