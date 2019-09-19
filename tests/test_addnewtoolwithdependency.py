@@ -26,6 +26,8 @@ class TestAddnewtoolwithdependency():
   def test_addnewtoolwithdependency(self):
     # Test name: add new tool with dependency
     # Step # | name | target | value | comment
+    
+    ####	SIGN IN		####	
     # 1 | open | http://localhost:8200/platform/ |  | 
     self.driver.get("http://localhost:8200/platform/")
     # 2 | setWindowSize | 1552x938 |  | 
@@ -50,6 +52,9 @@ class TestAddnewtoolwithdependency():
     element = self.driver.find_element(By.CSS_SELECTOR, "body")
     actions = ActionChains(self.driver)
     actions.move_to_element(element).perform()
+	
+    
+    ####	ADD GENERAL INFORMATION FOR TOOL	#### 	
     time.sleep(5)
     # 11 | click | css=#toolsDataPlusBtn > .material-icons |  | 
     self.driver.find_element(By.CSS_SELECTOR, "#toolsDataPlusBtn > .material-icons").click()
@@ -72,31 +77,21 @@ class TestAddnewtoolwithdependency():
     self.driver.find_element_by_xpath("/html/body/div[1]/div[3]/div[1]/div[2]/div/form/div/div/label").click()    
     #self.driver.find_element(By.ID, "leftPanelSearch").click()
     
+	
+    ####	SEARCH FOR DEPENDENCY TOOL	#### 	
 	# 20 | type | id=leftPanelSearch | plink | 
     self.driver.find_element(By.ID, "leftPanelSearch").send_keys("plink")
     time.sleep(5)
-
     # 21 | click | css=#toolsData > .collapsible-header |  | 
     self.driver.find_element(By.CSS_SELECTOR, "#toolsData > .collapsible-header").click()
     time.sleep(5)
     
-    ####source_element =  self.driver.find_elements_by_xpath("//*[contains(@id, 'plinkTest')]")
+	
+	####	DRAG-N-DROP DEPENDENCY TOOL	####
+    #source_element =  self.driver.find_elements_by_xpath("//*[contains(@id, 'plinkTest')]")
     source_element = self.driver.find_element_by_partial_link_text('plink')
     dest_element = self.driver.find_element_by_xpath("//*[@id='tools_dep_jstree_id']/ul")
-    ####dest_element = self.driver.find_elements_by_xpath("//*[@id='tools_dep_jstree_id']")
-    ####dest_element = self.driver.find_element(By.CSS_SELECTOR,"jstree-container-ul")
-	
-	##dest_element = self.driver.find_element(By.CSS_SELECTOR, "jstree-container-ul")
-	##dest_element = self.driver.find_element(By.ID, "tools_dep_jstree_id")
-    ##ActionChains(self.driver).drag_and_drop(source_element, dest_element).perform()  	
-    ##ActionChains(self.driver).click_and_hold(source_element).move_to_element(dest_element).release(dest_element).perform()
-	
-	
-	
-	
 	# 22 | click | id=["plinkTest", "1", "1", "1"]_anchor |  | 
-    #self.driver.find_elements_by_xpath("//*[contains(@id, 'plinkTest')]").click()
-	#self.driver.find_element(By.ID, "[\"plinkTest\", \"1\", \"1\", \"1\"]_anchor").click()
     # 23 | mouseDownAt | id=tools_dep_jstree_id | 174,78 | 
     ##element = self.driver.find_element(By.ID, "tools_dep_jstree_id")
     actions = ActionChains(self.driver)
@@ -112,7 +107,7 @@ class TestAddnewtoolwithdependency():
     actions.move_to_element(dest_element).release().perform()
 	
 	
-	
+    ####	ADD INSTALLATION INFORMATION FOR TOOL	####
     # 25 | click | css=.splitter-container |  | 
     self.driver.find_element(By.CSS_SELECTOR, ".splitter-container").click()
     # 26 | click | css=#toolsDataInstallation > .collapsible-header |  | 
@@ -121,8 +116,7 @@ class TestAddnewtoolwithdependency():
     time.sleep(5)
     self.driver.find_element(By.CSS_SELECTOR, ".select-dropdown:nth-child(1)").click()
     # 28 | click | css=#select-options-6bb92280-8de4-c88a-1485-25c65dfb311d2 > span span |  | 
-    #self.driver.find_element(By.CSS_SELECTOR, "#select-options-6bb92280-8de4-c88a-1485-25c65dfb311d2 > span span").click()
-    
+    #self.driver.find_element(By.CSS_SELECTOR, "#select-options-6bb92280-8de4-c88a-1485-25c65dfb311d2 > span span").click() 
 	# 29 | removeSelection | id=tool_os_choices_select | label=POSIX system | 
     #dropdown = self.driver.find_element(By.ID, "tool_os_choices_select")
     #dropdown.find_element(By.XPATH, "//option[. = 'POSIX system']").click()
@@ -143,6 +137,7 @@ class TestAddnewtoolwithdependency():
     #dropdown.find_element(By.XPATH, "//option[. = 'Debian 10 (Buster)']").click()
 	
 	
+    ####	ADD INSTALLATION COMMANDS FOR TOOL	####	
     # 35 | click | css=#toolsDataInstallation > .collapsible-body |  | 
     self.driver.find_element(By.CSS_SELECTOR, "#toolsDataInstallation > .collapsible-body").click()
     # 36 | click | css=#tool_installation_editor .ace_content |  | 
@@ -151,6 +146,9 @@ class TestAddnewtoolwithdependency():
     self.driver.execute_script("window.scrollTo(0,0)")
     # 38 | type | css=#tool_installation_editor > .ace_text-input | exit 0\n\n | 
     self.driver.find_element(By.CSS_SELECTOR, "#tool_installation_editor > .ace_text-input").send_keys("exit 0\\n\\n")
+	
+	
+    ####	ADD VALIDATION COMMANDS FOR TOOL	####
     # 39 | click | css=#tool_validation_editor .ace_content |  | 
     self.driver.find_element(By.CSS_SELECTOR, "#tool_validation_editor .ace_content").click()
     # 40 | runScript | window.scrollTo(0,0) |  | 
