@@ -27,7 +27,9 @@ class TestWftest():
   def test_wftest(self):
     # Test name: wftest
     # Step # | name | target | value | comment
-    # 1 | open | http://localhost:8200/platform/ |  | 
+    
+    ####	SIGN IN		####
+	# 1 | open | http://localhost:8200/platform/ |  | 
     self.driver.get("http://localhost:8200/platform/")
     # 2 | setWindowSize | 1351x1038 |  | 
     self.driver.set_window_size(1351, 1038)
@@ -51,8 +53,12 @@ class TestWftest():
     element = self.driver.find_element(By.CSS_SELECTOR, "body")
     actions = ActionChains(self.driver)
     actions.move_to_element(element).perform()
+	
+	
     time.sleep(2)
-    # 11 | click | css=#workflowsPlusBtn > .material-icons |  | 
+    
+    ####	ADD GENERAL INFORMATION FOR WORKFLOW	#### 
+	# 11 | click | css=#workflowsPlusBtn > .material-icons |  | 
     self.driver.find_element(By.CSS_SELECTOR, "#workflowsPlusBtn > .material-icons").click()
     # 12 | click | css=.m12 > label |  | 
     self.driver.find_element(By.CSS_SELECTOR, ".m12 > label").click()
@@ -64,8 +70,8 @@ class TestWftest():
     self.driver.find_element(By.ID, "workflowsGeneralDescription").send_keys("this is a test")
     time.sleep(2)
 	
-	#### DRAG-N-DROP ####
-	
+
+    ####	SEARCH FOR TOOL TO ADD IN THE WORKFLOW	#### 
     # 16 | click | id=leftPanelSearch |  | 
     self.driver.find_element_by_xpath("/html/body/div[1]/div[3]/div[1]/div[2]/div/form/div/div/label").click()    
 	##self.driver.find_element(By.ID, "leftPanelSearch").click()
@@ -76,9 +82,9 @@ class TestWftest():
     self.driver.find_element(By.CSS_SELECTOR, "#toolsData .left:nth-child(3)").click()
     time.sleep(2)	
 	
+    ####	DRAG-N-DROP TOOL TO THE WORKFLOW	#### 
     source_element = self.driver.find_element_by_partial_link_text('plink')
     dest_element = self.driver.find_element_by_xpath("/html/body/div[1]/div[3]/div[3]/div[2]/div[2]/div[2]/div/div/canvas[3]")
-	
     actions = ActionChains(self.driver)
     actions.move_to_element(source_element).click_and_hold().perform()
     time.sleep(2)
@@ -87,19 +93,7 @@ class TestWftest():
     actions = ActionChains(self.driver)
     actions.move_to_element(dest_element).release().perform()
     
-	# 19 | mouseDownAt | css=canvas:nth-child(1) | 231,230 | 
-    ####element = self.driver.find_element(By.CSS_SELECTOR, "canvas:nth-child(1)")
-    ####actions = ActionChains(self.driver)
-    ####actions.move_to_element(element).click_and_hold().perform()
-    # 20 | mouseMoveAt | css=canvas:nth-child(1) | 231,230 | 
-    ####element = self.driver.find_element(By.CSS_SELECTOR, "canvas:nth-child(1)")
-    ####actions = ActionChains(self.driver)
-    ####actions.move_to_element(element).perform()
-    # 21 | mouseUpAt | css=canvas:nth-child(1) | 231,230 | 
-    ####element = self.driver.find_element(By.CSS_SELECTOR, "canvas:nth-child(1)")
-    ####actions = ActionChains(self.driver)
-    ####actions.move_to_element(element).release().perform()
-
+    ####	ADD INOUT/OUTPUT TO THE WORKFLOW	#### 
     # 22 | click | css=.splitter-container |  | 
     self.driver.find_element(By.CSS_SELECTOR, ".splitter-container").click()
     # 23 | click | css=#workflowRightPanelInputsOutputs .arrow |  | 
@@ -132,7 +126,10 @@ class TestWftest():
     self.driver.find_element(By.CSS_SELECTOR, "#switchCustom1 > .switch-label-on").click()
     # 35 | click | css=.green:nth-child(1) > .material-icons |  | 
     self.driver.find_element(By.CSS_SELECTOR, ".green:nth-child(1) > .material-icons").click()
-    # 36 | click | css=#workflowRightPanelStep .arrow |  | 
+    
+	
+    ####	ADD STEP TO THE WORKFLOW	#### 
+	# 36 | click | css=#workflowRightPanelStep .arrow |  | 
     self.driver.find_element(By.CSS_SELECTOR, "#workflowRightPanelStep .arrow").click()
     # 37 | click | css=.s10 > label |  | 
     self.driver.find_element(By.CSS_SELECTOR, ".s10 > label").click()
@@ -166,6 +163,8 @@ class TestWftest():
     element = self.driver.find_element(By.CSS_SELECTOR, ".rightPanel")
     actions = ActionChains(self.driver)
     actions.move_to_element(element).release().perform()
+    
+	####	SAVE WORKFLOW	#### 
     # 47 | click | linkText=save |  | 
     self.driver.find_element(By.LINK_TEXT, "save").click()
   
