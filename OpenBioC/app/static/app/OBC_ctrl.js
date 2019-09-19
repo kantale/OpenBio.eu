@@ -2945,7 +2945,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
     /*
     * workflows --> Step --> Button: Add/Update --> Clicked
-    * We either ADD the step or UPDATE the step 
+    * We either ADD the step or UPDATE the step. add step add update step update
     */
     $scope.workflow_step_add = function() {
 
@@ -2982,14 +2982,22 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             }
         }
 
+        var step_belong_to = null; //By default 
+
         //Is this an UPDATE or an ADD?
         if ($scope.workflow_step_add_update_label == 'Update') {
             // If this is an update then delete the previous node
+            
+            //Keep the belong to info of the step before deleting it
+            step_belong_to = cy.$('node[id="' +  $scope.workflow_step_previous_step.id + '"]').data().belongto;
+
             cy.$('node[id="' +  $scope.workflow_step_previous_step.id + '"]').remove();
         }
         else if ($scope.workflow_step_add_update_label == 'Add') {
             // If this is an add then check if we are adding a step with a name that already exists.
             var this_step_id = window.create_step_id({name: $scope.workflows_step_name}, {name: $scope.workflow_info_name, edit: null});
+            step_belong_to = {name: 'root', edit: null}; // If we are adding a new step, add it to the root workflow
+
             if (cy.$('node[id="' +  this_step_id + '"]').length) {
                 $scope.toast('There is already a step with this name', 'error');
                 return;
@@ -3024,7 +3032,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         //Always when updating the graph, update also tab completion data for step editor! FIXME!! (bundle these things together!) A46016A6E393
         //window.buildTree(step_node, {name: $scope.workflow_info_name, edit: null});
-        window.buildTree(step_node, {name: 'root', edit: null});
+        //window.buildTree(step_node, {name: 'root', edit: null});
+        window.buildTree(step_node, step_belong_to);
         $scope.workflow_update_tab_completion_info_to_step();
 
         //Empty STEP fields
@@ -3203,7 +3212,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         }
         else if (data.type == 'workflow') {
             if (!data.belongto) {
-                $scope.toast('Cannot remove the root workflow', 'error');
+                $scope.toast('Cannot remove the root workflow', 'error'); // TESTED 
                 return
             }
             
@@ -3230,7 +3239,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
             var ok = true;
 
-            wf_steps.foreach(function(element) {
+            wf_steps.forEach(function(element) {
 
                 if (!ok) {
                     return;
@@ -3242,7 +3251,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 var c = b.intersection(all_without_node_wfs); // Check if these workflows do not belong to the successors of this workflow
 
                 if (c.length) {
-                    $scope.toast('Cannot delete workflow: ' + node_label + '. It contains step: ' + element.data().label() + ' which is called by a step that belongs to workflow: ' + c.first().data().label, 'error');
+                    $scope.toast('Cannot delete workflow: ' + node_label + '. It contains step: ' + element.data().label + ' which is called by a step that belongs to workflow: ' + c.first().data().label, 'error'); // TESTED
                     //                                                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ <<-- WHICH STEP?? TODO
                     ok = false;
                     return;
@@ -3253,7 +3262,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 var b = a.incomers('node[type="workflow"]'); // Take the workflows of these steps
                 var c = b.intersection(all_without_node_wfs); // Checl if these workflows do not belong to all_successor_wf
                 if (c.length) {
-                    $scope.toast('Cannot delete workflow: ' + node_label + '. It contains step: ' + element.data().label() + ' which calls a step that belongs to workflow: ' + c.first().data().label, 'error');
+                    $scope.toast('Cannot delete workflow: ' + node_label + '. It contains step: ' + element.data().label + ' which calls a step that belongs to workflow: ' + c.first().data().label, 'error'); // TESTED
                     ok = false;
                     return;
                 }
@@ -3279,7 +3288,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 var b = a.incomers('node[type="workflow"]'); // Take the WFs of these step
                 var c = b.intersection(all_without_node_wfs); // Check that these workflows do not belong to all_successor_wf
                 if (c.length) {
-                    $scope.toast('Cannot delete workflow: ' + node_label + '. It contains the input: ' + element.data().label + ' which is read by a step that belongs to workflow: ' + c.first().data().label, 'error');
+                    $scope.toast('Cannot delete workflow: ' + node_label + '. It contains the input: ' + element.data().label + ' which is read by a step that belongs to workflow: ' + c.first().data().label, 'error'); // TESTED 
                     ok = false;
                     return;
                 }
@@ -3304,7 +3313,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 var b = a.incomers('node[type="workflow"]'); // Take all the workflows of these steps
                 var c = b.intersection(all_without_node_wfs); // Check that these workflows do not belong to all successor_wfs
                 if (c.length) {
-                    $scope.toast('Cannot delete workflow: ' + node_label + '. It contains the output: ' + element.data().label + ' which is set by a step that belongs to workflow: ' + c.first().data().label, 'error');
+                    $scope.toast('Cannot delete workflow: ' + node_label + '. It contains the output: ' + element.data().label + ' which is set by a step that belongs to workflow: ' + c.first().data().label, 'error'); // TESTED 
                     ok = false;
                     return;
                 }
@@ -3316,6 +3325,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             //Take all tools 
             cy.$('node[type="tool"]').forEach(function(tool_element){
 
+                // console.log('Examinig tool: ' + tool_element.id());
+
                 if (!ok) {
                     return;
                 }
@@ -3323,6 +3334,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 var tool_data = tool_element.data();
                 //Take all successor wfs
                 all_successor_wf.forEach(function (wf_element){
+
+                    // console.log('   Checking successor WF:' + wf_element.id())
 
                     if (!ok) {
                         return;
@@ -3332,6 +3345,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
                     //Does this tool belong to any all_successor_wf?
                     if ((tool_data.belongto.name == wf_data.name) && (tool_data.belongto.edit == wf_data.edit)) {
+
+                        // console.log('   This tool should be deleted.')
+
                         //This tool belong to the successor WFs. We are about to delete this tool. Can we?
                         nodes_to_delete = nodes_to_delete.union(tool_element);
 
@@ -3340,14 +3356,16 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                         var b = a.incomers('node[type="workflow"]'); // Take the workflows of these steps
                         var c = b.intersection(all_without_node_wfs); // Is any of these workflows outside the successor wf (this node)?
                         if (c.length) {
-                            $scope.toast('Cannot delete workflow: ' + node_label + '. It contains the tool: ' + tool_element.data().label + ' which is used by a step in the workflows: ' + c.first().data().label , 'error');
+                            $scope.toast('Cannot delete workflow: ' + node_label + '. It contains the tool: ' + tool_element.data().label + ' which is used by a step in the workflows: ' + c.first().data().label , 'error'); // TESTED 
                             ok=false;
                             return;
                         }
 
                         //Is this tool a dependency to any tool outside the all_successor_wf ?
-                        var a = tool_element.outgoers('node[type="tool"]'); // Take all tools that have this tool as a dependency
+                        var a = tool_element.incomers('node[type="tool"]'); // Take all tools that have this tool as a dependency
                         a.forEach(function (dep_tool_element) {
+
+                            // console.log('      Tool: ' + tool_element.data().id + ' is a dependency to: ' + dep_tool_element.id());
 
                             if (!ok) {
                                 return;
@@ -3359,6 +3377,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                             //Take all workflows outside this node
                             all_without_node_wfs.forEach(function (all_without_node_wfs_element){
 
+                                // console.log('         This is an outside wf: ' + all_without_node_wfs_element.id());
+
                                 if (!ok) {
                                     return
                                 }
@@ -3366,7 +3386,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                                 var all_without_node_wfs_element_data = all_without_node_wfs_element.data();
 
                                 //Is dep_tool_element belongto all_without_node_wfs_element ?
-                                if ((dep_tool_element_data.belongto.name == all_without_node_wfs_element.name) && (dep_tool_element_data.belongto.edit == all_without_node_wfs_element_data.edit)) {
+                                if ((dep_tool_element_data.belongto.name == all_without_node_wfs_element_data.name) && (dep_tool_element_data.belongto.edit == all_without_node_wfs_element_data.edit)) {
                                     $scope.toast('Cannot delete workflow: ' + node_label + '. It contains the tool: ' + tool_data.label + ' which is a dependency to tool: ' + dep_tool_element_data.label + ' and belongs to workflow: ' + all_without_node_wfs_element_data.label, 'error');
                                     ok=false;
                                     return;
@@ -3395,6 +3415,20 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         }
 
+        //Perhaps we have deleted the node with $scope.workflows_step_name. If this is the case, then update UI.
+        if ($scope.workflows_step_name) {
+            //Does this node exist?
+            if (!cy.$('#' + $scope.workflows_step_name).length) {
+                //This node does not exist. 
+
+                //Empty STEP fields
+                $scope.workflows_step_name = '';
+                $scope.workflows_step_main = false;
+                workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1);
+                $scope.workflow_step_add_update_label = 'Add'; 
+            }
+        }
+ 
     };
 
     /*
