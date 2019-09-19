@@ -26,6 +26,8 @@ class TestAddanewtool():
   def test_addanewtool(self):
     # Test name: add a new tool
     # Step # | name | target | value | comment
+	
+    ####	SIGN IN		####
     # 1 | open | http://localhost:8200/platform/ |  | 
     self.driver.get("http://localhost:8200/platform/")
     # 2 | setWindowSize | 1554x938 |  | 
@@ -50,6 +52,10 @@ class TestAddanewtool():
     element = self.driver.find_element(By.CSS_SELECTOR, "body")
     actions = ActionChains(self.driver)
     actions.move_to_element(element).perform()
+	
+	
+	
+    ####	ADD GENERAL INFORMATION FOR TOOL	#### 
     time.sleep(5)
     # 11 | click | css=#toolsDataPlusBtn > .material-icons |  | 
     self.driver.find_element(By.CSS_SELECTOR, "#toolsDataPlusBtn > .material-icons").click()
@@ -75,6 +81,8 @@ class TestAddanewtool():
     self.driver.find_element(By.CSS_SELECTOR, ".ng-dirty .input-field:nth-child(4)").click()
     # 19 | type | id=generalDescription | this is a test | 
     self.driver.find_element(By.ID, "generalDescription").send_keys("this is a test")
+    
+    ####	ADD INSTALLATION INFORMATION FOR TOOL	#### 	
     # 20 | click | css=#toolsDataInstallation .arrow |  | 
     self.driver.find_element(By.CSS_SELECTOR, "#toolsDataInstallation .arrow").click()
     time.sleep(2)
@@ -83,29 +91,9 @@ class TestAddanewtool():
     time.sleep(2)
     # 22 | click | css=#select-options-7adcc257-80f9-70bd-fdaf-8c79240153572 > span span |  | 
     self.driver.find_element_by_xpath("//div[@class='select-wrapper']").click()
-	#self.driver.find_element(By.CSS_SELECTOR, "#select-options-7adcc257-80f9-70bd-fdaf-8c79240153572 > span span").click()
+    #self.driver.find_element(By.CSS_SELECTOR, "#select-options-7adcc257-80f9-70bd-fdaf-8c79240153572 > span span").click()
     
-	# 23 | removeSelection | id=tool_os_choices_select | label=POSIX system | 
-    #dropdown = self.driver.find_element(By.ID, "tool_os_choices_select")
-    #time.sleep(2)
-    #dropdown.find_element(By.XPATH, "//option[. = 'POSIX system']").click()
-    #time.sleep(2)
-    # 24 | removeSelection | id=tool_os_choices_select | label=Ubuntu:14.04 | 
-    #dropdown = self.driver.find_element(By.ID, "tool_os_choices_select")
-    #dropdown.find_element(By.XPATH, "//option[. = 'Ubuntu:14.04']").click()
-    # 25 | addSelection | id=tool_os_choices_select | label=Ubuntu:16.04 | 
-    #dropdown = self.driver.find_element(By.ID, "tool_os_choices_select")
-    #dropdown.find_element(By.XPATH, "//option[. = 'Ubuntu:16.04']").click()
-    # 26 | removeSelection | id=tool_os_choices_select | label=Debian 8 (Jessie) | 
-    #dropdown = self.driver.find_element(By.ID, "tool_os_choices_select")
-    #dropdown.find_element(By.XPATH, "//option[. = 'Debian 8 (Jessie)']").click()
-    # 27 | removeSelection | id=tool_os_choices_select | label=Debian 9 (Stretch) | 
-    #dropdown = self.driver.find_element(By.ID, "tool_os_choices_select")
-    #dropdown.find_element(By.XPATH, "//option[. = 'Debian 9 (Stretch)']").click()
-    # 28 | removeSelection | id=tool_os_choices_select | label=Debian 10 (Buster) | 
-    dropdown = self.driver.find_element(By.ID, "tool_os_choices_select")
-    #dropdown.find_element(By.XPATH, "//option[. = 'Debian 10 (Buster)']").click()
-	
+	####	ADD INSTALLATION COMMANDS FOR TOOL	#### 
     # 29 | click | css=#toolsDataInstallation > .collapsible-body |  | 
     self.driver.find_element(By.CSS_SELECTOR, "#toolsDataInstallation > .collapsible-body").click()
     # 30 | click | css=#tool_installation_editor .ace_content |  | 
@@ -116,7 +104,9 @@ class TestAddanewtool():
     self.driver.execute_script("window.scrollTo(0,0)")
     # 33 | type | css=#tool_installation_editor > .ace_text-input | exit 0\n\n | 
     self.driver.find_element(By.CSS_SELECTOR, "#tool_installation_editor > .ace_text-input").send_keys("exit 0\\n\\n")
-    # 34 | click | css=#tool_validation_editor .ace_content |  | 
+    
+    ####	ADD VALIDATION COMMANDS FOR TOOL	#### 
+	# 34 | click | css=#tool_validation_editor .ace_content |  | 
     self.driver.find_element(By.CSS_SELECTOR, "#tool_validation_editor .ace_content").click()
     # 35 | runScript | window.scrollTo(0,0) |  | 
     self.driver.execute_script("window.scrollTo(0,0)")
