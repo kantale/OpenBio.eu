@@ -11,6 +11,22 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+import sys
+
+
+try:
+    from .obc_private import external_app_dirs
+    for directory in external_app_dirs:
+        # https://stackoverflow.com/questions/3948356/how-to-keep-all-my-django-applications-in-specific-folder
+        # directories to other apps
+        sys.path.insert(0, directory)
+except ImportError:
+    pass
+
+try:
+    from .obc_private import INSTALLED_APPS_EXTRA
+except ImportError:
+    INSTALLED_APPS_EXTRA = []
 
 try:
 	from .obc_private import ALLOWED_HOSTS
@@ -62,8 +78,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'app',
-    'static',
-]
+] + INSTALLED_APPS_EXTRA
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
