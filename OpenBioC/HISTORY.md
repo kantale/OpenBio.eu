@@ -1,9 +1,10 @@
 
 # Version changes and updates
 
-### 0.1.1 (Not yet released)
+### 0.1.1 (30 September 2019)
 * Features:
    * Disable "Process DOI" button during process [issue](https://github.com/kantale/OpenBioC/issues/122)
+   * Removed a reference to a static site with funding and consortium information [issue](https://github.com/kantale/OpenBioC/issues/123)
 * Bugs Fixed:
    * [step is lost while being edit in workflow fork action #121](https://github.com/kantale/OpenBioC/issues/121)
    * [Forked WFs were not visible in JStree #120](https://github.com/kantale/OpenBioC/issues/120)
