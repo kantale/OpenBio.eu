@@ -891,17 +891,19 @@ window.onload = function () {
         else if (this_id_array[3] == "3") { // We are moving a variable from the dependency + variable tree
             // This id array = [ name, value, description, "3" ]
             //console.log(this_id_array);
-            var var_to_show = this_id_array[4] + '__' + this_id_array[5] + '__' + this_id_array[6] + '__' + this_id_array[0];
+            var var_to_show = this_id_array[4] + '__' + this_id_array[5].replace(/\./g, "_") + '__' + this_id_array[6] + '__' + this_id_array[0];
+            //                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            //  Replace dots in tool version with '_'
 
             if (target.closest('#tool_installation_editor').length) { // Adding to installation bash editor
                 // https://stackoverflow.com/a/42797383/5626738 
                 if (!tool_installation_editor.getReadOnly()) {
-                    tool_installation_editor.session.insert(tool_installation_editor.getCursorPosition(), '$' + var_to_show);
+                    tool_installation_editor.session.insert(tool_installation_editor.getCursorPosition(), '${' + var_to_show + '}');
                 }
             }
             else if (target.closest('#tool_validation_editor').length) { // Adding to validation bash editor
                 if (!tool_validation_editor.getReadOnly()) {
-                    tool_validation_editor.session.insert(tool_validation_editor.getCursorPosition(), '$' + var_to_show);
+                    tool_validation_editor.session.insert(tool_validation_editor.getCursorPosition(), '${' + var_to_show + '}');
                 }
             }
         }
