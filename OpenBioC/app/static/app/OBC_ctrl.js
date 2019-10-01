@@ -1571,6 +1571,22 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     $scope.tools_info_add_variable = function() {
         // $('.tooltipped').tooltip('close');
 
+        //These are essentially the same controls we do for tool version and tool name
+        //Check if tool variable name and version are valid
+
+        //Take the last variable
+        var last_variable = $scope.tool_variables[$scope.tool_variables.length-1];
+
+        if (!$scope.tools_name_regexp.test(last_variable.name)) {
+            $scope.toast('Invalid variable name. Allowed characters are: a-z, A-Z, 0-9, _', 'error');
+            return;
+        }
+
+        if (last_variable.name.includes('__')) {
+            $scope.toast('Variable name cannot include __', 'error');
+            return;
+        }
+
         //Check for double names
         var names = {};
         for (var i=0; i<$scope.tool_variables.length; i++) {
