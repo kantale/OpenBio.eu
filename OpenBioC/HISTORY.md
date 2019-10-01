@@ -1,6 +1,10 @@
 
 # Version changes and updates
 
+### 0.1.2 (Not yet released)
+* Bugs Fixed:
+   * [Tool variable cannot have the "dot" character #117](https://github.com/kantale/OpenBioC/issues/117)
+
 ### 0.1.1 (30 September 2019)
 * Features:
    * Disable "Process DOI" button during process [issue](https://github.com/kantale/OpenBioC/issues/122)
