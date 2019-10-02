@@ -2876,8 +2876,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 return;
             }
 
-            var this_node_belong_to_show_edit = this_data.belongto.edit ? this_data.belongto.edit : 'root'; //The workflow edit to show on tab completion
-            var this_node_belong_to_value_edit = this_data.belongto.edit ? this_data.belongto.edit : 'null'; // The workflow edit as a variable on tab completion
+            var this_node_belong_to_show_edit = this_data.belongto.edit ? '/' + this_data.belongto.edit : ''; //The workflow edit to show on tab completion
+            //var this_node_belong_to_value_edit = this_data.belongto.edit ? this_data.belongto.edit : 'null'; // The workflow edit as a variable on tab completion
 
             if (this_data.type=='tool') {
                 this_data.variables.forEach(function(variable) {
@@ -2892,16 +2892,18 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
                 completion_info.push({
                     //caption: 'call(' + this_data.label + '/' + this_data.belongto.name + '/' + this_node_belong_to_show_edit + ')',
-                    caption: 'step/' + this_data.label + '/' + this_data.belongto.name + '/' + this_node_belong_to_show_edit,
+                    caption: 'step/' + this_data.label + '/' + this_data.belongto.name + this_node_belong_to_show_edit,
                     //value: 'call(' + this_data.label + '__' + this_data.belongto.name + '__' + this_node_belong_to_value_edit + ')',
-                    value: 'step__' + this_data.label + '__' + this_data.belongto.name + '__' + this_node_belong_to_value_edit ,
+                    //value: 'step__' + this_data.label + '__' + this_data.belongto.name + '__' + this_node_belong_to_value_edit ,
+                    value: window.create_step_id(this_data, this_data.belongto),
                     meta: 'STEP'
                 });
             }
             else if (this_data.type=='input' || this_data.type=='output') {
                 completion_info.push({
-                    caption: this_data.type + '/' + this_data.name + '/' + this_data.belongto.name + '/' + this_node_belong_to_show_edit,
-                    value: '${' + this_data.type + '__' + this_data.name + '__' + this_data.belongto.name + '__' + this_node_belong_to_value_edit + '}',
+                    caption: this_data.type + '/' + this_data.name + '/' + this_data.belongto.name + this_node_belong_to_show_edit,
+                    //value: '${' + this_data.type + '__' + this_data.name + '__' + this_data.belongto.name + '__' + this_node_belong_to_value_edit + '}',
+                    value: '${' + window.create_input_output_id(this_data, this_data.belongto) + '}',
                     meta: this_data.description
                 });
             }
