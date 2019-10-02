@@ -997,6 +997,8 @@ window.onload = function () {
             sep: '__',
             //call_re: new RegExp('((^call)|([\\s]+call))\\([\\w]+\\)', 'g'), // Matches: "call(a)" , "  call(a)", "ABC call(a)", "ABC   call(a)"
             call_re: new RegExp('step__[\\w]+' ,'g'), 
+
+            // call_re_id is a regexp to find all step references in a bash script 
             //call_re_id: new RegExp('call\\(([\\w]+)\\)'), //
             call_re_id: new RegExp('step__([\\w]+)'), 
             //call_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('(call[\\s]*\\([\\s]*)' + old_id + '([\\s]*\\))', 'g'), '$1' + new_id + '$2'); },
@@ -1012,6 +1014,8 @@ window.onload = function () {
 //            io_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('(\\$\\{(input|output)__)' + old_id + '(\\})'), '$1' + new_id + '$3'); }
 
             io_re: new RegExp('(input|output)__[a-zA-Z0-9_][\\w]*', 'g'), // [^_\w] Does not work???
+
+            //io_re_id is the regexp to search for input/output variables in bash scripts
             io_re_id: new RegExp('(input|output)__([\\w]+)'), // TODO: ADD  WHITE SPACEDS JUST LIKE calls
             io_replace: function (bash, old_id, new_id) { return bash.replace(new RegExp('((input|output)__)' + old_id, 'g'), '$1' + new_id); },
 
@@ -1146,7 +1150,7 @@ window.onload = function () {
 
                         //console.log('PROCESSING THE FOLLOOWING CALL: -->' + result + '<--');
 
-                        var step_id = result.match(window.OBCUI.call_re_id)[1];
+                        var step_id = result.match(window.OBCUI.call_re_id)[0];
                         //console.log("matched step id : ");
                         //console.log(step_id);
                         //Is there a node with type step and id step_id ?
@@ -1181,20 +1185,26 @@ window.onload = function () {
                 if (results) {
                     results.forEach(function (result) {
                         var splitted = result.match(window.OBCUI.io_re_id); // AAAAAAA
+                        //console.log('splitted:');
+                        //console.log(splitted);
+
                         var input_output = splitted[1];
-                        var variable_name = splitted[2];
+                        var variable_id = splitted[0];
+
+                        //console.log('Found Input/Output variable id in bash: ' + variable_id);
+
                         //Does this variable exist in cytoscape?
-                        if (cy.$("node[type='" + input_output + "'][id='" + variable_name + "']").length) {
+                        if (cy.$("node[type='" + input_output + "'][id='" + variable_id + "']").length) {
                             //It exists
                             //Add them in their relevant list only if they are not already there
                             if (input_output == "input") {
-                                if (!inputs.includes(variable_name)) {
-                                    inputs.push(variable_name);
+                                if (!inputs.includes(variable_id)) {
+                                    inputs.push(variable_id);
                                 }
                             }
                             else if (input_output == "output") {
-                                if (!outputs.includes(variable_name)) {
-                                    outputs.push(variable_name);
+                                if (!outputs.includes(variable_id)) {
+                                    outputs.push(variable_id);
                                 }
                             }
                         }
@@ -1320,16 +1330,17 @@ window.onload = function () {
         * Create a step ID. This contains: name of step, name of workflow, edit of workflow
         */
         function create_step_id(step, workflow) {
-            return step.name + window.OBCUI.sep + window.OBCUI.create_workflow_id(workflow);
+            return 'step' + window.OBCUI.sep + step.name + window.OBCUI.sep + window.OBCUI.create_workflow_id(workflow);
         }
-        window.create_step_id = create_step_id; // Ugliness. FIXME! We need to make these functions visible everywhere without polluting the namespace
+        window.create_step_id = create_step_id; // Ugliness. FIXME! We need to make these functions visible everywhere without polluting the namespace . D05DFC7004FE
 
         /*
         * Create a unique input/output variable ID. This contains the input/output name, name workflow and edit of worfkflow
         */
         function create_input_output_id(input_output, workflow) {
-            return input_output.name + window.OBCUI.sep + window.OBCUI.create_workflow_id(workflow);
+            return input_output.type + window.OBCUI.sep + input_output.name + window.OBCUI.sep + window.OBCUI.create_workflow_id(workflow);
         }
+        window.create_input_output_id = create_input_output_id; // FIXME See D05DFC7004FE 
 
         /*
         * Helper for Step Input Output (SIO)
