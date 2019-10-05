@@ -2235,15 +2235,15 @@ window.onload = function () {
 			cy_rep.json({ elements:  workflowToReport});   // Add new data
 
 
-				cy_rep.ready(function () {           // Wait for nodes to be added  
-					cy_rep.layout({                   // Call layout
-						name: 'breadthfirst',
-						directed: true,
-						padding: 2
-					}).run();
+			cy_rep.ready(function () {           // Wait for nodes to be added  
+				cy_rep.layout({                   // Call layout
+					name: 'breadthfirst',
+					directed: true,
+					padding: 2
+				}).run();
 
-				
-				});
+			
+			});
 			
 
 			cy_rep.resize();
@@ -2853,9 +2853,9 @@ window.onload = function () {
                 }
             });
 
-				cy.resize();
-				cy.reset();
-				cy.center();
+            cy.resize();
+            cy.reset();
+            cy.center();
 
         };
 
@@ -2877,29 +2877,27 @@ window.onload = function () {
 
 	
 	
-	/***  TIMELINE  ***/
+    /***  TIMELINE  ***/
     window.OBCUI.set_timeline = function(timeline_data) {
 		
-		 var groups = new vis.DataSet([
-				{id: 1, content: 'Workflows', value: 1},
-				{id: 2, content: 'Tools', value: 2},
-				//{id: 3, content: ' ', value: 3}
-			  ]);
+        var groups = new vis.DataSet([
+            {id: 1, content: 'Workflows', value: 1},
+            {id: 2, content: 'Tools', value: 2},
+            //{id: 3, content: ' ', value: 3}
+        ]);
 					
 		
         window.OBCUI.timeline.setItems(timeline_data);
         window.OBCUI.timeline.setGroups(groups);
 		
-		window.OBCUI.timeline.fit();
+        window.OBCUI.timeline.fit();
 
-		window.OBCUI.timeline.on('click', function (properties) {
-
-    		window.OBCUI.timeline.itemsData.getDataSet().forEach(function (myItem) {
-    				if(myItem.id===properties.item){						
-    					nodeAnimation_public(myItem.params);
-    				}
-    				
-    		});
+        window.OBCUI.timeline.on('click', function (properties) {
+            window.OBCUI.timeline.itemsData.getDataSet().forEach(function (myItem) {
+                if(myItem.id===properties.item){						
+                    nodeAnimation_public(myItem.params);
+                }		
+            });
 		}); 
     };
 	
@@ -2956,5 +2954,13 @@ window.onload = function () {
 
     //console.log('window.init_interlink_args:');
     //console.log(window.init_interlink_args);
+
+    // Setup discourse
+    //discourse_setup();
+
+    //Setting up cytoscape discourse graph
+    //Function exists at discourse.js
+    window.cydisc = discourse_setup_cytoscape();
+
  
 };

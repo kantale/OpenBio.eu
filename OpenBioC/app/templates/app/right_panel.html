@@ -1198,6 +1198,7 @@
                         </div>
                     </div>
                     <div class="row right-align" style="margin-top:15px; margin-bottom: 15px;" ng-show="!qa_show_new_comment">
+                        <a class="waves-effect waves-light btn-small" href="" ng-click="qa_visualize_pressed()">Visualize</a>
                         <a class="waves-effect waves-light btn-small" href=""
                             ng-click="qa_add_comment_button_pressed()">Add Comment</a>
                     </div>
@@ -1208,6 +1209,10 @@
                         <a class="waves-effect waves-light btn-small" href=""
                             ng-click="qa_comment_cancel_button_pressed()">Cancel</a>
                     </div>
+                    <div class="row">
+                        <div id="cydisc"></div>
+                    </div>
+
 
                     <!-- <div class="row left-align">
                         <b><span ng-bind="qa_title"></span></b>
@@ -1340,4 +1345,16 @@
         </div>
     </div>
     <!-- END OF Q&A RIGHT PANEL-->
+
+    <!-- tippy popup -->
+    <div id="tippy-popup" style="display: none;">
+      <span class="fa fa-user fa-2x"></span>
+      <br>
+      User: <b><p id="tippy-author-name"></p></b>
+      Text: <p id="tippy-text"></p>
+      Date: <p id="tippy-date">15/02/2019</p>
+    </div>
+
+
+    
 </div>
