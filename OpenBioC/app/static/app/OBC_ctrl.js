@@ -4251,6 +4251,25 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.qa_gen[qa_type].qa_current_comment = '';
     };
 
+
+    /*
+    * Q&A --> Show thread --> "Visualize" --> pressed
+    * Just a wrapper for discourse_visualize_pressed defined in discourse.js
+    * Through this function we pass all required angular vars
+    */
+    $scope.qa_visualize_pressed = function() {
+
+        discourse_visualize_pressed(
+            $scope.qa_comment_id,
+            $scope.qa_username,
+            $scope.qa_title,
+            $scope.qa_created_at,
+            $scope.qa_thread
+        )
+
+    };
+
+
     // QA END 
 
     /*

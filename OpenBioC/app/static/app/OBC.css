@@ -93,6 +93,12 @@ pre {
   height: 400px;  
 }
 
+#cydisc {
+  border: 1px solid red; 
+  height: 400px;  
+}
+
+
 /* timeline css */
 .vis-item.workflow {
       background-color: #4CAF50;

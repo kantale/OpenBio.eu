@@ -205,3 +205,12 @@ wget -O  "vis.min.js" https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.
 wget -O  "vis.min.css" https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css
 ```
 
+### dagre.js REQUIRED
+<!-- run -->
+```
+wget -O "dagre_0.7.4.tar.gz" https://github.com/dagrejs/dagre/archive/v0.7.4.tar.gz
+tar zxvf dagre_0.7.4.tar.gz
+```
+
+
+
