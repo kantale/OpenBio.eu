@@ -1389,12 +1389,23 @@ window.onload = function () {
         }
 
         /*
+        * Does this id belongs to a Step/Input/Output node?
+        */
+        function is_SIO_id(node_id) {
+            var l = node_id.split(window.OBCUI.sep);
+            if (l.length == 4) {
+                return ['step', 'input', 'output'].includes(l[0]);
+            }
+            return false;
+        };
+
+        /*
         * Get the workflow id if this is a SIP node. 
         * sio: Step Input Output
         */
         function get_workflow_id_from_SIO_id(sio_id) {
             var sio_id_splitted = sio_id.split(window.OBCUI.sep);
-            //
+            
             if (sio_id_splitted.length != 4) {
                 throw "ERROR: 8262"; // This should never happen;
             }
@@ -2710,7 +2721,7 @@ window.onload = function () {
                         node.data.id = create_input_output_id(node.data, new_root);                        
                     }
                     else {
-                        throw "ERROR: 9277"; // This should never happen
+                        // DO nothing. We change only tools, input, outputs. Ignore WFs, tools
                     }
                 }
 
@@ -2782,8 +2793,10 @@ window.onload = function () {
                     }
 
                     //Find edges that have the root_workflow in their source
-                    else if (get_workflow_id_from_SIO_id(edge.data.source) === old_root_id) {
-                        edge.data.source = create_SIO_id({ name: get_SIO_name_from_SIO_id(edge.data.source), type: get_SIO_type_from_SIO_id(edge.data.source) }, new_root);
+                    else if (is_SIO_id(edge.data.source)) {
+                        if (get_workflow_id_from_SIO_id(edge.data.source) === old_root_id) {
+                            edge.data.source = create_SIO_id({ name: get_SIO_name_from_SIO_id(edge.data.source), type: get_SIO_type_from_SIO_id(edge.data.source) }, new_root);
+                        }
                     }
 
                     //if(edge.data.source.endsWith(old_root))
@@ -2795,8 +2808,10 @@ window.onload = function () {
                     }
 
                     //Find edges that have the root_workflow in their target
-                    else if (get_workflow_id_from_SIO_id(edge.data.target) === old_root_id) {
-                        edge.data.target = create_SIO_id({ name: get_SIO_name_from_SIO_id(edge.data.target), type: get_SIO_type_from_SIO_id(edge.data.target) }, new_root);
+                    else if (is_SIO_id(edge.data.target)) {
+                        if (get_workflow_id_from_SIO_id(edge.data.target) === old_root_id) {
+                            edge.data.target = create_SIO_id({ name: get_SIO_name_from_SIO_id(edge.data.target), type: get_SIO_type_from_SIO_id(edge.data.target) }, new_root);
+                        }
                     }
 
 
