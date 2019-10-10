@@ -1198,7 +1198,7 @@
                         </div>
                     </div>
                     <div class="row right-align" style="margin-top:15px; margin-bottom: 15px;" ng-show="!qa_show_new_comment">
-                        <a class="waves-effect waves-light btn-small" href="" ng-click="qa_visualize_pressed()">Visualize</a>
+                        <!-- <a class="waves-effect waves-light btn-small" href="" ng-click="qa_visualize_pressed()">Visualize</a> -->
                         <a class="waves-effect waves-light btn-small" href=""
                             ng-click="qa_add_comment_button_pressed()">Add Comment</a>
                     </div>
@@ -1209,9 +1209,30 @@
                         <a class="waves-effect waves-light btn-small" href=""
                             ng-click="qa_comment_cancel_button_pressed()">Cancel</a>
                     </div>
-                    <div class="row">
+                    <!-- <div class="row">
                         <div id="cydisc"></div>
-                    </div>
+                    </div> -->
+
+                    <!-- START VISUALIZE -->
+                    <ul class="collapsible expandable">
+                        <li>
+                            <div class="collapsible-header customCollapsibleHeader">
+                                <i class="material-icons arrow left">keyboard_arrow_right</i>
+                                <span class="left" style="margin-right: 10px;">Visualize</span>
+                            </div>
+                            <div class="collapsible-body">
+                                <a class="waves-effect waves-light btn-small" href="" ng-click="qa_visualize_pressed()">Visualize</a>
+                                <div id="cydisc"></div>
+                            </div>
+                        </li>
+                    </ul>
+                    <!-- END VISUALIZE -->
+
+
+
+
+
+
 
 
                     <!-- <div class="row left-align">
