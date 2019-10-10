@@ -843,8 +843,6 @@ window.onload = function () {
     $(document).on('dnd_stop.vakata', function (e, data) {
 
 
-        //console.log('tessssttt');
-
         var target = $(data.event.target);
 
         //We assume that only a single node is been moved
@@ -1344,9 +1342,18 @@ window.onload = function () {
 
         /*
         * Helper for Step Input Output (SIO)
+        * SIO must contains: name and type 
         */
         function create_SIO_id(SIO, workflow) {
-            return SIO.name + window.OBCUI.sep + window.OBCUI.create_workflow_id(workflow);
+            if (SIO.type == 'step') {
+                return create_step_id(SIO, workflow);
+            }
+            else if (SIO.type == 'input' || SIO.type == 'output') {
+                return create_input_output_id(SIO, workflow);
+            }
+            else {
+                throw "ERROR: 2873"; // This should never happen
+            }
         }
 
         /*
@@ -1387,10 +1394,11 @@ window.onload = function () {
         */
         function get_workflow_id_from_SIO_id(sio_id) {
             var sio_id_splitted = sio_id.split(window.OBCUI.sep);
-            if (sio_id_splitted.length != 3) {
-                return null;
+            //
+            if (sio_id_splitted.length != 4) {
+                throw "ERROR: 8262"; // This should never happen;
             }
-            return window.OBCUI.create_workflow_id({ name: sio_id_splitted[1], edit: sio_id_splitted[2] });
+            return window.OBCUI.create_workflow_id({ name: sio_id_splitted[2], edit: sio_id_splitted[3] });
         }
 
         /*
@@ -1405,7 +1413,14 @@ window.onload = function () {
         * Get the name of a SIO (Step Input Output)
         */
         function get_SIO_name_from_SIO_id(sio_id) {
-            return sio_id.split(window.OBCUI.sep)[0]
+            return sio_id.split(window.OBCUI.sep)[1];
+        }
+
+        /*
+        * Get the type of a SID (Step Input Output)
+        */
+        function get_SIO_type_from_SIO_id(sio_id) {
+            return sio_id.split(window.OBCUI.sep)[0];
         }
 
 		/*
@@ -1416,7 +1431,7 @@ window.onload = function () {
             array.forEach(function (sio_id) {
                 if (get_workflow_id_from_SIO_id(sio_id) === old_root_id) {
                     var index = array.indexOf(sio_id);
-                    sio_id = create_SIO_id({ name: get_SIO_name_from_SIO_id(sio_id) }, new_root);
+                    sio_id = create_SIO_id({ name: get_SIO_name_from_SIO_id(sio_id), type: get_SIO_type_from_SIO_id(sio_id) }, new_root);
                     array[index] = sio_id;
                 }
             });
@@ -2688,9 +2703,14 @@ window.onload = function () {
                 if (JSON.stringify(node_root_belong_ordered) === JSON.stringify(old_root_belong)) {
                     //node.data.belongto = { name: old_root_name, edit: null };
                     node.data.belongto = { name: 'root', edit: null };
-                    if (['step', 'input', 'output'].indexOf(node.data.type) >= 0) {
+                    if (node.data.type == 'step') {
                         node.data.id = create_step_id(node.data, new_root);
-                        //node.data.id = node.data.id.substr(0, node.data.id.lastIndexOf(window.OBCUI.sep))+'__null';
+                    }
+                    else if (node.data.type == 'input' || node.data.type == 'output') {
+                        node.data.id = create_input_output_id(node.data, new_root);                        
+                    }
+                    else {
+                        throw "ERROR: 9277"; // This should never happen
                     }
                 }
 
@@ -2718,7 +2738,7 @@ window.onload = function () {
                     // Change the step id
                     function change_SIO_id(old_step_id, new_step_id) {
                         if (get_workflow_id_from_SIO_id(old_step_id) == old_root_id) {
-                            return create_SIO_id({ name: get_SIO_name_from_SIO_id(old_step_id) }, new_root);
+                            return create_SIO_id({ name: get_SIO_name_from_SIO_id(old_step_id), type: get_SIO_type_from_SIO_id(old_step_id) }, new_root);
                         }
                         else {
                             return old_step_id;
@@ -2763,21 +2783,20 @@ window.onload = function () {
 
                     //Find edges that have the root_workflow in their source
                     else if (get_workflow_id_from_SIO_id(edge.data.source) === old_root_id) {
-                        edge.data.source = create_SIO_id({ name: get_SIO_name_from_SIO_id(edge.data.source) }, new_root);
+                        edge.data.source = create_SIO_id({ name: get_SIO_name_from_SIO_id(edge.data.source), type: get_SIO_type_from_SIO_id(edge.data.source) }, new_root);
                     }
 
                     //if(edge.data.source.endsWith(old_root))
                     //	edge.data.source = edge.data.source.substr(0, edge.data.source.lastIndexOf(old_root))+new_root; 
 
                     /* EDGE TARGETS */
-
                     if (edge.data.target == old_root_id) {
                         edge.data.target = new_root_id;
                     }
 
                     //Find edges that have the root_workflow in their target
                     else if (get_workflow_id_from_SIO_id(edge.data.target) === old_root_id) {
-                        edge.data.target = create_SIO_id({ name: get_SIO_name_from_SIO_id(edge.data.target) }, new_root);
+                        edge.data.target = create_SIO_id({ name: get_SIO_name_from_SIO_id(edge.data.target), type: get_SIO_type_from_SIO_id(edge.data.target) }, new_root);
                     }
 
 
