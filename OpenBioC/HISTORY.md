@@ -3,6 +3,7 @@
 
 ### 0.1.2 (Not yet released)
 * Bugs Fixed:
+   * [Cannot delete input/output node from "-" button #125](https://github.com/kantale/OpenBioC/issues/125)
    * [Tool variable cannot have the "dot" character #117](https://github.com/kantale/OpenBioC/issues/117)
 
 ### 0.1.1 (30 September 2019)
