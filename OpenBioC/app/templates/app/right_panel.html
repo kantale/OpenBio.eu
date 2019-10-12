@@ -1191,6 +1191,11 @@
                             <a href="/platform/c/{{qa_comment_id}}">link</a>
                             {% endverbatim %}
                             </small>
+                            <div class="box upDownVoteBox" style="margin-top: -5px; margin-left: 5px;">
+                                <div class="upDownVoteDiv upvoteDiv"><i class="material-icons tiny">thumb_up</i></div>
+                                <span class="upDownVoteSpan">0</span>
+                                <div class="upDownVoteDiv downvoteDiv"><i class="material-icons tiny">thumb_down</i></div>
+                            </div>
                         </div>
                         <div>
                             <h5 style="margin-top:9px; margin-bottom:9px;"><span ng-bind-html="qa_title"></span></h5>
@@ -1267,6 +1272,11 @@
                             <span ng-bind-html="post.comment_html"></span>
                             <a class="waves-effect btn-flat qaReplyBtn" href=""
                                 ng-click="qa_reply_button_clicked(post.id)"><u>Reply</u></a>
+                            <div class="box upDownVoteBox">
+                                <div class="upDownVoteDiv upvoteDiv active"><i class="material-icons tiny">thumb_up</i></div>
+                                <span class="upDownVoteSpan">0</span>
+                                <div class="upDownVoteDiv downvoteDiv"><i class="material-icons tiny">thumb_down</i></div>
+                            </div>
                             <div class="input-field" ng-show="post.replying">
                                 <textarea class="validate" ng-model="qa_current_reply"></textarea>
                                 <a class="waves-effect waves-light btn-small" href=""
@@ -1284,6 +1294,11 @@
                                     <span ng-bind-html="post2.comment_html"></span>
                                     <a class="waves-effect btn-flat qaReplyBtn" href=""
                                         ng-click="qa_reply_button_clicked(post2.id)"><u>Reply</u></a>
+                                    <div class="box upDownVoteBox">
+                                        <div class="upDownVoteDiv upvoteDiv active"><i class="material-icons tiny">thumb_up</i></div>
+                                        <span class="upDownVoteSpan">0</span>
+                                        <div class="upDownVoteDiv downvoteDiv"><i class="material-icons tiny">thumb_down</i></div>
+                                    </div>
                                     <div class="input-field" ng-show="post2.replying">
                                         <textarea class="validate" ng-model="qa_current_reply"></textarea>
                                         <a class="waves-effect waves-light btn-small" href=""
@@ -1302,6 +1317,11 @@
                                             <span ng-bind-html="post3.comment_html"></span>
                                             <a class="waves-effect btn-flat qaReplyBtn" href=""
                                                 ng-click="qa_reply_button_clicked(post3.id)"><u>Reply</u></a>
+                                            <div class="box upDownVoteBox">
+                                                <div class="upDownVoteDiv upvoteDiv active"><i class="material-icons tiny">thumb_up</i></div>
+                                                <span class="upDownVoteSpan">0</span>
+                                                <div class="upDownVoteDiv downvoteDiv"><i class="material-icons tiny">thumb_down</i></div>
+                                            </div>
                                             <div class="input-field" ng-show="post3.replying">
                                                 <textarea class="validate" ng-model="qa_current_reply"></textarea>
                                                 <a class="waves-effect waves-light btn-small" href=""
@@ -1320,6 +1340,11 @@
                                                     <span ng-bind-html="post4.comment_html"></span>
                                                     <a class="waves-effect btn-flat qaReplyBtn" href=""
                                                         ng-click="qa_reply_button_clicked(post4.id)"><u>Reply</u></a>
+                                                    <div class="box upDownVoteBox">
+                                                        <div class="upDownVoteDiv upvoteDiv active"><i class="material-icons tiny">thumb_up</i></div>
+                                                        <span class="upDownVoteSpan">0</span>
+                                                        <div class="upDownVoteDiv downvoteDiv"><i class="material-icons tiny">thumb_down</i></div>
+                                                    </div>
                                                     <div class="input-field" ng-show="post4.replying">
                                                         <textarea class="validate"
                                                             ng-model="qa_current_reply"></textarea>
@@ -1335,6 +1360,11 @@
                                                                 <img src="/static/app/images/konstantina/img_avatar.png"
                                                                     alt="" class="circle avatarForumReply">
                                                                 <small>Replied by <a ng-click="interlink({type: 'u', username: post5.username})">u/<span ng-bind="post5.username"></span></a> on <span ng-bind="post5.created_at"></span><span></small>
+                                                                <div class="box upDownVoteBox" style="margin-top: -5px; margin-left: 5px;">
+                                                                    <div class="upDownVoteDiv upvoteDiv active"><i class="material-icons tiny">thumb_up</i></div>
+                                                                    <span class="upDownVoteSpan">0</span>
+                                                                    <div class="upDownVoteDiv downvoteDiv"><i class="material-icons tiny">thumb_down</i></div>
+                                                                </div>
                                                             </div>
                                                             <span ng-bind-html="post5.comment_html"></span>
                                                             <!-- We allow for 5 levels of comment nesting -->
