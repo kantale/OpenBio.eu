@@ -3502,11 +3502,13 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     */
     $scope.workflow_step_remove_input_output = function(index) {
 
-        //Get the cy_node of input/output with this index
-        var cy_node = cy.$('#' + $scope.workflow_input_outputs[index].name + '__root__null');
+        //Get the node cytoscape id
+        var name = $scope.workflow_input_outputs[index].name;
+        var type = $scope.workflow_input_outputs[index].out ? 'output' : 'input';
+        var node_id = window.create_SIO_id({name: name, type: type}, {name: 'root', edit: null});
 
         //Remove the node
-        $scope.workflow_cytoscape_delete_node(cy_node);
+        $scope.workflow_cytoscape_delete_node(node_id);
 
     };
 

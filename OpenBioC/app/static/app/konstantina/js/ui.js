@@ -1355,6 +1355,7 @@ window.onload = function () {
                 throw "ERROR: 2873"; // This should never happen
             }
         }
+        window.create_SIO_id = create_SIO_id;
 
         /*
         * Create a suitable worfklow name
