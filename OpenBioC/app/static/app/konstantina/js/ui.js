@@ -170,7 +170,12 @@ window.onload = function () {
                         window.OBCUI.timeline.redraw();
                         window.OBCUI.timeline.fit(); // https://github.com/almende/vis/issues/3193
                     }
-
+                    if (event.id == 'DiscourseRightPanelGeneral') {
+                        // Visualize the discoure graph
+                        angular.element($('#angular_div')).scope().$apply(function () {
+                            angular.element($('#angular_div')).scope().qa_visualize_pressed(); 
+                        });
+                    }
 
                 },
                 // Callback function called before collapsible is closed
@@ -189,6 +194,7 @@ window.onload = function () {
                     // ----------------------------------------------------------------------------------------------
                     // ---------------------------------------- DELETE END ------------------------------------------
                     // ---------------------------------------------------------------------------------------------- 
+
                 },
                 // Callback function called after collapsible is closed
                 onCloseEnd: function (event) {

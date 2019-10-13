@@ -4255,7 +4255,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
 
     /*
-    * Q&A --> Show thread --> "Visualize" --> pressed
+    * Q&A --> Show thread --> "Visualize" --> Accordion Down
+    * It used to have a button, this is why it is called "pressed()"
     * Just a wrapper for discourse_visualize_pressed defined in discourse.js
     * Through this function we pass all required angular vars
     */
