@@ -3,6 +3,7 @@
 
 ### 0.1.2 (Not yet released)
 * Bugs Fixed:
+   * [Output nodes cannot have the same name as steps in workflows #114](https://github.com/kantale/OpenBioC/issues/114)
    * [Cannot delete input/output node from "-" button #125](https://github.com/kantale/OpenBioC/issues/125)
    * [Tool variable cannot have the "dot" character #117](https://github.com/kantale/OpenBioC/issues/117)
 
