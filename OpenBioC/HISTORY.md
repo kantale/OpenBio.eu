@@ -1,7 +1,9 @@
 
 # Version changes and updates
 
-### 0.1.2 (Not yet released)
+### 0.1.2 (13 October 2019)
+* Features:
+   * Add discourse graph. This is the a beta, first try.
 * Bugs Fixed:
    * [Output nodes cannot have the same name as steps in workflows #114](https://github.com/kantale/OpenBioC/issues/114)
    * [Cannot delete input/output node from "-" button #125](https://github.com/kantale/OpenBioC/issues/125)
