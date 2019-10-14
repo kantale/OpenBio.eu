@@ -2761,6 +2761,7 @@ def qa_create_thread(comment):
             'comment': child.comment,
             'comment_html': child.comment_html,
             'opinion': child.opinion,
+            'score': child.upvotes - child.downvotes,
             'id': child.pk,
             'replying': False,
             'children': qa_create_thread(child),
@@ -2796,6 +2797,7 @@ def qa_search_3(request, **kwargs):
         'qa_title': comment.title,
         'qa_comment': comment.comment,
         'qa_comment_html': comment.comment_html,
+        'qa_score': comment.upvotes - comment.downvotes,
         'qa_id': comment.pk,
         'qa_thread': qa_create_thread(comment),
         'qa_username': comment.obc_user.user.username,
@@ -2935,8 +2937,19 @@ def gen_qa_add_comment(request, **kwargs):
 
     return success(ret)
 
+@has_data
+def updownvote_comment(request, **kwargs):
+    '''
+    url: updownvote_comment/
+    '''
+
+    comment_id = kwargs['comment_id']
+    upvote = kwargs['upvote']
+
+    return success()
+
+
 
 ### END OF Q&A
-
 ### VIEWS END ######
 

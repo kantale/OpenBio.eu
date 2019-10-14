@@ -1192,8 +1192,8 @@
                             {% endverbatim %}
                             </small>
                             <div class="box upDownVoteBox" style="margin-top: -5px; margin-left: 5px;">
-                                <div class="upDownVoteDiv upvoteDiv"><i class="material-icons tiny">thumb_up</i></div>
-                                <span class="upDownVoteSpan">0</span>
+                                <div class="upDownVoteDiv upvoteDiv"><i class="material-icons tiny" ng-click="updownvote_comment(qa_comment_id, true)">thumb_up</i></div>
+                                <span class="upDownVoteSpan" ng-bind="qa_score"></span>
                                 <div class="upDownVoteDiv downvoteDiv"><i class="material-icons tiny">thumb_down</i></div>
                             </div>
                         </div>
@@ -1284,7 +1284,7 @@
                                 ng-click="qa_reply_button_clicked(post.id)"><u>Reply</u></a>
                             <div class="box upDownVoteBox">
                                 <div class="upDownVoteDiv upvoteDiv active"><i class="material-icons tiny">thumb_up</i></div>
-                                <span class="upDownVoteSpan">0</span>
+                                <span class="upDownVoteSpan" ng-bind="post.score"></span>
                                 <div class="upDownVoteDiv downvoteDiv"><i class="material-icons tiny">thumb_down</i></div>
                             </div>
                             <div class="input-field" ng-show="post.replying">
@@ -1312,7 +1312,7 @@
                                         ng-click="qa_reply_button_clicked(post2.id)"><u>Reply</u></a>
                                     <div class="box upDownVoteBox">
                                         <div class="upDownVoteDiv upvoteDiv active"><i class="material-icons tiny">thumb_up</i></div>
-                                        <span class="upDownVoteSpan">0</span>
+                                        <span class="upDownVoteSpan" ng-bind="post2.score"></span>
                                         <div class="upDownVoteDiv downvoteDiv"><i class="material-icons tiny">thumb_down</i></div>
                                     </div>
                                     <div class="input-field" ng-show="post2.replying">
@@ -1340,7 +1340,7 @@
                                                 ng-click="qa_reply_button_clicked(post3.id)"><u>Reply</u></a>
                                             <div class="box upDownVoteBox">
                                                 <div class="upDownVoteDiv upvoteDiv active"><i class="material-icons tiny">thumb_up</i></div>
-                                                <span class="upDownVoteSpan">0</span>
+                                                <span class="upDownVoteSpan" ng-bind="post3.score"></span>
                                                 <div class="upDownVoteDiv downvoteDiv"><i class="material-icons tiny">thumb_down</i></div>
                                             </div>
                                             <div class="input-field" ng-show="post3.replying">
@@ -1368,7 +1368,7 @@
                                                         ng-click="qa_reply_button_clicked(post4.id)"><u>Reply</u></a>
                                                     <div class="box upDownVoteBox">
                                                         <div class="upDownVoteDiv upvoteDiv active"><i class="material-icons tiny">thumb_up</i></div>
-                                                        <span class="upDownVoteSpan">0</span>
+                                                        <span class="upDownVoteSpan" ng-bind="post4.score"></span>
                                                         <div class="upDownVoteDiv downvoteDiv"><i class="material-icons tiny">thumb_down</i></div>
                                                     </div>
                                                     <div class="input-field" ng-show="post4.replying">
@@ -1393,7 +1393,7 @@
                                                                 <small>Replied by <a ng-click="interlink({type: 'u', username: post5.username})">u/<span ng-bind="post5.username"></span></a> on <span ng-bind="post5.created_at"></span> <span ng-bind="post5.opinion"></span></small>
                                                                 <div class="box upDownVoteBox" style="margin-top: -5px; margin-left: 5px;">
                                                                     <div class="upDownVoteDiv upvoteDiv active"><i class="material-icons tiny">thumb_up</i></div>
-                                                                    <span class="upDownVoteSpan">0</span>
+                                                                    <span class="upDownVoteSpan" ng-bind="post5.score"></span>
                                                                     <div class="upDownVoteDiv downvoteDiv"><i class="material-icons tiny">thumb_down</i></div>
                                                                 </div>
                                                             </div>
