@@ -4082,6 +4082,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         $scope.qa_set_replying($scope.qa_thread, id, true);
         $scope.qa_current_reply = '';
+        $scope.qa_reply_opinion = 'note';
 
     };
 
@@ -4098,12 +4099,13 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     /*
     * Q&A --> Show Thread --> reply to a comment --> add text --> Save button --> Clicked 
     */
-    $scope.qa_reply_save_button_pressed = function(id, comment) {
+    $scope.qa_reply_save_button_pressed = function(id, comment, opinion) {
         //console.log('Reply to id: ', id);
         //console.log('Comment:', comment);
 
-        $scope.qa_add_comment(id, comment);
+        $scope.qa_add_comment(id, comment, opinion);
         $scope.qa_current_reply = '';
+        $scope.qa_reply_opinion = 'note';
 
     };
 
@@ -4138,12 +4140,13 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * 1. qa_comment_save_button_pressed to save a new comment (not reply)
     * 2. qa_reply_save_button_pressed to save a REPLY (not comment)
     */
-    $scope.qa_add_comment = function(id, comment) {
+    $scope.qa_add_comment = function(id, comment, opinion) {
         $scope.ajax(
             'qa_add_comment/',
             {
                 'qa_id': id, // The id of root comment
-                'qa_comment': comment
+                'qa_comment': comment,
+                'qa_opinion': opinion
             },
             function(data) {
                 //Update the UI
@@ -4193,7 +4196,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         //console.log('QA_COMMENT_ID: ', $scope.qa_comment_id);
         //console.log('Current Comment:', $scope.qa_current_comment);
 
-        $scope.qa_add_comment($scope.qa_comment_id, $scope.qa_current_comment);
+        $scope.qa_add_comment($scope.qa_comment_id, $scope.qa_current_comment, $scope.qa_comment_opinion);
 
         $scope.qa_show_new_comment = false;
     };
@@ -4238,6 +4241,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     $scope.qa_add_comment_button_pressed = function() {
         $scope.qa_show_new_comment = true;
         $scope.qa_current_comment = '';
+        $scope.qa_comment_opinion = 'note';
     };
 
     /*

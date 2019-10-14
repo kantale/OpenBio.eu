@@ -2759,6 +2759,7 @@ def qa_create_thread(comment):
         to_add = {
             'comment': child.comment,
             'comment_html': child.comment_html,
+            'opinion': child.opinion,
             'id': child.pk,
             'replying': False,
             'children': qa_create_thread(child),
@@ -2850,10 +2851,16 @@ def qa_add_comment(request, **kwargs):
         return fail('Could not find Q&A id')
 
     current_comment = kwargs.get('qa_comment', None)
-    if not current_comment:
+    if current_comment is None:
         return fail('Could not find Q&A new comment')
+    elif not current_comment.strip():
+        return fail('Comment cannot be empty')
 
     current_comment_html = markdown(current_comment)
+
+    opinion = kwargs.get('qa_opinion', None)
+    if not opinion in ['note', 'agree', 'disagree']:
+        return fail('Error 9177. opinion value unknown')
 
     try:
         parent_comment = Comment.objects.get(pk=id_)
@@ -2864,6 +2871,7 @@ def qa_add_comment(request, **kwargs):
         obc_user=OBC_user.objects.get(user=request.user),
         comment = current_comment,
         comment_html = current_comment_html,
+        opinion=opinion,
         parent=parent_comment,
     )
     new_comment.save()

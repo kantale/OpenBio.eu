@@ -363,10 +363,24 @@ class Comment(models.Model):
     Q & As
     '''
 
+    OPINION_NOTE_CODE = 1
+    OPINION_NOTE = 'note'
+    OPINION_AGREE_CODE = 2
+    OPINION_AGREE = 'agree'
+    OPINION_DISAGREE_CODE = 3
+    OPINION_DISAGREE = 'disagree'
+
+    OPINION_CHOICES = (
+        (OPINION_NOTE_CODE, OPINION_NOTE),
+        (OPINION_AGREE_CODE, OPINION_AGREE),
+        (OPINION_DISAGREE_CODE, OPINION_DISAGREE),
+    )
+
     obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
     comment = models.TextField()
     comment_html = models.TextField()
     title = models.CharField(max_length=1000,)
+    opinion = models.CharField(choices=OPINION_CHOICES, max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     parent = models.ForeignKey(to='Comment', null=True, on_delete=models.CASCADE, related_name='comment_parent')
     children =  models.ManyToManyField(to='Comment', related_name='comment_children')
