@@ -386,6 +386,22 @@ class Comment(models.Model):
     children =  models.ManyToManyField(to='Comment', related_name='comment_children')
 
 
+class UpDownCommentVote(models.Model):
+    '''
+    Represents one Up/Down vote at a comment
+    '''
+
+    class Meta:
+        '''
+        https://docs.djangoproject.com/en/2.1/ref/models/options/#unique-together
+        '''
+        unique_together = (('obc_user', 'comment'),)
+
+    obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
+    comment = models.ForeignKey(Comment, null=False, on_delete=models.CASCADE)
+    upvote = models.BooleanField() # True --> upvote, False --> downvote
+    created_at = models.DateTimeField(auto_now_add=True)
+
 
 
 

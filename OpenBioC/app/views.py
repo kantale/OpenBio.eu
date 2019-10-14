@@ -27,7 +27,8 @@ from django.middleware.csrf import get_token
 
 #Import database objects
 from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations, \
-    OS_types, Keyword, Report, ReportToken, Reference, ReferenceField, Comment
+    OS_types, Keyword, Report, ReportToken, Reference, ReferenceField, Comment, \
+    UpDownCommentVote
 
 #Import executor
 from ExecutionEnvironment.executor import create_bash_script
