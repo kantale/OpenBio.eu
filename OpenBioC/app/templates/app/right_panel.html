@@ -1209,10 +1209,20 @@
                     </div>
                     <div class="input-field" ng-show="qa_show_new_comment">
                         <textarea class="validate" ng-model="qa_current_comment"></textarea>
+                        <div>
+                            <label><input type="radio" name="grp1" checked /><span>Note</span></label>
+                            <label><input type="radio" name="grp1"/><span>Agree</span></label>
+                            <label><input type="radio" name="grp1"/><span>Disagree</span></label>
+                        </div>
+                                        
                         <a class="waves-effect waves-light btn-small" href=""
                             ng-click="qa_comment_save_button_pressed()">Save</a>
                         <a class="waves-effect waves-light btn-small" href=""
                             ng-click="qa_comment_cancel_button_pressed()">Cancel</a>
+ 
+
+
+
                     </div>
                     <!-- <div class="row">
                         <div id="cydisc"></div>
