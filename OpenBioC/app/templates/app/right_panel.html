@@ -1210,9 +1210,9 @@
                     <div class="input-field" ng-show="qa_show_new_comment">
                         <textarea class="validate" ng-model="qa_current_comment"></textarea>
                         <div>
-                            <label><input type="radio" ng-model="qa_current_opinion" value="note" checked /><span>Note</span></label>
-                            <label><input type="radio" ng-model="qa_current_opinion" value="agree"/><span>Agree</span></label>
-                            <label><input type="radio" ng-model="qa_current_opinion" value="disagree"/><span>Disagree</span></label>
+                            <label><input type="radio" ng-model="qa_comment_opinion" value="note" checked /><span>Note</span></label>
+                            <label><input type="radio" ng-model="qa_comment_opinion" value="agree"/><span>Agree</span></label>
+                            <label><input type="radio" ng-model="qa_comment_opinion" value="disagree"/><span>Disagree</span></label>
                         </div>
                                         
                         <a class="waves-effect waves-light btn-small" href=""
@@ -1277,7 +1277,7 @@
                             <div class="valign-wrapper">
                                 <img src="/static/app/images/konstantina/img_avatar.png" alt=""
                                     class="circle avatarForumReply">
-                                <small>Replied by <a ng-click="interlink({type: 'u', username: post.username})">u/<span ng-bind="post.username"></span></a> on <span ng-bind="post.created_at"></span><span></small>
+                                <small>Replied by <a ng-click="interlink({type: 'u', username: post.username})">u/<span ng-bind="post.username"></span></a> on <span ng-bind="post.created_at"></span> <span ng-bind="post.opinion"></span></small>
                             </div>
                             <span ng-bind-html="post.comment_html"></span>
                             <a class="waves-effect btn-flat qaReplyBtn" href=""
@@ -1289,8 +1289,14 @@
                             </div>
                             <div class="input-field" ng-show="post.replying">
                                 <textarea class="validate" ng-model="qa_current_reply"></textarea>
+                                <div>
+                                    <label><input type="radio" ng-model="qa_reply_opinion" value="note" checked /><span>Note</span></label>
+                                    <label><input type="radio" ng-model="qa_reply_opinion" value="agree"/><span>Agree</span></label>
+                                    <label><input type="radio" ng-model="qa_reply_opinion" value="disagree"/><span>Disagree</span></label>
+                                </div>
+
                                 <a class="waves-effect waves-light btn-small" href=""
-                                    ng-click="qa_reply_save_button_pressed(post.id, qa_current_reply)">Save</a>
+                                    ng-click="qa_reply_save_button_pressed(post.id, qa_current_reply, qa_reply_opinion)">Save</a>
                                 <a class="waves-effect waves-light btn-small" href=""
                                     ng-click="qa_reply_cancel_button_pressed(post.id)">Cancel</a>
                             </div>
@@ -1299,7 +1305,7 @@
                                     <div class="valign-wrapper">
                                         <img src="/static/app/images/konstantina/img_avatar.png" alt=""
                                             class="circle avatarForumReply">
-                                        <small>Replied by <a ng-click="interlink({type: 'u', username: post2.username})">u/<span ng-bind="post2.username"></span></a> on <span ng-bind="post2.created_at"></span><span></small>
+                                        <small>Replied by <a ng-click="interlink({type: 'u', username: post2.username})">u/<span ng-bind="post2.username"></span></a> on <span ng-bind="post2.created_at"></span> <span ng-bind="post2.opinion"></span></small>
                                     </div>
                                     <span ng-bind-html="post2.comment_html"></span>
                                     <a class="waves-effect btn-flat qaReplyBtn" href=""
@@ -1311,8 +1317,13 @@
                                     </div>
                                     <div class="input-field" ng-show="post2.replying">
                                         <textarea class="validate" ng-model="qa_current_reply"></textarea>
+                                        <div>
+                                            <label><input type="radio" ng-model="qa_reply_opinion" value="note" checked /><span>Note</span></label>
+                                            <label><input type="radio" ng-model="qa_reply_opinion" value="agree"/><span>Agree</span></label>
+                                            <label><input type="radio" ng-model="qa_reply_opinion" value="disagree"/><span>Disagree</span></label>
+                                        </div>
                                         <a class="waves-effect waves-light btn-small" href=""
-                                            ng-click="qa_reply_save_button_pressed(post2.id, qa_current_reply)">Save</a>
+                                            ng-click="qa_reply_save_button_pressed(post2.id, qa_current_reply, qa_reply_opinion)">Save</a>
                                         <a class="waves-effect waves-light btn-small" href=""
                                             ng-click="qa_reply_cancel_button_pressed(post2.id)">Cancel</a>
                                     </div>
@@ -1322,7 +1333,7 @@
                                             <div class="valign-wrapper">
                                                 <img src="/static/app/images/konstantina/img_avatar.png" alt=""
                                                     class="circle avatarForumReply">
-                                                <small>Replied by <a ng-click="interlink({type: 'u', username: post3.username})">u/<span ng-bind="post3.username"></span></a> on <span ng-bind="post3.created_at"></span><span></small>
+                                                <small>Replied by <a ng-click="interlink({type: 'u', username: post3.username})">u/<span ng-bind="post3.username"></span></a> on <span ng-bind="post3.created_at"></span> <span ng-bind="post3.opinion"></span></small>
                                             </div>
                                             <span ng-bind-html="post3.comment_html"></span>
                                             <a class="waves-effect btn-flat qaReplyBtn" href=""
@@ -1334,8 +1345,13 @@
                                             </div>
                                             <div class="input-field" ng-show="post3.replying">
                                                 <textarea class="validate" ng-model="qa_current_reply"></textarea>
+                                                <div>
+                                                    <label><input type="radio" ng-model="qa_reply_opinion" value="note" checked /><span>Note</span></label>
+                                                    <label><input type="radio" ng-model="qa_reply_opinion" value="agree"/><span>Agree</span></label>
+                                                    <label><input type="radio" ng-model="qa_reply_opinion" value="disagree"/><span>Disagree</span></label>
+                                                </div>
                                                 <a class="waves-effect waves-light btn-small" href=""
-                                                    ng-click="qa_reply_save_button_pressed(post3.id, qa_current_reply)">Save</a>
+                                                    ng-click="qa_reply_save_button_pressed(post3.id, qa_current_reply, qa_reply_opinion)">Save</a>
                                                 <a class="waves-effect waves-light btn-small" href=""
                                                     ng-click="qa_reply_cancel_button_pressed(post3.id)">Cancel</a>
                                             </div>
@@ -1345,7 +1361,7 @@
                                                     <div class="valign-wrapper">
                                                         <img src="/static/app/images/konstantina/img_avatar.png" alt=""
                                                             class="circle avatarForumReply">
-                                                        <small>Replied by <a ng-click="interlink({type: 'u', username: post4.username})">u/<span ng-bind="post4.username"></span></a> on <span ng-bind="post4.created_at"></span><span></small>
+                                                        <small>Replied by <a ng-click="interlink({type: 'u', username: post4.username})">u/<span ng-bind="post4.username"></span></a> on <span ng-bind="post4.created_at"></span> <span ng-bind="post4.opinion"></span></small>
                                                     </div>
                                                     <span ng-bind-html="post4.comment_html"></span>
                                                     <a class="waves-effect btn-flat qaReplyBtn" href=""
@@ -1358,8 +1374,13 @@
                                                     <div class="input-field" ng-show="post4.replying">
                                                         <textarea class="validate"
                                                             ng-model="qa_current_reply"></textarea>
+                                                        <div>
+                                                            <label><input type="radio" ng-model="qa_reply_opinion" value="note" checked /><span>Note</span></label>
+                                                            <label><input type="radio" ng-model="qa_reply_opinion" value="agree"/><span>Agree</span></label>
+                                                            <label><input type="radio" ng-model="qa_reply_opinion" value="disagree"/><span>Disagree</span></label>
+                                                        </div>
                                                         <a class="waves-effect waves-light btn-small" href=""
-                                                            ng-click="qa_reply_save_button_pressed(post4.id, qa_current_reply)">Save</a>
+                                                            ng-click="qa_reply_save_button_pressed(post4.id, qa_current_reply, qa_reply_opinion)">Save</a>
                                                         <a class="waves-effect waves-light btn-small" href=""
                                                             ng-click="qa_reply_cancel_button_pressed(post4.id)">Cancel</a>
                                                     </div>
@@ -1369,7 +1390,7 @@
                                                             <div class="valign-wrapper">
                                                                 <img src="/static/app/images/konstantina/img_avatar.png"
                                                                     alt="" class="circle avatarForumReply">
-                                                                <small>Replied by <a ng-click="interlink({type: 'u', username: post5.username})">u/<span ng-bind="post5.username"></span></a> on <span ng-bind="post5.created_at"></span><span></small>
+                                                                <small>Replied by <a ng-click="interlink({type: 'u', username: post5.username})">u/<span ng-bind="post5.username"></span></a> on <span ng-bind="post5.created_at"></span> <span ng-bind="post5.opinion"></span></small>
                                                                 <div class="box upDownVoteBox" style="margin-top: -5px; margin-left: 5px;">
                                                                     <div class="upDownVoteDiv upvoteDiv active"><i class="material-icons tiny">thumb_up</i></div>
                                                                     <span class="upDownVoteSpan">0</span>
