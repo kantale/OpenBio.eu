@@ -384,6 +384,8 @@ class Comment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     parent = models.ForeignKey(to='Comment', null=True, on_delete=models.CASCADE, related_name='comment_parent')
     children =  models.ManyToManyField(to='Comment', related_name='comment_children')
+    upvotes = models.IntegerField() # Number of upvotes
+    downvotes = models.IntegerField() # Number of downvotes
 
 
 class UpDownCommentVote(models.Model):

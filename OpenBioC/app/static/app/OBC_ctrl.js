@@ -1999,6 +1999,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.qa_comment_id = data['qa_id']; // The primary key to the Comment object in db
                 $scope.qa_username = data['qa_username'];
                 $scope.qa_created_at = data['qa_created_at'];
+                $scope.qa_score = data['qa_score'];
 
                 $scope.qa_info_editable = false;
                 $scope.qa_show_new_comment = false;
@@ -4370,6 +4371,29 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
             $timeout(function(){M.updateTextFields()}, 10);
         }
+    };
+
+    /*
+    * A thumbs-up or thumbs-down was pressed on a comment
+    * comment_id is the id of the comment
+    * upvate: true --> Upvate, false --> downvote
+    */
+    $scope.updownvote_comment = function(comment_id, upvote) {
+        $scope.ajax(
+            'updownvote_comment/',
+            {
+                'comment_id': comment_id,
+                'upvote': upvote
+            },
+            function (data) {
+            },
+            function (data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function (statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
     };
 
 }); 

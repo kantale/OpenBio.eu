@@ -156,31 +156,31 @@
             }
           }); // end of cytoscape
 
-          var tippyDiv;
+      var tippyDiv;
 		  cy.on('mouseover', 'node', function(event) {
 		    var a = event.target;
-			$('#tippy-text').html(a.data().tooltipText);
-			$('#tippy-author-name').text(a.data().author);
-			$('#tippy-date').text(a.data().date);
-			//$('#tippy-date').text((new Date(a.data().date)).toLocaleString('en-GB', { timeZone: 'UTC' }));
+			  $('#tippy-text').html(a.data().tooltipText);
+			  $('#tippy-author-name').text(a.data().author);
+			  $('#tippy-date').text(a.data().date);
+			  //$('#tippy-date').text((new Date(a.data().date)).toLocaleString('en-GB', { timeZone: 'UTC' }));
 		    var makeTippy = function(node){
 			  return tippy(node.popperRef(), {
 			    content: function(){
 				  var div = document.getElementById('tippy-popup');
-				  return div.innerHTML;
+				    return div.innerHTML;
 			    },
 			    trigger: 'manual',
-				arrow: true,
-				placement: 'bottom',
-				hideOnClick: true,
-				multiple: true,
-				sticky: true,
+				  arrow: true,
+				  placement: 'bottom',
+				  hideOnClick: true,
+				  multiple: true,
+				  sticky: true,
 			    theme: 'tomato'
 			  });
 			};
 			tippyDiv = makeTippy(a);
 		    tippyDiv.show();
-	      });
+	     });
 
 		  cy.on('mouseout', 'node', function(event) {
 		    tippyDiv.hide();
