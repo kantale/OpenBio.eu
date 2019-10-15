@@ -1279,13 +1279,17 @@ def tools_search_2(tools_search_name, tools_search_version, tools_search_edit):
 
     Qs = []
     if tools_search_name:
-        Qs.append(Q(name__icontains=tools_search_name))
+        Q1 = Q(name__icontains=tools_search_name)
+        Q2 = Q(obc_user__user__username__icontains=tools_search_name)
+        Qs.append(Q1 | Q2)
 
     if tools_search_version:
         Qs.append(Q(version__icontains=tools_search_version))
 
     if tools_search_edit:
         Qs.append(Q(edit = int(tools_search_edit)))
+
+
 
     # This applies an AND operator. https://docs.djangoproject.com/en/2.2/topics/db/queries/#complex-lookups-with-q-objects 
     # For the order_by part see issue #120
@@ -1322,7 +1326,9 @@ def workflows_search_2(workflows_search_name, workflows_search_edit):
     Qs = []
     #workflows_search_name = kwargs.get('workflows_search_name', '')
     if workflows_search_name:
-        Qs.append(Q(name__icontains=workflows_search_name))
+        Q1 = Q(name__icontains=workflows_search_name)
+        Q2 = Q(obc_user__user__username__icontains=workflows_search_name)
+        Qs.append(Q1 | Q2)
 
     #workflows_search_edit = kwargs.get('workflows_search_edit', '')
     if workflows_search_edit:
@@ -2200,12 +2206,13 @@ def reports_search_2(
     '''
 
     nice_id_Q = Q(nice_id__contains=main_search)
+    username_Q = Q(obc_user__user__username__icontains=main_search)
     workflow_Q = Q(workflow__name__icontains=main_search)
     not_unused = Q(tokens__status = ReportToken.UNUSED)
     count_1 = Q(num_tokens = 1)
 
     # We do not want reports that have only one tokens which is "unused"
-    results = Report.objects.annotate(num_tokens=Count('tokens')).filter( (nice_id_Q | workflow_Q) & (~(not_unused&count_1)) )
+    results = Report.objects.annotate(num_tokens=Count('tokens')).filter( (nice_id_Q | workflow_Q | username_Q) & (~(not_unused&count_1)) )
 
     # BUILD TREE
     reports_search_jstree = []
@@ -2524,8 +2531,9 @@ def references_search_2(
 
     name_Q = Q(name__icontains=main_search)
     html_Q = Q(html__icontains=main_search)
+    username_Q = Q(obc_user__user__username__icontains=main_search)
 
-    results = Reference.objects.filter(name_Q | html_Q)
+    results = Reference.objects.filter(name_Q | html_Q | username_Q)
     references_search_jstree = []
 
     for result in results:
@@ -2561,8 +2569,9 @@ def qa_search_2(main_search):
     '''
     title_Q = Q(title__icontains=main_search)
     comment_Q = Q(comment__icontains=main_search)
+    username_Q = Q(obc_user__user__username__icontains=main_search)
 
-    results = Comment.objects.filter(title_Q | comment_Q)
+    results = Comment.objects.filter(title_Q | comment_Q | username_Q)
 
     qa_search_tree = []
     entries_in_tree = set()
