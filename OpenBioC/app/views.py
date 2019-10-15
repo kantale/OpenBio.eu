@@ -2947,6 +2947,8 @@ def gen_qa_add_comment(request, **kwargs):
         comment = qa_comment,
         comment_html = current_comment_html,
         parent = root_comment,
+        upvotes = 0,
+        downvotes = 0,
     )
     new_comment.save()
     root_comment.children.add(new_comment)
