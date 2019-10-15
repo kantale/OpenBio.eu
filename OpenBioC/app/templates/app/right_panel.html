@@ -1192,7 +1192,7 @@
                             {% endverbatim %}
                             </small>
                             <div class="box upDownVoteBox" style="margin-top: -5px; margin-left: 5px;">
-                                <div class="upDownVoteDiv upvoteDiv"><i class="material-icons tiny" ng-click="updownvote_comment(qa_comment_id, true, qa_score)">thumb_up</i></div>
+                                <div class="upDownVoteDiv upvoteDiv" ng-class="{'active': true}"><i class="material-icons tiny" ng-click="updownvote_comment(qa_comment_id, true, qa_score)">thumb_up</i></div>
                                 <span class="upDownVoteSpan" ng-bind="qa_score.score"></span>
                                 <div class="upDownVoteDiv downvoteDiv"><i class="material-icons tiny" ng-click="updownvote_comment(qa_comment_id, false, qa_score)">thumb_down</i></div>
                             </div>
