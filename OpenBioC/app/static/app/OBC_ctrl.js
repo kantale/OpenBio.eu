@@ -2000,6 +2000,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.qa_username = data['qa_username'];
                 $scope.qa_created_at = data['qa_created_at'];
                 $scope.qa_score = {score: data['qa_score']};
+                $scope.qa_voted = data['qa_voted'];
 
                 $scope.qa_info_editable = false;
                 $scope.qa_show_new_comment = false;
@@ -4378,8 +4379,21 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * comment_id is the id of the comment
     * upvate: true --> Upvate, false --> downvote
     * score is an object that contains a score atttribute
+    * voted is the current voted state: i.e. {'up': false, 'down': true}
     */
-    $scope.updownvote_comment = function(comment_id, upvote, score) {
+    $scope.updownvote_comment = function(comment_id, upvote, score, voted) {
+
+        if (upvote && voted['up']) {
+            //You cannot upvote twice
+            $scope.toast('You have already upvoted this post', 'error'); // This is ugly. Remove? FIXME
+            return;
+        }
+        if ((!upvote) && voted['down'] ) {
+            //You cannot downvote twice
+            $scope.toast('You have already downvoted this post', 'error'); //This is ugly. Remove? FIXME
+            return;
+        }
+
         $scope.ajax(
             'updownvote_comment/',
             {
@@ -4388,6 +4402,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             },
             function (data) {
                 score.score = data['score']; // We do the score.score thing, to pass the score by reference (see right_panel.html)
+                voted['up'] = data['voted']['up']; 
+                voted['down'] = data['voted']['down'];
             },
             function (data) {
                 $scope.toast(data['error_message'], 'error');

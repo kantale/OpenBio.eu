@@ -1544,9 +1544,12 @@ def tools_add(request, **kwargs):
     for variable_name, variable_name_counter in Counter([x['name'] for x in tool_variables]).items():
         if variable_name_counter>1:
             return fail('Two variables cannot have the same name!')
+
+    obc_user = OBC_user.objects.get(user=request.user)
+
     #Create new tool
     new_tool = Tool(
-        obc_user= OBC_user.objects.get(user=request.user), 
+        obc_user= obc_user, 
         name = tools_search_name,
         version=tools_search_version,
         edit=next_edit,
@@ -1609,7 +1612,7 @@ def tools_add(request, **kwargs):
         'created_at': datetime_to_str(new_tool.created_at),
 
         'tool_pk': new_tool.pk, # Used in comments
-        'tool_thread': qa_create_thread(new_tool.comment), # Tool comment thread 
+        'tool_thread': qa_create_thread(new_tool.comment, obc_user), # Tool comment thread 
     }
 
     return success(ret)
@@ -1852,9 +1855,11 @@ def workflows_add(request, **kwargs):
     new_workflow.keywords.add(*keywords)
     new_workflow.save();
 
+    obc_user = OBC_user.objects.get(user=request.user)
+
     # Add an empty comment. This will be the root comment for the QA thread
     comment = Comment(
-        obc_user = OBC_user.objects.get(user=request.user),
+        obc_user = obc_user,
         comment = '',
         comment_html = '',
         title = markdown('Discussion on Workflow: w/{}/{}'.format(workflow_info_name, next_edit)),
@@ -1871,7 +1876,7 @@ def workflows_add(request, **kwargs):
         'created_at': datetime_to_str(new_workflow.created_at),
 
         'workflow_pk': new_workflow.pk, # Used in comments
-        'workflow_thread': qa_create_thread(new_workflow.comment), # Tool comment thread 
+        'workflow_thread': qa_create_thread(new_workflow.comment, obc_user), # Tool comment thread 
     }
 
     return success(ret)
@@ -2750,7 +2755,7 @@ def qa_add_1(request, **kwargs):
 
     return success(ret)
 
-def qa_create_thread(comment):
+def qa_create_thread(comment, obc_user = None):
     '''
     Recursive
     Create the children thread of a comment
@@ -2764,7 +2769,8 @@ def qa_create_thread(comment):
             'score': child.upvotes - child.downvotes,
             'id': child.pk,
             'replying': False,
-            'children': qa_create_thread(child),
+            'voted' : is_comment_updownvoted(obc_user, child),
+            'children': qa_create_thread(child, obc_user),
             'username': child.obc_user.user.username,
             'created_at': datetime_to_str(child.created_at),
         }
@@ -2776,6 +2782,7 @@ def qa_create_thread(comment):
 def qa_search_3(request, **kwargs):
     '''
     path: qa_search_3/
+    From angular: Fetch the data from a single Q&A and update the UI
     Get a unique Q&A thread
     '''
 
@@ -2788,10 +2795,12 @@ def qa_search_3(request, **kwargs):
     except ObjectDoesNotExist as e:
         return fail('Could not find comment database object')
 
-#                $scope.qa_thread = [
-#                    {'comment': 'comment 1', 'id': 1, 'replying': false},
-#                    {'comment': 'comment 2', 'id': 2, 'replying': false}
-#                ];
+    # Get obc_user
+    if request.user.is_anonymous:
+        obc_user = None
+    else:
+        obc_user = OBC_user.objects.get(user=request.user)
+
 
     ret = {
         'qa_title': comment.title,
@@ -2799,7 +2808,8 @@ def qa_search_3(request, **kwargs):
         'qa_comment_html': comment.comment_html,
         'qa_score': comment.upvotes - comment.downvotes,
         'qa_id': comment.pk,
-        'qa_thread': qa_create_thread(comment),
+        'qa_thread': qa_create_thread(comment, obc_user),
+        'qa_voted': is_comment_updownvoted(obc_user, comment),
         'qa_username': comment.obc_user.user.username,
         'qa_created_at': datetime_to_str(comment.created_at),
     }
@@ -2939,6 +2949,21 @@ def gen_qa_add_comment(request, **kwargs):
 
     return success(ret)
 
+def is_comment_updownvoted(obc_user, comment):
+    '''
+    Has this user upvoted or downvoted this comment?
+    '''
+
+    if obc_user is None:
+        return {'up': False, 'down': False}
+
+    try:
+        vote = UpDownCommentVote.objects.get(obc_user=obc_user, comment=comment)
+    except ObjectDoesNotExist as e:
+        return {'up': False, 'down': False}
+
+    return {'up': vote.upvote, 'down': not vote.upvote}
+
 @has_data
 def updownvote_comment(request, **kwargs):
     '''
@@ -2961,13 +2986,31 @@ def updownvote_comment(request, **kwargs):
     # Get the user
     obc_user = OBC_user.objects.get(user=request.user)
 
-    #Create the UpDownCommentVote object
-    vote = UpDownCommentVote(
-        obc_user = obc_user,
-        comment = comment,
-        upvote = upvote,
-    )
-    vote.save()
+    # Check if this is already a vote
+    try:
+        vote = UpDownCommentVote.objects.get(obc_user=obc_user, comment=comment)
+    except ObjectDoesNotExist as e:
+        #Create the UpDownCommentVote object
+        vote = UpDownCommentVote(
+            obc_user = obc_user,
+            comment = comment,
+            upvote = upvote,
+        )
+        vote.save()
+        voted = {'up': upvote, 'down': not upvote}
+    else:
+        # No exception happened. A vote for this comment already exists
+        if vote.upvote and upvote:
+            # You cannot upvote twice!
+            return fail('Already upvoted')
+        if (not vote.upvote) and (not upvote): # DeMorgan anyone?
+            # You cannot downvote twice!
+            return fail('Already downvoted')
+
+        # This post was upvoted and now downvoted from the same user (or vice-versa)!
+        # Just delete the vote
+        vote.delete()
+        voted = {'up': False, 'down': False} # Neither upvoted nor downvoted
 
     #Add the score
     if upvote:
@@ -2978,6 +3021,7 @@ def updownvote_comment(request, **kwargs):
 
     ret = {
         'score': comment.upvotes - comment.downvotes,
+        'voted': voted
     }
 
     return success(ret)

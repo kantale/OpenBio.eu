@@ -393,11 +393,18 @@ class UpDownCommentVote(models.Model):
     Represents one Up/Down vote at a comment
     '''
 
-#    class Meta:
-#        '''
-#        https://docs.djangoproject.com/en/2.1/ref/models/options/#unique-together
-#        '''
-#        unique_together = (('obc_user', 'comment'),)
+    class Meta:
+        '''
+        https://docs.djangoproject.com/en/2.1/ref/models/options/#unique-together
+        '''
+        unique_together = (('obc_user', 'comment'),)
+
+        indexes = [
+                models.Index(
+                    fields=['obc_user', 'comment',],
+                    name='UpDownCommentVote_idx',
+                ),
+            ]
 
     obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
     comment = models.ForeignKey(Comment, null=False, on_delete=models.CASCADE)
