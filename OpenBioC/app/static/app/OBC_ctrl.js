@@ -1999,7 +1999,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.qa_comment_id = data['qa_id']; // The primary key to the Comment object in db
                 $scope.qa_username = data['qa_username'];
                 $scope.qa_created_at = data['qa_created_at'];
-                $scope.qa_score = data['qa_score'];
+                $scope.qa_score = {score: data['qa_score']};
 
                 $scope.qa_info_editable = false;
                 $scope.qa_show_new_comment = false;
@@ -4377,8 +4377,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * A thumbs-up or thumbs-down was pressed on a comment
     * comment_id is the id of the comment
     * upvate: true --> Upvate, false --> downvote
+    * score is an object that contains a score atttribute
     */
-    $scope.updownvote_comment = function(comment_id, upvote) {
+    $scope.updownvote_comment = function(comment_id, upvote, score) {
         $scope.ajax(
             'updownvote_comment/',
             {
@@ -4386,6 +4387,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 'upvote': upvote
             },
             function (data) {
+                score.score = data['score']; // We do the score.score thing, to pass the score by reference (see right_panel.html)
             },
             function (data) {
                 $scope.toast(data['error_message'], 'error');
