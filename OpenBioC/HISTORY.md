@@ -2,6 +2,8 @@
 # Version changes and updates
 
 ### 0.1.3 (Not released yet)
+* Features:
+   * [Allow search by username #129](https://github.com/kantale/OpenBioC/issues/129)
 
 ### 0.1.2 (13 October 2019)
 * Features:
