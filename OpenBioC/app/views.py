@@ -2871,11 +2871,13 @@ def qa_add_comment(request, **kwargs):
         return fail('ERROR: 8991. Could not find comment database object')
 
     new_comment = Comment(
-        obc_user=OBC_user.objects.get(user=request.user),
+        obc_user = OBC_user.objects.get(user=request.user),
         comment = current_comment,
         comment_html = current_comment_html,
-        opinion=opinion,
-        parent=parent_comment,
+        opinion = opinion,
+        parent = parent_comment,
+        upvotes = 0,
+        downvotes = 0,
     )
     new_comment.save()
     parent_comment.children.add(new_comment)
@@ -2943,10 +2945,42 @@ def updownvote_comment(request, **kwargs):
     url: updownvote_comment/
     '''
 
-    comment_id = kwargs['comment_id']
-    upvote = kwargs['upvote']
+    if request.user.is_anonymous:
+        return fail('Please login to upvote/downvote comments')
 
-    return success()
+    if not user_is_validated(request):
+        return fail('Please validate your email to upvote/downvote' + validate_toast_button());
+
+    comment_id = int(kwargs['comment_id'])
+    upvote = kwargs['upvote']
+    assert upvote in [True, False]
+    
+    # Get the comment
+    comment = Comment.objects.get(pk=comment_id)
+    
+    # Get the user
+    obc_user = OBC_user.objects.get(user=request.user)
+
+    #Create the UpDownCommentVote object
+    vote = UpDownCommentVote(
+        obc_user = obc_user,
+        comment = comment,
+        upvote = upvote,
+    )
+    vote.save()
+
+    #Add the score
+    if upvote:
+        comment.upvotes += 1
+    else:
+        comment.downvotes += 1
+    comment.save()
+
+    ret = {
+        'score': comment.upvotes - comment.downvotes,
+    }
+
+    return success(ret)
 
 
 
