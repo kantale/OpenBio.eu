@@ -1392,6 +1392,12 @@ def tools_search_3(request, **kwargs):
     for variable in tool.variables.all():
         tool_variables.append({'name': variable.name, 'value': variable.value, 'description': variable.description})
 
+    # Get obc_user
+    if request.user.is_anonymous:
+        obc_user = None
+    else:
+        obc_user = OBC_user.objects.get(user=request.user)
+
     ret = {
         'website': tool.website,
         'description': tool.description,
@@ -1418,7 +1424,7 @@ def tools_search_3(request, **kwargs):
         'errcode' : tool.last_validation.errcode if tool.last_validation else None,
         'validation_created_at' : datetime_to_str(tool.last_validation.created_at) if tool.last_validation else None,
         'tool_pk': tool.pk, # Used in comments
-        'tool_thread': qa_create_thread(tool.comment), # Tool comment thread 
+        'tool_thread': qa_create_thread(tool.comment, obc_user), # Tool comment thread 
 
     }
 
@@ -1890,18 +1896,19 @@ def workflows_add(request, **kwargs):
 @has_data
 def workflows_search_3(request, **kwargs):
     '''
-    This is triggered when there is a key-change on the workflow-search pane
-    See also:  tools_search_3
-
-    OR:
-
-    When a user drags a workflow from the jstree and drops it in a current workflow
+    This is triggered when a user drags a workflow from the jstree and drops it in a current workflow
     '''
 
     workflow_name = kwargs['workflow_name']
     workflow_edit = kwargs['workflow_edit']
 
     workflow = Workflow.objects.get(name__iexact = workflow_name, edit=workflow_edit)
+
+    # Get current obc_user
+    if request.user.is_anonymous:
+        obc_user = None
+    else:
+        obc_user = OBC_user.objects.get(user=request.user)
 
     ret = {
         'username': workflow.obc_user.user.username,
@@ -1914,8 +1921,7 @@ def workflows_search_3(request, **kwargs):
         'workflow' : simplejson.loads(workflow.workflow),
         'changes': workflow.changes,
         'workflow_pk': workflow.pk, # Used in comments (QAs)
-        'workflow_thread': qa_create_thread(workflow.comment), # Tool comment thread 
-
+        'workflow_thread': qa_create_thread(workflow.comment, obc_user), # Workflow comment thread 
     }
 
     return success(ret)
@@ -2846,10 +2852,18 @@ def gen_qa_search_3(request, **kwargs):
     else:
         return fail('ERROR: 2918 . Unknown qa_type: {}'.format(qa_type))
 
+    # Get obc_user
+    if request.user.is_anonymous:
+        obc_user = None
+    else:
+        obc_user = OBC_user.objects.get(user=request.user)
+
     # Get the thread of this comment
     ret = {
         'qa_id': commentable.comment.pk,
-        'qa_thread': qa_create_thread(commentable.comment),
+        'qa_thread': qa_create_thread(commentable.comment, obc_user),
+        'qa_voted': is_comment_updownvoted(obc_user, commentable.comment),
+        'qa_score': commentable.comment.upvotes - commentable.comment.downvotes,
         'qa_username': commentable.comment.obc_user.user.username,
         'qa_created_at': datetime_to_str(commentable.comment.created_at),
     }
@@ -2924,6 +2938,7 @@ def gen_qa_add_comment(request, **kwargs):
     comment_pk = kwargs['comment_pk'] 
     object_pk = kwargs['object_pk']
     qa_comment = kwargs['qa_comment']
+    qa_opinion = kwargs['qa_opinion']
     qa_type = kwargs['qa_type']
 
     current_comment_html = markdown(qa_comment)
@@ -2945,6 +2960,7 @@ def gen_qa_add_comment(request, **kwargs):
     new_comment = Comment(
         obc_user=OBC_user.objects.get(user=request.user),
         comment = qa_comment,
+        opinion = qa_opinion,
         comment_html = current_comment_html,
         parent = root_comment,
         upvotes = 0,
@@ -2964,6 +2980,8 @@ def is_comment_updownvoted(obc_user, comment):
     '''
     Has this user upvoted or downvoted this comment?
     '''
+
+    print (obc_user, comment)
 
     if obc_user is None:
         return {'up': False, 'down': False}
