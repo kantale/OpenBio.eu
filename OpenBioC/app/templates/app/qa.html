@@ -1,4 +1,13 @@
 <div class="row" ng-show="!{{qa_type}}s_info_editable">
+
+<a href="/platform/c/
+{% verbatim %}{{
+{% endverbatim %}qa_gen['{{qa_type}}'].qa_comment_id
+{% verbatim %}}}
+{% endverbatim %}
+">Link</a>
+
+
     <div class="row right-align" style="margin-top:15px; margin-bottom: 15px;" ng-show="!qa_gen['{{ qa_type }}'].qa_show_new_comment">
         <a class="waves-effect waves-light btn-small" href=""
             ng-click="gen_qa_add_comment_button_pressed('{{ qa_type }}')">Add Comment</a>
