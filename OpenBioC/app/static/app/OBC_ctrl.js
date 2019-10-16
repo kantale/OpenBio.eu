@@ -2058,6 +2058,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 
                 //$scope.qa_thread = data['qa_thread'];
                 $scope.qa_gen[qa_type].qa_thread = data['qa_thread'];
+                $scope.qa_gen[qa_type].qa_score = {score: data['qa_score']};
+                $scope.qa_gen[qa_type].qa_voted = data['qa_voted'];
 
             },
             function(data) {
@@ -4095,6 +4097,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     $scope.gen_qa_reply_button_clicked = function(id, qa_type) {
         $scope.qa_set_replying($scope.qa_gen[qa_type].qa_thread, id, true);
         $scope.qa_gen[qa_type].qa_current_reply = '';
+        $scope.qa_gen[qa_type].qa_reply_opinion = 'note';
 
     };
 
@@ -4115,10 +4118,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * Generic version of qa_reply_save_button_pressed
     * Tools/WF --> Q&A --> Show Thread --> reply to a comment --> add text --> Save button --> Clicked
     */
-    $scope.gen_qa_reply_save_button_pressed = function(id, comment, qa_type) {
+    $scope.gen_qa_reply_save_button_pressed = function(id, comment, opinion, qa_type) {
         // $scope.gen_qa_add_comment = function(comment_pk, object_pk, comment, qa_type) 
 
-        $scope.gen_qa_add_comment(id, $scope.qa_gen[qa_type].object_pk, comment, qa_type);
+        $scope.gen_qa_add_comment(id, $scope.qa_gen[qa_type].object_pk, comment, opinion, qa_type);
         $scope.qa_gen[qa_type].qa_current_reply = '';
     };
 
@@ -4166,13 +4169,14 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     /*
     * Generic version qa_add_comment 
     */
-    $scope.gen_qa_add_comment = function(comment_pk, object_pk, comment, qa_type) {
+    $scope.gen_qa_add_comment = function(comment_pk, object_pk, comment, opinion, qa_type) {
         $scope.ajax(
             'gen_qa_add_comment/',
             {
                 'comment_pk': comment_pk, // The id of root comment
                 'object_pk': object_pk,
                 'qa_comment': comment,
+                'qa_opinion': opinion,
                 'qa_type': qa_type
             },
             function(data) {
@@ -4214,6 +4218,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             null, 
             $scope.qa_gen[qa_type].object_pk, 
             $scope.qa_gen[qa_type].qa_current_comment,
+            $scope.qa_gen[qa_type].qa_comment_opinion,
             qa_type);
 
         $scope.qa_gen[qa_type].qa_show_new_comment = false;
@@ -4257,6 +4262,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         $scope.qa_gen[qa_type].qa_show_new_comment = true;
         $scope.qa_gen[qa_type].qa_current_comment = '';
+        $scope.qa_gen[qa_type].qa_comment_opinion = 'note';
     };
 
 
