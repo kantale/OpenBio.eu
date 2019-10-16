@@ -1424,7 +1424,8 @@ def tools_search_3(request, **kwargs):
         'errcode' : tool.last_validation.errcode if tool.last_validation else None,
         'validation_created_at' : datetime_to_str(tool.last_validation.created_at) if tool.last_validation else None,
         'tool_pk': tool.pk, # Used in comments
-        'tool_thread': qa_create_thread(tool.comment, obc_user), # Tool comment thread 
+        'tool_thread': qa_create_thread(tool.comment, obc_user), # Tool comment thread. This is a list
+        'tool_comment_id': tool.comment.pk, # Used to create a permalink to the comments
 
     }
 
@@ -1922,6 +1923,7 @@ def workflows_search_3(request, **kwargs):
         'changes': workflow.changes,
         'workflow_pk': workflow.pk, # Used in comments (QAs)
         'workflow_thread': qa_create_thread(workflow.comment, obc_user), # Workflow comment thread 
+        'workflow_comment_id': workflow.comment.pk, # Used to create a permalink to the comments
     }
 
     return success(ret)
@@ -2980,8 +2982,6 @@ def is_comment_updownvoted(obc_user, comment):
     '''
     Has this user upvoted or downvoted this comment?
     '''
-
-    print (obc_user, comment)
 
     if obc_user is None:
         return {'up': False, 'down': False}

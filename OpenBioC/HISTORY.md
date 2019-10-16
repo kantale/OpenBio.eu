@@ -3,6 +3,7 @@
 
 ### 0.1.3 (Not released yet)
 * Features:
+   * Discussion have upvotes/downvotes. Also assign a "Note", "Agree", "Disagree" label in every comment
    * [Allow search by username #129](https://github.com/kantale/OpenBioC/issues/129)
 
 ### 0.1.2 (13 October 2019)

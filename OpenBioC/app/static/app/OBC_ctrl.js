@@ -930,6 +930,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
   
                 $scope.qa_gen['tool'].object_pk = data['tool_pk'];
                 $scope.qa_gen['tool'].qa_thread = data['tool_thread'];
+                $scope.qa_gen['tool'].qa_comment_id = data['tool_comment_id'];
 
             },
             function (data) {
@@ -2838,6 +2839,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 // Set the thread of this workflow
                 $scope.qa_gen['workflow'].object_pk = data['workflow_pk'];
                 $scope.qa_gen['workflow'].qa_thread = data['workflow_thread'];
+                $scope.qa_gen['workflow'].qa_comment_id = data['workflow_comment_id'];
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');
