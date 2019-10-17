@@ -548,6 +548,8 @@ nav {
     /* font-size: 2em; */
     text-align: center;
     line-height: 1.5em;
+    margin-top: -5px; 
+    margin-left: 5px;
 }
 
 .upvoteDiv {
