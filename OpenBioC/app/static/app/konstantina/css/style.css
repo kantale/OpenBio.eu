@@ -354,7 +354,7 @@ nav {
     margin-top: 2px;
 }
 
-#downloadDropdown {
+#downloadDropdown{
     width: 160px !important;
 }
 
@@ -529,56 +529,4 @@ nav {
     display: block;
     padding: 6px;
     margin-top: 5px;
-}
-
-/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
-
-/* --------------------------------------------------------------------- Upvote and Downvote (in q&a) --------------------------------------------------------------------------- */
-
-/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
-
-.upDownVoteBox {
-    display: inline;
-    /* margin-top: 200px;
-    width: 40px; */
-    background: transparent;
-    padding: 5px;
-    border-radius: 5px;
-    /* box-shadow: 0px 0px 5px 1px #ccc; */
-    /* font-size: 2em; */
-    text-align: center;
-    line-height: 1.5em;
-}
-
-.upvoteDiv {
-    display: inline-block;
-    color: #dadada;
-}
-
-.upvoteDiv:hover {
-    color: #98ce9b;
-    cursor: default;
-}
-
-.upvoteDiv.active {
-    color: #55bd5a !important;
-}
-
-.downvoteDiv {
-    display: inline-block;
-    color: #dadada;
-}
-
-.downvoteDiv:hover {
-    color: rgb(247, 154, 152);
-    cursor: default;
-}
-
-.downvoteDiv.active {
-    color: #F0625F !important;
-}
-
-.upDownVoteSpan {
-    display: inline-block;
-    /* font-size: 18px; */
 }
