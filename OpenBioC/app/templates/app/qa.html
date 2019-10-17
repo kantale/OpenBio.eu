@@ -51,7 +51,7 @@
     </div> -->
 
     <ul class="collection">
-        <li class="collection-item" ng-repeat="post in qa_gen['{{ qa_type }}'].qa_thread track by post.id">
+        <li class="collection-item qaCollectionItem" ng-repeat="post in qa_gen['{{ qa_type }}'].qa_thread track by post.id">
             <div class="valign-wrapper">
                 <img src="/static/app/images/konstantina/img_avatar.png" alt=""
                     class="circle avatarForumReply">
@@ -78,7 +78,7 @@
                     ng-click="qa_reply_cancel_button_pressed(post.id)">Cancel</a>
             </div>
             <ul class="collection">
-                <li class="collection-item" ng-repeat="post2 in post.children track by post2.id">
+                <li class="collection-item qaCollectionItem" ng-repeat="post2 in post.children track by post2.id">
                     <div class="valign-wrapper">
                         <img src="/static/app/images/konstantina/img_avatar.png" alt=""
                             class="circle avatarForumReply">
@@ -105,7 +105,7 @@
                             ng-click="qa_reply_cancel_button_pressed(post2.id)">Cancel</a>
                     </div>
                     <ul class="collection">
-                        <li class="collection-item"
+                        <li class="collection-item qaCollectionItem"
                             ng-repeat="post3 in post2.children track by post3.id">
                             <div class="valign-wrapper">
                                 <img src="/static/app/images/konstantina/img_avatar.png" alt=""
@@ -133,7 +133,7 @@
                                     ng-click="qa_reply_cancel_button_pressed(post3.id)">Cancel</a>
                             </div>
                             <ul class="collection">
-                                <li class="collection-item"
+                                <li class="collection-item qaCollectionItem"
                                     ng-repeat="post4 in post3.children track by post4.id">
                                     <div class="valign-wrapper">
                                         <img src="/static/app/images/konstantina/img_avatar.png" alt=""
@@ -162,7 +162,7 @@
                                             ng-click="qa_reply_cancel_button_pressed(post4.id)">Cancel</a>
                                     </div>
                                     <ul class="collection">
-                                        <li class="collection-item"
+                                        <li class="collection-item qaCollectionItem"
                                             ng-repeat="post5 in post4.children track by post5.id">
                                             <div class="valign-wrapper">
                                                 <img src="/static/app/images/konstantina/img_avatar.png"
