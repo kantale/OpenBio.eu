@@ -1614,6 +1614,8 @@ def tools_add(request, **kwargs):
         comment_html = '',
         title = markdown('Discussion on Tool: t/{}/{}/{}'.format(tools_search_name, tools_search_version, next_edit)),
         parent = None,
+        upvotes = 0,
+        downvotes = 0,
     )
     comment.save()
     new_tool.comment = comment
