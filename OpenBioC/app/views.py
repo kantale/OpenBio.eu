@@ -2762,6 +2762,8 @@ def qa_add_1(request, **kwargs):
         comment_html = qa_comment_html,
         title=qa_title,
         parent=None,
+        upvotes=0,
+        downvotes=0,
     )
     comment.save()
 
