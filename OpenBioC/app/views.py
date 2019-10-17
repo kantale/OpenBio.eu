@@ -1879,6 +1879,8 @@ def workflows_add(request, **kwargs):
         comment_html = '',
         title = markdown('Discussion on Workflow: w/{}/{}'.format(workflow_info_name, next_edit)),
         parent = None,
+        upvotes = 0,
+        downvotes = 0,
     )
     comment.save()
     new_workflow.comment = comment
