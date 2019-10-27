@@ -26,7 +26,8 @@ urlpatterns = [
 	path('tool_get_dependencies/', views.tool_get_dependencies), # Get a JSTREE with a dependencies of this tool
 	path('workflows_add/', views.workflows_add), # Add (or Save) a new workflow 
 	path('workflows_search_3/', views.workflows_search_3), # Search (and get the details) for a specific SINGLE workflow. 
-	path('run_workflow/', views.run_workflow), # Acceps a workflow_options and workflow object. Runs a workflow
+	path('run_workflow/', views.run_workflow), # Accepts a workflow_options and workflow object. Runs a workflow
+	path('run_tool/', views.run_tool), # Accepts the attributes of a tool and tries to install it. See run_workflow
 	path('tool_info_validation_queued/', views.tool_info_validation_queued), # Connect validation task with tool
 	path('callback/', views.callback), # Called from controller in order to update validation status
 	path('tool_validation_status/', views.tool_validation_status), # Query validation status if tool

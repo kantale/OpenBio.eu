@@ -249,7 +249,8 @@ class Workflow:
                     self.output_parameter_step_setters[root_output_node['id']] = step_node
                     found_output_filling_step = True
 
-            if not found_output_filling_step:
+            if not found_output_filling_step and (not self.askinput in ['BASH']):
+                # If askinput = BASH don't raise exception 
                 message = 'Output {} ({}) is not set by any step!'.format(root_output_node['id'], root_output_node['description'])
                 raise OBC_Executor_Exception(message)
 

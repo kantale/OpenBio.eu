@@ -1278,6 +1278,24 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
 
     /*
+    * Get a list of dependecies for the current tool
+    */
+    $scope.get_tool_dependencies = function() {
+        //Get the dependencies
+    
+        var tool_dependencies = [];
+        for (var i=0; i<$scope.tools_dep_jstree_model.length; i++) {
+            //Add only the roots of the tree
+            if ($scope.tools_dep_jstree_model[i].parent === '#') {
+                tool_dependencies.push($scope.tools_dep_jstree_model[i]); //Although we only need name, version, edit, we pass the complete object 
+            }
+        }
+
+        return tool_dependencies;
+    };
+
+
+    /*
     * Navbar --> Tools/data --> Appropriate input --> "Create New" button --> Pressed --> Filled input --> Save (button) --> Pressed
     * See also: workflows_create_save_pressed 
     * save tool save add tool add 
@@ -1310,15 +1328,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             return;
         }
 
-
-        //Get the dependencies
-        var tool_dependencies = [];
-        for (var i=0; i<$scope.tools_dep_jstree_model.length; i++) {
-            //Add only the roots of the tree
-            if ($scope.tools_dep_jstree_model[i].parent === '#') {
-                tool_dependencies.push($scope.tools_dep_jstree_model[i]); //Although we only need name, version, edit, we pass the complete object 
-            }
-        }
+        //Get the dependecies of this tool
+        var tool_dependencies = $scope.get_tool_dependencies();
 
         //console.log('tool_create_save_pressed: tool_os_choices');
         //console.log($scope.tool_os_choices);
@@ -1338,7 +1349,6 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 'tool_variables': $scope.tool_variables,
                 'tool_installation_commands': tool_installation_editor.getValue(),
                 'tool_validation_commands': tool_validation_editor.getValue()
-
             },
             function(data) {
                 $scope.tools_info_success_message = 'Tool/Data successfully saved';
@@ -3785,6 +3795,44 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     */
     $scope.workflow_info_fit_pressed = function() {
         window.fit();
+    };
+
+
+    /*
+    * tool --> info (right panel) --> button "Run" --> Pressed
+    * See also: workflow_info_run_pressed
+    * download_type = "JSON" or "BASH"
+    */
+    $scope.tool_info_run_pressed = function(download_type) {
+        //Gather all information required for running this tool
+
+        //Get the dependencies of the current tool
+        var tool_dependencies = $scope.get_tool_dependencies();
+
+
+        $scope.ajax(
+            'run_tool/',
+            {
+                'tools_search_name': $scope.tools_info_name,
+                'tools_search_version': $scope.tools_info_version,
+                'tool_variables': $scope.tool_variables,
+                'tool_dependencies': tool_dependencies,
+                'tool_os_choices' : $scope.tool_os_choices,
+                'tool_installation_commands': tool_installation_editor.getValue(),
+                'tool_validation_commands': tool_validation_editor.getValue() 
+            },
+            function (data) {
+
+            },
+            function (data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function (statusText) {
+                $scope.toast(statusText, 'error');
+            }
+
+        );
+
     };
 
     /*

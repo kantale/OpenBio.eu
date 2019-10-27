@@ -591,6 +591,38 @@ def tool_id_jstree(tool, id_):
     #return tool_text_jstree(tool) + '/' + str(id_) 
     return simplejson.dumps([tool.name, tool.version, str(tool.edit), str(id_)])
 
+def tool_id_cytoscape(tool):
+    '''
+    The cytoscape tool id
+    '''
+    return '__'.join([tool.name, tool.version, str(tool.edit), g['DEPENDENCY_TOOL_TREE_ID']])
+
+def tool_label_cytoscape(tool):
+    '''
+    The cytoscape tool label
+    '''
+    return '/'.join([tool.name, tool.version, str(tool.edit)])
+
+def workflow_id_cytoscape(workflow, name, edit):
+    '''
+    The cytoscape workflow id
+    '''
+
+    if workflow:
+        return workflow.name + '__' + str(workflow.edit)
+
+    return name + '__' + str(edit)
+
+def workflow_label_cytoscape(workflow, name, edit):
+    '''
+    The cytoscape workflow label
+    '''
+    if workflow:
+        return workflow.name
+
+    return name
+
+
 def workflow_id_jstree(workflow, id_):
     '''
     The JS Tree workflow id
@@ -1932,6 +1964,81 @@ def workflows_search_3(request, **kwargs):
 
     return success(ret)
 
+def workflow_node_cytoscape(workflow, name='root', edit=None):
+    '''
+    Create a cytoscape workflow node
+    Normally it should take a database workflow object and create a cytoscape node
+    Now it just creates a root workflow cytoscape node
+    '''
+
+    assert not workflow # Not yet implemented
+
+    return {
+        'belongto': None,
+        'edit': None,
+        'id': workflow_id_cytoscape(workflow, name, edit),
+        'label': workflow_label_cytoscape(workflow, name, edit),
+        'name': name,
+        'type': 'workflow',
+    }
+
+
+def tool_node_cytoscape(tool):
+    '''
+    Create a cytoscape tool node
+    tool: A database object tool node
+    '''
+
+    return {
+        'belongto': {'name': 'root', edit: None},
+        # 'dep_id' : None, ## Not used in executor
+        'edit': tool.edit,
+        'id': tool_id_cytoscape(tool),
+        'label': tool_label_cytoscape(tool),
+        'name': tool.name,
+        # root: None ### Not used in executor,
+        'text': tool_label(tool),
+        'type': 'tool',
+        'variables': [{'description': variable.description, 'name': variable.name, 'type': 'variable', 'value': variable.value} for variable in tool.variables.all()],
+        'version': tool.varsion,
+    }
+
+@has_data
+def run_tool(request, **kwargs):
+    '''
+    Create a cytoscape workflow that installs a given tool.
+    It is called by run_workflow when the user selects to "download" a tool instead of a workflow
+    '''
+    workflow = {
+        'elements': {
+            'nodes': [],
+            'edges': [],
+        }
+    }
+
+    # Add root workflow
+    workflow['elements']['nodes'].append(workflow_node_cytoscape(None))
+
+    #tool_dependencies = tool_get_dependencies_internal(tool, include_as_root=True)
+    # build all tool nodes for dependency tools
+    root_tool_dependencies = kwargs['tool_dependencies']
+    all_ids = set()
+    
+    for root_tool_dependency in root_tool_dependencies:
+        root_tool_name = root_tool_dependency['name']
+        root_tool_version = root_tool_dependency['version']
+        root_tool_edit = root_tool_dependency['edit']
+
+        root_tool_obj = Tool.objects.get(name=root_tool_name, version=root_tool_version, edit=root_tool_edit)
+        root_tool_all_dependencies = tool_get_dependencies_internal(root_tool_obj, include_as_root=True)
+        for root_tool_all_dependency in root_tool_all_dependencies:
+            cytoscape_node = tool_node_cytoscape(root_tool_all_dependency['dependency'])
+            if not cytoscape_node['id'] in all_ids:
+                workflow['elements']['nodes'].append(cytoscape_node)
+
+
+    return success()
+
 @has_data
 def run_workflow(request, **kwargs):
     '''
@@ -1958,7 +2065,7 @@ def run_workflow(request, **kwargs):
             version=workflow_tool['data']['version'], 
             edit=workflow_tool['data']['edit'])
 
-        workflow_tool['data']['installation_commands'] =  workflow_tool_obj.installation_commands
+        workflow_tool['data']['installation_commands'] = workflow_tool_obj.installation_commands
         workflow_tool['data']['validation_commands'] = workflow_tool_obj.validation_commands
         workflow_tool['data']['os_choices'] = [choice.os_choices for choice in workflow_tool_obj.os_choices.all()]
         workflow_tool['data']['dependencies'] = [str(tool) for tool in workflow_tool_obj.dependencies.all()]
