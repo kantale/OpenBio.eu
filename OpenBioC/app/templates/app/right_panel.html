@@ -32,12 +32,20 @@
                 </p>
                 <!-- Buttons -->
                 <div class="row right-align">
+                    <a class="dropdown-trigger btn" data-target='downloadDropdownTool' style="margin-bottom:2px">Download</a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Save" ng-click="tool_create_save_pressed()" ng-show="tools_info_editable"><i
                             class="material-icons">save</i></a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fork" ng-click="tool_info_fork_pressed()" ng-show="!tools_info_editable"
                         ng-class="{'disabled': !username}"><i class="material-icons">call_split</i></a>
+
+                    <!-- Download Dropdown -->
+                    <ul id='downloadDropdownTool' class='dropdown-content'>
+                        <li><a ng-click="tool_info_run_pressed('BASH')">BASH executable</a></li>
+                        <li><a ng-click="tool_info_run_pressed('JSON')">JSON</a></li>
+                    </ul>
+
                 </div>
             </div>
 
@@ -396,7 +404,7 @@
                     <!-- <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Run" ng-click="workflow_info_run_pressed()"
                         ng-disabled="workflows_info_editable">Run</a> -->
-                    <a class="dropdown-trigger btn" data-target='downloadDropdown' style="margin-bottom:2px"
+                    <a class="dropdown-trigger btn" data-target='downloadDropdownWorkflow' style="margin-bottom:2px"
                         ng-disabled="workflows_info_editable">Download</a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fit" ng-click="workflow_info_fit_pressed()">Fit</a>
@@ -410,7 +418,7 @@
                         data-tooltip="Fork" ng-click="workflows_info_fork_pressed()" ng-show="!workflows_info_editable"
                         ng-class="{'disabled': !username}"><i class="material-icons">call_split</i></a>
                     <!-- Download Dropdown -->
-                    <ul id='downloadDropdown' class='dropdown-content'>
+                    <ul id='downloadDropdownWorkflow' class='dropdown-content'>
                         <li><a ng-click="workflow_info_run_pressed('BASH')">BASH executable</a></li>
                         <li><a ng-click="workflow_info_run_pressed('JSON')">JSON</a></li>
                     </ul>
