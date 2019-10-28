@@ -3788,6 +3788,18 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     $scope.workflow_info_clear_pressed = function() {
         // All root workflows have id: root!
         window.clear('root');
+
+        //Add main_step node
+        $scope.workflows_step_name = 'main_step';
+        $scope.workflow_step_add_update_label = 'Add';
+        $scope.workflows_step_main = true;
+        $scope.workflow_step_add();
+
+        //If the user pressed "clear" and the name is set. Then change the name on the wf root of graph
+        if ($scope.workflow_info_name) {
+            $scope.workflow_info_name_changed();
+        }
+
     };
 
     /*
