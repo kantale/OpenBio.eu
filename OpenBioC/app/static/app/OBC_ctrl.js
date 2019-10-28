@@ -3819,10 +3819,11 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 'tool_dependencies': tool_dependencies,
                 'tool_os_choices' : $scope.tool_os_choices,
                 'tool_installation_commands': tool_installation_editor.getValue(),
-                'tool_validation_commands': tool_validation_editor.getValue() 
+                'tool_validation_commands': tool_validation_editor.getValue(),
+                'download_type': download_type
             },
             function (data) {
-                $scope.download_data(download_type, data, 'tool');
+                $scope.download_data(download_type, data, 'tool', $scope.tools_info_editable);
             },
             function (data) {
                 $scope.toast(data['error_message'], 'error');
@@ -3841,8 +3842,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * download_type can be 'BASH' or 'JSON'
     * callend by workflow_info_run_pressed and tool_info_run_pressed
     * caller = 'tool', 'workflow'
+    * editable: True/False. Is the [tool/wf] editable?
     */
-    $scope.download_data = function(download_type, data, caller) {
+    $scope.download_data = function(download_type, data, caller, editable) {
         // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs
         if (download_type == 'JSON') {
             $("#hiddena").attr({
@@ -3865,11 +3867,21 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             throw "ERROR: 4576"; // This should never happen
         }
 
-        //$scope.toast('Run workflow problem: ' + data['error_message'], 'error');
-        if (!data['report_created'] && (caller == 'workflow')) {
-            $scope.toast('You are not a registered user or your email is not validated. Although this workflow can be executed, the execution will not generate a report.', 'warning')
+        var warning_message = '<ul>';
+        if (caller == 'workflow') {
+            if (editable) {
+                warning_message += '<li>Runs of unsaved workflows will not generate reports</li>';
+            }
+            else if (!data['report_created']) {
+                warning_message += '<li>You are not a registered user or your email is not validated. Although this workflow can be executed, the execution will not generate a report.</li>';
+            }
         }
-        $scope.toast('SECURITY WARNING: always run scripts in a sandboxed environment!', 'warning');
+        else if (caller == 'tool') {
+            warning_message += '<li>Tool/Data installation will not generate reports</li>';
+        }
+        warning_message += '<li><b>SECURITY WARNING: always run scripts in a sandboxed environment!</b></li>'
+        warning_message += '</ul>'
+        $scope.toast(warning_message, 'warning');
 
     };
 
@@ -3903,12 +3915,14 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                     'name': $scope.workflow_info_name,
                     'edit': $scope.workflow_info_edit
                 },
-                "download_type": download_type
+                'download_type': download_type,
+                'workflow_info_editable': $scope.workflows_info_editable, // Is this workflow saved?
+                'workflow_json' :  $scope.workflows_info_editable ? cy.json() : {} //If this is editable get the cytoscape graph. otherwise we do not need it. 
             },
             function(data) {
                 //console.log('data:');
                 //console.log(data);
-                $scope.download_data(download_type, data, 'workflow');
+                $scope.download_data(download_type, data, 'workflow', $scope.workflows_info_editable);
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');
