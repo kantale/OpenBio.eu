@@ -2890,13 +2890,17 @@ window.onload = function () {
 
             cy.json({
                 elements: {
-                    nodes: [{ data: { id: window.OBCUI.create_workflow_id({ name: name, edit: null }), label: name, name: name, edit: null, type: "workflow", belongto: null } }]
+                    nodes: [
+                        { data: { id: window.OBCUI.create_workflow_id({ name: name, edit: null }), label: name, name: name, edit: null, type: "workflow", belongto: null } },
+                    ]
                 }
             });
 
             cy.resize();
             cy.reset();
             cy.center();
+
+//            window.fit();
 
         };
 
