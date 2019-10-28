@@ -1989,7 +1989,7 @@ def workflows_search_3(request, **kwargs):
 
     return success(ret)
 
-def workflow_node_cytoscape(workflow, name='root', edit=None):
+def workflow_node_cytoscape(workflow, name='root', edit=0):
     '''
     Create a cytoscape workflow node
     Normally it should take a database workflow object and create a cytoscape node
@@ -2001,7 +2001,7 @@ def workflow_node_cytoscape(workflow, name='root', edit=None):
     return {
         'data': {
             'belongto': None,
-            'edit': None,
+            'edit': edit,
             'id': workflow_id_cytoscape(workflow, name, edit),
             'label': workflow_label_cytoscape(workflow, name, edit),
             'name': name,
@@ -2020,7 +2020,7 @@ def tool_node_cytoscape(tool):
 
         return {
             'data': {
-                'belongto': {'name': 'root', 'edit': None},
+                'belongto': {'name': 'root', 'edit': 0},
                 # 'dep_id' : None, ## Not used in executor
                 'edit': tool.edit,
                 'id': tool_id_cytoscape(tool),
@@ -2036,7 +2036,7 @@ def tool_node_cytoscape(tool):
     elif type(tool) is dict:
         return {
             'data': {
-                'belongto': {'name': 'root', 'edit': None},
+                'belongto': {'name': 'root', 'edit': 0},
                 # 'dep_id' : None, ## Not used in executor
                 'edit': tool['edit'],
                 'id': tool_id_cytoscape(tool),
@@ -2059,7 +2059,7 @@ def step_node_cytoscape(name='main'):
     return {
         'data': {
             'bash': '',
-            'belongto': {'name': 'root', 'edit': None},
+            'belongto': {'name': 'root', 'edit': 0},
             'id': step_id_cytoscape('main', None, 'root', None),
             'label': step_id_label('main'),
             'inputs': [],
@@ -2111,8 +2111,8 @@ def run_tool(request, **kwargs):
 
     # Add this tool
     tool = {
-        'name': str(kwargs['tools_search_name']),
-        'version': str(kwargs['tools_search_version']),
+        'name': str(kwargs['tools_search_name']) if str(kwargs['tools_search_name']) else 'T',
+        'version': str(kwargs['tools_search_version']) if str(kwargs['tools_search_version']) else '0',
         'edit': kwargs['tools_search_edit'] if kwargs['tools_search_edit'] else 0, # If this is editable, then the edit is 0
         'variables': kwargs['tool_variables'],
 
@@ -2122,6 +2122,8 @@ def run_tool(request, **kwargs):
     this_tool_cytoscape_node['data']['validation_commands'] = kwargs['tool_validation_commands']
     this_tool_cytoscape_node['data']['os_choices'] = kwargs['tool_os_choices']
     this_tool_cytoscape_node['data']['dependencies'] = all_dependencies_str
+    #print (this_tool_cytoscape_node)
+    #a=1/0
     workflow['elements']['nodes'].append(this_tool_cytoscape_node)
 
     # Add an edge between the root workflow and this tool
@@ -2157,7 +2159,10 @@ def run_tool(request, **kwargs):
 
 
     return run_workflow(request, **{
-        # TODO : PASS PARAMETERS TO run_workflow
+        'workflow_options': {},
+        'workflow': None,
+        'download_type': 'BASH',
+        'workflow_cy': workflow,
         })
 
 @has_data
@@ -2187,10 +2192,18 @@ def run_workflow(request, **kwargs):
     workflow_tools = [tool for tool in workflow_cy['elements']['nodes'] if tool['data']['type']=='tool']
     # Add bash information that does not exist in cytoscape graph
     for workflow_tool in workflow_tools:
-        workflow_tool_obj = Tool.objects.get(
-            name=workflow_tool['data']['name'], 
-            version=workflow_tool['data']['version'], 
-            edit=workflow_tool['data']['edit'])
+
+#        print ('name:', workflow_tool['data']['name'])
+#        print ('version:', workflow_tool['data']['version'])
+#        print ('edit:', workflow_tool['data']['edit'])
+
+        try:
+            workflow_tool_obj = Tool.objects.get(
+                name=workflow_tool['data']['name'], 
+                version=workflow_tool['data']['version'], 
+                edit=workflow_tool['data']['edit'])
+        except ObjectDoesNotExist as e:
+            workflow_tool_obj = None # If it does not exist, it will break later..
 
         # Add installation commands etc for each tool.
         # It might be the chance that this information already exists, if it has been created by an artificial cytoscape object

@@ -3822,7 +3822,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 'tool_validation_commands': tool_validation_editor.getValue() 
             },
             function (data) {
-
+                $scope.download_data(download_type, data, 'tool');
             },
             function (data) {
                 $scope.toast(data['error_message'], 'error');
@@ -3832,6 +3832,44 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             }
 
         );
+
+    };
+
+
+    /*
+    * Download a file
+    * download_type can be 'BASH' or 'JSON'
+    * callend by workflow_info_run_pressed and tool_info_run_pressed
+    * caller = 'tool', 'workflow'
+    */
+    $scope.download_data = function(download_type, data, caller) {
+        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs
+        if (download_type == 'JSON') {
+            $("#hiddena").attr({
+                "download" : 'workflow.json',      
+                "href" : "data:," + data['output_object']
+            }).get(0).click();
+        }
+        else if (download_type == 'BASH') {
+            var output_filename = 'bash.sh';
+            if (data['nice_id']) {
+                output_filename = 'bash_' + data['nice_id'] + '.sh';
+            }
+
+            $("#hiddena").attr({
+                "download" : output_filename,      
+                "href" : "data:," + data['output_object']
+            }).get(0).click();
+        }
+        else {
+            throw "ERROR: 4576"; // This should never happen
+        }
+
+        //$scope.toast('Run workflow problem: ' + data['error_message'], 'error');
+        if (!data['report_created'] && (caller == 'workflow')) {
+            $scope.toast('You are not a registered user or your email is not validated. Although this workflow can be executed, the execution will not generate a report.', 'warning')
+        }
+        $scope.toast('SECURITY WARNING: always run scripts in a sandboxed environment!', 'warning');
 
     };
 
@@ -3870,34 +3908,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             function(data) {
                 //console.log('data:');
                 //console.log(data);
-
-                // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs
-                if (download_type == 'JSON') {
-                    $("#hiddena").attr({
-                        "download" : 'workflow.json',      
-                        "href" : "data:," + data['output_object']
-                    }).get(0).click();
-                }
-                else if (download_type == 'BASH') {
-                    var output_filename = 'bash.sh';
-                    if (data['nice_id']) {
-                        output_filename = 'bash_' + data['nice_id'] + '.sh';
-                    }
-
-                    $("#hiddena").attr({
-                        "download" : output_filename,      
-                        "href" : "data:," + data['output_object']
-                    }).get(0).click();
-                }
-                else {
-                    throw "ERROR: 4576"; // This should never happen
-                }
-
-                //$scope.toast('Run workflow problem: ' + data['error_message'], 'error');
-                if (!data['report_created']) {
-                    $scope.toast('You are not a registered user or your email is not validated. Although this workflow can be executed, the execution will not generate a report.', 'warning')
-                }
-                $scope.toast('SECURITY WARNING: always run scripts in a sandboxed environment!', 'warning');
+                $scope.download_data(download_type, data, 'workflow');
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');

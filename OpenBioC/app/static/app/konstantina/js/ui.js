@@ -2860,7 +2860,7 @@ window.onload = function () {
         * * Get the workflow options
         */
         window.OBCUI.get_workflow_options = function () {
-            var workflow_options = {}
+            var workflow_options = {};
 
             cy.json().elements.nodes.forEach(function (node) {
                 if (node.data.type === "input") {  //if node is input check if has value
