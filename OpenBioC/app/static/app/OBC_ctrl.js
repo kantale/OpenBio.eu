@@ -3809,12 +3809,12 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         //Get the dependencies of the current tool
         var tool_dependencies = $scope.get_tool_dependencies();
 
-
         $scope.ajax(
             'run_tool/',
             {
                 'tools_search_name': $scope.tools_info_name,
                 'tools_search_version': $scope.tools_info_version,
+                'tools_search_edit': $scope.tools_info_editable ? 0 : $scope.tools_info_edit,
                 'tool_variables': $scope.tool_variables,
                 'tool_dependencies': tool_dependencies,
                 'tool_os_choices' : $scope.tool_os_choices,
