@@ -6,10 +6,11 @@
    * Discussion have upvotes/downvotes. Also assign a "Note", "Agree", "Disagree" label in every comment
    * [Allow search by username #129](https://github.com/kantale/OpenBioC/issues/129)
    * [Avoid unnecessary comminutation between executor-server #132](https://github.com/kantale/OpenBioC/issues/132)
+   * [Add a default "main" step to every new workflow #133](https://github.com/kantale/OpenBioC/issues/133)
 
 ### 0.1.2 (13 October 2019)
 * Features:
-   * Add discourse graph. This is the a beta, first try.
+   * Add discourse graph. This is a beta, first try.
 * Bugs Fixed:
    * [Output nodes cannot have the same name as steps in workflows #114](https://github.com/kantale/OpenBioC/issues/114)
    * [Cannot delete input/output node from "-" button #125](https://github.com/kantale/OpenBioC/issues/125)
