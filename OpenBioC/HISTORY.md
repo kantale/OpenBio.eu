@@ -5,6 +5,7 @@
 * Features:
    * Discussion have upvotes/downvotes. Also assign a "Note", "Agree", "Disagree" label in every comment
    * [Allow search by username #129](https://github.com/kantale/OpenBioC/issues/129)
+   * [Avoid unnecessary comminutation between executor-server #132](https://github.com/kantale/OpenBioC/issues/132)
 
 ### 0.1.2 (13 October 2019)
 * Features:
