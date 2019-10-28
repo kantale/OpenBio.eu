@@ -2114,7 +2114,7 @@ def run_tool(request, **kwargs):
         'name': str(kwargs['tools_search_name']) if str(kwargs['tools_search_name']) else 'T',
         'version': str(kwargs['tools_search_version']) if str(kwargs['tools_search_version']) else '0',
         'edit': kwargs['tools_search_edit'] if kwargs['tools_search_edit'] else 0, # If this is editable, then the edit is 0
-        'variables': kwargs['tool_variables'],
+        'variables': [variable for variable in kwargs['tool_variables'] if variable['name'] and variable['value'] and variable['description']],
 
     }
     this_tool_cytoscape_node = tool_node_cytoscape(tool)

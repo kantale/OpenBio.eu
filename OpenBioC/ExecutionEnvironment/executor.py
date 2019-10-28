@@ -356,6 +356,7 @@ class Workflow:
         ret += '### SETTING TOOL VARIABLES FOR: {}\n'.format(tool['label'])
         for tool_variable in tool['variables']:
             ret += 'export {}__{}="{}" # {} \n'.format(self.get_tool_dash_id(tool, no_dots=True), tool_variable['name'], tool_variable['value'], tool_variable['description'])
+            ret += 'echo "OBC: SET {}__{}=\"{}\"   <-- {} "\n'.format(self.get_tool_dash_id(tool, no_dots=True), tool_variable['name'], tool_variable['value'], tool_variable['description']) 
         ret += '### END OF SETTING TOOL VARIABLES FOR: {}\n\n'.format(tool['label'])
 
 
