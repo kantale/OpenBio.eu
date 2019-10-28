@@ -595,13 +595,38 @@ def tool_id_cytoscape(tool):
     '''
     The cytoscape tool id
     '''
-    return '__'.join([tool.name, tool.version, str(tool.edit), g['DEPENDENCY_TOOL_TREE_ID']])
+    if isinstance(tool, Tool):
+        return '__'.join([tool.name, tool.version, str(tool.edit), g['DEPENDENCY_TOOL_TREE_ID']])
+    elif type(tool) is dict:
+        return '__'.join([tool['name'], tool['version'], str(tool['edit']), g['DEPENDENCY_TOOL_TREE_ID']])
+    else:
+        raise Exception('Error: 8151')
+
+def step_id_cytoscape(step_name, workflow, name, edit):
+    '''
+    cytoscape step id
+    '''
+
+    return 'step' + '__' + step_name + '__' + workflow_id_cytoscape(workflow, name, edit)
+
+def step_id_label(step_name):
+    '''
+    cytoscape step label
+    '''
+
+    return step_name
+
 
 def tool_label_cytoscape(tool):
     '''
     The cytoscape tool label
     '''
-    return '/'.join([tool.name, tool.version, str(tool.edit)])
+    if isinstance(tool, Tool):
+        return '/'.join([tool.name, tool.version, str(tool.edit)])
+    elif type(tool) is dict:
+        return '/'.join([tool['name'], tool['version'], str(tool['edit'])])
+    else:
+        raise Exception('Error: 9810')
 
 def workflow_id_cytoscape(workflow, name, edit):
     '''
@@ -1974,12 +1999,14 @@ def workflow_node_cytoscape(workflow, name='root', edit=None):
     assert not workflow # Not yet implemented
 
     return {
-        'belongto': None,
-        'edit': None,
-        'id': workflow_id_cytoscape(workflow, name, edit),
-        'label': workflow_label_cytoscape(workflow, name, edit),
-        'name': name,
-        'type': 'workflow',
+        'data': {
+            'belongto': None,
+            'edit': None,
+            'id': workflow_id_cytoscape(workflow, name, edit),
+            'label': workflow_label_cytoscape(workflow, name, edit),
+            'name': name,
+            'type': 'workflow',
+        }
     }
 
 
@@ -1989,24 +2016,81 @@ def tool_node_cytoscape(tool):
     tool: A database object tool node
     '''
 
+    if isinstance(tool, Tool):
+
+        return {
+            'data': {
+                'belongto': {'name': 'root', 'edit': None},
+                # 'dep_id' : None, ## Not used in executor
+                'edit': tool.edit,
+                'id': tool_id_cytoscape(tool),
+                'label': tool_label_cytoscape(tool),
+                'name': tool.name,
+                # root: None ### Not used in executor,
+                'text': tool_label_cytoscape(tool),
+                'type': 'tool',
+                'variables': [{'description': variable.description, 'name': variable.name, 'type': 'variable', 'value': variable.value} for variable in tool.variables.all()],
+                'version': tool.version,
+            }
+        }
+    elif type(tool) is dict:
+        return {
+            'data': {
+                'belongto': {'name': 'root', 'edit': None},
+                # 'dep_id' : None, ## Not used in executor
+                'edit': tool['edit'],
+                'id': tool_id_cytoscape(tool),
+                'label': tool_label_cytoscape(tool),
+                'name': tool['name'],
+                # root: None ### Not used in executor,
+                'text': tool_label_cytoscape(tool),
+                'type': 'tool',
+                'variables': [{'description': variable['description'], 'name': variable['name'], 'type': 'variable', 'value': variable['value']} for variable in tool['variables']],
+                'version': tool['version'],
+            }
+        }
+
+
+def step_node_cytoscape(name='main'):
+    '''
+    Create a cytoscape step npde
+    '''
+
     return {
-        'belongto': {'name': 'root', edit: None},
-        # 'dep_id' : None, ## Not used in executor
-        'edit': tool.edit,
-        'id': tool_id_cytoscape(tool),
-        'label': tool_label_cytoscape(tool),
-        'name': tool.name,
-        # root: None ### Not used in executor,
-        'text': tool_label(tool),
-        'type': 'tool',
-        'variables': [{'description': variable.description, 'name': variable.name, 'type': 'variable', 'value': variable.value} for variable in tool.variables.all()],
-        'version': tool.varsion,
+        'data': {
+            'bash': '',
+            'belongto': {'name': 'root', 'edit': None},
+            'id': step_id_cytoscape('main', None, 'root', None),
+            'label': step_id_label('main'),
+            'inputs': [],
+            'outputs': [],
+            'steps': [],
+            'tools': [],
+            'main': True,
+            'name': step_id_label('main'),
+            'sub_main': False,
+            'type': 'step',
+        }
+    }
+
+def edge_cytoscape(source, target):
+    '''
+    Create a cytscape edge object
+    '''
+
+    return {
+        'data': {
+            'source': source['data']['id'],
+            'target': target['data']['id'],
+            'id': create_workflow_edge_id(source['data']['id'], target['data']['id']),
+        }
     }
 
 @has_data
 def run_tool(request, **kwargs):
     '''
     Create a cytoscape workflow that installs a given tool.
+    Kind of a "fake" workflow that the only thing that it does is install a tool (and its dependencies)
     It is called by run_workflow when the user selects to "download" a tool instead of a workflow
     '''
     workflow = {
@@ -2017,27 +2101,64 @@ def run_tool(request, **kwargs):
     }
 
     # Add root workflow
-    workflow['elements']['nodes'].append(workflow_node_cytoscape(None))
+    workflow_node = workflow_node_cytoscape(None)
+    workflow['elements']['nodes'].append(workflow_node)
 
-    #tool_dependencies = tool_get_dependencies_internal(tool, include_as_root=True)
-    # build all tool nodes for dependency tools
+    # this does not contain recursively all the dependenfies. Only the first level
     root_tool_dependencies = kwargs['tool_dependencies']
-    all_ids = set()
-    
-    for root_tool_dependency in root_tool_dependencies:
-        root_tool_name = root_tool_dependency['name']
-        root_tool_version = root_tool_dependency['version']
-        root_tool_edit = root_tool_dependency['edit']
+    root_tool_objects = [Tool.objects.get(name=t['name'], version=t['version'], edit=t['edit']) for t in root_tool_dependencies]
+    all_dependencies_str = list(map(str, root_tool_objects))
 
-        root_tool_obj = Tool.objects.get(name=root_tool_name, version=root_tool_version, edit=root_tool_edit)
+    # Add this tool
+    tool = {
+        'name': str(kwargs['tools_search_name']),
+        'version': str(kwargs['tools_search_version']),
+        'edit': kwargs['tools_search_edit'] if kwargs['tools_search_edit'] else 0, # If this is editable, then the edit is 0
+        'variables': kwargs['tool_variables'],
+
+    }
+    this_tool_cytoscape_node = tool_node_cytoscape(tool)
+    this_tool_cytoscape_node['data']['installation_commands'] = kwargs['tool_installation_commands']
+    this_tool_cytoscape_node['data']['validation_commands'] = kwargs['tool_validation_commands']
+    this_tool_cytoscape_node['data']['os_choices'] = kwargs['tool_os_choices']
+    this_tool_cytoscape_node['data']['dependencies'] = all_dependencies_str
+    workflow['elements']['nodes'].append(this_tool_cytoscape_node)
+
+    # Add an edge between the root workflow and this tool
+    workflow['elements']['edges'].append(edge_cytoscape(workflow_node, this_tool_cytoscape_node))
+
+    # build all tool nodes for dependency tools
+    all_ids = set()
+    all_dependencies_str = []
+    
+    for root_tool_obj in root_tool_objects:
+        # This is a first level dependency
+        root_tool_node = tool_node_cytoscape(root_tool_obj)
+        # Get all dependencies recursively for this tool
         root_tool_all_dependencies = tool_get_dependencies_internal(root_tool_obj, include_as_root=True)
         for root_tool_all_dependency in root_tool_all_dependencies:
+            # For each dependency create a cytoscape node
             cytoscape_node = tool_node_cytoscape(root_tool_all_dependency['dependency'])
-            if not cytoscape_node['id'] in all_ids:
+            if not cytoscape_node['data']['id'] in all_ids: # An id should exist only once in the graph...
                 workflow['elements']['nodes'].append(cytoscape_node)
 
+                # Connect this tool with its dependent tool node
+                if root_tool_all_dependency['dependant']:
+                    workflow['elements']['edges'].append(edge_cytoscape(cytoscape_node, tool_node_cytoscape(root_tool_all_dependency['dependant'])))
+                else:
+                    # This is a dependency of the root tool!
+                    workflow['elements']['edges'].append(edge_cytoscape(cytoscape_node, this_tool_cytoscape_node))
 
-    return success()
+    # Create a step node
+    step_node = step_node_cytoscape('main')
+    workflow['elements']['nodes'].append(step_node)
+    # Connect it with the root workflow
+    workflow['elements']['edges'].append(edge_cytoscape(workflow_node, step_node))
+
+
+    return run_workflow(request, **{
+        # TODO : PASS PARAMETERS TO run_workflow
+        })
 
 @has_data
 def run_workflow(request, **kwargs):
@@ -2046,14 +2167,20 @@ def run_workflow(request, **kwargs):
     path('run_workflow/', views.run_workflow), # Acceps a workflow_options and workflow object. Runs a workflow
 
     https://docs.djangoproject.com/en/2.2/ref/request-response/#telling-the-browser-to-treat-the-response-as-a-file-attachment
+
+    kwargs['workflow_cy'] is the cytoscape workflow
     '''
 
     workflow_arg = kwargs['workflow']
     workflow_options_arg = kwargs['workflow_options']
     download_type = kwargs['download_type'] # download_type can be "BASH" or "JSON"
 
-    workflow = Workflow.objects.get(**workflow_arg)
-    workflow_cy = simplejson.loads(workflow.workflow)
+    if workflow_arg:
+        workflow = Workflow.objects.get(**workflow_arg)
+        workflow_cy = simplejson.loads(workflow.workflow)
+    else:
+        workflow = None
+        workflow_cy = kwargs['workflow_cy']
     #print (workflow_cy)
 
     # Get the tools of this workflow
@@ -2065,15 +2192,22 @@ def run_workflow(request, **kwargs):
             version=workflow_tool['data']['version'], 
             edit=workflow_tool['data']['edit'])
 
-        workflow_tool['data']['installation_commands'] = workflow_tool_obj.installation_commands
-        workflow_tool['data']['validation_commands'] = workflow_tool_obj.validation_commands
-        workflow_tool['data']['os_choices'] = [choice.os_choices for choice in workflow_tool_obj.os_choices.all()]
-        workflow_tool['data']['dependencies'] = [str(tool) for tool in workflow_tool_obj.dependencies.all()]
+        # Add installation commands etc for each tool.
+        # It might be the chance that this information already exists, if it has been created by an artificial cytoscape object
+        # like in function: run_tool
+        if not 'installation_commands' in  workflow_tool['data']:
+            workflow_tool['data']['installation_commands'] = workflow_tool_obj.installation_commands
+        if not 'validation_commands' in  workflow_tool['data']:
+            workflow_tool['data']['validation_commands'] = workflow_tool_obj.validation_commands
+        if not 'os_choices' in workflow_tool['data']:
+            workflow_tool['data']['os_choices'] = [choice.os_choices for choice in workflow_tool_obj.os_choices.all()]
+        if not 'dependencies' in workflow_tool['data']:
+            workflow_tool['data']['dependencies'] = [str(tool) for tool in workflow_tool_obj.dependencies.all()]
 
     # Create a new Report object 
-    if not user_is_validated(request):
+    if (not user_is_validated(request)) or (not workflow):
         '''
-        If user is anonymous or with non-validated email, we do not create a report!
+        If user is anonymous or with non-validated email or this is a tool run (workflow is None), we do not create a report!
         '''
         run_report = None
         nice_id = None
