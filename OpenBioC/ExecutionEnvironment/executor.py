@@ -52,22 +52,27 @@ fi
 function update_server_status()
 {
 
-    local command="curl {insecure}-s --header \"Content-Type: application/json\" --request POST -d '{\"token\": \"$obc_current_token\", \"status\": \"$1\"}' {server}/report/"
+    if [[ $obc_current_token =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]]; then
 
-    local c=$(eval "$command")
+        local command="curl {insecure}-s --header \"Content-Type: application/json\" --request POST -d '{\"token\": \"$obc_current_token\", \"status\": \"$1\"}' {server}/report/"
 
-    if [[ $c == *'"success": true'* ]]; then
-        obc_current_token=$(obc_parse_json "$c" "token")
-    else
-       
-        if [[ $c == *'"success": false'* ]]; then
-            obc_error_message=$(obc_parse_json "$c" "error_message")
-            echo "Server Return Error: $obc_error_message"
-            # exit 1
+        local c=$(eval "$command")
+
+        if [[ $c == *'"success": true'* ]]; then
+            obc_current_token=$(obc_parse_json "$c" "token")
         else
-            echo "Server does not respond, or unknown error"
-            # exit 1
+           
+            if [[ $c == *'"success": false'* ]]; then
+                obc_error_message=$(obc_parse_json "$c" "error_message")
+                echo "Server Return Error: $obc_error_message"
+                # exit 1
+            else
+                echo "Server does not respond, or unknown error"
+                # exit 1
+            fi
         fi
+    else
+        : 
     fi
 }
 
