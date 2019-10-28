@@ -2161,8 +2161,9 @@ def run_tool(request, **kwargs):
     return run_workflow(request, **{
         'workflow_options': {},
         'workflow': None,
-        'download_type': 'BASH',
+        'download_type': kwargs.get('download_type', 'BASH'),
         'workflow_cy': workflow,
+        'workflow_info_editable': False,
         })
 
 @has_data
@@ -2179,11 +2180,34 @@ def run_workflow(request, **kwargs):
     workflow_arg = kwargs['workflow']
     workflow_options_arg = kwargs['workflow_options']
     download_type = kwargs['download_type'] # download_type can be "BASH" or "JSON"
+    workflow_info_editable = kwargs['workflow_info_editable'] # IS this workflow saved or not ? . TRUE: NOT SAVED 
 
-    if workflow_arg:
+    #print ('Name:', workflow_arg['name'])
+    #print ('Edit:', workflow_arg['edit'])
+    #print ('editable:', workflow_info_editable)
+
+    if workflow_info_editable:
+        # This is a workflow editable
+        workflow = kwargs.get('workflow_json', '')
+        workflow_name = workflow_arg.get('name', 'W')
+        workflow_edit = 0
+        set_edit_to_cytoscape_json(workflow, workflow_edit, workflow_name)
+
+        main_counter = check_workflow_step_main(workflow, {'name':workflow_name, 'edit': workflow_edit})
+        if main_counter == 0:
+            return fail('Could not find main step. One step needs to be declared as "main"')
+        if main_counter > 1:
+            return fail('Error 49188') # This should never happen
+
+        workflow_cy = workflow
+        workflow = None
+
+    elif workflow_arg:
+        # This is a workflow saved
         workflow = Workflow.objects.get(**workflow_arg)
         workflow_cy = simplejson.loads(workflow.workflow)
     else:
+        # This is a tool
         workflow = None
         workflow_cy = kwargs['workflow_cy']
     #print (workflow_cy)
@@ -2220,7 +2244,7 @@ def run_workflow(request, **kwargs):
     # Create a new Report object 
     if (not user_is_validated(request)) or (not workflow):
         '''
-        If user is anonymous or with non-validated email or this is a tool run (workflow is None), we do not create a report!
+        If user is anonymous or with non-validated email or not saved workflow or this is a tool run (workflow is None), we do not create a report!
         '''
         run_report = None
         nice_id = None
@@ -2964,7 +2988,7 @@ def all_search_2(request, **kwargs):
     for key, value in tools_search_2(tools_search_name, tools_search_version, tools_search_edit).items():
         ret[key] = value
 
-    #Get workflowws
+    #Get workflows
     for key, value in workflows_search_2(workflows_search_name, workflows_search_edit).items():
         ret[key] = value
 
