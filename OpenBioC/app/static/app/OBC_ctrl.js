@@ -2999,19 +2999,38 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         }
 
 
+
         // Check that ONLY ONE step is declared as "main" on THAT workflow (nested workflow can have other main steps)
         // If we setting this value to true and there is already a main step, throw an error
         if ($scope.workflows_step_main) {
-            var selected_nodes = cy.$('node[type="step"][?main]');
-            for (var i=0; i<selected_nodes.length; i++) {
-                var current_node = selected_nodes[i];
-    
-                if (current_node.data().belongto.edit === null) {
-                    if (current_node.data().name != $scope.workflows_step_name) {
-                        $scope.toast("There is already a 'main' step for this workflow", "error");
-                        $scope.workflows_step_main = false;
-                        return;
-                    }                    
+
+            //If this is an update, then the user can should be able to change the name (or content) of a main node
+            //See https://github.com/kantale/OpenBioC/issues/134 
+            var escape_check = false;
+            if ($scope.workflow_step_add_update_label == 'Update') {
+                var step_update_data = cy.$('node[id="' +  $scope.workflow_step_previous_step.id + '"]').data();
+                if (step_update_data.main) {
+                    //This node was a main and now is set to main. No need to chech for multiple mains
+                    escape_check = true; 
+                }
+                else {
+                    //This node was NOT a main and now is set to main. We need to check how many other mains exist
+                    escape_check = false;
+                }
+            }
+
+            if (!escape_check) {
+                var selected_nodes = cy.$('node[type="step"][?main]');
+                for (var i=0; i<selected_nodes.length; i++) {
+                    var current_node = selected_nodes[i];
+        
+                    if (current_node.data().belongto.edit === null) {
+                        if (current_node.data().name != $scope.workflows_step_name) {
+                            $scope.toast("There is already a 'main' step for this workflow", "error");
+                            $scope.workflows_step_main = false;
+                            return;
+                        }
+                    }
                 }
             }
         }
@@ -3070,10 +3089,11 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         window.buildTree(step_node, step_belong_to);
         $scope.workflow_update_tab_completion_info_to_step();
 
-        //Empty STEP fields
+        //Empty STEP fields. Perhaps call the $scope.workflow_info_add_step_clicked() function??
         $scope.workflows_step_name = '';
         $scope.workflows_step_main = false;
         workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1);
+        $scope.workflow_step_add_update_label = 'Add'; 
 
     };
 
