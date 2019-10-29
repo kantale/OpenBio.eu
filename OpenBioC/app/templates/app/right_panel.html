@@ -1198,10 +1198,10 @@
                             <a href="/platform/c/{{qa_comment_id}}">link</a>
                             {% endverbatim %}
                             </small>
-                            <div class="box upDownVoteBox" style="margin-top: -5px; margin-left: 5px;">
-                                <div class="upDownVoteDiv upvoteDiv" ng-class="{'active': qa_voted['up']}"><i class="material-icons tiny" ng-click="updownvote_comment(qa_comment_id, true, qa_score, qa_voted)">thumb_up</i></div>
+                            <div class="box upDownVoteBox">
+                                <div class="upDownVoteDiv upvoteDiv" ng-class="{'active': qa_voted['up']}"><i class="material-icons tiny" ng-click="updownvote_comment(qa_comment_id, true, qa_score, qa_voted)">arrow_upward</i></div>
                                 <span class="upDownVoteSpan" ng-bind="qa_score.score"></span>
-                                <div class="upDownVoteDiv downvoteDiv" ng-class="{'active': qa_voted['down']}"><i class="material-icons tiny" ng-click="updownvote_comment(qa_comment_id, false, qa_score, qa_voted)">thumb_down</i></div>
+                                <div class="upDownVoteDiv downvoteDiv" ng-class="{'active': qa_voted['down']}"><i class="material-icons tiny" ng-click="updownvote_comment(qa_comment_id, false, qa_score, qa_voted)">arrow_downward</i></div>
                             </div>
                         </div>
                         <div>
@@ -1285,15 +1285,15 @@
                                 <img src="/static/app/images/konstantina/img_avatar.png" alt=""
                                     class="circle avatarForumReply">
                                 <small>Replied by <a ng-click="interlink({type: 'u', username: post.username})">u/<span ng-bind="post.username"></span></a> on <span ng-bind="post.created_at"></span> <span ng-bind="post.opinion"></span></small>
+                                <div class="box upDownVoteBox">
+                                    <div class="upDownVoteDiv upvoteDiv" ng-class="{'active': post.voted['up']}"><i class="material-icons tiny" ng-click="updownvote_comment(post.id, true, post, post.voted)">arrow_upward</i></div>
+                                    <span class="upDownVoteSpan" ng-bind="post.score"></span>
+                                    <div class="upDownVoteDiv downvoteDiv" ng-class="{'active': post.voted['down']}"><i class="material-icons tiny" ng-click="updownvote_comment(post.id, false, post, post.voted)">arrow_downward</i></div>
+                                </div>
                             </div>
                             <span ng-bind-html="post.comment_html"></span>
                             <a class="waves-effect btn-flat qaReplyBtn" href=""
                                 ng-click="qa_reply_button_clicked(post.id)"><u>Reply</u></a>
-                            <div class="box upDownVoteBox">
-                                <div class="upDownVoteDiv upvoteDiv" ng-class="{'active': post.voted['up']}"><i class="material-icons tiny" ng-click="updownvote_comment(post.id, true, post, post.voted)">thumb_up</i></div>
-                                <span class="upDownVoteSpan" ng-bind="post.score"></span>
-                                <div class="upDownVoteDiv downvoteDiv" ng-class="{'active': post.voted['down']}"><i class="material-icons tiny" ng-click="updownvote_comment(post.id, false, post, post.voted)">thumb_down</i></div>
-                            </div>
                             <div class="input-field" ng-show="post.replying">
                                 <textarea class="validate" ng-model="qa_current_reply"></textarea>
                                 <div>
@@ -1313,15 +1313,15 @@
                                         <img src="/static/app/images/konstantina/img_avatar.png" alt=""
                                             class="circle avatarForumReply">
                                         <small>Replied by <a ng-click="interlink({type: 'u', username: post2.username})">u/<span ng-bind="post2.username"></span></a> on <span ng-bind="post2.created_at"></span> <span ng-bind="post2.opinion"></span></small>
+                                        <div class="box upDownVoteBox">
+                                            <div class="upDownVoteDiv upvoteDiv" ng-class="{'active': post2.voted['up']}"><i class="material-icons tiny" ng-click="updownvote_comment(post2.id, true, post2, post2.voted)">arrow_upward</i></div>
+                                            <span class="upDownVoteSpan" ng-bind="post2.score"></span>
+                                            <div class="upDownVoteDiv downvoteDiv" ng-class="{'active': post2.voted['down']}"><i class="material-icons tiny" ng-click="updownvote_comment(post2.id, false, post2, post2.voted)">arrow_downward</i></div>
+                                        </div>
                                     </div>
                                     <span ng-bind-html="post2.comment_html"></span>
                                     <a class="waves-effect btn-flat qaReplyBtn" href=""
                                         ng-click="qa_reply_button_clicked(post2.id)"><u>Reply</u></a>
-                                    <div class="box upDownVoteBox">
-                                        <div class="upDownVoteDiv upvoteDiv" ng-class="{'active': post2.voted['up']}"><i class="material-icons tiny" ng-click="updownvote_comment(post2.id, true, post2, post2.voted)">thumb_up</i></div>
-                                        <span class="upDownVoteSpan" ng-bind="post2.score"></span>
-                                        <div class="upDownVoteDiv downvoteDiv" ng-class="{'active': post2.voted['down']}"><i class="material-icons tiny" ng-click="updownvote_comment(post2.id, false, post2, post2.voted)">thumb_down</i></div>
-                                    </div>
                                     <div class="input-field" ng-show="post2.replying">
                                         <textarea class="validate" ng-model="qa_current_reply"></textarea>
                                         <div>
@@ -1341,15 +1341,15 @@
                                                 <img src="/static/app/images/konstantina/img_avatar.png" alt=""
                                                     class="circle avatarForumReply">
                                                 <small>Replied by <a ng-click="interlink({type: 'u', username: post3.username})">u/<span ng-bind="post3.username"></span></a> on <span ng-bind="post3.created_at"></span> <span ng-bind="post3.opinion"></span></small>
+                                                <div class="box upDownVoteBox">
+                                                    <div class="upDownVoteDiv upvoteDiv" ng-class="{'active': post3.voted['up']}"><i class="material-icons tiny" ng-click="updownvote_comment(post3.id, true, post3, post3.voted)">arrow_upward</i></div>
+                                                    <span class="upDownVoteSpan" ng-bind="post3.score"></span>
+                                                    <div class="upDownVoteDiv downvoteDiv" ng-class="{'active': post3.voted['down']}"><i class="material-icons tiny" ng-click="updownvote_comment(post3.id, false, post3, post3.voted)">arrow_downward</i></div>
+                                                </div>
                                             </div>
                                             <span ng-bind-html="post3.comment_html"></span>
                                             <a class="waves-effect btn-flat qaReplyBtn" href=""
                                                 ng-click="qa_reply_button_clicked(post3.id)"><u>Reply</u></a>
-                                            <div class="box upDownVoteBox">
-                                                <div class="upDownVoteDiv upvoteDiv" ng-class="{'active': post3.voted['up']}"><i class="material-icons tiny" ng-click="updownvote_comment(post3.id, true, post3, post3.voted)">thumb_up</i></div>
-                                                <span class="upDownVoteSpan" ng-bind="post3.score"></span>
-                                                <div class="upDownVoteDiv downvoteDiv" ng-class="{'active': post3.voted['down']}"><i class="material-icons tiny" ng-click="updownvote_comment(post3.id, false, post3, post3.voted)">thumb_down</i></div>
-                                            </div>
                                             <div class="input-field" ng-show="post3.replying">
                                                 <textarea class="validate" ng-model="qa_current_reply"></textarea>
                                                 <div>
@@ -1369,15 +1369,15 @@
                                                         <img src="/static/app/images/konstantina/img_avatar.png" alt=""
                                                             class="circle avatarForumReply">
                                                         <small>Replied by <a ng-click="interlink({type: 'u', username: post4.username})">u/<span ng-bind="post4.username"></span></a> on <span ng-bind="post4.created_at"></span> <span ng-bind="post4.opinion"></span></small>
+                                                        <div class="box upDownVoteBox">
+                                                            <div class="upDownVoteDiv upvoteDiv" ng-class="{'active': post4.voted['up']}"><i class="material-icons tiny" ng-click="updownvote_comment(post4.id, true, post4, post4.voted)">arrow_upward</i></div>
+                                                            <span class="upDownVoteSpan" ng-bind="post4.score"></span>
+                                                            <div class="upDownVoteDiv downvoteDiv" ng-class="{'active': post4.voted['down']}"><i class="material-icons tiny" ng-click="updownvote_comment(post4.id, false, post4, post4.voted)">arrow_downward</i></div>
+                                                        </div>
                                                     </div>
                                                     <span ng-bind-html="post4.comment_html"></span>
                                                     <a class="waves-effect btn-flat qaReplyBtn" href=""
                                                         ng-click="qa_reply_button_clicked(post4.id)"><u>Reply</u></a>
-                                                    <div class="box upDownVoteBox">
-                                                        <div class="upDownVoteDiv upvoteDiv" ng-class="{'active': post4.voted['up']}"><i class="material-icons tiny" ng-click="updownvote_comment(post4.id, true, post4, post4.voted)">thumb_up</i></div>
-                                                        <span class="upDownVoteSpan" ng-bind="post4.score"></span>
-                                                        <div class="upDownVoteDiv downvoteDiv" ng-class="{'active': post4.voted['down']}"><i class="material-icons tiny" ng-click="updownvote_comment(post4.id, false, post4, post4.voted)">thumb_down</i></div>
-                                                    </div>
                                                     <div class="input-field" ng-show="post4.replying">
                                                         <textarea class="validate"
                                                             ng-model="qa_current_reply"></textarea>
@@ -1398,10 +1398,10 @@
                                                                 <img src="/static/app/images/konstantina/img_avatar.png"
                                                                     alt="" class="circle avatarForumReply">
                                                                 <small>Replied by <a ng-click="interlink({type: 'u', username: post5.username})">u/<span ng-bind="post5.username"></span></a> on <span ng-bind="post5.created_at"></span> <span ng-bind="post5.opinion"></span></small>
-                                                                <div class="box upDownVoteBox" style="margin-top: -5px; margin-left: 5px;">
-                                                                    <div class="upDownVoteDiv upvoteDiv" ng-class="{'active': post5.voted['up']}"><i class="material-icons tiny" ng-click="updownvote_comment(post5.id, true, post5, post5.voted)">thumb_up</i></div>
+                                                                <div class="box upDownVoteBox">
+                                                                    <div class="upDownVoteDiv upvoteDiv" ng-class="{'active': post5.voted['up']}"><i class="material-icons tiny" ng-click="updownvote_comment(post5.id, true, post5, post5.voted)">arrow_upward</i></div>
                                                                     <span class="upDownVoteSpan" ng-bind="post5.score"></span>
-                                                                    <div class="upDownVoteDiv downvoteDiv" ng-class="{'active': post5.voted['down']}"><i class="material-icons tiny" ng-click="updownvote_comment(post5.id, false, post5, post5.voted)">thumb_down</i></div>
+                                                                    <div class="upDownVoteDiv downvoteDiv" ng-class="{'active': post5.voted['down']}"><i class="material-icons tiny" ng-click="updownvote_comment(post5.id, false, post5, post5.voted)">arrow_downward</i></div>
                                                                 </div>
                                                             </div>
                                                             <span ng-bind-html="post5.comment_html"></span>
