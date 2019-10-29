@@ -2125,7 +2125,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 		
 		//manage names
 		if(tdata.status.split(" ")[0]==='step')
-			myname = tdata.node_anim_params.status_fields.name.split("_")[0];
+			myname = tdata.node_anim_params.status_fields.name.split("__")[1];
 		else
 			myname = tdata.node_anim_params.status_fields.name;
 			

@@ -259,15 +259,22 @@ class Workflow:
                 message = 'Output {} ({}) is not set by any step!'.format(root_output_node['id'], root_output_node['description'])
                 raise OBC_Executor_Exception(message)
 
-        # Confirm that all workflows have exactly one main step
+        # Confirm that all main workflows have exactly one main step
+        # Confirm that all sub workflows have exactly one sub main step
         for workflow in self.get_all_workflows():
-            main_counter = sum(step['main'] for step in self.get_steps_from_workflow(workflow))
+            # Is this the main workflow?
+            if self.is_root_workflow(workflow):
+                main_counter = sum(step['main'] for step in self.get_steps_from_workflow(workflow))
+                main_str = 'MAIN'
+            else:
+                main_counter = sum(step['sub_main'] for step in self.get_steps_from_workflow(workflow))
+                main_str = 'SUB'
             if main_counter == 0:
-                message = 'Workflow {} has 0 main steps'.format(workflow['id'])
+                message = '{} Workflow {} has 0 main steps'.format(main_str, workflow['id'])
                 raise OBC_Executor_Exception(message)
             if main_counter > 1:
-                message = 'Workflow {} has more than one ({}) main steps'.format(workflow['id'], main_counter)
-
+                message = '{} Workflow {} has more than one ({}) main steps'.format(main_str, workflow['id'], main_counter)
+                raise OBC_Executor_Exception(message)
 
     def check_tool_dependencies_for_circles(self,):
         '''
@@ -392,7 +399,7 @@ class Workflow:
                 continue
 
             ret += '# STEP: {}\n'.format(a_node['id'])
-            ret += 'step__{} () {{\n'.format(a_node['id'])
+            ret += '{} () {{\n'.format(a_node['id'])
             #ret += ':\n' # No op in case a_node['bash'] is empty 
             ret += "OBC_WHOCALLEDME=$(caller 0 | awk '{print $2}') \n"
             ret += "if [ $OBC_WHOCALLEDME != \"main\" ] ; then \n"
@@ -413,7 +420,7 @@ class Workflow:
         '''
 
         ret = '### CALLING MAIN STEP\n'
-        ret += 'step__{}\n'.format(self.root_step['id'])
+        ret += '{}\n'.format(self.root_step['id'])
         ret += '### END OF CALLING MAIN STEP\n'
 
         return ret
