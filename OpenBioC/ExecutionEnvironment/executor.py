@@ -233,7 +233,7 @@ class Workflow:
                     local_input_parameter = input(user_message)
                     self.input_parameter_values[root_input_node['id']] = {'value': local_input_parameter, 'description': root_input_node['description']}
 
-                bash_command = 'read -p "{}" input__{}\n'.format(user_message, root_input_node['id'])
+                bash_command = 'read -p "{}" {}\n'.format(user_message, root_input_node['id'])
                 self.input_parameters_read_bash_commands.append(bash_command)
 
         # Check that all outpus will be eventually set
@@ -375,7 +375,7 @@ class Workflow:
         '''
         ret = '### SET ROOT WORKFLOW INPUT PARAMETERS\n'
         for variable, data in self.input_parameter_values.items():
-            ret += 'input__{}="{}" #  {}\n'.format(variable, data['value'], data['description'])
+            ret += '{}="{}" #  {}\n'.format(variable, data['value'], data['description'])
         ret += '### END OF SET ROOT WORKFLOW INPUT PARAMETERS'
 
         return ret
@@ -384,7 +384,7 @@ class Workflow:
         ret = '### PRINT OUTPUT PARAMETERS\n'
         ret += 'echo "Output Variables:"\n'
         for output_parameter in self.output_parameters:
-            ret += 'echo "{} = ${{output__{}}}"\n'.format(output_parameter['id'], output_parameter['id'])
+            ret += 'echo "{} = ${{{}}}"\n'.format(output_parameter['id'], output_parameter['id'])
         ret += '### END OF PRINTINT OUTPUT PARAMETERS\n'
 
         return ret
