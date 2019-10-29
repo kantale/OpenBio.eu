@@ -2,6 +2,8 @@
 # Version changes and updates
 
 ### 0.1.3 (Not released yet)
+* Bugs Fixed:
+   [Cannot change the name of a "main" step #134](https://github.com/kantale/OpenBioC/issues/134)
 * Features:
    * Discussion has upvotes/downvotes. Also assign a "Note", "Agree", "Disagree" label in every comment
    * [Allow search by username #129](https://github.com/kantale/OpenBioC/issues/129)
