@@ -3,7 +3,7 @@
 
 ### 0.1.3 (Not released yet)
 * Features:
-   * Discussion have upvotes/downvotes. Also assign a "Note", "Agree", "Disagree" label in every comment
+   * Discussion has upvotes/downvotes. Also assign a "Note", "Agree", "Disagree" label in every comment
    * [Allow search by username #129](https://github.com/kantale/OpenBioC/issues/129)
    * [Avoid unnecessary comminutation between executor-server #132](https://github.com/kantale/OpenBioC/issues/132)
    * [Add a default "main" step to every new workflow #133](https://github.com/kantale/OpenBioC/issues/133)
