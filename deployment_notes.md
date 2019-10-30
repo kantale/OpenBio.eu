@@ -152,6 +152,7 @@ Create a file in /etc/apache2/sites-available/obc-prod-ssl.conf with the followi
 
     WSGIDaemonProcess obc python-path=/home/akanterakis/obc_production/OpenBioC python-home=/home/akanterakis/anaconda3/envs/obc_production_python/
     WSGIProcessGroup obc
+    WSGIApplicationGroup %{GLOBAL}
     WSGIScriptAlias / /home/akanterakis/obc_production/OpenBioC/OpenBioC/wsgi.py
 
 
@@ -166,6 +167,8 @@ Create a file in /etc/apache2/sites-available/obc-prod-ssl.conf with the followi
 
 </VirtualHost>
 ```
+
+* Note: the ```WSGIApplicationGroup %{GLOBAL}``` part is for [this issue](https://code.djangoproject.com/ticket/29293)
 
 #### Start Apache2
 ```
