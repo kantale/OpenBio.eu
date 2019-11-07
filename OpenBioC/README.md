@@ -74,6 +74,12 @@ python manage.py migrate --run-syncdb
 pip install flask
 ```
 
+### Install packages for Common Workflow Language (CWL)
+```
+pip install cwltool
+pip install cwlref-runner
+```
+
 * Run
 
 Change the port if you want. Ports used:
