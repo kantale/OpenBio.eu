@@ -1,9 +1,12 @@
 
 import io
 import os
+import re
 import copy
 import json
 import base64
+#import bashlex
+import shlex
 import logging
 import argparse 
 
@@ -223,7 +226,7 @@ class Workflow:
                 assert type(node['belongto']['name']) is str
                 assert type(node['belongto']['edit']) is int
 
-        # Check that that there are not circular dependencies
+        # Check that that there are no circular dependencies
         self.check_tool_dependencies_for_circles();
 
         # Check that all root input are set
@@ -295,7 +298,7 @@ class Workflow:
         self.tool_slash_id_d = {self.get_tool_slash_id(tool):tool for tool in self.tool_iterator()}
 
         # Create a dictionary. Keys are tool ids. Values are tuples: (variables from which they depend from, deoendent tool)
-        self.tool_dependent_variables = {self.get_tool_dash_id(tool, no_dots=True):self.get_tool_dependent_variables(tool) for tool in self.tool_iterator()}
+        self.tool_dependent_variables = {self.get_tool_dash_id(tool, no_dots=True):self.get_tool_dependent_variables(tool) for tool in self.tool_iterator()}     
 
     def check_tool_dependencies_for_circles(self,):
         '''
@@ -317,6 +320,26 @@ class Workflow:
                 message = 'Found circular tool dependency!'
                 message += '\n' + ' --> '.join(circle)
                 raise OBC_Executor_Exception(message)
+
+    def check_step_calls_for_circles(self,):
+        '''
+        '''
+
+        #Construct the step graph
+        graph = {step['id']: step['steps'] for step in self.step_iterator()}
+
+        for step_id in graph.keys():
+            circles = detect_circles(graph, step_id, step_id)
+            try:
+                circle = next(circles)
+            except StopIteration as e:
+                pass
+            else:
+                circle_str = ' --> '.join(circle)
+                return circle_str
+
+        return ''
+
 
     def get_token_set_bash_commands(self, ):
         '''
@@ -523,7 +546,77 @@ class Workflow:
         '''
         return workflow['name'] + '/' + str(workflow['edit'])
 
-    def get_tool_installation_order(self, ):
+    def get_step_calling_order(self,):
+        '''
+        '''
+
+        return self.get_node_order(
+            node_iterator = self.step_iterator,
+            id_getter = lambda x : x['id'],
+            dependency_getter = lambda x : x['steps']
+        )
+
+    def get_tool_installation_order(self,):
+        '''
+        '''
+
+        return self.get_node_order(
+            node_iterator = self.tool_iterator,
+            id_getter = self.get_tool_slash_id,
+            dependency_getter = lambda x : x['dependencies'],
+
+        )
+
+
+    def get_node_order(self, node_iterator, id_getter, dependency_getter):
+        '''
+        node_iterator: iterator through all nodes of a given type
+        id_getter: Function. Takes a node. Returns an id of the node
+        dependency_getter: Functions. Takes a node. Returns a list of dependencies
+        '''
+
+        def has_dependency(node, list_of_nodes):
+            '''
+            '''
+
+            all_dependencies = [id_getter(n) for n in list_of_nodes]
+            return all(n in all_dependencies for n in dependency_getter(node))
+
+        ret = []
+
+        # Get all nodes that have dependencies 
+        dependencies_notok = []
+
+
+        for node in node_iterator():
+            if dependency_getter(node):
+                dependencies_notok.append(node)
+            else:
+                ret.append(node)
+
+        steps = 0
+        while True:
+            # If all dependencies have been resolved, break
+            if not dependencies_notok:
+                break
+
+            steps += 1
+            current_notok = []
+            found_on_this_round = []
+
+            for node in dependencies_notok:
+                if has_dependency(node, ret):
+                    found_on_this_round.append(node)
+                else:
+                    current_notok.append(node)
+
+            ret.extend(found_on_this_round)
+            dependencies_notok = current_notok
+
+        return ret
+
+
+    def get_tool_installation_order_DEPERECATED(self, ):
         '''
         Get a list of tools in dependency order.
         '''
@@ -591,6 +684,13 @@ class Workflow:
         '''
         for node in self.node_iterator():
             if self.is_tool(node):
+                yield node
+
+    def step_iterator(self,):
+        '''
+        '''
+        for node in self.node_iterator():
+            if self.is_step(node):
                 yield node
 
     def is_root_workflow(self, workflow):
@@ -729,6 +829,125 @@ class Workflow:
     @staticmethod
     def bash_tool_installation_finished(tool):
         return Workflow.update_server_status('tool finished {}'.format(tool['label']))
+
+
+    @staticmethod
+    def bash_can_be_broken_down(bash):
+        """
+        Can a bash script be broken down?
+
+    TEST:
+    bash = '''
+get_random(){
+    END=$1 
+    
+    if [ -n "$END" ]; then
+        echo $(( $RANDOM % ( $END + 1 ) ))
+    else
+        echo $RANDOM
+    fi
+}
+    '''
+    Workflow.bash_can_be_broken_down(bash)
+    
+        """
+
+        splitted = ['__FIRST__'] + shlex.split(bash, comments=True) + ['__LAST__']
+        token_generator = (x for x in splitted)
+
+        matches = [
+            ('__FIRST__', '__LAST__'), # This should be always first
+            ('do', 'done'),
+            ('if', 'fi'),
+            ('case', 'esac'),
+            (r'([\w]*\(\))?{', '}'), # i.e my_function(){
+        ]
+        match_start = {x[0]:x[1] for x in matches}
+        match_finish = {x[1]:x[0] for x in matches}
+
+        def balance(token_generator, current_code, current_start_token, the_list):
+            '''
+            Returns a list of lists of... for each sub-group of the bash script
+            '''
+            current_list = [current_start_token]
+            while True:
+                try:
+                    token = next(token_generator)
+                    print (token)
+                except StopIteration as e:
+                    break
+
+                found_first = -1
+                found_second = -1
+
+                for i, pat in enumerate(matches):
+                    if re.match(pat[0], token):
+                        found_first = i
+                        break
+                    elif re.match(pat[1], token):
+                        found_second = i
+                        break
+
+                if found_first >= 0:
+                    balance(token_generator, found_first, token, the_list)
+                elif found_second >= 0:
+                    if found_second == current_code:
+                        current_list.append(token)
+                        the_list.append(current_list)
+                        return
+                    else:
+                        raise OBC_Executor_Exception('Parse error while trying to parse bash script')
+                        
+                else:
+                    current_list.append(token)
+
+        parsing = []
+        balance(token_generator, 0, '__FIRST__', parsing)
+        return parsing
+
+
+    def bash_ff(self,):
+        '''
+        '''
+
+        # First, check for circles in step calls
+        c = self.check_step_calls_for_circles()
+        if c:
+            raise OBC_Executor_Exception('Found circle in step calls:\n{}\n. Cannot generate CWL wrofklow'.format(c))
+
+
+        def f(current_step):
+            current_bash = current_step['bash']
+            balance = Workflow.bash_can_be_broken_down(current_bash)
+            main_commands = balance[-1][1:-1]
+            current_step_id = current_step['id']
+            calling_steps = current_step['steps']
+
+            calling_order = []
+            for calling_step_id in calling_steps:
+                if not calling_step_id in main_commands:
+                    raise OBC_Executor_Exception('Step: {} is called from step: {} through a secondary scope.'.format(calling_step_id, current_step_id))
+
+                calling_order.append((main_commands.index(calling_step_id), calling_step_id))
+
+            # Are there any calling steps that have not been called from main_commands?
+            remaining_steps = set(calling_steps) - {s[1] for s in calling_order}
+            if remaining_steps:
+                message = 'Steps: {} are called from {} through a secondary scope.'.format(', '.join(list(remaining_steps)), current_step_id)
+                raise OBC_Executor_Exception(message)
+
+            # Order according to calling order (first element in the tuple)
+            calling_order.sort()
+            print (calling_order)
+
+            for calling_step_order, calling_step in calling_order:
+                pass
+
+            assert False # To be continued.. 
+
+        #Start from root step
+        f(self.root_step)
+
 
 
 class BaseExecutor():
@@ -1014,6 +1233,12 @@ steps:
         with open(self.TOOLS_WORKFLOW_FILENAME, 'w') as f:
             f.write(content)
 
+    def step_workflow_cwl(self,):
+        '''
+        '''
+
+        self.workflow.bash_ff()
+
     def build(self, output):
         '''
         Test with:
@@ -1026,6 +1251,7 @@ steps:
             self.tool_cwl(tool)
 
         self.tool_workflow_cwl()
+        self.step_workflow_cwl()
 
             #tool_id = Workflow.get_tool_dash_id(tool)
             
