@@ -1,6 +1,7 @@
 
 import io
 import os
+import copy
 import json
 import base64
 import logging
@@ -162,9 +163,23 @@ class Workflow:
         '''
         tool_installation_order = self.get_tool_installation_order()
         for tool in tool_installation_order:
-            log_info('Building installation bash commands for: {}'.format(tool['label']))
             yield tool
 
+    def get_tool_dependent_variables(self, tool,):
+        '''
+        Get the variables for which this tool is dependent
+        '''
+
+        def recursion(tool, the_list):
+            for tool_slash_id in tool['dependencies']:
+                tool_d = self.tool_slash_id_d[tool_slash_id]
+                for variable in tool_d['variables']:
+                    the_list.append((variable, tool_d))
+                recursion(tool_d, the_list)
+
+        the_list = []
+        recursion(tool, the_list)
+        return the_list
 
     def parse_workflow_filename(self, ):
         '''
@@ -276,6 +291,12 @@ class Workflow:
                 message = '{} Workflow {} has more than one ({}) main steps'.format(main_str, workflow['id'], main_counter)
                 raise OBC_Executor_Exception(message)
 
+        # Create a dictionary. Keys are tool slash id. values are tools
+        self.tool_slash_id_d = {self.get_tool_slash_id(tool):tool for tool in self.tool_iterator()}
+
+        # Create a dictionary. Keys are tool ids. Values are tuples: (variables from which they depend from, deoendent tool)
+        self.tool_dependent_variables = {self.get_tool_dash_id(tool, no_dots=True):self.get_tool_dependent_variables(tool) for tool in self.tool_iterator()}
+
     def check_tool_dependencies_for_circles(self,):
         '''
         '''
@@ -332,18 +353,41 @@ class Workflow:
     def get_tool_bash_commands(self, tool, 
         validation=True, 
         update_server_status=True,
+        read_variables_from_command_line=False,
         variables_json_filename=None,
         ):
         '''
         update_server_status: boolean, should we update the server status?
         variables_json_filename: Create a json file that contains the values of the variables (if None it does not create it)
+        read_variables_from_command_line: Assume that this is running from a cammand line file.sh script. Read the arguments from command line 
         '''
+
+        log_info('Building installation bash commands for: {}'.format(tool['label']))
+
+        tool_id = Workflow.get_tool_dash_id(tool, no_dots=True)
 
         # Add Bash commands
         ret =  '### BASH INSTALLATION COMMANDS FOR TOOL: {}\n'.format(tool['label'])
         ret += 'echo "OBC: INSTALLING TOOL: {}"\n'.format(tool['label'])
         if update_server_status:
             ret += Workflow.bash_tool_installation_started(tool) + '\n'
+        if read_variables_from_command_line:
+            ret += 'for i in "$@"\n'
+            ret += 'do\n'
+            ret += 'case $i in\n'
+            for dependent_variable, dependent_tool in self.tool_dependent_variables[tool_id]:
+
+                variable_id = Workflow.get_tool_bash_variable(dependent_tool, dependent_variable['name'])
+
+                ret += '  --{VARIABLE_ID}=*)\n'.format(VARIABLE_ID=variable_id)
+                ret += '  {VARIABLE_ID}="${{i#*=}}"\n'.format(VARIABLE_ID=variable_id)
+                ret += '  shift\n'
+                ret += '  ;;\n'
+            ret += '  *)\n'
+            ret += '  ;;\n'
+            ret += 'esac\n'
+            ret += 'done\n\n'
+
         ret += tool['installation_commands'] + '\n'
         ret += 'echo "OBC: INSTALLATION OF TOOL: {} . COMPLETED"\n'.format(tool['label'])
         ret += '### END OF INSTALLATION COMMANDS FOR TOOL: {}\n\n'.format(tool['label'])
@@ -541,6 +585,13 @@ class Workflow:
         '''
         for node in self.workflow['workflow']['elements']['nodes']:
             yield node['data']
+
+    def tool_iterator(self,):
+        '''
+        '''
+        for node in self.node_iterator():
+            if self.is_tool(node):
+                yield node
 
     def is_root_workflow(self, workflow):
         '''
@@ -771,6 +822,7 @@ class CWLExecutor(BaseExecutor):
     TOOL_BASH_FILENAME_P = '{TOOL_ID}.sh'
     TOOL_CWL_P = '{TOOL_ID}.cwl'
     TOOL_JSON_P = '{TOOL_ID}.json'
+    TOOLS_WORKFLOW_FILENAME = 'tools_workflow.cwl'
 
     def header(self,):
         '''
@@ -782,7 +834,36 @@ class CWLExecutor(BaseExecutor):
 cwlVersion: {VERSION}
 '''.format(RUNNER=self.RUNNER, VERSION=self.VERSION)
 
-    def tool_cwl_variable(self,variable_id, output_json_filename):
+    def tool_cwl_input_variable(self, variable_id):
+        '''
+        '''
+
+        return '''
+   {VARIABLE_ID}:
+      type: string
+      inputBinding:
+         prefix: --{VARIABLE_ID}=
+         separate: false
+'''.format(VARIABLE_ID=variable_id)
+
+
+    def tool_cwl_input_variables(self, tool):
+        '''
+        '''
+
+        tool_id = Workflow.get_tool_dash_id(tool, no_dots=True)
+        if not self.workflow.tool_dependent_variables[tool_id]:
+            return '[]\n\n'
+
+        ret = ''
+        for dependent_variable, dependent_tool in self.workflow.tool_dependent_variables[tool_id]:
+            variable_id = Workflow.get_tool_bash_variable(dependent_tool, dependent_variable['name'])
+            ret += self.tool_cwl_input_variable(variable_id)
+
+        return ret
+
+
+    def tool_cwl_output_variable(self, variable_id, output_json_filename):
         '''
         '''
 
@@ -809,19 +890,19 @@ cwlVersion: {VERSION}
         ret = ''
         for variable in tool['variables']:
             variable_id = Workflow.get_tool_bash_variable(tool, variable['name'])
-            ret += self.tool_cwl_variable(variable_id, output_json_filename)
+            ret += self.tool_cwl_output_variable(variable_id, output_json_filename)
 
         return ret
 
 
     def tool_cwl(self, tool, shell='sh'):
         '''
+        Create a CWL file for the installation of this tool
         '''
 
         tool_id = Workflow.get_tool_dash_id(tool, no_dots=True)
 
-        content = '''
-{HEADER}
+        content = '''{HEADER}
 baseCommand: [{SHELL}, {TOOL_BASH_FILENAME}]
 class: CommandLineTool
 
@@ -829,15 +910,16 @@ requirements:
    InitialWorkDirRequirement:
       listing:
          - class: File
-            location: {TOOL_BASH_FILENAME}
+           location: {TOOL_BASH_FILENAME}
    InlineJavascriptRequirement: {{}}
 
-inputs: []
+inputs: {TOOL_CWL_INPUT_VARIABLES}
 outputs: {TOOL_CWL_OUTPUT_VARIABLES}
 '''.format(
         HEADER=self.header(),
         SHELL=shell,
         TOOL_BASH_FILENAME=self.TOOL_BASH_FILENAME_P.format(TOOL_ID=tool_id),
+        TOOL_CWL_INPUT_VARIABLES=self.tool_cwl_input_variables(tool),
         TOOL_CWL_OUTPUT_VARIABLES=self.tool_cwl_output_variables(tool),
     )
 
@@ -856,6 +938,7 @@ outputs: {TOOL_CWL_OUTPUT_VARIABLES}
             tool, 
             update_server_status=False,
             variables_json_filename=self.TOOL_JSON_P.format(TOOL_ID=tool_id),
+            read_variables_from_command_line=True,
         )
         output_filename = self.TOOL_BASH_FILENAME_P.format(TOOL_ID=tool_id)
 
@@ -863,9 +946,78 @@ outputs: {TOOL_CWL_OUTPUT_VARIABLES}
         with open(output_filename, 'w') as f:
             f.write(bash_commands)
 
+    def tool_workflow_step_cwl(self, tool):
+        '''
+        '''
+
+        ret_p = '''
+   {TOOL_ID}:
+      run: {TOOL_CWL_FILENAME}
+      in: {TOOL_STEP_INPUTS}
+      out: {TOOL_STEP_OUTPUTS}
+'''
+
+        tool_id = Workflow.get_tool_dash_id(tool, no_dots=True)
+
+        # Create tool_step_inputs
+        dependent_variable_tools = self.workflow.tool_dependent_variables[tool_id]
+        if dependent_variable_tools:
+            tool_step_inputs = '\n'
+            for dependent_variable, dependent_tool in dependent_variable_tools:
+                dependent_tool_id = Workflow.get_tool_dash_id(dependent_tool, no_dots=True)
+                dependent_variable_id = Workflow.get_tool_bash_variable(dependent_tool, dependent_variable['name'])
+                tool_step_inputs += ' ' * 9 + dependent_variable_id + ': ' + dependent_tool_id + '/' + dependent_variable_id + '\n'
+
+        else:
+            tool_step_inputs = '[]'
+
+        # Create tool_step_outputs
+        tool_step_outputs = '[' + \
+            ', '.join(
+                [Workflow.get_tool_bash_variable(tool, variable['name']) 
+                    for variable in tool['variables']]
+                ) + \
+            ']'
+
+        return ret_p.format(
+                    TOOL_ID=tool_id,
+                    TOOL_CWL_FILENAME=self.TOOL_CWL_P.format(TOOL_ID=tool_id),
+                    TOOL_STEP_INPUTS=tool_step_inputs,
+                    TOOL_STEP_OUTPUTS=tool_step_outputs,
+                )
+
+    def tool_workflow_cwl(self, ):
+        '''
+        Create a workflow for the installation of tools of this workflow
+        '''
+
+        content_p = '''{HEADER}
+class: Workflow
+
+inputs: []
+
+outputs: []
+
+steps:
+{STEPS}
+
+'''
+
+        steps = '\n'.join([self.tool_workflow_step_cwl(tool) for tool in self.workflow.tool_iterator()]) + '\n'
+
+        content = content_p.format(
+            HEADER = self.header(),
+            STEPS = steps,
+            )
+
+        log_info('Creating CWL workflow for tools: {}'.format(self.TOOLS_WORKFLOW_FILENAME))
+        with open(self.TOOLS_WORKFLOW_FILENAME, 'w') as f:
+            f.write(content)
 
     def build(self, output):
         '''
+        Test with:
+        cwl-runner FILENAME.cwl
         '''
 
         for tool in self.workflow.tool_bash_script_generator():
@@ -873,12 +1025,14 @@ outputs: {TOOL_CWL_OUTPUT_VARIABLES}
             self.tool_cwl_bash(tool)
             self.tool_cwl(tool)
 
+        self.tool_workflow_cwl()
+
             #tool_id = Workflow.get_tool_dash_id(tool)
             
 
             #print (self.tool_to_cwl(tool_id))
 
-            break
+            #break
 
 
 class DockerExecutor(BaseExecutor):
@@ -920,7 +1074,7 @@ if __name__ == '__main__':
 
     runner_options = ['sh', 'cwl']
 
-    parser = argparse.ArgumentParser(description='OpenBio-C worfklow execute-or')
+    parser = argparse.ArgumentParser(description='OpenBio-C workflow execute-or')
 
     parser.add_argument('-W', '--workflow', dest='workflow_filename', help='JSON filename of the workflow to run', required=True)
     parser.add_argument('-S', '--server', dest='server', help='The Server\'s url. It should contain http or https', default='https://www.openbio.eu/platform')
