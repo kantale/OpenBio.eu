@@ -64,7 +64,8 @@ window.onload = function () {
         $('.collapsible').collapsible();
         // -------------------------------------- Datepicker initialization ----------------------------------------------
         $('.datepicker').datepicker();
-
+        // ----------------------------------------- Tabs initialization -------------------------------------------------
+        $('ul.tabs').tabs();
         // ---------------------------------------- Chips initialization -------------------------------------------------
         $('#toolChips').chips({
             placeholder: 'Enter keywords',
@@ -152,6 +153,8 @@ window.onload = function () {
                 onOpenEnd: function (event) {
                     //Update all inputs and text areas so that labels are above.
                     updateTextFieldsCustom();
+                    //Update tabs indicator
+                    $('ul.tabs').tabs();
 
                     // Disabled collapsible
                     if (event.classList.contains('disabled')) {
