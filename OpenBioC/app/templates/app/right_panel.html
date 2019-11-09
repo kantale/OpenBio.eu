@@ -13,23 +13,30 @@
             </div>
         </div>
         <div style="margin: 20px;">
-            <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
-                <p>
-                    <h5>
-                        <span ng-bind="tools_info_name"></span>/<span ng-bind="tools_info_version"></span><span
-                            ng-show="!tools_info_editable">/<span ng-bind="tools_info_edit"></span></span>
-                    </h5>
-                    <small class="form-text text-muted" ng-show="!tools_info_editable">
-                        created by <a ng-click="interlink({type: 'u', username: tool_info_username})">u/<span ng-bind="tool_info_username"></span></a>, created at <span
-                            ng-bind="tool_info_created_at"></span>
-                        {% verbatim %}
-                        <a href="/platform/t/{{tools_info_name}}/{{tools_info_version}}/{{tools_info_edit}}">link</a>
-                        {% endverbatim %}
-                        <span ng-show="tools_info_forked_from">, forked from <a href
-                                ng-click="tools_search_show_item(tools_info_forked_from)">t/<span
-                                    ng-bind="tools_info_forked_from | tool_label"></span></a></span>
-                    </small>
-                </p>
+            <div class="left-align">
+                <div style="overflow: auto;">
+                    <div class="box upDownVoteBoxTitle">
+                        <div class="upvoteDiv upDownvoteDivTitle"><i class="material-icons" style="font-size: 1.64rem;">arrow_upward</i></div>
+                        <h5 style="margin: 0px;"><span>0</span></h5>
+                        <div class="downvoteDiv upDownvoteDivTitle"><i class="material-icons" style="font-size: 1.64rem;">arrow_downward</i></div>
+                    </div>
+                    <div style="float: left;">
+                        <h5 style="margin-top: 0px;">
+                            <span ng-bind="tools_info_name"></span>/<span ng-bind="tools_info_version"></span><span
+                                ng-show="!tools_info_editable">/<span ng-bind="tools_info_edit"></span></span>
+                        </h5>
+                        <small class="form-text text-muted" ng-show="!tools_info_editable">
+                            created by <a ng-click="interlink({type: 'u', username: tool_info_username})">u/<span ng-bind="tool_info_username"></span></a>, created at <span
+                                ng-bind="tool_info_created_at"></span>
+                            {% verbatim %}
+                            <a href="/platform/t/{{tools_info_name}}/{{tools_info_version}}/{{tools_info_edit}}">link</a>
+                            {% endverbatim %}
+                            <span ng-show="tools_info_forked_from">, forked from <a href
+                                    ng-click="tools_search_show_item(tools_info_forked_from)">t/<span
+                                        ng-bind="tools_info_forked_from | tool_label"></span></a></span>
+                        </small>
+                    </div>
+                </div>
                 <!-- Buttons -->
                 <div class="row right-align">
                     <a class="dropdown-trigger btn" data-target='downloadDropdownTool' style="margin-bottom:2px">Download</a>
@@ -382,25 +389,32 @@
             </div>
         </div>
         <div style="margin: 20px;">
-            <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
-                <p ng-show="!workflows_info_editable">
-                    <h5>
-                        <span ng-bind="workflow_info_name"></span><span ng-show="!workflows_info_editable">/<span
-                                ng-bind="workflow_info_edit"></span></span>
-                    </h5>
-                    <small class="form-text text-muted" ng-show="!workflows_info_editable">
-                        created by <a ng-click="interlink({type: 'u', username: workflows_info_username})">u/<span ng-bind="workflows_info_username"></span></a>
-                        <span>, created at <span ng-bind="workflow_info_created_at"></span></span>
-                        {% verbatim %}
-                        <a href="/platform/w/{{workflow_info_name}}/{{workflow_info_edit}}">link</a>
-                        {% endverbatim %}
-                        <span ng-show="workflow_info_forked_from">, forked from <a href
+            <div class="left-align">
+                <div style="overflow: auto;">
+                    <div class="box upDownVoteBoxTitle">
+                        <div class="upvoteDiv upDownvoteDivTitle"><i class="material-icons" style="font-size: 1.64rem;">arrow_upward</i></div>
+                            <h5 style="margin: 0px;"><span>0</span></h5>
+                        <div class="downvoteDiv upDownvoteDivTitle"><i class="material-icons" style="font-size: 1.64rem;">arrow_downward</i></div>
+                    </div>
+                    <div style="float: left;">
+                        <h5 style="margin-top: 0px;">
+                            <span ng-bind="workflow_info_name"></span><span ng-show="!workflows_info_editable">/<span
+                                    ng-bind="workflow_info_edit"></span></span>
+                        </h5>
+                        <small class="form-text text-muted" ng-show="!workflows_info_editable">
+                            created by <a ng-click="interlink({type: 'u', username: workflows_info_username})">u/<span ng-bind="workflows_info_username"></span></a>
+                            <span>, created at <span ng-bind="workflow_info_created_at"></span></span>
+                            {% verbatim %}
+                            <a href="/platform/w/{{workflow_info_name}}/{{workflow_info_edit}}">link</a>
+                            {% endverbatim %}
+                            <span ng-show="workflow_info_forked_from">, forked from <a href
                                 ng-click="workflows_search_show_item(workflow_info_forked_from)">w/<span
-                                    ng-bind="workflow_info_forked_from | workflow_label"></span></a></span>
-                    </small>
-                </p>
+                                ng-bind="workflow_info_forked_from | workflow_label"></span></a></span>
+                        </small>
+                    </div>
+                </div>
                 <!-- Buttons -->
-                <div class="row right-align" style="margin-bottom: 0px;">
+                <div class="row right-align">
                     <!-- <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Run" ng-click="workflow_info_run_pressed()"
                         ng-disabled="workflows_info_editable">Run</a> -->
