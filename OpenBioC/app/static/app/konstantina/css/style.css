@@ -539,13 +539,9 @@ nav {
 
 .upDownVoteBox {
     display: inline;
-    /* margin-top: 200px;
-    width: 40px; */
     background: transparent;
     padding: 5px;
     border-radius: 5px;
-    /* box-shadow: 0px 0px 5px 1px #ccc; */
-    /* font-size: 2em; */
     text-align: center;
     line-height: 1.5em;
     margin-top: -5px; 
@@ -582,8 +578,21 @@ nav {
 
 .upDownVoteSpan {
     display: inline-block;
-    /* font-size: 18px; */
-} 
+}
+
+/* In the title of tools and workflows */
+.upDownVoteBoxTitle {
+    background: transparent;
+    padding: 5px;
+    text-align: center;
+    float: left; 
+    margin-left: 0px; 
+    margin-right: 5px;
+}
+
+.upDownvoteDivTitle {
+    display: block;
+}
 
 /* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
 
