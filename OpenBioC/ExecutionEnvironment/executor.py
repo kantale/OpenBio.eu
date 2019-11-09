@@ -5,9 +5,8 @@ import re
 import copy
 import json
 import base64
-#import bashlex
-import shlex
 import logging
+import bashlex
 import argparse 
 
 from collections import defaultdict
@@ -298,7 +297,10 @@ class Workflow:
         self.tool_slash_id_d = {self.get_tool_slash_id(tool):tool for tool in self.tool_iterator()}
 
         # Create a dictionary. Keys are tool ids. Values are tuples: (variables from which they depend from, deoendent tool)
-        self.tool_dependent_variables = {self.get_tool_dash_id(tool, no_dots=True):self.get_tool_dependent_variables(tool) for tool in self.tool_iterator()}     
+        self.tool_dependent_variables = {self.get_tool_dash_id(tool, no_dots=True):self.get_tool_dependent_variables(tool) for tool in self.tool_iterator()} 
+
+        # Create a dictioray. Keys are step ids. Values are tool objects
+        self.step_ids = {step['id']:step for step in self.step_iterator()}
 
     def check_tool_dependencies_for_circles(self,):
         '''
@@ -830,82 +832,6 @@ class Workflow:
     def bash_tool_installation_finished(tool):
         return Workflow.update_server_status('tool finished {}'.format(tool['label']))
 
-
-    @staticmethod
-    def bash_can_be_broken_down(bash):
-        """
-        Can a bash script be broken down?
-
-    TEST:
-    bash = '''
-get_random(){
-    END=$1 
-    
-    if [ -n "$END" ]; then
-        echo $(( $RANDOM % ( $END + 1 ) ))
-    else
-        echo $RANDOM
-    fi
-}
-    '''
-    Workflow.bash_can_be_broken_down(bash)
-    
-        """
-
-        splitted = ['__FIRST__'] + shlex.split(bash, comments=True) + ['__LAST__']
-        token_generator = (x for x in splitted)
-
-        matches = [
-            ('__FIRST__', '__LAST__'), # This should be always first
-            ('do', 'done'),
-            ('if', 'fi'),
-            ('case', 'esac'),
-            (r'([\w]*\(\))?{', '}'), # i.e my_function(){
-        ]
-        match_start = {x[0]:x[1] for x in matches}
-        match_finish = {x[1]:x[0] for x in matches}
-
-        def balance(token_generator, current_code, current_start_token, the_list):
-            '''
-            Returns a list of lists of... for each sub-group of the bash script
-            '''
-            current_list = [current_start_token]
-            while True:
-                try:
-                    token = next(token_generator)
-                    print (token)
-                except StopIteration as e:
-                    break
-
-                found_first = -1
-                found_second = -1
-
-                for i, pat in enumerate(matches):
-                    if re.match(pat[0], token):
-                        found_first = i
-                        break
-                    elif re.match(pat[1], token):
-                        found_second = i
-                        break
-
-                if found_first >= 0:
-                    balance(token_generator, found_first, token, the_list)
-                elif found_second >= 0:
-                    if found_second == current_code:
-                        current_list.append(token)
-                        the_list.append(current_list)
-                        return
-                    else:
-                        raise OBC_Executor_Exception('Parse error while trying to parse bash script')
-                        
-                else:
-                    current_list.append(token)
-
-        parsing = []
-        balance(token_generator, 0, '__FIRST__', parsing)
-        return parsing
-
-
     def bash_ff(self,):
         '''
         '''
@@ -913,40 +839,144 @@ get_random(){
         # First, check for circles in step calls
         c = self.check_step_calls_for_circles()
         if c:
-            raise OBC_Executor_Exception('Found circle in step calls:\n{}\n. Cannot generate CWL wrofklow'.format(c))
+            raise OBC_Executor_Exception('Found circle in step calls:\n{}\n. Cannot generate CWL worfklow.'.format(c))
+
+        def get_level(command, steps):
+            '''
+            What is the level with which a script is calling a step?
+            command does not necessarily has to be a bashlex command class node 
+            '''
+
+            def recursive(command, current_level):
+                if hasattr(command, 'word'):
+                    if command.word in steps:
+                        return current_level, command.word
+
+                if hasattr(command, 'parts'):
+                    for part in command.parts:
+                        ret = recursive(part, current_level+1)
+                        if ret:
+                            return ret
+
+                if hasattr(command, 'command'):
+                    ret = recursive(command.command, current_level+1)
+                    if ret:
+                        return ret
+
+                return False
+
+            return recursive(command, 1)
 
 
-        def f(current_step):
-            current_bash = current_step['bash']
-            balance = Workflow.bash_can_be_broken_down(current_bash)
-            main_commands = balance[-1][1:-1]
-            current_step_id = current_step['id']
-            calling_steps = current_step['steps']
+        def break_down_step(step):
+            '''
+            '''
 
-            calling_order = []
-            for calling_step_id in calling_steps:
-                if not calling_step_id in main_commands:
-                    raise OBC_Executor_Exception('Step: {} is called from step: {} through a secondary scope.'.format(calling_step_id, current_step_id))
+            bash = step['bash']
+            bash_to_parse = '{\n' + bash + '\n}'
+            calling_steps = step['steps']
 
-                calling_order.append((main_commands.index(calling_step_id), calling_step_id))
+            try:
+                p = bashlex.parse(bash_to_parse)
+            except bashlex.errors.ParsingError as e:
+                raise OBC_Executor_Exception('Could not parse bash script (error 2308). {}'.format(str(e)))
 
-            # Are there any calling steps that have not been called from main_commands?
-            remaining_steps = set(calling_steps) - {s[1] for s in calling_order}
-            if remaining_steps:
-                message = 'Steps: {} are called from {} through a secondary scope.'.format(', '.join(list(remaining_steps)), current_step_id)
-                raise OBC_Executor_Exception(message)
+            if not type(p) is list:
+                raise OBC_Executor_Exception('Could not parse bash script. Error 2301')
 
-            # Order according to calling order (first element in the tuple)
-            calling_order.sort()
-            print (calling_order)
+            if not len(p):
+                raise OBC_Executor_Exception('Could not parse bash script. Is it empty? Error 2302')
 
-            for calling_step_order, calling_step in calling_order:
-                pass
+            if not type(p[0]) is bashlex.ast.node:
+                raise OBC_Executor_Exception('Could not parse bash script. Error 2303')
 
-            assert False # To be continued.. 
+            if not hasattr(p[0], 'list'):
+                raise OBC_Executor_Exception('Could not parse bash script. Error 2304')
+
+            if not type(p[0].list[0]) is bashlex.ast.node:
+                raise OBC_Executor_Exception('Could not parse bash script. Error 2305')
+
+            if not type(p[0].list[1]) is bashlex.ast.node:
+                raise OBC_Executor_Exception('Could not parse bash script. Error 2306')
+
+            if not hasattr(p[0].list[1], 'parts'):
+                raise OBC_Executor_Exception('Could not parse bash script. Error 2307')
+
+            if not len(p[0].list[1].parts):
+                raise OBC_Executor_Exception('Could not parse bash script. Error 2308')
+
+            main_commands = p[0].list[1].parts
+            found_call = False
+
+            for main_command in main_commands:
+
+                level_tuple = get_level(main_command, calling_steps)
+                if level_tuple:
+                    level, called_step = level_tuple
+                    if level>2:
+                        raise OBC_Executor_Exception('Step: {} calls step: {} in a secondary scope (if,while,for,function..). This is not supported.'.format(
+                            step['id'], called_step))
+
+                if not main_command.kind == 'command':
+                    continue
+
+                # This is a command
+
+                if not hasattr(main_command, 'parts'):
+                    continue
+
+                # We are looking for a command with a single part (funtion call)
+                if not len(main_command.parts) == 1:
+                    continue
+
+                # It should be a single word
+                if not main_command.parts[0].kind == 'word':
+                    continue
+
+                word = main_command.parts[0].word
+
+                #It should be a calling step
+                if not word in calling_steps:
+                    continue
+
+                #This is a calling step!
+                found_call = True
+                pos = main_command.parts[0].pos
+
+                part_before_step_call = bash_to_parse[0: pos[0]][2:]
+                yield part_before_step_call
+
+                step_to_call_id = bash_to_parse[pos[0]:pos[1]]
+                step_to_call = self.step_ids[step_to_call_id]
+
+                for item in break_down_step(step_to_call):
+                    yield item
+
+                
+                part_after_step_call = bash_to_parse[pos[1]:][:-2]
+                yield part_after_step_call
+
+            # if we didn't find any step call, yield the whole bash
+            if not found_call:
+                yield bash
+
+
+#                print (part_before_step_call)
+#                print ('==')
+#                print (step_to_call)
+#                print ('==')
+#                print (part_after_step_call)
+#                print ('==')
+#                print (word, pos)
+
+
+ 
+
 
         #Start from root step
-        f(self.root_step)
+        for item in break_down_step(self.root_step):
+            print (item)
+            print ('====')
 
 
 
