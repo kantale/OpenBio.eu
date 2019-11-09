@@ -19,7 +19,7 @@ python get_bash_commands.py
 
 <!-- run -->
 ```
-wget https://code.jquery.com/jquery-3.3.1.min.js
+wget -O jquery-3.3.1.min.js https://code.jquery.com/jquery-3.3.1.min.js
 ```
 
 ### JQuery UI 1.12. . NOT REQUIRED
@@ -29,7 +29,7 @@ https://jqueryui.com/download/
 ### Bootstrap 4.1.3 . NOT REQUIRED 
 
 ```
-wget https://github.com/twbs/bootstrap/releases/download/v4.1.3/bootstrap-4.1.3-dist.zip
+wget -O bootstrap-4.1.3-dist.zip https://github.com/twbs/bootstrap/releases/download/v4.1.3/bootstrap-4.1.3-dist.zip
 ```
 
 ### Angular 1.7.2 . REQUIRED 
@@ -38,8 +38,8 @@ For more .map files see here: https://code.angularjs.org/1.7.2
 
 <!-- run -->
 ```
-wget https://ajax.googleapis.com/ajax/libs/angularjs/1.7.2/angular.min.js
-wget https://code.angularjs.org/1.7.2/angular.min.js.map 
+wget -O angular.min.js https://ajax.googleapis.com/ajax/libs/angularjs/1.7.2/angular.min.js
+wget -O angular.min.js.map https://code.angularjs.org/1.7.2/angular.min.js.map 
 
 ```
 
