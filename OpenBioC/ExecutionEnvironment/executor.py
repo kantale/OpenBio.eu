@@ -832,7 +832,7 @@ class Workflow:
     def bash_tool_installation_finished(tool):
         return Workflow.update_server_status('tool finished {}'.format(tool['label']))
 
-    def bash_ff(self,):
+    def break_down_step_generator(self,):
         '''
         '''
 
@@ -867,8 +867,9 @@ class Workflow:
 
             return recursive(command, 1)
 
+        step_counter = defaultdict(int) # How many times this steps has been yielded?
 
-        def break_down_step(step):
+        def break_down_step_recursive(step):
             '''
             '''
 
@@ -944,17 +945,27 @@ class Workflow:
                 pos = main_command.parts[0].pos
 
                 part_before_step_call = bash_to_parse[0: pos[0]][2:]
-                yield part_before_step_call
+                step_counter[step['id']] += 1
+                yield {
+                    'bash': part_before_step_call,
+                    'id': step['id'],
+                    'count': step_counter[step['id']],
+                }
 
                 step_to_call_id = bash_to_parse[pos[0]:pos[1]]
                 step_to_call = self.step_ids[step_to_call_id]
 
-                for item in break_down_step(step_to_call):
+                for item in break_down_step_recursive(step_to_call):
                     yield item
 
                 
                 part_after_step_call = bash_to_parse[pos[1]:][:-2]
-                yield part_after_step_call
+                step_counter[step['id']] += 1
+                yield {
+                    'bash' : part_after_step_call,
+                    'id': step['id'],
+                    'count': step_counter[step['id']],
+                }
 
             # if we didn't find any step call, yield the whole bash
             if not found_call:
@@ -971,13 +982,7 @@ class Workflow:
 
 
  
-
-
-        #Start from root step
-        for item in break_down_step(self.root_step):
-            print (item)
-            print ('====')
-
+        return break_down_step_recursive(self.root_step)
 
 
 class BaseExecutor():
@@ -1069,9 +1074,25 @@ class CWLExecutor(BaseExecutor):
     RUNNER = '#!/usr/bin/env cwl-runner'
     VERSION = 'v1.0'
     TOOL_BASH_FILENAME_P = '{TOOL_ID}.sh'
+    STEP_BASH_FILENAME_P = '{STEP_ID}_{COUNTER}.sh'
     TOOL_CWL_P = '{TOOL_ID}.cwl'
+    STEP_CWL_P = '{STEP_ID}_{COUNTER}.cwl'
     TOOL_JSON_P = '{TOOL_ID}.json'
     TOOLS_WORKFLOW_FILENAME = 'tools_workflow.cwl'
+    COMMANDLINE_CWL_P = '''{HEADER}
+baseCommand: [{SHELL}, {BASH_FILENAME}]
+class: CommandLineTool
+
+requirements:
+   InitialWorkDirRequirement:
+      listing:
+         - class: File
+           location: {BASH_FILENAME}
+   InlineJavascriptRequirement: {{}}
+
+inputs: {CWL_INPUT_VARIABLES}
+outputs: {CWL_OUTPUT_VARIABLES}
+'''
 
     def header(self,):
         '''
@@ -1083,8 +1104,9 @@ class CWLExecutor(BaseExecutor):
 cwlVersion: {VERSION}
 '''.format(RUNNER=self.RUNNER, VERSION=self.VERSION)
 
-    def tool_cwl_input_variable(self, variable_id):
+    def cwl_input_variable(self, variable_id):
         '''
+        Assume a single variable that is read from command line
         '''
 
         return '''
@@ -1095,21 +1117,27 @@ cwlVersion: {VERSION}
          separate: false
 '''.format(VARIABLE_ID=variable_id)
 
+    def cwl_input_variables(self, variable_ids):
+        '''
+        variable_ids: a list of strings (ids)
+        '''
+        if not variable_ids:
+            return '[]\n\n'
+
+        return ''.join([self.cwl_input_variable(variable_id) for variable_id in variable_ids])
+
 
     def tool_cwl_input_variables(self, tool):
         '''
         '''
 
         tool_id = Workflow.get_tool_dash_id(tool, no_dots=True)
-        if not self.workflow.tool_dependent_variables[tool_id]:
-            return '[]\n\n'
 
-        ret = ''
-        for dependent_variable, dependent_tool in self.workflow.tool_dependent_variables[tool_id]:
-            variable_id = Workflow.get_tool_bash_variable(dependent_tool, dependent_variable['name'])
-            ret += self.tool_cwl_input_variable(variable_id)
+        variable_ids = [Workflow.get_tool_bash_variable(dependent_tool, dependent_variable['name']) 
+            for dependent_variable, dependent_tool 
+                in self.workflow.tool_dependent_variables[tool_id]]
 
-        return ret
+        return self.cwl_input_variables(variable_ids)
 
 
     def tool_cwl_output_variable(self, variable_id, output_json_filename):
@@ -1143,7 +1171,6 @@ cwlVersion: {VERSION}
 
         return ret
 
-
     def tool_cwl(self, tool, shell='sh'):
         '''
         Create a CWL file for the installation of this tool
@@ -1151,25 +1178,12 @@ cwlVersion: {VERSION}
 
         tool_id = Workflow.get_tool_dash_id(tool, no_dots=True)
 
-        content = '''{HEADER}
-baseCommand: [{SHELL}, {TOOL_BASH_FILENAME}]
-class: CommandLineTool
-
-requirements:
-   InitialWorkDirRequirement:
-      listing:
-         - class: File
-           location: {TOOL_BASH_FILENAME}
-   InlineJavascriptRequirement: {{}}
-
-inputs: {TOOL_CWL_INPUT_VARIABLES}
-outputs: {TOOL_CWL_OUTPUT_VARIABLES}
-'''.format(
+        content = self.COMMANDLINE_CWL_P.format(
         HEADER=self.header(),
         SHELL=shell,
-        TOOL_BASH_FILENAME=self.TOOL_BASH_FILENAME_P.format(TOOL_ID=tool_id),
-        TOOL_CWL_INPUT_VARIABLES=self.tool_cwl_input_variables(tool),
-        TOOL_CWL_OUTPUT_VARIABLES=self.tool_cwl_output_variables(tool),
+        BASH_FILENAME=self.TOOL_BASH_FILENAME_P.format(TOOL_ID=tool_id),
+        CWL_INPUT_VARIABLES=self.tool_cwl_input_variables(tool),
+        CWL_OUTPUT_VARIABLES=self.tool_cwl_output_variables(tool),
     )
 
         output_filename = self.TOOL_CWL_P.format(TOOL_ID=tool_id)
@@ -1263,11 +1277,65 @@ steps:
         with open(self.TOOLS_WORKFLOW_FILENAME, 'w') as f:
             f.write(content)
 
+    def step_cwl_bash(self, step_breaked):
+        '''
+        '''
+        bash_filename = self.STEP_BASH_FILENAME_P.format(
+            STEP_ID=step_breaked['step_id'],
+            COUNTER=step_breaked['counter'],
+        )
+
+        log_info('CREATING CWL BASH for step: {}'.format(bash_filename))
+        with open(bash_filename, 'w') as f:
+            f.write(step_breaked['bash'])
+
+    def step_breaked_cwl(self, step_breaked, shell='sh'):
+        '''
+        Create a CWL for this breaked step
+        step_breaked is an object yielded from break_down_step_generator
+        '''
+
+        bash_filename = self.STEP_BASH_FILENAME_P.format(
+            STEP_ID=step_breaked['id'],
+            COUNTER=step_breaked['count'],
+        )
+
+        input_variables = []
+        # The input variables of this breaked step are:
+        #  1. The tools used in the step
+        #  2. The input values read from the step
+        #  3. The intermediate variables from previous parts of the same step
+
+        #1. Tools used in this step:
+        print (self.workflow.step_ids[step_breaked['id']])
+
+        print (self.workflow.tool_dependent_variables)
+
+        input_variables.extend(
+            [Workflow.get_tool_bash_variable(dependent_tool, dependent_variable['name']) 
+                for tool_id in self.workflow.step_ids[step_breaked['id']]['tools']
+                    for dependent_variable, dependent_tool 
+                        in self.workflow.tool_dependent_variables[tool_id]]
+        )
+
+        print (input_variables)
+
+        content = self.COMMANDLINE_CWL_P.format(
+            HEADER = self.header(),
+            SHELL=shell,
+            BASH_FILENAME=bash_filename,
+            #CWL_INPUT_VARIABLES=
+
+
+        )
+
     def step_workflow_cwl(self,):
         '''
         '''
 
-        self.workflow.bash_ff()
+        for step_breaked in self.workflow.break_down_step_generator():
+            self.step_breaked_cwl(step_breaked)
+
 
     def build(self, output):
         '''
