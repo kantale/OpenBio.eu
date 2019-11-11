@@ -374,6 +374,27 @@ class Workflow:
 
         return ret
 
+    @staticmethod
+    def read_arguments_from_commandline(arguments):
+        '''
+        '''
+
+        ret = ''
+        ret += 'for i in "$@"\n'
+        ret += 'do\n'
+        ret += 'case $i in\n'
+        for variable_id in arguments:
+            ret += '  --{VARIABLE_ID}=*)\n'.format(VARIABLE_ID=variable_id)
+            ret += '  {VARIABLE_ID}="${{i#*=}}"\n'.format(VARIABLE_ID=variable_id)
+            ret += '  shift\n'
+            ret += '  ;;\n'
+        ret += '  *)\n'
+        ret += '  ;;\n'
+        ret += 'esac\n'
+        ret += 'done\n\n'
+
+        return ret
+
 
     def get_tool_bash_commands(self, tool, 
         validation=True, 
@@ -397,21 +418,9 @@ class Workflow:
         if update_server_status:
             ret += Workflow.bash_tool_installation_started(tool) + '\n'
         if read_variables_from_command_line:
-            ret += 'for i in "$@"\n'
-            ret += 'do\n'
-            ret += 'case $i in\n'
-            for dependent_variable, dependent_tool in self.tool_dependent_variables[tool_id]:
-
-                variable_id = Workflow.get_tool_bash_variable(dependent_tool, dependent_variable['name'])
-
-                ret += '  --{VARIABLE_ID}=*)\n'.format(VARIABLE_ID=variable_id)
-                ret += '  {VARIABLE_ID}="${{i#*=}}"\n'.format(VARIABLE_ID=variable_id)
-                ret += '  shift\n'
-                ret += '  ;;\n'
-            ret += '  *)\n'
-            ret += '  ;;\n'
-            ret += 'esac\n'
-            ret += 'done\n\n'
+            arguments = [Workflow.get_tool_bash_variable(dependent_tool, dependent_variable['name']) 
+                            for dependent_variable, dependent_tool in self.tool_dependent_variables[tool_id]]
+            ret += Workflow.read_arguments_from_commandline(arguments)
 
         ret += tool['installation_commands'] + '\n'
         ret += 'echo "OBC: INSTALLATION OF TOOL: {} . COMPLETED"\n'.format(tool['label'])
@@ -867,35 +876,38 @@ class Workflow:
 
             return recursive(command, 1)
 
-        def save_variables(bash, save_to, read_from):
+        def save_variables(bash, read_from, save_to):
             '''
+            read_from is either None or __VARS_sh (no dot)
             '''
 
             ret = ''
             if read_from:
-                ret = '. ./{}\n'.format(read_from)
+                ret += Workflow.read_arguments_from_commandline([read_from])
+                ret += '. ${{{}}}\n'.format(read_from)
 
             ret += 'OBC_START=$(eval "declare")\n'
             ret += bash + '\n'
             ret += 'OBC_CURRENT=$(eval "declare")\n'
-            ret += 'comm -3 <(echo "$OBC_START" | grep -v "_=") <(echo "$OBC_CURRENT" | grep -v OBC_START | grep -v PIPESTATUS | grep -v "_=") > {}\n'.format(save_to)
+            ret += 'comm -3 <(echo "$OBC_START" | grep -v "_=") <(echo "$OBC_CURRENT" | grep -v OBC_START | grep -v PIPESTATUS | grep -v "_=") > ./{}\n'.format(save_to)
             return ret
 
 
         def create_json(bash, step, step_breaked_id, is_last):
             '''
             Create a json file with the output variables
+            We do not actually have to pass the intermediate VAR_SH name in the json.. We do not read it.. Maybe we will correct this in the future
+            We read the VAR_SH from command line
             '''
 
-            filename_with_intermediate = '{}__{}.sh'.format(step['id'], step_breaked_id)
+            filename_with_intermediate = '{}__{}__VARS.sh'.format(step['id'], step_breaked_id)
             output_filename = '{}__{}.json'.format(step['id'], step_breaked_id)
 
             output_variables = ''
             if is_last:
                 for var in step['outputs']:
                     output_variables += ',\n"{VAR}": "{VAR}"\n'.format(VAR=var)
-                
-
+            
             content = '''
 cat > {OUTPUT_FILENAME} << 'ENDOFFILE'
 {{
@@ -958,7 +970,7 @@ ENDOFFILE
 
             main_commands = p[0].list[1].parts
             found_call = False
-            start = 0
+            start = 2 # Remove '{\n'
             read_from = None
 
             for main_command in main_commands:
@@ -996,16 +1008,18 @@ ENDOFFILE
                 found_call = True
                 pos = main_command.parts[0].pos
 
-                part_before_step_call = bash_to_parse[start: pos[0]][2:]
+                part_before_step_call = bash_to_parse[start: pos[0]]
                 step_counter[step['id']] += 1
-                save_to = '{}__{}.sh'.format(step['id'], step_counter[step['id']])
+                save_to = '{}__{}__VARS.sh'.format(step['id'], step_counter[step['id']])
+                save_to_nodot = '{}__{}__VARS_sh'.format(step['id'], step_counter[step['id']])
                 yield {
-                    'bash': create_json(save_variables(part_before_step_call, read_from, save_to), step, step_counter[step['id']], False),
+                    'bash': create_json(save_variables(part_before_step_call, read_from, save_to), step, step_counter[step['id']], False) ,
                     'id': step['id'],
                     'count': step_counter[step['id']],
                     'last': False,
                 }
-                read_from = save_to
+                #read_from = save_to
+                read_from = save_to_nodot
                 
 
                 step_to_call_id = bash_to_parse[pos[0]:pos[1]]
@@ -1019,7 +1033,8 @@ ENDOFFILE
             # Yield the rest
             part_after_step_call = bash_to_parse[start:][:-2]
             step_counter[step['id']] += 1
-            save_to = '{}__{}.sh'.format(step['id'], step_counter[step['id']])
+            save_to = '{}__{}__VARS.sh'.format(step['id'], step_counter[step['id']])
+            save_to_nodot = '{}__{}__VARS_sh'.format(step['id'], step_counter[step['id']])
             yield {
                 'bash' : create_json(save_variables(part_after_step_call, read_from, save_to), step, step_counter[step['id']], True),
                 'id': step['id'],
@@ -1130,9 +1145,9 @@ class CWLExecutor(BaseExecutor):
     RUNNER = '#!/usr/bin/env cwl-runner'
     VERSION = 'v1.0'
     TOOL_BASH_FILENAME_P = '{TOOL_ID}.sh'
-    STEP_BASH_FILENAME_P = '{STEP_ID}_{COUNTER}.sh'
+    STEP_BASH_FILENAME_P = '{STEP_ID}__{COUNTER}.sh'
     TOOL_CWL_P = '{TOOL_ID}.cwl'
-    STEP_CWL_P = '{STEP_ID}_{COUNTER}.cwl'
+    STEP_CWL_P = '{STEP_ID}__{COUNTER}.cwl'
     TOOL_JSON_P = '{TOOL_ID}.json'
     FINAL_WORKFLOW_FILENAME = 'workflow.cwl'
     COMMANDLINE_CWL_P = '''{HEADER}
@@ -1167,11 +1182,14 @@ cwlVersion: {VERSION}
 
         return '''
    {VARIABLE_ID}:
-      type: string
+      type: {TYPE}
       inputBinding:
          prefix: --{VARIABLE_ID}=
          separate: false
-'''.format(VARIABLE_ID=variable_id)
+'''.format(
+    TYPE = 'File' if re.search(r'__VARS_sh$', variable_id) else 'string', 
+    VARIABLE_ID=variable_id,
+    )
 
     def cwl_input_variables(self, variable_ids):
         '''
@@ -1201,6 +1219,17 @@ cwlVersion: {VERSION}
         Set the value of the output from a json file
         '''
 
+        if re.search(r'__VARS_sh$', variable_id):
+            return '''
+   {VARIABLE_ID}:
+      type: File
+      outputBinding:
+         glob: {VARS_FILENAME}
+'''.format(
+    VARIABLE_ID=variable_id,
+    VARS_FILENAME=variable_id.replace('__VARS_sh', '__VARS.sh')
+    )
+
         return '''
    {VARIABLE_ID}:
       type: string
@@ -1209,7 +1238,9 @@ cwlVersion: {VERSION}
          loadContents: true
          outputEval: $(JSON.parse(self[0].contents).{VARIABLE_ID})
 
-'''.format(VARIABLE_ID=variable_id, OUTPUT_JSON_FILENAME=output_json_filename)
+'''.format(
+    VARIABLE_ID=variable_id,
+    OUTPUT_JSON_FILENAME=output_json_filename)
 
     def cwl_output_variables(self, variables):
         '''
@@ -1241,7 +1272,7 @@ cwlVersion: {VERSION}
 
         return ret
 
-    def tool_cwl(self, tool, shell='sh'):
+    def tool_cwl(self, tool, shell='bash'):
         '''
         Create a CWL file for the installation of this tool
         '''
@@ -1249,12 +1280,12 @@ cwlVersion: {VERSION}
         tool_id = Workflow.get_tool_dash_id(tool, no_dots=True)
 
         content = self.COMMANDLINE_CWL_P.format(
-        HEADER=self.header(),
-        SHELL=shell,
-        BASH_FILENAME=self.TOOL_BASH_FILENAME_P.format(TOOL_ID=tool_id),
-        CWL_INPUT_VARIABLES=self.tool_cwl_input_variables(tool),
-        CWL_OUTPUT_VARIABLES=self.tool_cwl_output_variables(tool),
-    )
+            HEADER=self.header(),
+            SHELL=shell,
+            BASH_FILENAME=self.TOOL_BASH_FILENAME_P.format(TOOL_ID=tool_id),
+            CWL_INPUT_VARIABLES=self.tool_cwl_input_variables(tool),
+            CWL_OUTPUT_VARIABLES=self.tool_cwl_output_variables(tool),
+        )
 
         output_filename = self.TOOL_CWL_P.format(TOOL_ID=tool_id)
         log_info('Creating CWL for tool: {}'.format(output_filename))
@@ -1297,7 +1328,7 @@ cwlVersion: {VERSION}
             output_variables_str = '[' + ', '.join(output_variables) + ']\n'
 
 
-        ret_p = '''
+        return '''
    {STEP_ID}:
       run: {STEP_FILENAME_CWL}
       in: {INPUT_VARIABLES}
@@ -1305,7 +1336,7 @@ cwlVersion: {VERSION}
 
 '''.format(
         STEP_ID=step_id,
-        STEP_FILENAME_SH=step_filename_cwl,
+        STEP_FILENAME_CWL=step_filename_cwl,
         INPUT_VARIABLES=input_variables_str,
         OUTPUT_VARIABLES=output_variables_str,
     )
@@ -1370,8 +1401,6 @@ steps:
 
 '''
 
-        
-
         content = content_p.format(
             HEADER = self.header(),
             STEPS = steps,
@@ -1393,10 +1422,12 @@ steps:
         with open(bash_filename, 'w') as f:
             f.write(step_breaked['bash'])
 
-    def step_breaked_cwl(self, step_breaked, shell='sh'):
+    def step_breaked_cwl(self, step_breaked, shell='bash'):
         '''
         Create a CWL for this breaked step
         step_breaked is an object yielded from break_down_step_generator
+
+        WARNING! should not work in shell that does not support command substitution
         '''
 
         step_id = '{}__{}'.format(step_breaked['id'], step_breaked['count'])
@@ -1409,9 +1440,11 @@ steps:
         # The json file with the output variables
         filename_output_json = '{}__{}.json'.format(step_breaked['id'], step_breaked['count'])
         filename_output_sh = '{}__{}.sh'.format(step_breaked['id'], step_breaked['count'])
+        filename_output_vars_sh = '{}__{}__VARS.sh'.format(step_breaked['id'], step_breaked['count'])
+        filename_output_vars_sh_nodot = '{}__{}__VARS_sh'.format(step_breaked['id'], step_breaked['count'])
         filename_output_cwl = '{}__{}.cwl'.format(step_breaked['id'], step_breaked['count'])
 
-        log_info('CREATING STEP INTERMEDIATE CWL SH:{}'.format(filename_output_sh))
+        log_info('CREATING STEP INTERMEDIATE CWL SH: {}'.format(filename_output_sh))
         with open(filename_output_sh, 'w') as f:
             f.write(step_breaked['bash'])
 
@@ -1455,7 +1488,7 @@ steps:
 
         # 3. The intermediate variables from previous parts of the same step
         if step_breaked['count']>1:
-            input_name = '{}__{}_sh'.format(step_breaked['id'], step_breaked['count']-1)
+            input_name = '{}__{}__VARS_sh'.format(step_breaked['id'], step_breaked['count']-1)
             input_variables.append(input_name)
             input_variables_to_final.append({
                 'input_name': input_name,
@@ -1466,6 +1499,7 @@ steps:
         #print (input_variables)
 
         output_variables = []
+        output_variables_to_final = []
 
         # The output variables of this breaked step are
         # 1. The output variables set in this step
@@ -1478,7 +1512,8 @@ steps:
                 output_variables.append( (var, filename_output_json) )
         
         # 2. The intermediate variables of the previous breaked step
-        output_variables.append((filename_output_sh.replace('.','_'), filename_output_json))
+        output_variables.append((filename_output_vars_sh_nodot, filename_output_json))
+        output_variables_to_final.append(filename_output_vars_sh_nodot)
 
 
         content = self.COMMANDLINE_CWL_P.format(
@@ -1499,7 +1534,7 @@ steps:
             'step_id': step_id,
             'step_filename_cwl': filename_output_cwl,
             'input_variables': input_variables_to_final,
-            'output_variables': output_variables,
+            'output_variables': output_variables_to_final,
         }
 
     def step_workflow_cwl(self,):
@@ -1523,7 +1558,7 @@ steps:
             self.tool_cwl(tool)
 
         tool_steps = '\n'.join([self.tool_workflow_step_cwl(tool) for tool in self.workflow.tool_iterator()]) + '\n'
-        intermediate_steps = '\n'.join([self.step_workflow_cwl(**step) for step in self.step_workflow_cwl()]) + '\n'
+        intermediate_steps = '\n'.join([self.final_workflow_step_cwl(**step) for step in self.step_workflow_cwl()]) + '\n'
 
         self.final_workflow_cwl(tool_steps + intermediate_steps)
 
