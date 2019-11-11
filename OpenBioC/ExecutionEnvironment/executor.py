@@ -899,18 +899,17 @@ class Workflow:
             content = '''
 cat > {OUTPUT_FILENAME} << 'ENDOFFILE'
 {{
-"{FILENAME_WITH_INTERMEDIATE}": "{FILENAME_WITH_INTERMEDIATE}"{OUTPUT_VARIABLES}
+"{FILENAME_WITH_INTERMEDIATE_NODOT}": "{FILENAME_WITH_INTERMEDIATE}"{OUTPUT_VARIABLES}
 }}
 ENDOFFILE
 '''.format(
     OUTPUT_FILENAME=output_filename,
+    FILENAME_WITH_INTERMEDIATE_NODOT=filename_with_intermediate.replace('.', '_'),
     FILENAME_WITH_INTERMEDIATE = filename_with_intermediate,
     OUTPUT_VARIABLES = output_variables,
     )
 
             return bash+content
-
-
 
 
         step_counter = defaultdict(int) # How many times this steps has been yielded?
@@ -920,13 +919,18 @@ ENDOFFILE
             '''
 
             bash = step['bash']
+            if not bash.strip():
+                return
             bash_to_parse = '{\n' + bash + '\n}'
             calling_steps = step['steps']
 
             try:
                 p = bashlex.parse(bash_to_parse)
             except bashlex.errors.ParsingError as e:
-                raise OBC_Executor_Exception('Could not parse bash script (error 2308). {}'.format(str(e)))
+                message = 'Could not parse bash script (error 2320):\n'
+                message += bash_to_parse + '\n'
+                message += 'Error: {}'.format(str(e))
+                raise OBC_Executor_Exception(message)
 
             if not type(p) is list:
                 raise OBC_Executor_Exception('Could not parse bash script. Error 2301')
@@ -1130,7 +1134,7 @@ class CWLExecutor(BaseExecutor):
     TOOL_CWL_P = '{TOOL_ID}.cwl'
     STEP_CWL_P = '{STEP_ID}_{COUNTER}.cwl'
     TOOL_JSON_P = '{TOOL_ID}.json'
-    TOOLS_WORKFLOW_FILENAME = 'tools_workflow.cwl'
+    FINAL_WORKFLOW_FILENAME = 'workflow.cwl'
     COMMANDLINE_CWL_P = '''{HEADER}
 baseCommand: [{SHELL}, {BASH_FILENAME}]
 class: CommandLineTool
@@ -1275,8 +1279,40 @@ cwlVersion: {VERSION}
         with open(output_filename, 'w') as f:
             f.write(bash_commands)
 
+    def final_workflow_step_cwl(self, step_id, step_filename_cwl, input_variables, output_variables):
+        '''
+        Create steps for the final workflow file
+        '''
+
+        if not input_variables:
+            input_variables_str = '[]'
+        else:
+            input_variables_str = '\n'
+            for input_variable in input_variables:
+                input_variables_str += ' ' * 9 + input_variable['input_name'] + ': ' + input_variable['input_source'] + '/' + input_variable['input_name'] + '\n'
+
+        if not output_variables:
+            output_variables_str = '[]\n'
+        else:
+            output_variables_str = '[' + ', '.join(output_variables) + ']\n'
+
+
+        ret_p = '''
+   {STEP_ID}:
+      run: {STEP_FILENAME_CWL}
+      in: {INPUT_VARIABLES}
+      out: {OUTPUT_VARIABLES}
+
+'''.format(
+        STEP_ID=step_id,
+        STEP_FILENAME_SH=step_filename_cwl,
+        INPUT_VARIABLES=input_variables_str,
+        OUTPUT_VARIABLES=output_variables_str,
+    )
+
     def tool_workflow_step_cwl(self, tool):
         '''
+        This is the final workflow
         '''
 
         ret_p = '''
@@ -1315,9 +1351,11 @@ cwlVersion: {VERSION}
                     TOOL_STEP_OUTPUTS=tool_step_outputs,
                 )
 
-    def tool_workflow_cwl(self, ):
+    def final_workflow_cwl(self, steps):
         '''
-        Create a workflow for the installation of tools of this workflow
+        Create a final workflow for:
+           the installation of tools of this workflow
+           define the order of the intermediate steps
         '''
 
         content_p = '''{HEADER}
@@ -1332,15 +1370,15 @@ steps:
 
 '''
 
-        steps = '\n'.join([self.tool_workflow_step_cwl(tool) for tool in self.workflow.tool_iterator()]) + '\n'
+        
 
         content = content_p.format(
             HEADER = self.header(),
             STEPS = steps,
             )
 
-        log_info('Creating CWL workflow for tools: {}'.format(self.TOOLS_WORKFLOW_FILENAME))
-        with open(self.TOOLS_WORKFLOW_FILENAME, 'w') as f:
+        log_info('Creating FINAL CWL workflow: {}'.format(self.FINAL_WORKFLOW_FILENAME))
+        with open(self.FINAL_WORKFLOW_FILENAME, 'w') as f:
             f.write(content)
 
     def step_cwl_bash(self, step_breaked):
@@ -1361,6 +1399,8 @@ steps:
         step_breaked is an object yielded from break_down_step_generator
         '''
 
+        step_id = '{}__{}'.format(step_breaked['id'], step_breaked['count'])
+
         bash_filename = self.STEP_BASH_FILENAME_P.format(
             STEP_ID=step_breaked['id'],
             COUNTER=step_breaked['count'],
@@ -1376,6 +1416,8 @@ steps:
             f.write(step_breaked['bash'])
 
         input_variables = []
+        input_variables_to_final = [] # The argument to pass to final_workflow_step_cwl
+
         # The input variables of this breaked step are:
         #  1. The tools used in the step
         #  2. The input values read from the step
@@ -1392,19 +1434,33 @@ steps:
 
             return '__'.join(tool_id.split('__')[0:-1]).replace('.', '_')
 
-        input_variables.extend(
-            [Workflow.get_tool_bash_variable(dependent_tool, dependent_variable['name']) 
-                for tool_id in self.workflow.step_ids[step_breaked['id'].replace('.', '_')]['tools']
-                    for dependent_variable, dependent_tool 
-                        in self.workflow.tool_dependent_variables[convert_tool_id(tool_id)]]
-        )
+        for tool_id in self.workflow.step_ids[step_breaked['id'].replace('.', '_')]['tools']:
+            new_tool_id = convert_tool_id(tool_id)
+            for dependent_variable, dependent_tool in self.workflow.tool_dependent_variables[new_tool_id]:
+
+                input_name = Workflow.get_tool_bash_variable(dependent_tool, dependent_variable['name'])
+
+                input_variables.append(input_name)
+                input_variables_to_final.append({
+                    'input_name': input_name,
+                    'input_source': new_tool_id,
+                })
+
 
         # 2. The input values read from the step
         input_variables.extend(self.workflow.step_ids[step_breaked['id']]['inputs'])
 
+        if self.workflow.step_ids[step_breaked['id']]['inputs']:
+            raise OBC_Executor_Exception('INPUT/OUTPUT VARIABLES ARE NOT YET IMPLEMENTED IN CWL')
+
         # 3. The intermediate variables from previous parts of the same step
         if step_breaked['count']>1:
-            input_variables.append('{}__{}.sh'.format(step_breaked['id'], step_breaked['count']-1))
+            input_name = '{}__{}_sh'.format(step_breaked['id'], step_breaked['count']-1)
+            input_variables.append(input_name)
+            input_variables_to_final.append({
+                'input_name': input_name,
+                'input_source': '{}__{}'.format(step_breaked['id'], step_breaked['count']-1)
+            })
 
 
         #print (input_variables)
@@ -1422,7 +1478,7 @@ steps:
                 output_variables.append( (var, filename_output_json) )
         
         # 2. The intermediate variables of the previous breaked step
-        output_variables.append((filename_output_sh, filename_output_json))
+        output_variables.append((filename_output_sh.replace('.','_'), filename_output_json))
 
 
         content = self.COMMANDLINE_CWL_P.format(
@@ -1437,12 +1493,22 @@ steps:
         with open(filename_output_cwl, 'w') as f:
             f.write(content)
 
+        # Create return object. This will be passed to final_workflow_step_cwl to create the final workflow
+        # For reference: final_workflow_step_cwl(self, step_id, step_filename_cwl, input_variables, output_variables)
+        return {
+            'step_id': step_id,
+            'step_filename_cwl': filename_output_cwl,
+            'input_variables': input_variables_to_final,
+            'output_variables': output_variables,
+        }
+
     def step_workflow_cwl(self,):
         '''
+        Create all intermediate steps (breaked steps)
+        Create an object to pass to final_workflow_cwl
         '''
 
-        for step_breaked in self.workflow.break_down_step_generator():
-            self.step_breaked_cwl(step_breaked)
+        return [self.step_breaked_cwl(step_breaked) for step_breaked in self.workflow.break_down_step_generator()]
 
 
     def build(self, output):
@@ -1456,8 +1522,10 @@ steps:
             self.tool_cwl_bash(tool)
             self.tool_cwl(tool)
 
-        self.tool_workflow_cwl()
-        self.step_workflow_cwl()
+        tool_steps = '\n'.join([self.tool_workflow_step_cwl(tool) for tool in self.workflow.tool_iterator()]) + '\n'
+        intermediate_steps = '\n'.join([self.step_workflow_cwl(**step) for step in self.step_workflow_cwl()]) + '\n'
+
+        self.final_workflow_cwl(tool_steps + intermediate_steps)
 
             #tool_id = Workflow.get_tool_dash_id(tool)
             
