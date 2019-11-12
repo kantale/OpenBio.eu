@@ -911,11 +911,14 @@ class Workflow:
             content = '''
 cat > {OUTPUT_FILENAME} << 'ENDOFFILE'
 {{
+"{STEP_ID}__{COUNT}__ID": "{STEP_ID}__{COUNT}__ID",
 "{FILENAME_WITH_INTERMEDIATE_NODOT}": "{FILENAME_WITH_INTERMEDIATE}"{OUTPUT_VARIABLES}
 }}
 ENDOFFILE
 '''.format(
     OUTPUT_FILENAME=output_filename,
+    STEP_ID=step['id'],
+    COUNT=step_breaked_id,
     FILENAME_WITH_INTERMEDIATE_NODOT=filename_with_intermediate.replace('.', '_'),
     FILENAME_WITH_INTERMEDIATE = filename_with_intermediate,
     OUTPUT_VARIABLES = output_variables,
@@ -1422,10 +1425,11 @@ steps:
         with open(bash_filename, 'w') as f:
             f.write(step_breaked['bash'])
 
-    def step_breaked_cwl(self, step_breaked, shell='bash'):
+    def step_breaked_cwl(self, step_breaked, previous_step, shell='bash'):
         '''
         Create a CWL for this breaked step
         step_breaked is an object yielded from break_down_step_generator
+        previous_step is the previous step from the step walker. If this is the first, previous_step=None
 
         WARNING! should not work in shell that does not support command substitution
         '''
@@ -1455,6 +1459,7 @@ steps:
         #  1. The tools used in the step
         #  2. The input values read from the step
         #  3. The intermediate variables from previous parts of the same step
+        #  4. The current step id from the previous step. Used to figure out the execution order of the steps
 
         # 1. Tools used in this step:
         #print (self.workflow.step_ids[step_breaked['id']])
@@ -1495,6 +1500,14 @@ steps:
                 'input_source': '{}__{}'.format(step_breaked['id'], step_breaked['count']-1)
             })
 
+        # 4. The current step id from the previous step. Used to figure out the execution order of the steps
+        if previous_step:
+            input_variables.append('{}__{}__ID'.format(previous_step['id'], previous_step['count']))
+            input_variables_to_final.append({
+                'input_name': '{}__{}__ID'.format(previous_step['id'], previous_step['count']),
+                'input_source': '{}__{}'.format(previous_step['id'], previous_step['count']),
+                })
+
 
         #print (input_variables)
 
@@ -1504,6 +1517,7 @@ steps:
         # The output variables of this breaked step are
         # 1. The output variables set in this step
         # 2. The intermediate variables of the previous breaked step
+        # 3. The Current step id. Used to figure out the step execution order
 
         # 1. The output variables that are set from this step
         if step_breaked['last']:
@@ -1514,6 +1528,10 @@ steps:
         # 2. The intermediate variables of the previous breaked step
         output_variables.append((filename_output_vars_sh_nodot, filename_output_json))
         output_variables_to_final.append(filename_output_vars_sh_nodot)
+
+        # 3. The current step id. Used to figure out the step execution order
+        output_variables.append(('{}__{}__ID'.format(step_breaked['id'], step_breaked['count']), filename_output_json))
+        output_variables_to_final.append('{}__{}__ID'.format(step_breaked['id'], step_breaked['count']))
 
 
         content = self.COMMANDLINE_CWL_P.format(
@@ -1541,9 +1559,16 @@ steps:
         '''
         Create all intermediate steps (breaked steps)
         Create an object to pass to final_workflow_cwl
+        Also pass the previous step. This will help figure out the correct step execution order
         '''
 
-        return [self.step_breaked_cwl(step_breaked) for step_breaked in self.workflow.break_down_step_generator()]
+        ret = []
+        previous_step = None
+        for step_breaked in self.workflow.break_down_step_generator():
+            ret.append( self.step_breaked_cwl(step_breaked, previous_step=previous_step) )
+            previous_step = step_breaked
+
+        return ret
 
 
     def build(self, output):
