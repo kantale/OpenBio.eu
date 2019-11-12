@@ -167,9 +167,10 @@ class Workflow:
         for tool in tool_installation_order:
             yield tool
 
-    def get_tool_dependent_variables(self, tool,):
+    def get_tool_dependent_variables(self, tool, include_this_tool=False):
         '''
         Get the variables for which this tool is dependent
+        include_this_tool: If True, include also the variables of this tool
         '''
 
         def recursion(tool, the_list):
@@ -181,6 +182,10 @@ class Workflow:
 
         the_list = []
         recursion(tool, the_list)
+        if include_this_tool:
+            for variable in tool['variables']:
+                the_list.append((variable, tool))
+
         return the_list
 
     def parse_workflow_filename(self, ):
@@ -296,8 +301,13 @@ class Workflow:
         # Create a dictionary. Keys are tool slash id. values are tools
         self.tool_slash_id_d = {self.get_tool_slash_id(tool):tool for tool in self.tool_iterator()}
 
-        # Create a dictionary. Keys are tool ids. Values are tuples: (variables from which they depend from, deoendent tool)
+        # Create a dictionary. Keys are tool ids. Values are tuples: (variables from which they depend from, dependent tool)
+        # This does not contain the variables of the tool that is the key
         self.tool_dependent_variables = {self.get_tool_dash_id(tool, no_dots=True):self.get_tool_dependent_variables(tool) for tool in self.tool_iterator()} 
+
+        # Create a dictionary. Keys are tool ids. Values are tuples: (variables from which they depend from, dependent tool)
+        # It also contains the variables of the tool that is the key
+        self.tool_variables = {self.get_tool_dash_id(tool, no_dots=True):self.get_tool_dependent_variables(tool, include_this_tool=True) for tool in self.tool_iterator()} 
 
         # Create a dictioray. Keys are step ids. Values are tool objects
         self.step_ids = {step['id']:step for step in self.step_iterator()}
@@ -841,6 +851,33 @@ class Workflow:
     def bash_tool_installation_finished(tool):
         return Workflow.update_server_status('tool finished {}'.format(tool['label']))
 
+    def step_tool_variables(self, step):
+        '''
+        Get all the tools variables that are used in this step
+        '''
+
+        def convert_tool_id(tool_id):
+            if not tool_id.count('__') == 3:
+                return tool_id
+
+            return '__'.join(tool_id.split('__')[0:-1]).replace('.', '_')
+
+
+        input_variables_to_final = []
+        for tool_id in step['tools']:
+            new_tool_id = convert_tool_id(tool_id)
+            for dependent_variable, dependent_tool in self.tool_variables[new_tool_id]:
+                input_name = Workflow.get_tool_bash_variable(dependent_tool, dependent_variable['name'])
+
+
+                input_variables_to_final.append({
+                    'input_name': input_name,
+                    'input_source': new_tool_id,
+                })
+
+
+        return input_variables_to_final
+
     def break_down_step_generator(self,):
         '''
         '''
@@ -876,14 +913,15 @@ class Workflow:
 
             return recursive(command, 1)
 
-        def save_variables(bash, read_from, save_to):
+        def save_variables(bash, read_from, save_to, input_tool_variables):
             '''
             read_from is either None or __VARS_sh (no dot)
             '''
 
             ret = ''
+            if read_from or input_tool_variables :
+                ret += Workflow.read_arguments_from_commandline([read_from] + input_tool_variables)
             if read_from:
-                ret += Workflow.read_arguments_from_commandline([read_from])
                 ret += '. ${{{}}}\n'.format(read_from)
 
             ret += 'OBC_START=$(eval "declare")\n'
@@ -926,7 +964,6 @@ ENDOFFILE
 
             return bash+content
 
-
         step_counter = defaultdict(int) # How many times this steps has been yielded?
 
         def break_down_step_recursive(step):
@@ -938,6 +975,11 @@ ENDOFFILE
                 return
             bash_to_parse = '{\n' + bash + '\n}'
             calling_steps = step['steps']
+
+            # Get the input variables of this step.
+            # We need to add them in every breaked step in order to read from the command line 
+            input_tool_variables = [variable['input_name'] for variable in self.step_tool_variables(step)]
+
 
             try:
                 p = bashlex.parse(bash_to_parse)
@@ -1016,7 +1058,7 @@ ENDOFFILE
                 save_to = '{}__{}__VARS.sh'.format(step['id'], step_counter[step['id']])
                 save_to_nodot = '{}__{}__VARS_sh'.format(step['id'], step_counter[step['id']])
                 yield {
-                    'bash': create_json(save_variables(part_before_step_call, read_from, save_to), step, step_counter[step['id']], False) ,
+                    'bash': create_json(save_variables(part_before_step_call, read_from, save_to, input_tool_variables), step, step_counter[step['id']], False) ,
                     'id': step['id'],
                     'count': step_counter[step['id']],
                     'last': False,
@@ -1039,7 +1081,7 @@ ENDOFFILE
             save_to = '{}__{}__VARS.sh'.format(step['id'], step_counter[step['id']])
             save_to_nodot = '{}__{}__VARS_sh'.format(step['id'], step_counter[step['id']])
             yield {
-                'bash' : create_json(save_variables(part_after_step_call, read_from, save_to), step, step_counter[step['id']], True),
+                'bash' : create_json(save_variables(part_after_step_call, read_from, save_to, input_tool_variables), step, step_counter[step['id']], True),
                 'id': step['id'],
                 'count': step_counter[step['id']],
                 'last': True,
@@ -1461,28 +1503,10 @@ steps:
         #  3. The intermediate variables from previous parts of the same step
         #  4. The current step id from the previous step. Used to figure out the execution order of the steps
 
-        # 1. Tools used in this step:
-        #print (self.workflow.step_ids[step_breaked['id']])
-
-        #print (self.workflow.tool_dependent_variables)
-
-        def convert_tool_id(tool_id):
-            if not tool_id.count('__') == 3:
-                return tool_id
-
-            return '__'.join(tool_id.split('__')[0:-1]).replace('.', '_')
-
-        for tool_id in self.workflow.step_ids[step_breaked['id'].replace('.', '_')]['tools']:
-            new_tool_id = convert_tool_id(tool_id)
-            for dependent_variable, dependent_tool in self.workflow.tool_dependent_variables[new_tool_id]:
-
-                input_name = Workflow.get_tool_bash_variable(dependent_tool, dependent_variable['name'])
-
-                input_variables.append(input_name)
-                input_variables_to_final.append({
-                    'input_name': input_name,
-                    'input_source': new_tool_id,
-                })
+        # 1. Variables of Tools used in this step:
+        step_tool_variables = self.workflow.step_tool_variables(self.workflow.step_ids[step_breaked['id'].replace('.', '_')])
+        input_variables_to_final.extend(step_tool_variables)
+        input_variables.extend([variable['input_name'] for variable in step_tool_variables])
 
 
         # 2. The input values read from the step
