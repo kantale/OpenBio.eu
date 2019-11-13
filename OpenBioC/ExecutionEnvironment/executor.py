@@ -913,14 +913,14 @@ class Workflow:
 
             return recursive(command, 1)
 
-        def save_variables(bash, read_from, save_to, input_tool_variables):
+        def save_variables(bash, read_from, save_to, input_tool_variables, input_workflow_variables):
             '''
             read_from is either None or __VARS_sh (no dot)
             '''
 
             ret = ''
-            if read_from or input_tool_variables :
-                ret += Workflow.read_arguments_from_commandline([read_from] + input_tool_variables)
+            if read_from or input_tool_variables or input_workflow_variables:
+                ret += Workflow.read_arguments_from_commandline([read_from] + input_tool_variables + input_workflow_variables)
             if read_from:
                 ret += '. ${{{}}}\n'.format(read_from)
 
@@ -979,6 +979,7 @@ ENDOFFILE
             # Get the input variables of this step.
             # We need to add them in every breaked step in order to read from the command line 
             input_tool_variables = [variable['input_name'] for variable in self.step_tool_variables(step)]
+            input_workflow_variables = step['inputs']
 
 
             try:
@@ -1058,7 +1059,11 @@ ENDOFFILE
                 save_to = '{}__{}__VARS.sh'.format(step['id'], step_counter[step['id']])
                 save_to_nodot = '{}__{}__VARS_sh'.format(step['id'], step_counter[step['id']])
                 yield {
-                    'bash': create_json(save_variables(part_before_step_call, read_from, save_to, input_tool_variables), step, step_counter[step['id']], False) ,
+                    'bash': create_json(
+                        save_variables(part_before_step_call, read_from, save_to, input_tool_variables, input_workflow_variables), 
+                        step, 
+                        step_counter[step['id']], 
+                        False) ,
                     'id': step['id'],
                     'count': step_counter[step['id']],
                     'last': False,
@@ -1081,7 +1086,11 @@ ENDOFFILE
             save_to = '{}__{}__VARS.sh'.format(step['id'], step_counter[step['id']])
             save_to_nodot = '{}__{}__VARS_sh'.format(step['id'], step_counter[step['id']])
             yield {
-                'bash' : create_json(save_variables(part_after_step_call, read_from, save_to, input_tool_variables), step, step_counter[step['id']], True),
+                'bash' : create_json(
+                    save_variables(part_after_step_call, read_from, save_to, input_tool_variables, input_workflow_variables), 
+                    step, 
+                    step_counter[step['id']], 
+                    True),
                 'id': step['id'],
                 'count': step_counter[step['id']],
                 'last': True,
@@ -1365,7 +1374,11 @@ cwlVersion: {VERSION}
         else:
             input_variables_str = '\n'
             for input_variable in input_variables:
-                input_variables_str += ' ' * 9 + input_variable['input_name'] + ': ' + input_variable['input_source'] + '/' + input_variable['input_name'] + '\n'
+                if input_variable['input_source'] == 'OBC_WORKFLOW_INPUT': 
+                    # We read this value from the input of the workflow
+                    input_variables_str += ' ' * 9 + input_variable['input_name'] + ': ' + input_variable['input_name'] + '\n'
+                else:
+                    input_variables_str += ' ' * 9 + input_variable['input_name'] + ': ' + input_variable['input_source'] + '/' + input_variable['input_name'] + '\n'
 
         if not output_variables:
             output_variables_str = '[]\n'
@@ -1434,10 +1447,18 @@ cwlVersion: {VERSION}
            define the order of the intermediate steps
         '''
 
+        if not self.workflow.input_parameter_values:
+            inputs = '[]'
+        else:
+            inputs = '\n'
+            for input_variable, input_values_d in self.workflow.input_parameter_values.items(): # Example: input__inp__test__0 {'value': 'fff555', 'description': 'The input'}
+                inputs += '   {}: string\n'.format(input_variable)
+    
+
         content_p = '''{HEADER}
 class: Workflow
 
-inputs: []
+inputs: {INPUTS}
 
 outputs: []
 
@@ -1447,6 +1468,7 @@ steps:
 '''
 
         content = content_p.format(
+            INPUTS = inputs,
             HEADER = self.header(),
             STEPS = steps,
             )
@@ -1508,12 +1530,17 @@ steps:
         input_variables_to_final.extend(step_tool_variables)
         input_variables.extend([variable['input_name'] for variable in step_tool_variables])
 
-
         # 2. The input values read from the step
         input_variables.extend(self.workflow.step_ids[step_breaked['id']]['inputs'])
 
-        if self.workflow.step_ids[step_breaked['id']]['inputs']:
-            raise OBC_Executor_Exception('INPUT/OUTPUT VARIABLES ARE NOT YET IMPLEMENTED IN CWL')
+        for input_workflow_variable in self.workflow.step_ids[step_breaked['id']]['inputs']:
+            # Is this variable read from input?
+            if input_workflow_variable in self.workflow.input_parameter_values:
+                input_variables_to_final.append({
+                    'input_name': input_workflow_variable,
+                    'input_source': 'OBC_WORKFLOW_INPUT', # Mark that we read it from workflow input
+                    })
+        
 
         # 3. The intermediate variables from previous parts of the same step
         if step_breaked['count']>1:
@@ -1538,7 +1565,7 @@ steps:
         output_variables = []
         output_variables_to_final = []
 
-        # The output variables of this breaked step are
+        # The output variables of this breaked step are:
         # 1. The output variables set in this step
         # 2. The intermediate variables of the previous breaked step
         # 3. The Current step id. Used to figure out the step execution order
