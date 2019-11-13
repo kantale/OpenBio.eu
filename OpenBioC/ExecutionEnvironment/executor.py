@@ -442,7 +442,7 @@ class Workflow:
             ret += 'echo "OBC: VALIDATING THE INSTALLATION OF THE TOOL: {}"\n'.format(tool['label'])
             #ret += tool['validation_commands'] + '\n'
             validation_script_filename = tool['label'].replace('/', '__') + '__validation.sh'
-            ret += "cat > {} << 'ENDOFFILE'\n".format(validation_script_filename)
+            ret += "cat > {} << ENDOFFILE\n".format(validation_script_filename) # Add 'ENDOFFILE' in single quotes to have raw input
             ret += tool['validation_commands'] + '\n'
             ret += 'ENDOFFILE\n\n'
             ret += 'chmod +x {}\n'.format(validation_script_filename)
@@ -458,13 +458,14 @@ class Workflow:
             ret += Workflow.bash_tool_installation_finished(tool) + '\n'
         ret += '### SETTING TOOL VARIABLES FOR: {}\n'.format(tool['label'])
         for tool_variable in tool['variables']:
-            ret += 'export {}="{}" # {} \n'.format(self.get_tool_bash_variable(tool, tool_variable['name']), tool_variable['value'], tool_variable['description'])
-            ret += 'echo "OBC: SET {}=\"{}\"   <-- {} "\n'.format(self.get_tool_bash_variable(tool, tool_variable['name']), tool_variable['name'], tool_variable['value'], tool_variable['description']) 
+            tool_bash_variable=self.get_tool_bash_variable(tool, tool_variable['name'])
+            ret += 'export {}="{}" # {} \n'.format(tool_bash_variable, tool_variable['value'], tool_variable['description'])
+            ret += 'echo "OBC: SET {}=${}   <-- {} "\n'.format(tool_bash_variable, tool_bash_variable, tool_variable['description']) 
         ret += '### END OF SETTING TOOL VARIABLES FOR: {}\n\n'.format(tool['label'])
 
         if variables_json_filename:
             ret += '### CREATING JSON FILE WITH TOOL VARIABLES\n'
-            ret += "cat > {} << 'ENDOFFILE'\n".format(variables_json_filename)
+            ret += "cat > {} << ENDOFFILE\n".format(variables_json_filename) # Add 'ENDOFFILE' for raw input
             ret += Workflow.get_tool_bash_variables_json(tool) + '\n'
             ret += 'ENDOFFILE\n\n'
 
@@ -1215,10 +1216,17 @@ requirements:
          - class: File
            location: {BASH_FILENAME}
    InlineJavascriptRequirement: {{}}
+   EnvVarRequirement:
+      envDef:
+{ENVIRONMENT_VARIABLES}
 
 inputs: {CWL_INPUT_VARIABLES}
 outputs: {CWL_OUTPUT_VARIABLES}
 '''
+    DEFAULT_INPUT_VARIABLES = [
+        'OBC_TOOL_PATH',
+        'OBC_DATA_PATH',
+    ]
 
     def header(self,):
         '''
@@ -1234,6 +1242,11 @@ cwlVersion: {VERSION}
         '''
         Assume a single variable that is read from command line
         '''
+
+        if variable_id in self.DEFAULT_INPUT_VARIABLES:
+            return '''
+   {VARIABLE_ID}: string
+'''.format(VARIABLE_ID=variable_id)
 
         return '''
    {VARIABLE_ID}:
@@ -1265,6 +1278,9 @@ cwlVersion: {VERSION}
         variable_ids = [Workflow.get_tool_bash_variable(dependent_tool, dependent_variable['name']) 
             for dependent_variable, dependent_tool 
                 in self.workflow.tool_dependent_variables[tool_id]]
+
+        # Add default envrionmenmt variables
+        variable_ids.extend(self.DEFAULT_INPUT_VARIABLES)
 
         return self.cwl_input_variables(variable_ids)
 
@@ -1338,6 +1354,7 @@ cwlVersion: {VERSION}
             HEADER=self.header(),
             SHELL=shell,
             BASH_FILENAME=self.TOOL_BASH_FILENAME_P.format(TOOL_ID=tool_id),
+            ENVIRONMENT_VARIABLES='\n'.join(' '*9 + '{v}: $(inputs.{v})'.format(v=v) for v in self.DEFAULT_INPUT_VARIABLES) + '\n',
             CWL_INPUT_VARIABLES=self.tool_cwl_input_variables(tool),
             CWL_OUTPUT_VARIABLES=self.tool_cwl_output_variables(tool),
         )
@@ -1415,15 +1432,24 @@ cwlVersion: {VERSION}
         tool_id = Workflow.get_tool_dash_id(tool, no_dots=True)
 
         # Create tool_step_inputs
+        tool_step_inputs = ''
+
+        # Add variables from dependent tools
         dependent_variable_tools = self.workflow.tool_dependent_variables[tool_id]
         if dependent_variable_tools:
-            tool_step_inputs = '\n'
+            tool_step_inputs += '\n'
             for dependent_variable, dependent_tool in dependent_variable_tools:
                 dependent_tool_id = Workflow.get_tool_dash_id(dependent_tool, no_dots=True)
                 dependent_variable_id = Workflow.get_tool_bash_variable(dependent_tool, dependent_variable['name'])
                 tool_step_inputs += ' ' * 9 + dependent_variable_id + ': ' + dependent_tool_id + '/' + dependent_variable_id + '\n'
 
-        else:
+        # Add default parameters
+        if self.DEFAULT_INPUT_VARIABLES:
+            tool_step_inputs += '\n'
+            for variable in self.DEFAULT_INPUT_VARIABLES:
+                tool_step_inputs += ' ' * 9 + '{}: {}\n'.format(variable, variable)
+
+        if not tool_step_inputs:
             tool_step_inputs = '[]'
 
         # Create tool_step_outputs
@@ -1448,11 +1474,19 @@ cwlVersion: {VERSION}
            define the order of the intermediate steps
         '''
 
-        if not self.workflow.input_parameter_values:
+        input_variables = []
+
+        # Add the variables that are input and have not been set by any step
+        input_variables.extend([input_variable for input_variable, input_values_d in self.workflow.input_parameter_values.items()])
+
+        # Add default input variables
+        input_variables.extend(self.DEFAULT_INPUT_VARIABLES)
+
+        if not input_variables:
             inputs = '[]'
         else:
             inputs = '\n'
-            for input_variable, input_values_d in self.workflow.input_parameter_values.items(): # Example: input__inp__test__0 {'value': 'fff555', 'description': 'The input'}
+            for input_variable in input_variables: # Example: input__inp__test__0 {'value': 'fff555', 'description': 'The input'}
                 inputs += '   {}: string\n'.format(input_variable)
 
 
@@ -1535,6 +1569,7 @@ steps:
         #  2. The input values read from the step
         #  3. The intermediate variables from previous parts of the same step
         #  4. The current step id from the previous step. Used to figure out the execution order of the steps
+        #  5. The default environment variables
 
         # 1. Variables of Tools used in this step:
         step_tool_variables = self.workflow.step_tool_variables(self.workflow.step_ids[step_breaked['id'].replace('.', '_')])
@@ -1569,6 +1604,14 @@ steps:
                 'input_name': '{}__{}__ID'.format(previous_step['id'], previous_step['count']),
                 'input_source': '{}__{}'.format(previous_step['id'], previous_step['count']),
                 })
+
+        # 5. The default environment variables
+        for variable in self.DEFAULT_INPUT_VARIABLES:
+            input_variables_to_final.append({
+                'input_name': variable,
+                'input_source': 'OBC_WORKFLOW_INPUT',
+            })
+            input_variables.append(variable)
 
 
         #print (input_variables)
@@ -1609,6 +1652,7 @@ steps:
             HEADER = self.header(),
             SHELL=shell,
             BASH_FILENAME=bash_filename,
+            ENVIRONMENT_VARIABLES='\n'.join([' '*9 + '{v}: $(inputs.{v})'.format(v=v) for v in self.DEFAULT_INPUT_VARIABLES]) + '\n',
             CWL_INPUT_VARIABLES=self.cwl_input_variables(input_variables),
             CWL_OUTPUT_VARIABLES=self.cwl_output_variables(output_variables),
         )
