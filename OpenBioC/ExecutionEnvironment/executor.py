@@ -133,6 +133,14 @@ class Workflow:
     STEP_TYPE = 'step'
     TOOL_TYPE = 'tool'
 
+    # Variables that are assumed to be set from the environment
+    DEFAULT_INPUT_VARIABLES = [
+        'OBC_TOOL_PATH',
+        'OBC_DATA_PATH',
+        'OBC_WORK_PATH',
+    ]
+
+
     def __init__(self, workflow_filename=None, workflow_object=None, askinput='JSON'):
         '''
         workflow_filename: the JSON filename of the workflow
@@ -1223,10 +1231,6 @@ requirements:
 inputs: {CWL_INPUT_VARIABLES}
 outputs: {CWL_OUTPUT_VARIABLES}
 '''
-    DEFAULT_INPUT_VARIABLES = [
-        'OBC_TOOL_PATH',
-        'OBC_DATA_PATH',
-    ]
 
     def header(self,):
         '''
@@ -1243,7 +1247,7 @@ cwlVersion: {VERSION}
         Assume a single variable that is read from command line
         '''
 
-        if variable_id in self.DEFAULT_INPUT_VARIABLES:
+        if variable_id in Workflow.DEFAULT_INPUT_VARIABLES:
             return '''
    {VARIABLE_ID}: string
 '''.format(VARIABLE_ID=variable_id)
@@ -1280,7 +1284,7 @@ cwlVersion: {VERSION}
                 in self.workflow.tool_dependent_variables[tool_id]]
 
         # Add default envrionmenmt variables
-        variable_ids.extend(self.DEFAULT_INPUT_VARIABLES)
+        variable_ids.extend(Workflow.DEFAULT_INPUT_VARIABLES)
 
         return self.cwl_input_variables(variable_ids)
 
@@ -1354,7 +1358,7 @@ cwlVersion: {VERSION}
             HEADER=self.header(),
             SHELL=shell,
             BASH_FILENAME=self.TOOL_BASH_FILENAME_P.format(TOOL_ID=tool_id),
-            ENVIRONMENT_VARIABLES='\n'.join(' '*9 + '{v}: $(inputs.{v})'.format(v=v) for v in self.DEFAULT_INPUT_VARIABLES) + '\n',
+            ENVIRONMENT_VARIABLES='\n'.join(' '*9 + '{v}: $(inputs.{v})'.format(v=v) for v in Workflow.DEFAULT_INPUT_VARIABLES) + '\n',
             CWL_INPUT_VARIABLES=self.tool_cwl_input_variables(tool),
             CWL_OUTPUT_VARIABLES=self.tool_cwl_output_variables(tool),
         )
@@ -1444,9 +1448,9 @@ cwlVersion: {VERSION}
                 tool_step_inputs += ' ' * 9 + dependent_variable_id + ': ' + dependent_tool_id + '/' + dependent_variable_id + '\n'
 
         # Add default parameters
-        if self.DEFAULT_INPUT_VARIABLES:
+        if Workflow.DEFAULT_INPUT_VARIABLES:
             tool_step_inputs += '\n'
-            for variable in self.DEFAULT_INPUT_VARIABLES:
+            for variable in Workflow.DEFAULT_INPUT_VARIABLES:
                 tool_step_inputs += ' ' * 9 + '{}: {}\n'.format(variable, variable)
 
         if not tool_step_inputs:
@@ -1480,7 +1484,7 @@ cwlVersion: {VERSION}
         input_variables.extend([input_variable for input_variable, input_values_d in self.workflow.input_parameter_values.items()])
 
         # Add default input variables
-        input_variables.extend(self.DEFAULT_INPUT_VARIABLES)
+        input_variables.extend(Workflow.DEFAULT_INPUT_VARIABLES)
 
         if not input_variables:
             inputs = '[]'
@@ -1606,7 +1610,7 @@ steps:
                 })
 
         # 5. The default environment variables
-        for variable in self.DEFAULT_INPUT_VARIABLES:
+        for variable in Workflow.DEFAULT_INPUT_VARIABLES:
             input_variables_to_final.append({
                 'input_name': variable,
                 'input_source': 'OBC_WORKFLOW_INPUT',
@@ -1652,7 +1656,7 @@ steps:
             HEADER = self.header(),
             SHELL=shell,
             BASH_FILENAME=bash_filename,
-            ENVIRONMENT_VARIABLES='\n'.join([' '*9 + '{v}: $(inputs.{v})'.format(v=v) for v in self.DEFAULT_INPUT_VARIABLES]) + '\n',
+            ENVIRONMENT_VARIABLES='\n'.join([' '*9 + '{v}: $(inputs.{v})'.format(v=v) for v in Workflow.DEFAULT_INPUT_VARIABLES]) + '\n',
             CWL_INPUT_VARIABLES=self.cwl_input_variables(input_variables),
             CWL_OUTPUT_VARIABLES=self.cwl_output_variables(output_variables),
         )
