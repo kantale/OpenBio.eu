@@ -317,8 +317,45 @@ class Workflow:
         # It also contains the variables of the tool that is the key
         self.tool_variables = {self.get_tool_dash_id(tool, no_dots=True):self.get_tool_dependent_variables(tool, include_this_tool=True) for tool in self.tool_iterator()} 
 
-        # Create a dictioray. Keys are step ids. Values are tool objects
+        # Create a dictionary. Keys are step ids. Values are tool objects
         self.step_ids = {step['id']:step for step in self.step_iterator()}
+
+        # Create a dictionary. Keys are input ids. Values are input objects
+        self.input_ids = {inp['id']:inp for inp in self.inputs_iterator()}
+
+        # Create a dictionay. Keys a output ids. Values are output objects
+        self.output_ids = {outp['id']:outp for outp in self.outputs_iterator()}
+
+
+        self.set_step_reads_sets()
+  
+    def set_step_reads_sets(self,):
+        '''
+        The 'inputs' and 'outputs' fields for every step does NOT contain which variables are set and read respectively.
+        It contains which variables are **referred**
+        Here we make an assumption:
+            If a step refers to an input variable and they belong to the same workflow, then the step READS the variable
+            If a step refers to an output variable and they belong to the same workflow, then the step SETS the variable
+        '''
+        for step in self.step_iterator():
+            step['inputs_reads'] = []
+            step['outputs_sets'] = []
+
+            for step_input in step['inputs']:
+                input_node = self.input_ids[step_input]
+                if input_node['id'] == step_input:
+                    if input_node['belongto'] == step['belongto']:
+                        #print ('Step: {} Reads: {}'.format(step['id'], step_input))
+                        step['inputs_reads'].append(step_input)
+
+            for step_output in step['outputs']:
+                output_node = self.output_ids[step_output]
+                if output_node['id'] == step_output:
+                    if output_node['belongto'] == step['belongto']:
+                        #print ('Step: {} Sets: {}'.format(step['id'], step_output))
+                        step['outputs_sets'].append(step_output)
+
+
 
     def check_tool_dependencies_for_circles(self,):
         '''
@@ -723,6 +760,20 @@ class Workflow:
             if self.is_step(node):
                 yield node
 
+    def inputs_iterator(self,):
+        '''
+        '''
+        for node in self.node_iterator():
+            if self.is_input(node):
+                yield node
+
+    def outputs_iterator(self,):
+        '''
+        '''
+        for node in self.node_iterator():
+            if self.is_output(node):
+                yield node
+
     def is_root_workflow(self, workflow):
         '''
         '''
@@ -765,6 +816,16 @@ class Workflow:
         '''
         '''
         return node['type'] in [self.INPUT_TYPE, self.OUTPUT_TYPE]
+
+    def is_input(self, node):
+        '''
+        '''
+        return node['type'] == self.INPUT_TYPE
+
+    def is_output(self, node):
+        '''
+        '''
+        return node['type'] == self.OUTPUT_TYPE
 
     def is_step(self, node):
         '''
@@ -1236,8 +1297,7 @@ outputs: {CWL_OUTPUT_VARIABLES}
         '''
         CWL HEADER
         '''
-        return '''
-{RUNNER}
+        return '''{RUNNER}
 
 cwlVersion: {VERSION}
 '''.format(RUNNER=self.RUNNER, VERSION=self.VERSION)
@@ -1581,14 +1641,22 @@ steps:
         input_variables.extend([variable['input_name'] for variable in step_tool_variables])
 
         # 2. The input values read from the step
-        input_variables.extend(self.workflow.step_ids[step_breaked['id']]['inputs'])
+        input_variables.extend(self.workflow.step_ids[step_breaked['id']]['inputs_reads'])
 
-        for input_workflow_variable in self.workflow.step_ids[step_breaked['id']]['inputs']:
+        for input_workflow_variable in self.workflow.step_ids[step_breaked['id']]['inputs_reads']:
             # Is this variable read from input?
             if input_workflow_variable in self.workflow.input_parameter_values:
                 input_variables_to_final.append({
                     'input_name': input_workflow_variable,
                     'input_source': 'OBC_WORKFLOW_INPUT', # Mark that we read it from workflow input
+                    })
+            else:
+                # If these variables are not read from input we assume that they are set from the previous step
+                if not previous_step:
+                    raise OBC_Executor_Exception('Input variable: {} is not set from any step'.format(input_workflow_variable))
+                input_variables_to_final.append({
+                    'input_name': input_workflow_variable,
+                    'input_source': '{}__{}'.format(previous_step['id'], previous_step['count']),
                     })
         
 
@@ -1625,22 +1693,22 @@ steps:
 
         # The output variables of this breaked step are:
         # 1. The output variables set in this step
-        # ~~2. The input variables set in this step. They might be used later in a workflow invocation~~ 
+        # 2. The input variables set in this step. They might be used later in a workflow invocation 
         # 3. The intermediate variables of the previous breaked step
         # 4. The Current step id. Used to figure out the step execution order
 
         # 1. The output variables that are set from this step
         if step_breaked['last']:
             #This is a last breaked step
-            for var in self.workflow.step_ids[step_breaked['id']]['outputs']:
+            for var in self.workflow.step_ids[step_breaked['id']]['outputs_sets']:
                 output_variables.append( (var, filename_output_json) )
                 output_variables_to_final.append(var)
                 self.input_output_step_setters[var] = '{}__{}'.format(step_breaked['id'], step_breaked['count'])
 
         # 2. The input variables set in this step. They might be used later in a workflow invocation
         # Explanation: Any reference to an input variable, exist to the 'inputs' field. So we might set an input. Therefore we have to "export it".
-        # This is tricky because for input variables (in contrast to output) we need to know *where* they have been set
-        # In a retrospect: No we don't. Interscript variables are passed anyway though the declare trick
+        # This is tricky because for input variables (in contrast to output) we need to know *where* they have been set.
+        # This is impossible without very sophisticated static analysis of the BASH script
 
 
         # 3. The intermediate variables of the previous breaked step
@@ -1652,27 +1720,46 @@ steps:
         output_variables_to_final.append('{}__{}__ID'.format(step_breaked['id'], step_breaked['count']))
 
 
-        content = self.COMMANDLINE_CWL_P.format(
-            HEADER = self.header(),
-            SHELL=shell,
-            BASH_FILENAME=bash_filename,
-            ENVIRONMENT_VARIABLES='\n'.join([' '*9 + '{v}: $(inputs.{v})'.format(v=v) for v in Workflow.DEFAULT_INPUT_VARIABLES]) + '\n',
-            CWL_INPUT_VARIABLES=self.cwl_input_variables(input_variables),
-            CWL_OUTPUT_VARIABLES=self.cwl_output_variables(output_variables),
-        )
+#        content = self.COMMANDLINE_CWL_P.format(
+#            HEADER = self.header(),
+#            SHELL=shell,
+#            BASH_FILENAME=bash_filename,
+#            ENVIRONMENT_VARIABLES='\n'.join([' '*9 + '{v}: $(inputs.{v})'.format(v=v) for v in Workflow.DEFAULT_INPUT_VARIABLES]) + '\n',
+#            CWL_INPUT_VARIABLES=self.cwl_input_variables(input_variables),
+#            CWL_OUTPUT_VARIABLES=self.cwl_output_variables(output_variables),
+#        )
 
-        log_info('CREATING STEP CWL: {}'.format(filename_output_cwl))
-        with open(filename_output_cwl, 'w') as f:
-            f.write(content)
+        return {
+            'filename_output_json': filename_output_json,
+            'step_parameters': {
+                'cwl_filename': filename_output_cwl,
+                'bash_filename': bash_filename,
+                'input_variables': input_variables,
+                'output_variables': output_variables,
+            },
+
+            # Create return object. This will be passed to final_workflow_step_cwl to create the final workflow
+            # For reference: final_workflow_step_cwl(self, step_id, step_filename_cwl, input_variables, output_variables)
+            'workflow_parameters': {
+                'step_id': step_id,
+                'step_filename_cwl': filename_output_cwl,
+                'input_variables': input_variables_to_final,
+                'output_variables': output_variables_to_final,
+            }
+        }
+
+#        log_info('CREATING STEP CWL: {}'.format(filename_output_cwl))
+#        with open(filename_output_cwl, 'w') as f:
+#            f.write(content)
 
         # Create return object. This will be passed to final_workflow_step_cwl to create the final workflow
         # For reference: final_workflow_step_cwl(self, step_id, step_filename_cwl, input_variables, output_variables)
-        return {
-            'step_id': step_id,
-            'step_filename_cwl': filename_output_cwl,
-            'input_variables': input_variables_to_final,
-            'output_variables': output_variables_to_final,
-        }
+#        return {
+#            'step_id': step_id,
+#            'step_filename_cwl': filename_output_cwl,
+#            'input_variables': input_variables_to_final,
+#            'output_variables': output_variables_to_final,
+#        }
 
     def step_workflow_cwl(self,):
         '''
@@ -1690,7 +1777,7 @@ steps:
         return ret
 
 
-    def build(self, output):
+    def build(self, output, shell='bash'):
         '''
         Test with:
         cwl-runner FILENAME.cwl
@@ -1706,16 +1793,77 @@ steps:
             self.tool_cwl(tool)
 
         tool_steps = '\n'.join([self.tool_workflow_step_cwl(tool) for tool in self.workflow.tool_iterator()]) + '\n'
-        intermediate_steps = '\n'.join([self.final_workflow_step_cwl(**step) for step in self.step_workflow_cwl()]) + '\n'
+
+        step_id_getter = lambda x : '__'.join(x['workflow_parameters']['step_id'].split('__')[:4])
+
+        intermediate_steps = list(self.step_workflow_cwl())
+
+        for index in range(len(intermediate_steps)-1):
+            this_inter_step = intermediate_steps[index]
+            next_inter_step = intermediate_steps[index+1]
+
+            this_step_id = step_id_getter(this_inter_step)
+            next_step_id = step_id_getter(next_inter_step)
+            print (this_step_id, ' --> ', next_step_id)
+
+            # Is next_step called from this_step ??
+            if next_step_id in self.workflow.step_ids[this_step_id]['steps']:
+
+                print ('    CALLED!')
+
+                # We are going from this_step to next_step !
+                # We have to make sure that this_step sets ALL input parameters of the next_step
+                # Of course we **ASSUME** that this_step sets the input parameters of next_step
+                # There is no way to verify this without static analysis of the BASH script.. 
+
+                # Take all the input variables of the next_step
+                next_step_inputs = [inp for inp in next_inter_step['step_parameters']['input_variables'] if re.search(r'^input__', inp)]
+
+                # Take all the output variables of this step
+                this_step_outputs = this_inter_step['step_parameters']['output_variables']
+
+                # Which input variables of next step are not called from this step?
+                not_set_vars_of_next_step = list(set(next_step_inputs) - set(this_step_outputs))
+
+
+                # Add these variables as output variables of this_step
+                for var in not_set_vars_of_next_step:
+                    this_inter_step['step_parameters']['output_variables'].append((var, this_inter_step['filename_output_json']))
+                    this_inter_step['workflow_parameters']['output_variables'].append(var)
+
+                print ('    ADDED: {} output to {}'.format(not_set_vars_of_next_step, this_step_id))
+
+
+#                print ('THIS_STEP_OUTPUTS:')
+#                print (this_step_outputs)
+
+#                print ('NEXT STEP INPUTS:')
+#                print (next_step_inputs)
+
+#                print ('THESE STEPS ARE NOT SET FROM THIS STEP:')
+#                print (not_set_vars_of_next_step)
+
+        # Create STEP CWL
+        for step in intermediate_steps:
+            filename = step['step_parameters']['cwl_filename']
+            log_info('CREATING STEP CWL: {}'.format(step['step_parameters']['cwl_filename']))
+            content = self.COMMANDLINE_CWL_P.format(
+                HEADER = self.header(),
+                SHELL=shell,
+                BASH_FILENAME=step['step_parameters']['bash_filename'],
+                ENVIRONMENT_VARIABLES='\n'.join([' '*9 + '{v}: $(inputs.{v})'.format(v=v) for v in Workflow.DEFAULT_INPUT_VARIABLES]) + '\n',
+                CWL_INPUT_VARIABLES=self.cwl_input_variables(step['step_parameters']['input_variables']),
+                CWL_OUTPUT_VARIABLES=self.cwl_output_variables(step['step_parameters']['output_variables']),
+            )
+            with open(filename, 'w') as f:
+                f.write(content)
+
+        all_final_steps = [step['workflow_parameters'] for step in intermediate_steps]
+
+        intermediate_steps = '\n'.join([self.final_workflow_step_cwl(**step) for step in all_final_steps]) + '\n'
 
         self.final_workflow_cwl(tool_steps + intermediate_steps)
 
-            #tool_id = Workflow.get_tool_dash_id(tool)
-            
-
-            #print (self.tool_to_cwl(tool_id))
-
-            #break
 
 
 class DockerExecutor(BaseExecutor):
