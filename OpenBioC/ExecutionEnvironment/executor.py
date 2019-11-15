@@ -7,6 +7,15 @@ import json
 import base64
 import logging
 import bashlex
+import tarfile
+import zipfile
+
+try:
+    import zlib
+    compression = zipfile.ZIP_DEFLATED
+except (ImportError, AttributeError):
+    compression = zipfile.ZIP_STORED
+
 import argparse 
 
 from collections import defaultdict
@@ -1203,17 +1212,6 @@ ENDOFFILE
 
             }
 
-
-#                print (part_before_step_call)
-#                print ('==')
-#                print (step_to_call)
-#                print ('==')
-#                print (part_after_step_call)
-#                print ('==')
-#                print (word, pos)
-
-
- 
         return break_down_step_recursive(self.root_step)
 
 
@@ -1461,8 +1459,12 @@ cwlVersion: {VERSION}
 
         output_filename = self.TOOL_CWL_P.format(TOOL_ID=tool_id)
         log_info('Creating CWL for tool: {}'.format(output_filename))
-        with open(output_filename, 'w') as f:
-            f.write(content)
+        #with open(output_filename, 'w') as f:
+        #    f.write(content)
+        self.cwl_files.append({
+            'filename': output_filename,
+            'content': content,
+            })
 
 
     def tool_cwl_bash(self, tool):
@@ -1479,8 +1481,12 @@ cwlVersion: {VERSION}
         output_filename = self.TOOL_BASH_FILENAME_P.format(TOOL_ID=tool_id)
 
         log_info('Creating CWL BASH for tool: {}'.format(output_filename))
-        with open(output_filename, 'w') as f:
-            f.write(bash_commands)
+        #with open(output_filename, 'w') as f:
+        #    f.write(bash_commands)
+        self.cwl_files.append({
+            'filename': output_filename,
+            'content': bash_commands,
+            })
 
     def final_workflow_step_cwl(self, step_id, step_filename_cwl, input_variables, output_variables):
         '''
@@ -1619,8 +1625,12 @@ steps:
             )
 
         log_info('Creating FINAL CWL workflow: {}'.format(self.FINAL_WORKFLOW_FILENAME))
-        with open(self.FINAL_WORKFLOW_FILENAME, 'w') as f:
-            f.write(content)
+        #with open(self.FINAL_WORKFLOW_FILENAME, 'w') as f:
+        #    f.write(content)
+        self.cwl_files.append({
+            'filename': self.FINAL_WORKFLOW_FILENAME,
+            'content': content,
+            })
 
     def step_cwl_bash(self, step_breaked):
         '''
@@ -1631,8 +1641,12 @@ steps:
         )
 
         log_info('CREATING CWL BASH for step: {}'.format(bash_filename))
-        with open(bash_filename, 'w') as f:
-            f.write(step_breaked['bash'])
+        #with open(bash_filename, 'w') as f:
+        #    f.write(step_breaked['bash'])
+        self.cwl_files.append({
+            'filename': bash_filename,
+            'content': content,
+            })
 
     def step_breaked_cwl(self, step_breaked, previous_step, shell='bash'):
         '''
@@ -1657,8 +1671,12 @@ steps:
         filename_output_cwl = '{}__{}.cwl'.format(step_breaked['id'], step_breaked['count'])
 
         log_info('CREATING STEP INTERMEDIATE CWL SH: {}'.format(filename_output_sh))
-        with open(filename_output_sh, 'w') as f:
-            f.write(step_breaked['bash'])
+        #with open(filename_output_sh, 'w') as f:
+        #    f.write(step_breaked['bash'])
+        self.cwl_files.append({
+            'filename': filename_output_sh,
+            'content': step_breaked['bash']
+            })
 
         input_variables = []
         input_variables_to_final = [] # The argument to pass to final_workflow_step_cwl
@@ -1816,17 +1834,27 @@ steps:
         return ret
 
 
-    def build(self, output, shell='bash'):
+    def build(self, output, shell='bash', output_format='cwltargz'):
         '''
         Test with:
         cwl-runner FILENAME.cwl
+        output_format: 'cwltargz', 'cwlzip', 'cwl', 
         '''
+
+        self.output=output
+        self.output_format = output_format
+        # Set workflow output
+        if self.output:
+            if output_format == 'cwl':
+                self.FINAL_WORKFLOW_FILENAME = self.output
+
 
         # This is dictionary to store which breaked steps have set the output values.
         # If a step is reading an input value it needs to know from which step to read it
         # Key is the input/output variables , value is the breaked step that set it
         self.input_output_step_setters = {}
 
+        self.cwl_files = []
 
         for tool in self.workflow.tool_bash_script_generator():
 
@@ -1851,14 +1879,87 @@ steps:
                 CWL_INPUT_VARIABLES=self.cwl_input_variables(step['step_parameters']['input_variables']),
                 CWL_OUTPUT_VARIABLES=self.cwl_output_variables(step['step_parameters']['output_variables']),
             )
-            with open(filename, 'w') as f:
-                f.write(content)
+            #with open(filename, 'w') as f:
+            #    f.write(content)
+            self.cwl_files.append({
+                'filename': filename,
+                'content': content,
+                })
 
         all_final_steps = [step['workflow_parameters'] for step in intermediate_steps]
 
         intermediate_steps = '\n'.join([self.final_workflow_step_cwl(**step) for step in all_final_steps]) + '\n'
 
         self.final_workflow_cwl(tool_steps + intermediate_steps)
+
+            
+
+        # Create output
+        self.output = None
+
+        if self.output_format == 'cwl':
+            if self.output is None:
+                raise OBC_Executor_Exception('output is None. Please define one of zwltargz or zwlzip formats')
+            for cwl_file in self.cwl_files:
+                with open(cwl_file['filename'], 'w') as f:
+                    f.write(cwl_file['content'])
+        elif self.output_format == 'cwltargz':
+            # Adapted from: https://stackoverflow.com/questions/740820/python-write-string-directly-to-tarfile
+
+            if self.output is None:
+                args = []
+                tarfilioIO = io.BytesIO()
+                kwargs = {'fileobj': tarfilioIO, 'mode': 'w:gz'}
+            else:
+                args = [self.output, "w:gz"]
+                kwargs = {}
+
+            with tarfile.open(*args, **kwargs) as tar:
+                for cwl_file in self.cwl_files:
+                    content = cwl_file['content'].encode('utf-8')
+                    file = io.BytesIO(content)
+                    info = tarfile.TarInfo(name=cwl_file['filename'])
+                    info.size = len(content)
+                    tar.addfile(tarinfo=info, fileobj=file)
+            if self.output:
+                log_info('Created tar gz file: {}'.format(self.output))
+        elif self.output_format == 'cwlzip':
+
+
+            if self.output is None:
+                zipfileIO = io.BytesIO()
+                args = [zipfileIO, 'w']
+            else:
+                args = [self.output, 'w']
+
+            with zipfile.ZipFile(*args) as zipf:
+                for cwl_file in self.cwl_files:
+                    content = cwl_file['content'].encode('utf-8')
+                    #file = io.BytesIO(content)
+                    zipf.writestr(cwl_file['filename'], content, compress_type=compression)
+            if self.output:
+                log_info('Created zip file: {}'.format(self.output))
+
+        else:
+            raise OBC_Executor_Exception('Unknown output format: {}'.format(self.output_format))
+
+
+
+
+#        elif self.output is None:
+#
+#            tarfilioIO = io.BytesIO()
+#            with tarfile.open(fileobj=tarfilioIO, mode="w:gz") as tar:
+#
+#                    for cwl_file in self.cwl_files:
+#                        content = cwl_file['content'].encode('utf-8')
+#                        file = io.BytesIO(content)
+#                        info = tarfile.TarInfo(name=cwl_file['filename'])
+#                        info.size = len(content)
+#                        tar.addfile(tarinfo=info, fileobj=file)
+
+                
+            
 
 
 
@@ -1899,16 +2000,20 @@ if __name__ == '__main__':
     python executor.py -W workflow.json 
     '''
 
-    runner_options = ['sh', 'cwl']
+    runner_options = ['sh', 'cwl', 'cwltargz', 'cwlzip']
 
     parser = argparse.ArgumentParser(description='OpenBio-C workflow execute-or')
 
     parser.add_argument('-W', '--workflow', dest='workflow_filename', help='JSON filename of the workflow to run', required=True)
     parser.add_argument('-S', '--server', dest='server', help='The Server\'s url. It should contain http or https', default='https://www.openbio.eu/platform')
     parser.add_argument('-F', '--format', dest='format', choices=runner_options, 
-        help='Select the output format of the workflow. Options are:\n  sh: Create a shell script (default)\n  cwl: Create a set of Common Workflow Language files\n', 
+        help='Select the output format of the workflow. Options are:\n  ' \
+'sh: Create a shell script (default)\n  ' \
+'cwl: Create a set of Common Workflow Language files\n' \
+'cwltargz: Same as cwl but create a tar.gz file\n' \
+'cwlzip: Same as cwl but create a zip file\n',
         default='sh')
-    parser.add_argument('-O', '--output', dest='output', help='The output filename. default is script.sh', default='script.sh')
+    parser.add_argument('-O', '--output', dest='output', help='The output filename. default is script.sh, workflow.cwl and workflow.tar.gz, depending on the format', default='script')
     parser.add_argument('--insecure', dest='insecure', help="Pass insecure option (-k) to curl", default=False, action="store_true")
     parser.add_argument('--silent', dest='silent', help="Do not print logging info", default=False, action="store_true")
     parser.add_argument('--askinput', dest='askinput', 
@@ -1931,12 +2036,16 @@ if __name__ == '__main__':
 
     if args.format == 'sh':
         e = LocalExecutor(w)
+        if args.output == 'script':
+            args.output = 'script.sh'
         e.build(output = args.output)
-    elif args.format == 'cwl':
+    elif args.format in ['cwl', 'cwltargz', 'cwlzip']:
         e = CWLExecutor(w)
-        e.build(output = 'output.cwl')
+        if args.output == 'script':
+            args.output = 'workflow.' + {'cwl': 'cwl', 'cwltargz': 'tar.gz', 'cwlzip': 'zip'}[args.format]
+        e.build(output = args.output, output_format=args.format)
     else:
-        raise OBC_Executor_Exception('Unknown ')
+        raise OBC_Executor_Exception('Unknown format: {}'.format(args.format))
 
 
 	
