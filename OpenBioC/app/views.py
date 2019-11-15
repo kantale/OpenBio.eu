@@ -31,7 +31,7 @@ from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations, \
     UpDownCommentVote
 
 #Import executor
-from ExecutionEnvironment.executor import create_bash_script
+from ExecutionEnvironment.executor import create_bash_script, OBC_Executor_Exception
 
 # Email imports
 import smtplib
@@ -2285,12 +2285,23 @@ def run_workflow(request, **kwargs):
 
     ret = {}
 
-    if download_type == 'JSON':
-        output_object = urllib.parse.quote(simplejson.dumps(output_object))
-        ret['output_object'] = output_object
-    elif download_type == 'BASH':
-        output_object = urllib.parse.quote(create_bash_script(output_object, get_server_url(request)))
-        ret['output_object'] = output_object
+
+    try:
+        if download_type == 'JSON':
+            output_object = urllib.parse.quote(simplejson.dumps(output_object))
+            ret['output_object'] = output_object
+        elif download_type == 'BASH':
+            output_object = urllib.parse.quote(create_bash_script(output_object, get_server_url(request), 'sh'))
+            ret['output_object'] = output_object
+        elif download_type == 'CWLTARGZ':
+            output_object = urllib.parse.quote(create_bash_script(output_object, get_server_url(request), 'cwltargz'))
+            ret['output_object'] = output_object
+        elif download_type == 'CWLZIP':
+            output_object = urllib.parse.quote(create_bash_script(output_object, get_server_url(request), 'cwlzip'))
+            ret['output_object'] = output_object
+    except OBC_Executor_Exception as e:
+        return fail(str(e))
+
 
     ret['report_created'] = report_created
     ret['nice_id'] = nice_id
