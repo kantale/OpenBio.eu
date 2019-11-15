@@ -3895,6 +3895,23 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 "href" : "data:," + data['output_object']
             }).get(0).click();
         }
+        else if (download_type == 'CWLTARGZ') {
+            var output_filename = 'workflow.tar.gz'
+            $("#hiddena").attr({
+                "download" : output_filename,      
+                "href" : "data:," + data['output_object']
+            }).get(0).click();
+
+        }
+        else if (download_type == 'CWLZIP') {
+            var output_filename = 'workflow.zip'
+            $("#hiddena").attr({
+                "download" : output_filename,      
+                "href" : "data:," + data['output_object']
+            }).get(0).click();
+            
+        }
+
         else {
             throw "ERROR: 4576"; // This should never happen
         }

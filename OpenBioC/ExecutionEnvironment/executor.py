@@ -272,8 +272,12 @@ class Workflow:
                     local_input_parameter = input(user_message)
                     self.input_parameter_values[root_input_node['id']] = {'value': local_input_parameter, 'description': root_input_node['description']}
 
-                bash_command = 'read -p "{}" {}\n'.format(user_message, root_input_node['id'])
-                self.input_parameters_read_bash_commands.append(bash_command)
+                elif self.askinput == 'BASH':
+                    bash_command = 'read -p "{}" {}\n'.format(user_message, root_input_node['id'])
+                    self.input_parameters_read_bash_commands.append(bash_command)
+
+                elif self.askinput == 'NO':
+                    log_info('Warning: Input Parameter {} ({}) has not been set by any step.'.format(root_input_node['id'], root_input_node['description']))
 
         # Check that all outpus will be eventually set
         self.output_parameter_step_setters = {}
@@ -1892,10 +1896,8 @@ steps:
 
         self.final_workflow_cwl(tool_steps + intermediate_steps)
 
-            
 
         # Create output
-        self.output = None
 
         if self.output_format == 'cwl':
             if self.output is None:
@@ -1908,8 +1910,8 @@ steps:
 
             if self.output is None:
                 args = []
-                tarfilioIO = io.BytesIO()
-                kwargs = {'fileobj': tarfilioIO, 'mode': 'w:gz'}
+                fileIO = io.BytesIO()
+                kwargs = {'fileobj': fileIO, 'mode': 'w:gz'}
             else:
                 args = [self.output, "w:gz"]
                 kwargs = {}
@@ -1927,8 +1929,8 @@ steps:
 
 
             if self.output is None:
-                zipfileIO = io.BytesIO()
-                args = [zipfileIO, 'w']
+                fileIO = io.BytesIO()
+                args = [fileIO, 'w']
             else:
                 args = [self.output, 'w']
 
@@ -1943,6 +1945,9 @@ steps:
         else:
             raise OBC_Executor_Exception('Unknown output format: {}'.format(self.output_format))
 
+        if output is None:
+            fileIO.flush()
+            return fileIO.getvalue()
 
 
 
@@ -1973,7 +1978,7 @@ class AmazonExecutor(BaseExecutor):
     '''
     pass
 
-def create_bash_script(workflow_object, server):
+def create_bash_script(workflow_object, server, output_format):
     '''
     convenient function called by server
     server: the server to report to
@@ -1989,9 +1994,14 @@ def create_bash_script(workflow_object, server):
     # Setup global variables
     g['silent'] = True
 
-    w = Workflow(workflow_object = workflow_object, askinput='BASH')
-    le = LocalExecutor(w)
-    return le.build(output=None)
+    if output_format == 'sh':
+        w = Workflow(workflow_object = workflow_object, askinput='BASH')
+        e = LocalExecutor(w)
+        return e.build(output=None)
+    elif output_format in ['cwltargz', 'cwlzip']:
+        w = Workflow(workflow_object = workflow_object, askinput='NO')
+        e = CWLExecutor(w)
+        return e.build(output=None, output_format=output_format)
 
 
 if __name__ == '__main__':
@@ -2017,8 +2027,8 @@ if __name__ == '__main__':
     parser.add_argument('--insecure', dest='insecure', help="Pass insecure option (-k) to curl", default=False, action="store_true")
     parser.add_argument('--silent', dest='silent', help="Do not print logging info", default=False, action="store_true")
     parser.add_argument('--askinput', dest='askinput', 
-        help="Where to get input parameters from. Available options are: 'JSON', during convert JSON to BASH, 'BASH' ask for input in bash", 
-        default='JSON', choices=['JSON', 'BASH'])
+        help="Where to get input parameters from. Available options are: 'JSON', during convert JSON to BASH, 'BASH' ask for input in bash, 'NO' do not ask for input.", 
+        default='JSON', choices=['JSON', 'BASH', 'NO'])
 
     args = parser.parse_args()
 
