@@ -1577,6 +1577,33 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     };
 
     /*
+    * If there is an environment variable declared, check that it referres only OBC_*_PATH variables
+    * See also: https://github.com/kantale/OpenBioC/issues/137
+    */
+    $scope.check_basic_environment_vars = function(value) {
+        var rs=[
+            /\$\{(\w+)\}/g, // Get all ${XYZ}
+            /\$(\w+)/g, // Get all $XYZ
+        ] 
+
+        var env_vars = ['OBC_TOOL_PATH', 'OBC_DATA_PATH', 'OBC_WORK_PATH'];
+
+        for (var i=0; i<rs.length; i++) {
+            var r=rs[i];
+            var match = r.exec(value);
+            while (match!=null) {
+                var var_name = match[1];
+                if (!env_vars.includes(var_name)) {
+                    return 'The only variables that you can use are: ${OBC_TOOL_PATH}, ${OBC_DATA_PATH} and ${OBC_WORK_PATH}';
+                }
+                match = r.exec(value);
+            }            
+        }
+
+        return '';
+    };
+
+    /*
     * Navbar --> tools/data --> Appropriate input (search) --> Create New (tool, pressed) --> Installation (tab, pressed) --> "+" (variables) (pressed)
     */
     $scope.tools_info_add_variable = function() {
@@ -1595,6 +1622,13 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         if (last_variable.name.includes('__')) {
             $scope.toast('Variable name cannot include __', 'error');
+            return;
+        }
+
+        //Check for environment variables in the value
+        var check = $scope.check_basic_environment_vars(last_variable.value);
+        if (check) {
+            $scope.toast(check, 'error');
             return;
         }
 
