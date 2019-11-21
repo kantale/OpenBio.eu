@@ -6,7 +6,9 @@
 
 ### 0.1.4 (21 November 2019)
 * Features:
+   * [Download Workflows in CWL #113](https://github.com/kantale/OpenBioC/issues/113)
    * [Access to basic environment variables #137](https://github.com/kantale/OpenBioC/issues/137)
+   * [Add a Download button in Tools #118](https://github.com/kantale/OpenBioC/issues/118)
 
 ### 0.1.3 (30 October 2019)
 * Bugs Fixed:
