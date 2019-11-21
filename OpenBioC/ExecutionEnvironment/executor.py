@@ -525,7 +525,7 @@ class Workflow:
             #ret += tool['validation_commands'] + '\n'
             #validation_script_filename = tool['label'].replace('/', '__') + '__validation.sh'
             #ret += "cat > {} << ENDOFFILE\n".format(validation_script_filename) # Add 'ENDOFFILE' in single quotes to have raw input
-            ret += '(\n' tool['validation_commands'] + '\n)\n' # Run validation commands in a dedicated environment 
+            ret += '(\n' + tool['validation_commands'] + '\n)\n' # Run validation commands in a dedicated environment 
             #ret += 'ENDOFFILE\n\n'
             #ret += 'chmod +x {}\n'.format(validation_script_filename)
             #ret += './{}\n'.format(validation_script_filename)
