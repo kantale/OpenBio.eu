@@ -1,6 +1,13 @@
 
 # Version changes and updates
 
+### 0.1.5 (Not yet released)
+
+
+### 0.1.4 (21 November 2019)
+* Features:
+   * [Access to basic environment variables #137](https://github.com/kantale/OpenBioC/issues/137)
+
 ### 0.1.3 (30 October 2019)
 * Bugs Fixed:
    * [Cannot change the name of a "main" step #134](https://github.com/kantale/OpenBioC/issues/134)
