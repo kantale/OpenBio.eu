@@ -3933,7 +3933,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             var output_filename = 'workflow.tar.gz'
             $("#hiddena").attr({
                 "download" : output_filename,      
-                "href" : "data:," + data['output_object']
+                "href" : "data:application/gzip," + data['output_object']
             }).get(0).click();
 
         }
@@ -3941,7 +3941,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             var output_filename = 'workflow.zip'
             $("#hiddena").attr({
                 "download" : output_filename,      
-                "href" : "data:," + data['output_object']
+                "href" : "data:application/zip," + data['output_object']
             }).get(0).click();
             
         }
