@@ -512,7 +512,9 @@ class Workflow:
                             for dependent_variable, dependent_tool in self.tool_dependent_variables[tool_id]]
             ret += Workflow.read_arguments_from_commandline(arguments)
 
-        ret += tool['installation_commands'] + '\n'
+        # We are adding the installation commands in parenthesis. 
+        # By doing so, we are isolating the raw installation commands with the rest pre- and post- commands
+        ret += '(\n' + tool['installation_commands'] + '\n)\n' 
         ret += 'echo "OBC: INSTALLATION OF TOOL: {} . COMPLETED"\n'.format(tool['label'])
         ret += '### END OF INSTALLATION COMMANDS FOR TOOL: {}\n\n'.format(tool['label'])
 
