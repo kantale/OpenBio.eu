@@ -1002,7 +1002,7 @@ class Workflow:
 
             def recursive(command, current_level):
                 if hasattr(command, 'word'):
-                    if command.word in steps:
+                    if command.word in steps:  
                         return current_level, command.word
 
                 if hasattr(command, 'parts'):
@@ -1015,6 +1015,12 @@ class Workflow:
                     ret = recursive(command.command, current_level+1)
                     if ret:
                         return ret
+
+                if hasattr(command, 'list'):
+                    for l in command.list:
+                        ret = recursive(l, current_level+1)
+                        if ret:
+                            return ret
 
                 return False
 
@@ -1123,6 +1129,7 @@ ENDOFFILE
             if not len(p[0].list[1].parts):
                 raise OBC_Executor_Exception('Could not parse bash script. Error 2308')
 
+            # Main commands are the children of the root node
             main_commands = p[0].list[1].parts
             found_call = False
             start = 2 # Remove '{\n'
