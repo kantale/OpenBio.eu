@@ -2187,9 +2187,11 @@ def run_workflow(request, **kwargs):
     #print ('editable:', workflow_info_editable)
 
     if workflow_info_editable:
-        # This is a workflow editable
+        # This workflow has not been saved! 
         workflow = kwargs.get('workflow_json', '')
-        workflow_name = workflow_arg.get('name', 'W')
+        workflow_name = workflow_arg.get('name', '')
+        if not workflow_name:
+            workflow_name = 'W'
         workflow_edit = 0
         set_edit_to_cytoscape_json(workflow, workflow_edit, workflow_name)
 
