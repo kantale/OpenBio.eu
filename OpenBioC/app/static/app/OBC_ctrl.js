@@ -94,7 +94,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 //            {group:'Debian',name:'Debian 10 (Buster)',value:'buster'}
 //        ];
         
-        $scope.tool_installation_init = '# Insert the BASH commands that install this tool\n# The following tools are available:\n#  apt-get, wget\n\n';
+        $scope.tool_installation_init = '# Insert the BASH commands that install this tool\n# You can use these environment variables: \n# ${OBC_TOOL_PATH}: path to tools directory \n# ${OBC_DATA_PATH}: path to data directory\n\n';
         $scope.tool_validation_init = '# Insert the BASH commands that confirm that this tool is correctly installed\n# In success, this script should return 0 exit code.\n# A non-zero exit code, means failure to validate installation.\n\nexit 1\n';
     
         $scope.tool_variables = [{name: '', value: '', description: ''}];
@@ -109,7 +109,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.workflows_step_name = '';
         $scope.workflows_step_main = false;
         $scope.workflows_step_description = '';
-        $scope.worfklows_step_ace_init = '# Insert the BASH commands for this step\n\n';
+        $scope.worfklows_step_ace_init = '# Insert the BASH commands for this step.\n# You can use the variable ${OBC_WORK_PATH} as your working directory.\n\n';
         workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1);
         $scope.workflow_step_error_message = '';
 
