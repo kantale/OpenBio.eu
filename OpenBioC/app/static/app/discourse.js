@@ -11,41 +11,66 @@ function discourse_setup_cytoscape() {
         autounselectify: true,
         elements: [],
         style: [
-            {
-                selector: 'node',
-                css: {
-                    'content': 'data(label)',
-                    'font-size': '5pt'
-                }
-            },
-            {
-                selector: 'edge',
-                css: {
-                    'width': 3,
-                    'curve-style': 'bezier',
-                    'target-arrow-shape': 'triangle'
-                },
-            },
-            {
-                selector: 'edge[type="neutral-note"]',
-                style: {
-                    'line-color': 'gray',
-                    'line-style': 'dashed',
-                    'target-arrow-color': 'gray'
-                }
-            },
-            {
-                selector: 'node[type="issue"]',
-                style: {
-                    'background-color': 'blue'
-                }
-            },
-            {
-                selector: 'node[type="note"]',
-                style: {
-                    'background-color': 'gray'
-                }
-            }
+		    {
+			    selector: 'node',
+				css: {
+			        'content': 'data(label)',
+					'font-size': '12pt'
+				}
+			},
+			{
+				selector: 'edge',
+				css: {
+					'width': 3,
+					'curve-style': 'bezier',
+					'target-arrow-shape': 'triangle'
+				}
+			},
+			{
+				selector: 'edge[type="neutral"]',
+				style: {
+					'line-color': 'gray',
+					'target-arrow-color': 'gray',
+				}
+			},
+			{
+				selector: 'edge[type="neutral-note"]',
+				style: {
+					'line-color': 'gray',
+					'line-style': 'dashed',
+					'target-arrow-color': 'gray',
+				}
+			},
+			{
+				selector: 'node[type="solution"]',
+				style: {
+					'background-color': 'yellow'
+				}
+			},
+			{
+				selector: 'node[type="issue"]',
+				style: {
+					'background-color': 'blue'
+				}
+			},
+			{
+				selector: 'node[type="note"]',
+				style: {
+					'background-color': 'gray'
+				}
+			},
+			{
+				selector: 'node[type="position-in-favor"]',
+				style: {
+					'background-color': 'green'
+				}
+			},
+			{
+				selector: 'node[type="position-against"]',
+				style: {
+					'background-color': 'red'
+				}
+			}
         ],
 
         //zoom: 1,
@@ -147,6 +172,20 @@ function discourse_visualize_pressed(
     * Takes as input a comment. Returns a cytoscape node
     */
     function create_node(comment) {
+        var type = 'note';
+        if (comment['opinion'] == 'agree') {
+            type = 'position-in-favor';
+        }
+        else if (comment['opinion'] == 'disagree') {
+            type = 'position-against';
+        }
+        else if (comment['opinion'] == 'solution') {
+            type = 'solution';
+        }
+        else if (comment['opinion'] == 'issue') {
+            type = 'issue';
+        }
+
         return {
             group: 'nodes',
             data: {
@@ -155,7 +194,7 @@ function discourse_visualize_pressed(
                 label: create_node_label(comment.comment_html),
                 tooltipText: comment.comment_html,
                 date: comment.created_at,
-                type: 'note'
+                type: type
             }
         }
     }
@@ -172,7 +211,7 @@ function discourse_visualize_pressed(
                 label: create_node_label(qa_title),
                 tooltipText: qa_title,
                 date: qa_created_at,
-                type: 'note'
+                type: 'issue'
             }
         }
     }
@@ -185,9 +224,13 @@ function discourse_visualize_pressed(
         thread.forEach(function(comment) {
             var this_node = create_node(comment);
             nodes.push(this_node);
+            var edge_type = 'neutral';
+            if (this_node.data.type == 'note') {
+                edge_type = 'neutral-note';
+            }
             edges.push({
                 group: 'edges',
-                data: {type: 'neutral-note', source: this_node.data.id, target: root_node.data.id}
+                data: {type: edge_type, source: this_node.data.id, target: root_node.data.id}
             });
 
             if (comment.children) {
