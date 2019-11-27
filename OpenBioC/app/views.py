@@ -3194,7 +3194,7 @@ def qa_add_comment(request, **kwargs):
     current_comment_html = markdown(current_comment)
 
     opinion = kwargs.get('qa_opinion', None)
-    if not opinion in ['note', 'agree', 'disagree']:
+    if not opinion in ['solution', 'note', 'agree', 'disagree']:
         return fail('Error 9177. opinion value unknown')
 
     try:

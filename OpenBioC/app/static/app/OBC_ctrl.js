@@ -4406,7 +4406,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     $scope.qa_add_comment_button_pressed = function() {
         $scope.qa_show_new_comment = true;
         $scope.qa_current_comment = '';
-        $scope.qa_comment_opinion = 'note';
+        $scope.qa_comment_opinion = 'solution';
     };
 
     /*
@@ -4420,7 +4420,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         $scope.qa_gen[qa_type].qa_show_new_comment = true;
         $scope.qa_gen[qa_type].qa_current_comment = '';
-        $scope.qa_gen[qa_type].qa_comment_opinion = 'note';
+        $scope.qa_gen[qa_type].qa_comment_opinion = 'solution';
     };
 
 
