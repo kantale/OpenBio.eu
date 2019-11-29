@@ -1,4 +1,9 @@
 
+
+## Tools/Data
+Tools and Data are indistinguishable in the platform.  
+
+
 ## Workflows 
 A workflow should contain one (and only one) "main" step. When the Workflow gets executed this is the step that gets called. All other steps should (directly or in-directly) get called from this step. This is similar to the "main" function in C/C++/Java.
 
