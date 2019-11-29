@@ -220,6 +220,7 @@ class Workflow:
 
         self.input_parameters = self.get_input_parameters()
         self.root_workflow = self.get_root_workflow()
+        self.root_workflow_id = self.root_workflow['id']
         self.root_step = self.get_root_step()
         self.root_inputs_outputs = self.get_input_output_from_workflow(self.root_workflow)
         self.output_parameters = self.root_inputs_outputs['outputs']
@@ -491,11 +492,15 @@ class Workflow:
         update_server_status=True,
         read_variables_from_command_line=False,
         variables_json_filename=None,
+        variables_sh_filename_read=None,
+        variables_sh_filename_write=None,
         ):
         '''
         update_server_status: boolean, should we update the server status?
         variables_json_filename: Create a json file that contains the values of the variables (if None it does not create it)
-        read_variables_from_command_line: Assume that this is running from a cammand line file.sh script. Read the arguments from command line 
+        read_variables_from_command_line: Assume that this is running from a cammand line file.sh script. Read the arguments from command line
+        variables_sh_filename_read: If it is set (list), then read all variables from all files in the list
+        variables_sh_filename_write: If it is set (string), then create a bash filename with all variables
         '''
 
         log_info('Building installation bash commands for: {}'.format(tool['label']))
@@ -511,6 +516,11 @@ class Workflow:
             arguments = [Workflow.get_tool_bash_variable(dependent_tool, dependent_variable['name']) 
                             for dependent_variable, dependent_tool in self.tool_dependent_variables[tool_id]]
             ret += Workflow.read_arguments_from_commandline(arguments)
+
+        if variables_sh_filename_read:
+            for filename in variables_sh_filename_read:
+                ret += '### READING VARIABLES FROM {}\n'.format(filename)
+                ret += '. {}\n\n'.format(filename)
 
         # We are adding the installation commands in parenthesis. 
         # By doing so, we are isolating the raw installation commands with the rest pre- and post- commands
@@ -550,6 +560,13 @@ class Workflow:
             ret += "cat > {} << ENDOFFILE\n".format(variables_json_filename) # Add 'ENDOFFILE' for raw input
             ret += Workflow.get_tool_bash_variables_json(tool) + '\n'
             ret += 'ENDOFFILE\n\n'
+
+        if variables_sh_filename_write:
+            ret += '### CREATING BASH WITH TOOL VARIABLES\n'
+            ret += "cat > {} << ENDOFFILE\n".format(variables_sh_filename_write)
+            for tool_variable in tool['variables']:
+                ret +='{VAR}="{VALUE}"\n'.format(VAR=tool_variable['name'], VALUE=tool_variable['value'])
+            ret += 'ENDOFFILE\n'
 
 
         return ret
@@ -626,6 +643,13 @@ class Workflow:
             ret = ret.replace('.', '_')
 
         return ret
+
+    @staticmethod
+    def get_tool_vars_filename(tool):
+        '''
+        '''
+
+        return '{TOOL_ID}_VARS.sh'.format(TOOL_ID=Workflow.get_tool_dash_id(tool, no_dots=True))
 
     @staticmethod
     def get_tool_bash_variable(tool, variable_name):
@@ -957,6 +981,20 @@ class Workflow:
     @staticmethod
     def bash_tool_installation_finished(tool):
         return Workflow.update_server_status('tool finished {}'.format(tool['label']))
+
+    @staticmethod
+    def declare_decorate_bash(bash, save_to):
+        '''
+        '''
+
+        ret = ''
+        ret += 'OBC_START=$(eval "declare")\n'
+        ret += bash + '\n'
+        ret += 'OBC_CURRENT=$(eval "declare")\n'
+        ret += 'comm -3 <(echo "$OBC_START" | grep -v "_=") <(echo "$OBC_CURRENT" | grep -v OBC_START | grep -v PIPESTATUS | grep -v "_=") > ./{}\n'.format(save_to)
+
+        return ret
+
 
     def step_tool_variables(self, step):
         '''
@@ -1727,8 +1765,6 @@ steps:
                     'input_source': self.input_output_step_setters[input_workflow_variable],
                     })
 
-        
-
         # 3. The intermediate variables from previous parts of the same step
         if step_breaked['count']>1:
             input_name = '{}__{}__VARS_sh'.format(step_breaked['id'], step_breaked['count']-1)
@@ -1910,7 +1946,7 @@ steps:
 
         if self.output_format == 'cwl':
             if self.output is None:
-                raise OBC_Executor_Exception('output is None. Please define one of zwltargz or zwlzip formats')
+                raise OBC_Executor_Exception('output is None. Please define one of cwltargz or cwlzip formats')
             for cwl_file in self.cwl_files:
                 with open(cwl_file['filename'], 'w') as f:
                     f.write(cwl_file['content'])
@@ -1958,23 +1994,86 @@ steps:
             fileIO.flush()
             return fileIO.getvalue()
 
+class AirflowExecutor(BaseExecutor):
+    '''
+    '''
 
+    # https://airflow.readthedocs.io/en/stable/tutorial.html
+    pattern = '''
+from airflow import DAG
+from airflow.operators.bash_operator import BashOperator
+from datetime import datetime, timedelta
 
-#        elif self.output is None:
-#
-#            tarfilioIO = io.BytesIO()
-#            with tarfile.open(fileobj=tarfilioIO, mode="w:gz") as tar:
-#
-#                    for cwl_file in self.cwl_files:
-#                        content = cwl_file['content'].encode('utf-8')
-#                        file = io.BytesIO(content)
-#                        info = tarfile.TarInfo(name=cwl_file['filename'])
-#                        info.size = len(content)
-#                        tar.addfile(tarinfo=info, fileobj=file)
+dag = DAG(
+    '{WORKFLOW_ID}', default_args=default_args, schedule_interval=timedelta(days=1))
 
-                
+default_args = {{
+    'owner': 'Airflow',
+    'start_date': datetime(2015, 6, 1),
+}}
+
+{TOOL_BASH_OPERATORS}
+
+{TOOL_ORDER}
+
+'''
+
+    tool_bash_operator = '''
+{ID} = BashOperator(
+    task_id='{ID}',
+    bash_command="""
+{BASH}
+""",
+    dag=dag)
+'''
+
+    def build(self,):
+        '''
+        '''
+
+        previous_tools = []
+        tool_bash_operators = []
+        tool_ids = []
+        for tool_index, tool in enumerate(self.workflow.tool_bash_script_generator()):
+
+            tool_vars_filename = os.path.join('${OBC_WORK_PATH}',Workflow.get_tool_vars_filename(tool))
+            tool_id = self.workflow.get_tool_dash_id(tool, no_dots=True)
             
+            bash = self.workflow.get_tool_bash_commands(
+                tool=tool, 
+                validation=True, 
+                update_server_status=False,
+                read_variables_from_command_line=False,
+                variables_json_filename=None,
+                variables_sh_filename_read = previous_tools,
+                variables_sh_filename_write=tool_vars_filename,
+            )
+            airflow_bash = self.tool_bash_operator.format(
+                ID=tool_id,
+                BASH=bash,
+            )
 
+            tool_bash_operators.append(airflow_bash)
+            tool_ids.append(tool_id)
+
+            previous_tools.append(tool_vars_filename)
+            #print ('=======================')
+            #print ('=======================')
+            #print ('=======================')
+
+
+            #Workflow.declare_decorate_bash
+            #print (tool['bash'])
+
+        print ('\n'.join(tool_bash_operators))
+
+        airflow_python = self.pattern.format(
+            WORKFLOW_ID = self.workflow.root_workflow_id,
+            TOOL_BASH_OPERATORS = '\n'.join(tool_bash_operators),
+            TOOL_ORDER = ' >> '.join(tool_ids)
+        )
+
+        print (airflow_python)
 
 
 class DockerExecutor(BaseExecutor):
@@ -2019,7 +2118,7 @@ if __name__ == '__main__':
     python executor.py -W workflow.json 
     '''
 
-    runner_options = ['sh', 'cwl', 'cwltargz', 'cwlzip']
+    runner_options = ['sh', 'cwl', 'cwltargz', 'cwlzip', 'airflow']
 
     parser = argparse.ArgumentParser(description='OpenBio-C workflow execute-or')
 
@@ -2030,7 +2129,8 @@ if __name__ == '__main__':
 'sh: Create a shell script (default)\n  ' \
 'cwl: Create a set of Common Workflow Language files\n' \
 'cwltargz: Same as cwl but create a tar.gz file\n' \
-'cwlzip: Same as cwl but create a zip file\n',
+'cwlzip: Same as cwl but create a zip file\n' \
+'airflow: Create airflow bashoperator scripts',
         default='sh')
     parser.add_argument('-O', '--output', dest='output', help='The output filename. default is script.sh, workflow.cwl and workflow.tar.gz, depending on the format', default='script')
     parser.add_argument('--insecure', dest='insecure', help="Pass insecure option (-k) to curl", default=False, action="store_true")
@@ -2063,6 +2163,9 @@ if __name__ == '__main__':
         if args.output == 'script':
             args.output = 'workflow.' + {'cwl': 'cwl', 'cwltargz': 'tar.gz', 'cwlzip': 'zip'}[args.format]
         e.build(output = args.output, output_format=args.format)
+    elif args.format in ['airflow']:
+        e = AirflowExecutor(w)
+        e.build()
     else:
         raise OBC_Executor_Exception('Unknown format: {}'.format(args.format))
 
