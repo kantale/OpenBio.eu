@@ -82,6 +82,81 @@ function discourse_setup_cytoscape() {
         }
     });
 
+    cydisc.cxtmenu({
+		selector: 'node, edge',
+		commands: [
+			{
+				content: 'Edit',
+				select: function(ele){
+				    openModal(ele);
+			    }
+		    },
+		    {
+			    content: 'Upvote',
+			    select: function(ele){
+			        var comment_id = ele.data().id;
+			        upvote_comment(comment_id);
+			    },
+			    enabled: true
+		    },
+		    {
+			    content: 'Downvote',
+			    select: function(ele){
+			        var comment_id = ele.data().id;
+			        downvote_comment(comment_id);
+			    },
+			    enabled: true
+		    },
+		    {
+			    content: 'Delete',
+			    select: function(ele){
+				    cydisc.remove(cydisc.elements('node[id = "' + ele.id() + '"]'));
+				    saveGraph();
+			    }
+		    }
+		]
+	});
+	cydisc.cxtmenu({
+	    selector: 'core',
+		commands: [
+			{
+				content: 'New Issue',
+				select: function(event){
+					addIssueNode(getID(), 'New issue', 'New issue', '{{ author }}');
+					saveGraph();
+				}
+			},
+			{
+				content: 'New Note',
+				select: function(){
+					addNoteNode(getID(), 'New note', 'New note', '{{ author }}');
+					saveGraph();
+				}
+			},
+			{
+				content: 'New Solution',
+				select: function(){
+					addSolutionNode(getID(), 'New solution', 'New solution', '{{ author }}');
+					saveGraph();
+				}
+			},
+			{
+				content: 'New Position In Favor',
+				select: function(){
+					addPositionInFavorNode(getID(), 'Position in favor', 'Position in favor', '{{ author }}');
+					saveGraph();
+				}
+			},
+			{
+				content: 'New Position Against',
+				select: function(){
+					addPositionAgainstNode(getID(), 'Position against', 'Position against', '{{ author }}');
+					saveGraph();
+				}
+			}
+		]
+	});
+
     cydisc.ready(function () {           // Wait for nodes to be added  
         cydisc.layout({                   // Call layout
             name: 'dagre',
@@ -265,5 +340,35 @@ function discourse_visualize_pressed(
 
 };
 
+function upvote_comment(comment_id) {
+    updownvote_comment(comment_id, true);
+}
 
+function downvote_comment(comment_id) {
+    updownvote_comment(comment_id, false);
+}
 
+function updownvote_comment(comment_id, vote) {
+    var scope = angular.element($('#angular_div')).scope();
+	scope.$apply(function () {
+        scope.ajax(
+            'updownvote_comment/',
+            {
+                'comment_id': comment_id,
+                'upvote': vote
+            },
+            function (data) {
+                //console.log(data);
+                //score.score = data['score']; // We do the score.score thing, to pass the score by reference (see right_panel.html)
+                //voted['up'] = data['voted']['up'];
+                //voted['down'] = data['voted']['down'];
+            },
+            function (data) {
+                scope.toast(data['error_message'], 'error');
+            },
+            function (statusText) {
+                scope.toast(statusText, 'error');
+            }
+        );
+    });
+}
