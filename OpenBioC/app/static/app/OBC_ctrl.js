@@ -931,7 +931,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.qa_gen['tool'].object_pk = data['tool_pk'];
                 $scope.qa_gen['tool'].qa_thread = data['tool_thread'];
                 $scope.qa_gen['tool'].qa_comment_id = data['tool_comment_id'];
-
+                $scope.qa_gen['tool'].qa_comment_title = data['tool_comment_title'];
+                $scope.qa_gen['tool'].qa_comment_created_at = data['tool_comment_created_at'];
+                $scope.qa_gen['tool'].qa_comment_username = data['tool_comment_username'];
             },
             function (data) {
                 $scope.toast('Error 5429', 'error');
@@ -2884,6 +2886,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.qa_gen['workflow'].object_pk = data['workflow_pk'];
                 $scope.qa_gen['workflow'].qa_thread = data['workflow_thread'];
                 $scope.qa_gen['workflow'].qa_comment_id = data['workflow_comment_id'];
+                $scope.qa_gen['workflow'].qa_comment_title = data['workflow_comment_title'];
+                $scope.qa_gen['workflow'].qa_comment_created_at = data['workflow_comment_created_at'];
+                $scope.qa_gen['workflow'].qa_comment_username = data['workflow_comment_username'];
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');
@@ -4431,19 +4436,55 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * Through this function we pass all required angular vars
     */
     $scope.qa_visualize_pressed = function() {
-
         discourse_visualize_pressed(
             $scope.qa_comment_id,
             $scope.qa_username,
             $scope.qa_title,
             $scope.qa_created_at,
-            $scope.qa_thread
+            $scope.qa_thread,
+            'cydisc'
         )
 
     };
 
 
-    // QA END 
+    // QA END
+
+    /*
+    * Tools --> Show thread --> "Visualize" --> Accordion Down
+    * It used to have a button, this is why it is called "pressed()"
+    * Just a wrapper for discourse_visualize_pressed defined in discourse.js
+    * Through this function we pass all required angular vars
+    */
+    $scope.tool_visualize_pressed = function() {
+        discourse_visualize_pressed(
+            $scope.qa_gen.tool.qa_comment_id,
+            $scope.qa_gen.tool.qa_comment_username,
+            $scope.qa_gen.tool.qa_comment_title,
+            $scope.qa_gen.tool.qa_comment_created_at,
+            $scope.qa_gen.tool.qa_thread,
+            'cydisc-tool'
+        )
+
+    };
+
+    /*
+    * Workflows --> Show thread --> "Visualize" --> Accordion Down
+    * It used to have a button, this is why it is called "pressed()"
+    * Just a wrapper for discourse_visualize_pressed defined in discourse.js
+    * Through this function we pass all required angular vars
+    */
+    $scope.workflow_visualize_pressed = function() {
+        discourse_visualize_pressed(
+            $scope.qa_gen.workflow.qa_comment_id,
+            $scope.qa_gen.workflow.qa_comment_username,
+            $scope.qa_gen.workflow.qa_comment_title,
+            $scope.qa_gen.workflow.qa_comment_created_at,
+            $scope.qa_gen.workflow.qa_thread,
+            'cydisc-workflow'
+        )
+
+    };
 
     /*
     * Hide all right accordions except from a single one

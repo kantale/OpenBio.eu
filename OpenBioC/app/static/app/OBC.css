@@ -98,6 +98,16 @@ pre {
   height: 400px;  
 }
 
+#cydisc-tool {
+  border: 1px solid red; 
+  height: 400px;  
+}
+
+#cydisc-workflow {
+  border: 1px solid red; 
+  height: 400px;  
+}
+
 
 /* timeline css */
 .vis-item.workflow {
