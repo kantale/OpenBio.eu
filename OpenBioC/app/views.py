@@ -1483,6 +1483,9 @@ def tools_search_3(request, **kwargs):
         'tool_pk': tool.pk, # Used in comments
         'tool_thread': qa_create_thread(tool.comment, obc_user), # Tool comment thread. This is a list
         'tool_comment_id': tool.comment.pk, # Used to create a permalink to the comments
+        'tool_comment_title': tool.comment.title,
+        'tool_comment_created_at': datetime_to_str(tool.comment.created_at),
+        'tool_comment_username': tool.comment.obc_user.user.username,
 
     }
 
@@ -1985,6 +1988,10 @@ def workflows_search_3(request, **kwargs):
         'workflow_pk': workflow.pk, # Used in comments (QAs)
         'workflow_thread': qa_create_thread(workflow.comment, obc_user), # Workflow comment thread 
         'workflow_comment_id': workflow.comment.pk, # Used to create a permalink to the comments
+        'workflow_comment_title': workflow.comment.title,
+        'workflow_comment_created_at': datetime_to_str(workflow.comment.created_at),
+        'workflow_comment_username': workflow.comment.obc_user.user.username,
+
     }
 
     return success(ret)

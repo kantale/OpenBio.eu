@@ -176,6 +176,18 @@ window.onload = function () {
                             angular.element($('#angular_div')).scope().qa_visualize_pressed(); 
                         });
                     }
+                    if (event.id == 'DiscourseRightPanelGeneral-tool') {
+                        // Visualize the discoure graph
+                        angular.element($('#angular_div')).scope().$apply(function () {
+                            angular.element($('#angular_div')).scope().tool_visualize_pressed();
+                        });
+                    }
+                    if (event.id == 'DiscourseRightPanelGeneral-workflow') {
+                        // Visualize the discoure graph
+                        angular.element($('#angular_div')).scope().$apply(function () {
+                            angular.element($('#angular_div')).scope().workflow_visualize_pressed();
+                        });
+                    }
 
                 },
                 // Callback function called before collapsible is closed
@@ -3005,7 +3017,7 @@ window.onload = function () {
 
     //Setting up cytoscape discourse graph
     //Function exists at discourse.js
-    window.cydisc = discourse_setup_cytoscape();
-
- 
+    window.cydisc = discourse_setup_cytoscape('cydisc');
+    window['cydisc-tool'] = discourse_setup_cytoscape('cydisc-tool');
+    window['cydisc-workflow'] = discourse_setup_cytoscape('cydisc-workflow');
 };

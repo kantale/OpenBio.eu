@@ -1,12 +1,14 @@
 
 /*
-* Called from ui.js : window.cydisc = discourse_setup_cytoscape();
+* Called from ui.js : window.cydisc = discourse_setup_cytoscape('cydisc');
+* Called from ui.js : window['cydisc-tool'] = discourse_setup_cytoscape('cydisc-tool');
+* Called from ui.js : window['cydisc-workflow'] = discourse_setup_cytoscape('cydisc-workflow');
 * Inits the discourse cytoscape graph
 */
-function discourse_setup_cytoscape() {
+function discourse_setup_cytoscape(cydisc_id) {
     
     var cydisc = cytoscape({
-        container: document.getElementById('cydisc'), // container to render in. defined in right_panel.html <div id="cydisc"></div>
+        container: document.getElementById(cydisc_id), // container to render in. defined in right_panel.html <div id="cydisc"></div> and in qa.html <div id="cydisc-{{ qa_type }}"></div>
         boxSelectionEnabled: false,
         autounselectify: true,
         elements: [],
@@ -88,7 +90,8 @@ function discourse_setup_cytoscape() {
 			{
 				content: 'Edit',
 				select: function(ele){
-				    openModal(ele);
+				    var scope = angular.element($('#angular_div')).scope();
+				    scope.toast('Not supported yet!', 'error');
 			    }
 		    },
 		    {
@@ -110,8 +113,8 @@ function discourse_setup_cytoscape() {
 		    {
 			    content: 'Delete',
 			    select: function(ele){
-				    cydisc.remove(cydisc.elements('node[id = "' + ele.id() + '"]'));
-				    saveGraph();
+				    var scope = angular.element($('#angular_div')).scope();
+				    scope.toast('Not supported yet!', 'error');
 			    }
 		    }
 		]
@@ -122,36 +125,36 @@ function discourse_setup_cytoscape() {
 			{
 				content: 'New Issue',
 				select: function(event){
-					addIssueNode(getID(), 'New issue', 'New issue', '{{ author }}');
-					saveGraph();
+				    var scope = angular.element($('#angular_div')).scope();
+				    scope.toast('Not supported yet!', 'error');
 				}
 			},
 			{
 				content: 'New Note',
 				select: function(){
-					addNoteNode(getID(), 'New note', 'New note', '{{ author }}');
-					saveGraph();
+				    var scope = angular.element($('#angular_div')).scope();
+				    scope.toast('Not supported yet!', 'error');
 				}
 			},
 			{
 				content: 'New Solution',
 				select: function(){
-					addSolutionNode(getID(), 'New solution', 'New solution', '{{ author }}');
-					saveGraph();
+				    var scope = angular.element($('#angular_div')).scope();
+				    scope.toast('Not supported yet!', 'error');
 				}
 			},
 			{
 				content: 'New Position In Favor',
 				select: function(){
-					addPositionInFavorNode(getID(), 'Position in favor', 'Position in favor', '{{ author }}');
-					saveGraph();
+				    var scope = angular.element($('#angular_div')).scope();
+				    scope.toast('Not supported yet!', 'error');
 				}
 			},
 			{
 				content: 'New Position Against',
 				select: function(){
-					addPositionAgainstNode(getID(), 'Position against', 'Position against', '{{ author }}');
-					saveGraph();
+				    var scope = angular.element($('#angular_div')).scope();
+				    scope.toast('Not supported yet!', 'error');
 				}
 			}
 		]
@@ -164,7 +167,7 @@ function discourse_setup_cytoscape() {
         }).run();
 
         //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.    
-        document.getElementById("cydisc").querySelector('canvas[data-id="layer2-node"]').style.position = null;
+        document.getElementById(cydisc_id).querySelector('canvas[data-id="layer2-node"]').style.position = null;
     });
 
     cydisc.resize();
@@ -208,13 +211,13 @@ function discourse_setup_cytoscape() {
 /*
 * Deletes all elements of a cytoscape discourse graph
 */
-function discourse_clear(){
-    window.cydisc.remove('edge, node');
+function discourse_clear(cydisc_id){
+    window[cydisc_id].remove('edge, node');
 
 
-    window.cydisc.resize();
-    window.cydisc.reset();
-    window.cydisc.center();
+    window[cydisc_id].resize();
+    window[cydisc_id].reset();
+    window[cydisc_id].center();
 }
 
 /*
@@ -226,7 +229,8 @@ function discourse_visualize_pressed(
     qa_username,
     qa_title,
     qa_created_at,
-    qa_thread
+    qa_thread,
+    cydisc_id
     ) {
 
     var nodes = [];
@@ -315,7 +319,7 @@ function discourse_visualize_pressed(
     }
 
     //Empty the graph
-    discourse_clear();
+    discourse_clear(cydisc_id);
 
     // Create and add the root node
     var root_node = create_root_node();
@@ -325,18 +329,18 @@ function discourse_visualize_pressed(
     create_nodes_edges_of_thread(qa_thread, root_node);
 
     // Add nodes and edges
-    window.cydisc.add(nodes);
-    window.cydisc.add(edges);
+    window[cydisc_id].add(nodes);
+    window[cydisc_id].add(edges);
 
     // Redraw layout, so they appear nicely
-    window.cydisc.layout({                    // Call layout
+    window[cydisc_id].layout({                    // Call layout
         name: 'dagre',
         rankDir: 'BT'
     }).run();
 
     // cytoscape boilerplate..
-    window.cydisc.resize();
-    window.cydisc.center();
+    window[cydisc_id].resize();
+    window[cydisc_id].center();
 
 };
 
