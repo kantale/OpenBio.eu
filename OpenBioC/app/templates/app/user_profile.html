@@ -5,7 +5,7 @@ Main style taken from: https://bootsnipp.com/snippets/bx5Be
 <div class="row" ng-show="user_profile_error_message">
   <div class="col-md-12">
     <div class="alert alert-danger">
-        <span ng-bind="user_profile_error_message"></span>
+      <span ng-bind="user_profile_error_message"></span>
     </div>
   </div>
 </div>
@@ -13,90 +13,89 @@ Main style taken from: https://bootsnipp.com/snippets/bx5Be
 <div class="row" ng-show="user_profile_success_message">
   <div class="col-md-12">
     <div class="alert alert-success">
-        <span ng-bind="user_profile_success_message"></span>
+      <span ng-bind="user_profile_success_message"></span>
     </div>
   </div>
 </div>
 
 
-	<div class="row">
-		<div class="col-md-3">
-		     <div class="list-group ">
-              <a href class="list-group-item list-group-item-action active">Info</a>
-              {% comment %}
-              <a href class="list-group-item list-group-item-action">User Management</a>
-              <a href class="list-group-item list-group-item-action">Used</a>
-              <a href class="list-group-item list-group-item-action">Enquiry</a>
-              <a href class="list-group-item list-group-item-action">Dealer</a>
-              <a href class="list-group-item list-group-item-action">Media</a>
-              <a href class="list-group-item list-group-item-action">Post</a>
-              <a href class="list-group-item list-group-item-action">Category</a>
-              <a href class="list-group-item list-group-item-action">New</a>
-              <a href class="list-group-item list-group-item-action">Comments</a>
-              <a href class="list-group-item list-group-item-action">Appearance</a>
-              <a href class="list-group-item list-group-item-action">Reports</a>
-              <a href class="list-group-item list-group-item-action">Settings</a>
-              {% endcomment %}
-              
-            </div> 
-		</div>
-		<div class="col-md-9">
-		    <div class="card">
-		        <div class="card-body">
-		            <div class="row">
-		                <div class="col-md-12">
-		                    <h4>Edit Profile</h4>
-		                    <hr>
-		                </div>
-		            </div>
-		            <div class="row">
-		                <div class="col-md-12">
-		                    <form>
-                              <div class="form-group row">
-                                <label for="username" class="col-4 col-form-label">User Name</label> 
-                                <div class="col-8">
-                                  <input id="username" name="username" placeholder="Username" class="form-control here" type="text" ng-model="username" disabled>
-                                </div>
-                              </div>
-                              <div class="form-group row">
-                                <label for="name" class="col-4 col-form-label">First Name</label> 
-                                <div class="col-8">
-                                  <input id="name" name="name" placeholder="First name not set" class="form-control here" type="text" ng-model="user_first_name">
-                                </div>
-                              </div>
-                              <div class="form-group row">
-                                <label for="lastname" class="col-4 col-form-label">Last Name</label> 
-                                <div class="col-8">
-                                  <input id="lastname" name="lastname" placeholder="Last name not set" class="form-control here" type="text" ng-model="user_last_name">
-                                </div>
-                              </div>
-                              <div class="form-group row">
-                                <label for="email" class="col-4 col-form-label">Email</label> 
-                                <div class="col-8">
-                                  <input id="email" name="email" placeholder="Email" class="form-control here" required="required" type="text" ng-model="user_email" disabled>
-                                </div>
-                              </div>
-                              <div class="form-group row">
-                                <label for="website" class="col-4 col-form-label">Website</label> 
-                                <div class="col-8">
-                                  <input id="website" name="website" placeholder="" class="form-control here" type="text" ng-model="user_website">
-                                </div>
-                              </div>
-                              <div class="form-group row">
-                                <label for="publicinfo" class="col-4 col-form-label">Public Info</label> 
-                                <div class="col-8">
-                                  <textarea id="publicinfo" name="publicinfo" cols="40" rows="4" class="form-control" ng-model="user_public_info"></textarea>
-                                </div>
-                              </div>
-                              <div class="form-group row">
-                                <div class="offset-4 col-8">
-                                  <button class="btn btn-success btn-lg float-right" ng-click="user_profile_update_pressed()">Update My Profile</button>
-                                </div>
-                              </div>
-                        </form>
-		                </div>
-		            </div>
-		        </div>
+<div class="row">
+	<div class="col-md-3">
+    <div class="list-group ">
+      <a href class="list-group-item list-group-item-action active">Info</a>
+      {% comment %}
+      <a href class="list-group-item list-group-item-action">User Management</a>
+      <a href class="list-group-item list-group-item-action">Used</a>
+      <a href class="list-group-item list-group-item-action">Enquiry</a>
+      <a href class="list-group-item list-group-item-action">Dealer</a>
+      <a href class="list-group-item list-group-item-action">Media</a>
+      <a href class="list-group-item list-group-item-action">Post</a>
+      <a href class="list-group-item list-group-item-action">Category</a>
+      <a href class="list-group-item list-group-item-action">New</a>
+      <a href class="list-group-item list-group-item-action">Comments</a>
+      <a href class="list-group-item list-group-item-action">Appearance</a>
+      <a href class="list-group-item list-group-item-action">Reports</a>
+      <a href class="list-group-item list-group-item-action">Settings</a>
+      {% endcomment %}   
+    </div> 
+	</div>
+	<div class="col-md-9">
+		<div class="card">
+		  <div class="card-body">
+		    <div class="row">
+		      <div class="col-md-12">
+		        <h4>Edit Profile</h4>
+		        <hr>
+		      </div>
 		    </div>
+		    <div class="row">
+		      <div class="col-md-12">
+		        <form>
+              <div class="form-group row">
+                <label for="username" class="col-4 col-form-label">User Name</label> 
+                <div class="col-8">
+                  <input id="username" name="username" placeholder="Username" class="form-control here" type="text" ng-model="username" disabled>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="name" class="col-4 col-form-label">First Name</label> 
+                <div class="col-8">
+                  <input id="name" name="name" placeholder="First name not set" class="form-control here" type="text" ng-model="user_first_name">
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="lastname" class="col-4 col-form-label">Last Name</label> 
+                <div class="col-8">
+                  <input id="lastname" name="lastname" placeholder="Last name not set" class="form-control here" type="text" ng-model="user_last_name">
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="email" class="col-4 col-form-label">Email</label> 
+                <div class="col-8">
+                  <input id="email" name="email" placeholder="Email" class="form-control here" required="required" type="text" ng-model="user_email" disabled>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="website" class="col-4 col-form-label">Website</label> 
+                <div class="col-8">
+                  <input id="website" name="website" placeholder="" class="form-control here" type="text" ng-model="user_website">
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="publicinfo" class="col-4 col-form-label">Public Info</label> 
+                <div class="col-8">
+                  <textarea id="publicinfo" name="publicinfo" cols="40" rows="4" class="form-control" ng-model="user_public_info"></textarea>
+                </div>
+              </div>
+              <div class="form-group row">
+                <div class="offset-4 col-8">
+                  <button class="btn btn-success btn-lg float-right" ng-click="user_profile_update_pressed()">Update My Profile</button>
+                </div>
+              </div>
+            </form>
+		      </div>
+		    </div>
+		  </div>
 		</div>
 	</div>
+</div>
