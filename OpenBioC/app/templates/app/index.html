@@ -186,6 +186,9 @@
 	<!-- Discourse js -->
 	<script src="/static/app/discourse.js"></script>
 
+	<!-- Discourse graph Editor -->
+	<link rel="stylesheet" type="text/css" href="/static/app/pell.min.css">
+
 
 </head>
 
@@ -307,6 +310,22 @@
       Date: <p id="tippy-date">15/02/2019</p>
     </div>
 
+	<!-- Modal Structure -->
+	<div id="editor-modal" class="modal">
+		<div class="modal-content">
+			<h4 id="modal-title"></h4>
+			<div class="input-field">
+				<div id="editor" class="pell"></div>
+				<p>User: <b id="node-author"></b></p>
+				<p>Date: <b id="editor-date">30/01/2019</b></p>
+				<p>Type: <b id="node-type"></b></p>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<a href="#!" class="modal-close waves-effect waves-green btn-flat" onclick="saveNodeTextChanges()">Save</a>
+			<a href="#!" class="modal-close waves-effect waves-green btn-flat" onclick="cancelNodeTextChanges()">Cancel</a>
+		</div>
+	</div>
 
 	<script type="text/javascript" src="/static/app/OBC.js" charset="utf-8"></script>
 
@@ -318,7 +337,40 @@
 
 		angular.element(document).ready(function () {
 			$('select').formSelect();
+			$('.modal').modal();
 		});
+	</script>
+	<script src="/static/app/pell.min.js"></script>
+	<script type="text/javascript">
+		var editor = window.editor = pell.init({
+			element: document.getElementById('editor'),
+			onChange: function (html) {
+			},
+			defaultParagraphSeparator: 'div',
+			styleWithCSS: false,
+			actions: [
+				'bold',
+				'underline',
+				'italic',
+				'heading1',
+				'heading2',
+				'olist',
+				'ulist',
+				'link',
+				'code',
+				'line',
+				'paragraph',
+				'quote'
+			],
+
+			classes: {
+				actionbar: 'pell-actionbar',
+				button: 'pell-button',
+				content: 'pell-content',
+				selected: 'pell-button-selected'
+			}
+		});
+		editor.content.innerHTML = '';
 	</script>
 </body>
 
