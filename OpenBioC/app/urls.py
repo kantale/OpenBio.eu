@@ -47,5 +47,5 @@ urlpatterns = [
 	path('qa_add_comment/', views.qa_add_comment), # Add a comment to a Q&A
 	path('gen_qa_add_comment/', views.gen_qa_add_comment), # Genetic version of the above # Add a comment to a QA
 	path('updownvote_comment/', views.updownvote_comment), # thumbs up or a thumbs down was pressed on a comment
-
+	path('edit_comment/', views.edit_comment), # edit a comment
 ]

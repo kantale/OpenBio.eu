@@ -90,8 +90,7 @@ function discourse_setup_cytoscape(cydisc_id) {
 			{
 				content: 'Edit',
 				select: function(ele){
-				    var scope = angular.element($('#angular_div')).scope();
-				    scope.toast('Not supported yet!', 'error');
+				    openModal(ele);
 			    }
 		    },
 		    {
@@ -273,7 +272,8 @@ function discourse_visualize_pressed(
                 label: create_node_label(comment.comment_html),
                 tooltipText: comment.comment_html,
                 date: comment.created_at,
-                type: type
+                type: type,
+		        is_root: false
             }
         }
     }
@@ -290,7 +290,8 @@ function discourse_visualize_pressed(
                 label: create_node_label(qa_title),
                 tooltipText: qa_title,
                 date: qa_created_at,
-                type: 'issue'
+                type: 'issue',
+		        is_root: true
             }
         }
     }
@@ -362,10 +363,6 @@ function updownvote_comment(comment_id, vote) {
                 'upvote': vote
             },
             function (data) {
-                //console.log(data);
-                //score.score = data['score']; // We do the score.score thing, to pass the score by reference (see right_panel.html)
-                //voted['up'] = data['voted']['up'];
-                //voted['down'] = data['voted']['down'];
             },
             function (data) {
                 scope.toast(data['error_message'], 'error');
@@ -375,4 +372,56 @@ function updownvote_comment(comment_id, vote) {
             }
         );
     });
+}
+
+var node = null;
+function openModal(ele) {
+	node = ele;
+	var scope = angular.element($('#angular_div')).scope();
+
+	$('#modal-title').text('Edit Node: ' + ele.data().id);
+	$('#node-text').val(ele.data().tooltipText);
+	$('#editor-date').text(ele.data().date);
+	$('#node-type').text(ele.data().type)
+
+	if (ele.data().author == scope.username) {
+		document.querySelector('.pell-content').setAttribute('contenteditable', true)
+	}
+	else {
+		document.querySelector('.pell-content').removeAttribute('contenteditable');
+	}
+	$('#node-author').text(ele.data().author);
+	editor.content.innerHTML = ele.data().tooltipText;
+
+	$('#editor-modal').modal('open');
+}
+
+function saveNodeTextChanges() {
+	var new_html = editor.content.innerHTML;
+	var scope = angular.element($('#angular_div')).scope();
+	scope.$apply(function () {
+        scope.ajax(
+            'edit_comment/',
+            {
+                'comment_id': node.data().id,
+                'new_html': new_html,
+                'is_root': node.data().is_root
+            },
+            function (data) {
+                scope.toast(data['message'], 'success');
+            },
+            function (data) {
+                scope.toast(data['error_message'], 'error');
+            },
+            function (statusText) {
+                scope.toast(statusText, 'error');
+            }
+        );
+    });
+
+	$('#editor-modal').modal('close');
+}
+
+function cancelNodeTextChanges() {
+    $('#editor-modal').modal('close');
 }

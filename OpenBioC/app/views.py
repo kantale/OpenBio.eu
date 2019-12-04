@@ -3360,7 +3360,43 @@ def updownvote_comment(request, **kwargs):
     return success(ret)
 
 
+@has_data
+def edit_comment(request, **kwargs):
+    '''
+    url: edit_comment/
+    '''
+
+    if request.user.is_anonymous:
+        return fail('Please login to upvote/downvote comments')
+
+    if not user_is_validated(request):
+        return fail('Please validate your email to edit the comment.' + validate_toast_button());
+
+    comment_id = int(kwargs['comment_id'])
+    new_html = kwargs['new_html']
+    is_root = kwargs['is_root']
+
+    # Get the comment
+    comment = Comment.objects.get(pk=comment_id)
+
+    # Get the user
+    obc_user = OBC_user.objects.get(user=request.user)
+
+    if comment.obc_user.id != obc_user.id:
+        return fail("You don't have the permission to edit this comment!")
+
+    if not is_root:
+        comment.comment = markdown(new_html)
+        comment.comment_html = new_html
+    else:
+        comment.title = new_html
+    comment.save()
+
+    ret = {
+        'message': 'The comment has been updated!'
+    }
+
+    return success(ret)
 
 ### END OF Q&A
 ### VIEWS END ######
-
