@@ -135,7 +135,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.show_sign_up = false;
         $scope.show_reset_password = false;
 
-         $scope.references_button_process_doi_activated = true;
+        $scope.references_button_process_doi_activated = true;
 
         $scope.get_init_data();
 
@@ -287,6 +287,12 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.profile_affiliation = data['profile_affiliation'];
                 $scope.profile_publicinfo = data['profile_publicinfo'];
                 $scope.profile_created_at = data['profile_created_at'];
+                $scope.profile_clients = data['profile_clients'];
+
+                //If the server did not return any client. Add an empty placeholder
+                if (!$scope.profile_clients.length) {
+                    $scope.profile_clients = [{name: '', client: ''}];
+                }
 
                 $timeout(function(){M.updateTextFields()}, 10);
             },
@@ -326,6 +332,31 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             }
         );
 
+    };
+
+    /*
+    * Profile --> Execution Clients --> '+' --> clicked 
+    */
+    $scope.profile_add_client = function(index) {
+        //alert('hello!');
+        //alert($scope.profile_clients[index].name);
+
+        $scope.ajax(
+            'user_add_client/',
+            {
+                name: $scope.profile_clients[index].name,
+                client: $scope.profile_clients[index].client
+            },
+            function(data) {
+                $scope.toast('Execution Client added succesfully', 'success');
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(data) {
+                $scope.toast(statusText, 'error');
+            }
+        );
     };
 
     /*

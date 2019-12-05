@@ -28,7 +28,7 @@ from django.middleware.csrf import get_token
 #Import database objects
 from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations, \
     OS_types, Keyword, Report, ReportToken, Reference, ReferenceField, Comment, \
-    UpDownCommentVote
+    UpDownCommentVote, ExecutionClient
 
 #Import executor
 from ExecutionEnvironment.executor import create_bash_script, OBC_Executor_Exception
@@ -119,6 +119,7 @@ g = {
         'qas': 'forum',
     },
     'url_validator': URLValidator(), # Can be customized: URLValidator(schemes=('http', 'https', 'ftp', 'ftps', 'rtsp', 'rtmp'))
+    'client_name_regex': r'[\w]+', # The regular expression to validate the name of exutation client
 }
 
 ### HELPING FUNCTIONS AND DECORATORS #####
@@ -783,7 +784,10 @@ def get_instance_settings():
 @has_data
 def users_search_3(request, **kwargs):
     '''
-    Get profile info for a single user
+    Get profile info for a single user.
+    This is called from: 
+    * Click on profile
+    * Click on a user node in left panel jstree
     '''
 
     username = kwargs.get('username', '')
@@ -805,13 +809,52 @@ def users_search_3(request, **kwargs):
         'profile_created_at': datetime_to_str(u.user.date_joined), # https://docs.djangoproject.com/en/2.2/ref/contrib/auth/#django.contrib.auth.models.User.date_joined
     }
 
-    # We fetch mail only for registered user 
+    # only for registered user:
+    # * get mail
+    # * get ExecutionClients
     if username == request.user.username:
         ret['profile_email'] = u.user.email
+        ret['profile_clients'] = [{'name': client.name, 'client': client.name} for client in u.clients.all()]
     else:
         ret['profile_email'] = ''
 
     return success(ret)
+
+@has_data
+def user_add_client(request, **kwargs):
+    '''
+    Called from $scope.profile_add_client when user adds a new Execution Client
+    '''
+
+    # Get the user
+    try:
+        obc_user = OBC_user.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        return fail('Error 8619'); # This should never happen
+
+    #Get and validate the name
+    name = kwargs.get('name', '')
+    if not re.match(g['client_name_regex'], name):
+        return fail('Invalid client name (allowed characters, a-z, A-Z, 0-9, _ )')
+
+    # Get and validate the client    
+    client = kwargs.get('client', '')
+    if not g['url_validator'](client):
+        return fail('URL is invalid')
+
+    # Check that the name does not exist
+    existing_clients = [{'name':x.name, 'client': x.client} for x in obc_user.clients.all()]
+    existing_names = {x['name'] for x in existing_clients}
+    existing_urls = {x['client'] for x in existing_clients}
+
+    if name in existing_names:
+        return fail('There is already an Execution Environment with this name')
+
+    if client in existing_urls:
+        return fail('There is already an Execution Environment with this URL')
+
+
+
 
 @has_data
 def users_edit_data(request, **kwargs):

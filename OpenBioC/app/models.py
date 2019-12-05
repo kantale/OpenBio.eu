@@ -15,6 +15,12 @@ Important:
    * Do not use underscore in class names
 '''
 
+class ExecutionClient(models.Model):
+
+    name = models.CharField(max_length=256, null=False)
+    client = models.URLField(max_length=256, null=False)
+
+
 class OBC_user(models.Model):
     '''
     Note: the email is stored in user.email
@@ -34,6 +40,9 @@ class OBC_user(models.Model):
     website = models.URLField(max_length=256, null=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#urlfield
     affiliation = models.TextField(null=True)
     public_info = models.TextField(null=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#textfield
+
+    #A user can have many Execution Clients
+    clients = models.ManyToManyField(ExecutionClient)
 
 class Keyword(models.Model):
     '''
