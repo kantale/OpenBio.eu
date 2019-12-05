@@ -130,100 +130,19 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr>
-                                                <td><input type="text" placeholder="Name"></td>
-                                                <td><input type="text" placeholder="URL"></td>   
+                                            <tr ng-repeat="client in profile_clients track by $index">
+                                                <td><input type="text" placeholder="Name" ng-model="client.name" ng-disabled="!$last"></td>
+                                                <td><input type="text" placeholder="URL" ng-model="client.client" ng-disabled="!$last"></td>   
                                                 <td>
                                                     <a class="waves-effect waves-light btn-small tooltipped green darken-1"
+                                                        ng-show="client.name && client.client && $last"
+                                                        ng-click="profile_add_client($index)"
                                                         style="padding-left: 7px; padding-right:7px" data-position="bottom"
                                                         data-tooltip="Add URL"><i class="material-icons">add</i></a>
                                                 </td>
                                                 <td>
                                                     <a class="waves-effect waves-light btn-small tooltipped red darken-1"
-                                                        style="padding-left: 7px; padding-right:7px" data-position="bottom"
-                                                        data-tooltip="Remove URL"><i class="material-icons">remove</i></a>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td><input type="text" placeholder="Name"></td>
-                                                <td><input type="text" placeholder="URL"></td>   
-                                                <td>
-                                                    <a class="waves-effect waves-light btn-small tooltipped green darken-1"
-                                                        style="padding-left: 7px; padding-right:7px" data-position="bottom"
-                                                        data-tooltip="Add URL"><i class="material-icons">add</i></a>
-                                                </td>
-                                                <td>
-                                                    <a class="waves-effect waves-light btn-small tooltipped red darken-1"
-                                                        style="padding-left: 7px; padding-right:7px" data-position="bottom"
-                                                        data-tooltip="Remove URL"><i class="material-icons">remove</i></a>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td><input type="text" placeholder="Name"></td>
-                                                <td><input type="text" placeholder="URL"></td>   
-                                                <td>
-                                                    <a class="waves-effect waves-light btn-small tooltipped green darken-1"
-                                                        style="padding-left: 7px; padding-right:7px" data-position="bottom"
-                                                        data-tooltip="Add URL"><i class="material-icons">add</i></a>
-                                                </td>
-                                                <td>
-                                                    <a class="waves-effect waves-light btn-small tooltipped red darken-1"
-                                                        style="padding-left: 7px; padding-right:7px" data-position="bottom"
-                                                        data-tooltip="Remove URL"><i class="material-icons">remove</i></a>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td><input type="text" placeholder="Name"></td>
-                                                <td><input type="text" placeholder="URL"></td>   
-                                                <td>
-                                                    <a class="waves-effect waves-light btn-small tooltipped green darken-1"
-                                                        style="padding-left: 7px; padding-right:7px" data-position="bottom"
-                                                        data-tooltip="Add URL"><i class="material-icons">add</i></a>
-                                                </td>
-                                                <td>
-                                                    <a class="waves-effect waves-light btn-small tooltipped red darken-1"
-                                                        style="padding-left: 7px; padding-right:7px" data-position="bottom"
-                                                        data-tooltip="Remove URL"><i class="material-icons">remove</i></a>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td><input type="text" placeholder="Name"></td>
-                                                <td><input type="text" placeholder="URL"></td>   
-                                                <td>
-                                                    <a class="waves-effect waves-light btn-small tooltipped green darken-1"
-                                                        style="padding-left: 7px; padding-right:7px" data-position="bottom"
-                                                        data-tooltip="Add URL"><i class="material-icons">add</i></a>
-                                                </td>
-                                                <td>
-                                                    <a class="waves-effect waves-light btn-small tooltipped red darken-1"
-                                                        style="padding-left: 7px; padding-right:7px" data-position="bottom"
-                                                        data-tooltip="Remove URL"><i class="material-icons">remove</i></a>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td><input type="text" placeholder="Name"></td>
-                                                <td><input type="text" placeholder="URL"></td>   
-                                                <td>
-                                                    <a class="waves-effect waves-light btn-small tooltipped green darken-1"
-                                                        style="padding-left: 7px; padding-right:7px" data-position="bottom"
-                                                        data-tooltip="Add URL"><i class="material-icons">add</i></a>
-                                                </td>
-                                                <td>
-                                                    <a class="waves-effect waves-light btn-small tooltipped red darken-1"
-                                                        style="padding-left: 7px; padding-right:7px" data-position="bottom"
-                                                        data-tooltip="Remove URL"><i class="material-icons">remove</i></a>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td><input type="text" placeholder="Name"></td>
-                                                <td><input type="text" placeholder="URL"></td>   
-                                                <td>
-                                                    <a class="waves-effect waves-light btn-small tooltipped green darken-1"
-                                                        style="padding-left: 7px; padding-right:7px" data-position="bottom"
-                                                        data-tooltip="Add URL"><i class="material-icons">add</i></a>
-                                                </td>
-                                                <td>
-                                                    <a class="waves-effect waves-light btn-small tooltipped red darken-1"
+                                                        ng-show="client.name && client.client && (!$last)"
                                                         style="padding-left: 7px; padding-right:7px" data-position="bottom"
                                                         data-tooltip="Remove URL"><i class="material-icons">remove</i></a>
                                                 </td>
