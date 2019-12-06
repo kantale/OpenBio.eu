@@ -933,6 +933,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.tool_description_html = data['description_html'];
                 $scope.tool_changes = data['changes'];
                 $scope.tool_info_created_at = data['created_at'];
+                $scope.tool_score = data['tool_score'];
+                $scope.tool_voted = data['tool_voted'];
                 $scope.tools_info_forked_from = data['forked_from'];
                 $scope.tools_info_name = item.name;
                 $scope.tools_info_version = item.version;
@@ -2901,6 +2903,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.workflow_description_html = data['description_html'];
                 $scope.workflow_info_forked_from = data['forked_from'];
                 $scope.workflow_changes = data['changes'];
+                $scope.workflow_score = data['workflow_score']; // For upvotes / downcvotes
+                $scope.workflow_voted = data['workflow_voted']; //Check if this workflow is voted from the user 
 
                 // Load the graph. TODO: WHAT HAPPENS WHEN WE CLICK TO NODE? IT IS NOT REGISTERED
                 window.initializeTree();
@@ -4600,9 +4604,61 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     };
 
     /*
+    * A thumbs-up or thumbs-down was pressed on a tool or on a workflow
+    * ro = 'tool', or 'workflow'
+    * upvote = True --> upvote, false-->downvote
+    */
+    $scope.updownvote_tool_workflow = function(ro, upvote) {
+
+        var ro_obj = {};
+        //Get the TOOL
+        if (ro=='tool') {
+            ro_obj = {
+                'name': $scope.tools_info_name,
+                'version': $scope.tools_info_version,
+                'edit': $scope.tools_info_edit
+            }
+        }
+        else if (ro=='workflow') {
+            ro_obj = {
+                'name': $scope.workflow_info_name,
+                'edit': $scope.workflow_info_edit
+            }
+        }
+        else {
+            return;
+        }
+
+        $scope.ajax(
+            'updownvote_tool_workflow/',
+            {
+                'ro': ro,
+                'ro_obj': ro_obj,
+                'upvote': upvote,
+            },
+            function(data) {
+                if (ro=='tool') {
+                    $scope.tool_score = data['score'];
+                    $scope.tool_voted = data['voted'];
+                }
+                else if (ro=='workflow') {
+                    $scope.workflow_score = data['score'];
+                    $scope.workflow_voted = data['voted'];
+                }
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
+    };
+
+    /*
     * A thumbs-up or thumbs-down was pressed on a comment
     * comment_id is the id of the comment
-    * upvate: true --> Upvate, false --> downvote
+    * upvate: true --> Upvote, false --> downvote
     * score is an object that contains a score atttribute
     * voted is the current voted state: i.e. {'up': false, 'down': true}
     */

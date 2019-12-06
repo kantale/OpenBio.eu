@@ -15,10 +15,10 @@
         <div style="margin: 20px;">
             <div class="left-align">
                 <div style="overflow: auto;">
-                    <div class="box upDownVoteBoxTitle">
-                        <div class="upvoteDiv upDownvoteDivTitle"><i class="material-icons" style="font-size: 1.64rem;">arrow_upward</i></div>
-                        <h5 style="margin: 0px;"><span>0</span></h5>
-                        <div class="downvoteDiv upDownvoteDivTitle"><i class="material-icons" style="font-size: 1.64rem;">arrow_downward</i></div>
+                    <div class="box upDownVoteBoxTitle" ng-show="!tools_info_editable">
+                        <div class="upvoteDiv upDownvoteDivTitle" ng-class="{'active': tool_voted['up']}"><i class="material-icons" style="font-size: 1.64rem;" ng-click="updownvote_tool_workflow('tool', true)">arrow_upward</i></div>
+                        <h5 style="margin: 0px;"><span ng-bind="tool_score"></span></h5>
+                        <div class="downvoteDiv upDownvoteDivTitle" ng-class="{'active': tool_voted['down']}"><i class="material-icons" style="font-size: 1.64rem;" ng-click="updownvote_tool_workflow('tool', false)">arrow_downward</i></div>
                     </div>
                     <div style="float: left;">
                         <h5 style="margin-top: 0px;">
@@ -414,10 +414,10 @@
         <div style="margin: 20px;">
             <div class="left-align">
                 <div style="overflow: auto;">
-                    <div class="box upDownVoteBoxTitle">
-                        <div class="upvoteDiv upDownvoteDivTitle"><i class="material-icons" style="font-size: 1.64rem;">arrow_upward</i></div>
-                            <h5 style="margin: 0px;"><span>0</span></h5>
-                        <div class="downvoteDiv upDownvoteDivTitle"><i class="material-icons" style="font-size: 1.64rem;">arrow_downward</i></div>
+                    <div class="box upDownVoteBoxTitle" ng-show="!workflows_info_editable">
+                        <div class="upvoteDiv upDownvoteDivTitle" ng-class="{'active': workflow_voted['up']}"><i class="material-icons" style="font-size: 1.64rem;" ng-click="updownvote_tool_workflow('workflow', true)">arrow_upward</i></div>
+                            <h5 style="margin: 0px;"><span ng-bind="workflow_score"></span></h5>
+                        <div class="downvoteDiv upDownvoteDivTitle" ng-class="{'active': workflow_voted['down']}"><i class="material-icons" style="font-size: 1.64rem;" ng-click="updownvote_tool_workflow('workflow', false)">arrow_downward</i></div>
                     </div>
                     <div style="float: left;">
                         <h5 style="margin-top: 0px;">
