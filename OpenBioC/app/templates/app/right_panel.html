@@ -39,6 +39,7 @@
                 </div>
                 <!-- Buttons -->
                 <div class="row right-align">
+                    <a class="dropdown-trigger btn" data-target='runDropdownTool' style="margin-bottom:2px">Run</a>
                     <a class="dropdown-trigger btn" data-target='downloadDropdownTool' style="margin-bottom:2px">Download</a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Save" ng-click="tool_create_save_pressed()" ng-show="tools_info_editable"><i
@@ -47,6 +48,13 @@
                         data-tooltip="Fork" ng-click="tool_info_fork_pressed()" ng-show="!tools_info_editable"
                         ng-class="{'disabled': !username}"><i class="material-icons">call_split</i></a>
 
+                    <!-- Run Dropdown -->
+                    <ul id='runDropdownTool' class='dropdown-content'>
+                        <li><a>test1</a></li>
+                        <li><a>test2</a></li>
+                        <li><a>test3</a></li>
+                        <li><a>test4</a></li>
+                    </ul>
                     <!-- Download Dropdown -->
                     <ul id='downloadDropdownTool' class='dropdown-content'>
                         <li><a ng-click="tool_info_run_pressed('BASH')">BASH executable</a></li>
@@ -90,21 +98,15 @@
                                         ng-model="tool_website">
                                     <label for="generalWebsite">Website</label>
                                 </div>
-                                <!-- <div class="input-field col s12 grid-s12-m12-l12">
-                                    <textarea id="generalDescription" class="validate materialize-textarea tooltipped"
-                                        data-tooltip="General tool/data description. You can use markdown"
-                                        ng-model="tool_description"></textarea>
-                                    <label for="generalDescription">Description</label>
-                                </div> -->
                                 <!-- ------------------------------------------------------------------------------------ -->
-                                <div class="row left-align col s12 grid-s12-m12-l12" style="margin-bottom: 0px; margin-top:15px; border: 1px solid #9e9e9e; border-radius: 3px;">
+                                <div class="row qaTabs left-align col s12 grid-s12-m12-l12">
                                     <div class="grid-s12-m12-l12">
-                                        <ul class="tabs" id="toolDataDescTabs">
-                                            <li id="toolsDataDescWriteTab" class="tab col s3 grid-s3-m3-l3"><a class="active" href="#toolsDataDescWrite">Write</a></li>
-                                            <li id="toolsDataDescPreviewTab" class="tab col s3 grid-s3-m3-l3"><a href="#toolsDataDescPreview">Preview</a></li>
+                                        <ul class="tabs">
+                                            <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
+                                            <li class="tab col s3 grid-s3-m3-l3"><a onclick="previewTabClicked(event)">Preview</a></li>
                                         </ul>
                                     </div>
-                                    <div id="toolsDataDescWrite" class="grid-s12-m12-l12">
+                                    <div class="active writeTabContent grid-s12-m12-l12">
                                         <div class="input-field">
                                             <textarea id="generalDescription" class="validate materialize-textarea tooltipped"
                                                 data-tooltip="General tool/data description. You can use markdown"
@@ -112,7 +114,7 @@
                                             <label for="generalDescription">Description</label>
                                         </div>
                                     </div>
-                                    <div id="toolsDataDescPreview" class="grid-s12-m12-l12 input-field">
+                                    <div class="previewTabContent grid-s12-m12-l12 input-field">
                                         Preview Text
                                     </div>
                                 </div>
@@ -441,6 +443,7 @@
                     <!-- <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Run" ng-click="workflow_info_run_pressed()"
                         ng-disabled="workflows_info_editable">Run</a> -->
+                    <a class="dropdown-trigger btn" data-target='runDropdownWorkflow' style="margin-bottom:2px">Run</a>
                     <a class="dropdown-trigger btn" data-target='downloadDropdownWorkflow' style="margin-bottom:2px">Download</a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fit" ng-click="workflow_info_fit_pressed()">Fit</a>
@@ -453,6 +456,13 @@
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fork" ng-click="workflows_info_fork_pressed()" ng-show="!workflows_info_editable"
                         ng-class="{'disabled': !username}"><i class="material-icons">call_split</i></a>
+                    <!-- Run Dropdown -->
+                    <ul id='runDropdownWorkflow' class='dropdown-content'>
+                        <li><a>test1</a></li>
+                        <li><a>test2</a></li>
+                        <li><a>test3</a></li>
+                        <li><a>test4</a></li>
+                    </ul>
                     <!-- Download Dropdown -->
                     <ul id='downloadDropdownWorkflow' class='dropdown-content'>
                         <li><a ng-click="workflow_info_run_pressed('BASH')">BASH executable</a></li>
@@ -490,27 +500,22 @@
                                         ng-model="workflow_website">
                                     <label for="workflowsGeneralWebsite">Website</label>
                                 </div>
-                                <!-- <div class="input-field col s12 grid-s12-m12-l12">
-                                    <textarea id="workflowsGeneralDescription" class="validate materialize-textarea"
-                                        ng-model="workflow_description"></textarea>
-                                    <label for="workflowsGeneralDescription">Description</label>
-                                </div> -->
                                 <!-- ------------------------------------------------------------------------------------ -->
-                                <div class="row left-align col s12 grid-s12-m12-l12" style="margin-bottom: 0px; margin-top:15px; border: 1px solid #9e9e9e; border-radius: 3px;">
+                                <div class="row qaTabs left-align col s12 grid-s12-m12-l12">
                                     <div class="grid-s12-m12-l12">
-                                        <ul class="tabs" id="workflowDescTabs">
-                                            <li id="workflowDescWriteTab" class="tab col s3 grid-s3-m3-l3"><a class="active" href="#workflowDescWrite">Write</a></li>
-                                            <li id="workflowDescPreviewTab" class="tab col s3 grid-s3-m3-l3"><a href="#workflowDescPreview">Preview</a></li>
+                                        <ul class="tabs">
+                                            <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
+                                            <li class="tab col s3 grid-s3-m3-l3"><a onclick="previewTabClicked(event)">Preview</a></li>
                                         </ul>
                                     </div>
-                                    <div id="workflowDescWrite" class="grid-s12-m12-l12">
+                                    <div class="active writeTabContent grid-s12-m12-l12">
                                         <div class="input-field">
                                             <textarea id="workflowsGeneralDescription" class="validate materialize-textarea"
                                                 ng-model="workflow_description"></textarea>
                                             <label for="workflowsGeneralDescription">Description</label>
                                         </div>
                                     </div>
-                                    <div id="workflowDescPreview" class="grid-s12-m12-l12 input-field">
+                                    <div class="previewTabContent grid-s12-m12-l12 input-field">
                                         Preview Text
                                     </div>
                                 </div>
@@ -1238,27 +1243,22 @@
                                 <input id="qatitle" type="text" class="validate" ng-model="qa_title">
                                 <label for="qatitle">Title</label>
                             </div>
-                            <!-- <div class="input-field">
-                                <textarea id="comment" class="validate materialize-textarea"
-                                    ng-model="qa_comment"></textarea>
-                                <label for="comment">Comment</label>
-                            </div> -->
                             <!-- ------------------------------------------------------------------------------------ -->
-                            <div class="row left-align col s12 grid-s12-m12-l12" style="margin-bottom: 0px; margin-top:15px; border: 1px solid #9e9e9e; border-radius: 3px;">
+                            <div class="row qaTabs left-align col s12 grid-s12-m12-l12">
                                 <div class="grid-s12-m12-l12">
-                                    <ul class="tabs" id="qaCommentTabs">
-                                        <li id="qaCommentWriteTab" class="tab col s3 grid-s3-m3-l3"><a class="active" href="#qaCommentWrite">Write</a></li>
-                                        <li id="qaCommentPreviewTab" class="tab col s3 grid-s3-m3-l3"><a href="#qaCommentPreview">Preview</a></li>
+                                    <ul class="tabs">
+                                        <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
+                                        <li class="tab col s3 grid-s3-m3-l3"><a onclick="previewTabClicked(event)">Preview</a></li>
                                     </ul>
                                 </div>
-                                <div id="qaCommentWrite" class="grid-s12-m12-l12">
+                                <div class="active writeTabContent grid-s12-m12-l12">
                                     <div class="input-field">
                                         <textarea id="comment" class="validate materialize-textarea"
                                             ng-model="qa_comment"></textarea>
                                         <label for="comment">Comment</label>
                                     </div>
                                 </div>
-                                <div id="qaCommentPreview" class="grid-s12-m12-l12 input-field">
+                                <div class="previewTabContent grid-s12-m12-l12 input-field">
                                     Preview Text
                                 </div>
                             </div>
@@ -1295,17 +1295,17 @@
                     <div class="input-field" ng-show="qa_show_new_comment">
                         <!-- <textarea class="validate" ng-model="qa_current_comment"></textarea> -->
                         <!-- ------------------------------------------------------------------------------------ -->
-                        <div class="row left-align col s12 grid-s12-m12-l12" style="margin-bottom: 0px; margin-top:15px; border: 1px solid #9e9e9e; border-radius: 3px;">
+                        <div class="row qaTabs left-align col s12 grid-s12-m12-l12">
                             <div class="grid-s12-m12-l12">
-                                <ul class="tabs" id="qaAddCommentTabs">
-                                    <li id="qaAddCommentWriteTab" class="tab col s3 grid-s3-m3-l3"><a class="active" href="#qaAddCommentWrite">Write</a></li>
-                                    <li id="qaAddCommentPreviewTab" class="tab col s3 grid-s3-m3-l3"><a href="#qaAddCommentPreview">Preview</a></li>
+                                <ul class="tabs">
+                                    <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
+                                    <li class="tab col s3 grid-s3-m3-l3"><a onclick="previewTabClicked(event)">Preview</a></li>
                                 </ul>
                             </div>
-                            <div id="qaAddCommentWrite" class="grid-s12-m12-l12">
+                            <div class="active writeTabContent grid-s12-m12-l12">
                                 <textarea class="validate" ng-model="qa_current_comment"></textarea>
                             </div>
-                            <div id="qaAddCommentPreview" class="grid-s12-m12-l12 input-field">
+                            <div class="previewTabContent grid-s12-m12-l12 input-field">
                                 Preview Text
                             </div>
                         </div>
@@ -1389,19 +1389,18 @@
                             <a class="waves-effect btn-flat qaReplyBtn" href=""
                                 ng-click="qa_reply_button_clicked(post.id)"><u>Reply</u></a>
                             <div class="input-field" ng-show="post.replying">
-                                <!-- <textarea class="validate" ng-model="qa_current_reply"></textarea> -->
                                 <!-- ------------------------------------------------------------------------------------ -->
-                                <div class="row left-align col s12 grid-s12-m12-l12" style="margin-bottom: 0px; margin-top:15px; border: 1px solid #9e9e9e; border-radius: 3px;">
+                                <div class="row qaTabs left-align col s12 grid-s12-m12-l12">
                                     <div class="grid-s12-m12-l12">
-                                        <ul class="tabs" id="postTabs">
-                                            <li id="postWriteTab" class="tab col s3 grid-s3-m3-l3"><a class="active" href="#postWrite">Write</a></li>
-                                            <li id="postPreviewTab" class="tab col s3 grid-s3-m3-l3"><a href="#postPreview">Preview</a></li>
+                                        <ul class="tabs">
+                                            <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
+                                            <li class="tab col s3 grid-s3-m3-l3"><a onclick="previewTabClicked(event)">Preview</a></li>
                                         </ul>
                                     </div>
-                                    <div id="postWrite" class="grid-s12-m12-l12">
+                                    <div class="active writeTabContent grid-s12-m12-l12">
                                         <textarea class="validate" ng-model="qa_current_reply"></textarea>
                                     </div>
-                                    <div id="postPreview" class="grid-s12-m12-l12 input-field">
+                                    <div class="previewTabContent grid-s12-m12-l12 input-field">
                                         Preview Text
                                     </div>
                                 </div>
@@ -1433,19 +1432,18 @@
                                     <a class="waves-effect btn-flat qaReplyBtn" href=""
                                         ng-click="qa_reply_button_clicked(post2.id)"><u>Reply</u></a>
                                     <div class="input-field" ng-show="post2.replying">
-                                        <!-- <textarea class="validate" ng-model="qa_current_reply"></textarea> -->
                                         <!-- ------------------------------------------------------------------------------------ -->
-                                        <div class="row left-align col s12 grid-s12-m12-l12" style="margin-bottom: 0px; margin-top:15px; border: 1px solid #9e9e9e; border-radius: 3px;">
+                                        <div class="row qaTabs left-align col s12 grid-s12-m12-l12">
                                             <div class="grid-s12-m12-l12">
-                                                <ul class="tabs" id="post2Tabs">
-                                                    <li id="post2WriteTab" class="tab col s3 grid-s3-m3-l3"><a class="active" href="#post2Write">Write</a></li>
-                                                    <li id="post2PreviewTab" class="tab col s3 grid-s3-m3-l3"><a href="#post2Preview">Preview</a></li>
+                                                <ul class="tabs">
+                                                    <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
+                                                    <li class="tab col s3 grid-s3-m3-l3"><a onclick="previewTabClicked(event)">Preview</a></li>
                                                 </ul>
                                             </div>
-                                            <div id="post2Write" class="grid-s12-m12-l12">
+                                            <div class="active writeTabContent grid-s12-m12-l12">
                                                 <textarea class="validate" ng-model="qa_current_reply"></textarea>
                                             </div>
-                                            <div id="post2Preview" class="grid-s12-m12-l12 input-field">
+                                            <div class="previewTabContent grid-s12-m12-l12 input-field">
                                                 Preview Text
                                             </div>
                                         </div>
@@ -1477,19 +1475,18 @@
                                             <a class="waves-effect btn-flat qaReplyBtn" href=""
                                                 ng-click="qa_reply_button_clicked(post3.id)"><u>Reply</u></a>
                                             <div class="input-field" ng-show="post3.replying">
-                                                <!-- <textarea class="validate" ng-model="qa_current_reply"></textarea> -->
                                                 <!-- ------------------------------------------------------------------------------------ -->
-                                                <div class="row left-align col s12 grid-s12-m12-l12" style="margin-bottom: 0px; margin-top:15px; border: 1px solid #9e9e9e; border-radius: 3px;">
+                                                <div class="row qaTabs left-align col s12 grid-s12-m12-l12">
                                                     <div class="grid-s12-m12-l12">
-                                                        <ul class="tabs" id="post3Tabs">
-                                                            <li id="post3WriteTab" class="tab col s3 grid-s3-m3-l3"><a class="active" href="#post3Write">Write</a></li>
-                                                            <li id="post3PreviewTab" class="tab col s3 grid-s3-m3-l3"><a href="#post3Preview">Preview</a></li>
+                                                        <ul class="tabs">
+                                                            <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
+                                                            <li class="tab col s3 grid-s3-m3-l3"><a onclick="previewTabClicked(event)">Preview</a></li>
                                                         </ul>
                                                     </div>
-                                                    <div id="post3Write" class="grid-s12-m12-l12">
+                                                    <div class="active writeTabContent grid-s12-m12-l12">
                                                         <textarea class="validate" ng-model="qa_current_reply"></textarea>
                                                     </div>
-                                                    <div id="post3Preview" class="grid-s12-m12-l12 input-field">
+                                                    <div class="previewTabContent grid-s12-m12-l12 input-field">
                                                         Preview Text
                                                     </div>
                                                 </div>
@@ -1521,20 +1518,18 @@
                                                     <a class="waves-effect btn-flat qaReplyBtn" href=""
                                                         ng-click="qa_reply_button_clicked(post4.id)"><u>Reply</u></a>
                                                     <div class="input-field" ng-show="post4.replying">
-                                                        <!-- <textarea class="validate"
-                                                            ng-model="qa_current_reply"></textarea> -->
                                                         <!-- ------------------------------------------------------------------------------------ -->
-                                                        <div class="row left-align col s12 grid-s12-m12-l12" style="margin-bottom: 0px; margin-top:15px; border: 1px solid #9e9e9e; border-radius: 3px;">
+                                                        <div class="row qaTabs left-align col s12 grid-s12-m12-l12">
                                                             <div class="grid-s12-m12-l12">
-                                                                <ul class="tabs" id="post4Tabs">
-                                                                    <li id="post4WriteTab" class="tab col s3 grid-s3-m3-l3"><a class="active" href="#post4Write">Write</a></li>
-                                                                    <li id="post4PreviewTab" class="tab col s3 grid-s3-m3-l3"><a href="#post4Preview">Preview</a></li>
+                                                                <ul class="tabs">
+                                                                    <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
+                                                                    <li class="tab col s3 grid-s3-m3-l3"><a onclick="previewTabClicked(event)">Preview</a></li>
                                                                 </ul>
                                                             </div>
-                                                            <div id="post4Write" class="grid-s12-m12-l12">
+                                                            <div class="active writeTabContent grid-s12-m12-l12">
                                                                 <textarea class="validate" ng-model="qa_current_reply"></textarea>
                                                             </div>
-                                                            <div id="post4Preview" class="grid-s12-m12-l12 input-field">
+                                                            <div class="previewTabContent grid-s12-m12-l12 input-field">
                                                                 Preview Text
                                                             </div>
                                                         </div>
