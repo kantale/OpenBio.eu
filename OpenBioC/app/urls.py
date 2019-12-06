@@ -42,6 +42,7 @@ urlpatterns = [
 	path('users_search_3/', views.users_search_3), # Search and get the results for a single user
 	path('users_edit_data/', views.users_edit_data), # User changes (edit), profile info data
 	path('user_add_client/', views.user_add_client), # Add a new Execution Client in profile
+	path('user_delete_client/', views.user_delete_client), # Delete an Execution Client from profile
 	path('qa_add_1/', views.qa_add_1), # Add a new Title and a new comment.
 	path('qa_search_3/', views.qa_search_3), # Get a unique Q&A thread 
 	path('gen_qa_search_3/', views.gen_qa_search_3), # Generic version of the above.  Get a unique Q&A thread  

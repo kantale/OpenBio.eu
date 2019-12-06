@@ -119,7 +119,8 @@ g = {
         'qas': 'forum',
     },
     'url_validator': URLValidator(), # Can be customized: URLValidator(schemes=('http', 'https', 'ftp', 'ftps', 'rtsp', 'rtmp'))
-    'client_name_regex': r'[\w]+', # The regular expression to validate the name of exutation client
+    'client_name_regex': r'^[\w]+$', # The regular expression to validate the name of exutation client
+    'client_max': 10, # Max number of execution clients
 }
 
 ### HELPING FUNCTIONS AND DECORATORS #####
@@ -814,7 +815,7 @@ def users_search_3(request, **kwargs):
     # * get ExecutionClients
     if username == request.user.username:
         ret['profile_email'] = u.user.email
-        ret['profile_clients'] = [{'name': client.name, 'client': client.name} for client in u.clients.all()]
+        ret['profile_clients'] = [{'name': client.name, 'client': client.client} for client in u.clients.all()]
     else:
         ret['profile_email'] = ''
 
@@ -824,6 +825,7 @@ def users_search_3(request, **kwargs):
 def user_add_client(request, **kwargs):
     '''
     Called from $scope.profile_add_client when user adds a new Execution Client
+    URL: user_add_client/
     '''
 
     # Get the user
@@ -835,25 +837,73 @@ def user_add_client(request, **kwargs):
     #Get and validate the name
     name = kwargs.get('name', '')
     if not re.match(g['client_name_regex'], name):
-        return fail('Invalid client name (allowed characters, a-z, A-Z, 0-9, _ )')
+        return fail('Invalid client name (allowed characters, a-z, A-Z, 0-9, _)')
 
     # Get and validate the client    
     client = kwargs.get('client', '')
-    if not g['url_validator'](client):
+    if not valid_url(client):
         return fail('URL is invalid')
 
-    # Check that the name does not exist
+    # Check that the name and the client does not exist and that maximum number has not been reached
     existing_clients = [{'name':x.name, 'client': x.client} for x in obc_user.clients.all()]
+    if len(existing_clients) >= g['client_max']:
+        return fail('Maximum number of Execution Clients has been reached')
+
     existing_names = {x['name'] for x in existing_clients}
     existing_urls = {x['client'] for x in existing_clients}
 
     if name in existing_names:
-        return fail('There is already an Execution Environment with this name')
+        return fail('There is already an Execution Client with this name')
 
     if client in existing_urls:
-        return fail('There is already an Execution Environment with this URL')
+        return fail('There is already an Execution Client with this URL')
 
+    ## Add the execution environment
+    new_execution_client = ExecutionClient(name=name, client=client)
+    new_execution_client.save()
+    obc_user.clients.add(new_execution_client)
 
+    # Return all the profile clients
+    ret = {
+        'profile_clients' : [{'name': client.name, 'client': client.client} for client in obc_user.clients.all()]
+    }
+
+    obc_user.save()
+
+    return success(ret)
+
+@has_data
+def user_delete_client(request, **kwargs):
+    '''
+    Called from $scope.profile_delete_client
+    URL:  user_delete_client
+    '''
+
+    name = kwargs.get('name', '')
+    if not name:
+        return fail('Error 3498')
+
+    # Get the user
+    try:
+        obc_user = OBC_user.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        return fail('Error 8686'); # This should never happen
+
+    # Get the Execution Client
+    try:
+        ec = ExecutionClient.objects.get(obc_user=obc_user, name=name)
+    except ObjectDoesNotExist as e:
+        return fail('Error 4555')
+
+    # Delete the Execution Client
+    ec.delete()
+
+    # Return all the profile clients
+    ret = {
+        'profile_clients' : [{'name': client.name, 'client': client.client} for client in obc_user.clients.all()]
+    }
+
+    return success(ret)    
 
 
 @has_data
