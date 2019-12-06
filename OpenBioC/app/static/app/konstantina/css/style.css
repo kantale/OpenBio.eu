@@ -604,3 +604,37 @@ nav {
     border: 1px solid #e0e0e0;
     border-bottom: 1px solid #e0e0e0 !important;
 }
+
+.writeTabContent.active, .previewTabContent.active {
+    display: block;
+}
+
+.writeTabContent, .previewTabContent {
+    display: none;
+}
+
+.qaTabs {
+    margin-bottom: 0px; 
+    margin-top:15px; 
+    border: 1px solid #9e9e9e; 
+    border-radius: 3px;
+}
+
+/* Fix on sass */
+.tabs .tab a {
+    /* color: rgba(38, 166, 154, 0.6); */
+    color: #ababab;
+}
+  
+.tabs .tab a:hover {
+    color:#26a69a;
+}
+
+.tabs .tab a.active {
+    color:#26a69a;
+    /* background-color: rgba(38, 166, 154, 0.08); */
+}
+  
+.tabs .indicator {
+    background-color:#26a69a;
+}
