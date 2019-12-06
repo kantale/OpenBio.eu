@@ -16,6 +16,15 @@ function closeToastClicked (event) {
     toastInstance.dismiss();
 }
 
+function writeTabClicked (event) {
+    $(event.target).closest('.qaTabs').find('.previewTabContent')[0].classList.remove('active');
+    $(event.target).closest('.qaTabs').find('.writeTabContent')[0].classList.add('active');
+}
+function previewTabClicked (event) {
+    $(event.target).closest('.qaTabs').find('.previewTabContent')[0].classList.add('active');
+    $(event.target).closest('.qaTabs').find('.writeTabContent')[0].classList.remove('active');
+}
+
 
 // ---------------------------------------------- Warning Modal --------------------------------------------------
 // $('#warningModal').modal({
