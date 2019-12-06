@@ -14,7 +14,22 @@
             ng-click="gen_qa_add_comment_button_pressed('{{ qa_type }}')">Add Comment</a>
     </div>
     <div class="input-field" ng-show="qa_gen['{{ qa_type }}'].qa_show_new_comment">
-        <textarea class="validate" ng-model="qa_gen['{{ qa_type }}'].qa_current_comment"></textarea>
+        <!-- ------------------------------------------------------------------------------------ -->
+        <div class="row qaTabs left-align col s12 grid-s12-m12-l12">
+            <div class="grid-s12-m12-l12">
+                <ul class="tabs">
+                    <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
+                    <li class="tab col s3 grid-s3-m3-l3"><a onclick="previewTabClicked(event)">Preview</a></li>
+                </ul>
+            </div>
+            <div class="active writeTabContent grid-s12-m12-l12">
+                <textarea class="validate" ng-model="qa_gen['{{ qa_type }}'].qa_current_comment"></textarea>
+            </div>
+            <div class="previewTabContent grid-s12-m12-l12 input-field">
+                Preview Text
+            </div>
+        </div>
+        <!-- ------------------------------------------------------------------------------------ -->
         <!-- There is not point in having an opinion on the first comment
         <div>
             <label><input type="radio" ng-model="qa_gen['{{ qa_type }}'].qa_comment_opinion" value="note" checked /><span>Note</span></label>
@@ -66,19 +81,18 @@
             <a class="waves-effect btn-flat qaReplyBtn" href=""
                 ng-click="gen_qa_reply_button_clicked(post.id, '{{ qa_type }}')"><u>Reply</u></a>
             <div class="input-field" ng-show="post.replying">
-                <!-- <textarea class="validate" ng-model="qa_current_reply"></textarea> -->
                 <!-- ------------------------------------------------------------------------------------ -->
-                <div class="row left-align col s12 grid-s12-m12-l12" style="margin-bottom: 0px; margin-top:15px; border: 1px solid #9e9e9e; border-radius: 3px;">
+                <div class="row qaTabs left-align col s12 grid-s12-m12-l12">
                     <div class="grid-s12-m12-l12">
-                        <ul class="tabs" id="qapostTabs">
-                            <li id="qapostWriteTab" class="tab col s3 grid-s3-m3-l3"><a class="active" href="#qapostWrite">Write</a></li>
-                            <li id="qapostPreviewTab" class="tab col s3 grid-s3-m3-l3"><a href="#qapostPreview">Preview</a></li>
+                        <ul class="tabs">
+                            <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
+                            <li class="tab col s3 grid-s3-m3-l3"><a onclick="previewTabClicked(event)">Preview</a></li>
                         </ul>
                     </div>
-                    <div id="qapostWrite" class="grid-s12-m12-l12">
+                    <div class="active writeTabContent grid-s12-m12-l12">
                         <textarea class="validate" ng-model="qa_current_reply"></textarea>
                     </div>
-                    <div id="qapostPreview" class="grid-s12-m12-l12 input-field">
+                    <div class="previewTabContent grid-s12-m12-l12 input-field">
                         Preview Text
                     </div>
                 </div>
@@ -109,19 +123,18 @@
                     <a class="waves-effect btn-flat qaReplyBtn" href=""
                         ng-click="gen_qa_reply_button_clicked(post2.id, '{{ qa_type }}')"><u>Reply</u></a>
                     <div class="input-field" ng-show="post2.replying">
-                        <!-- <textarea class="validate" ng-model="qa_current_reply"></textarea> -->
                         <!-- ------------------------------------------------------------------------------------ -->
-                        <div class="row left-align col s12 grid-s12-m12-l12" style="margin-bottom: 0px; margin-top:15px; border: 1px solid #9e9e9e; border-radius: 3px;">
+                        <div class="row qaTabs left-align col s12 grid-s12-m12-l12">
                             <div class="grid-s12-m12-l12">
-                                <ul class="tabs" id="qapost2Tabs">
-                                    <li id="qapost2WriteTab" class="tab col s3 grid-s3-m3-l3"><a class="active" href="#qapost2Write">Write</a></li>
-                                    <li id="qapost2PreviewTab" class="tab col s3 grid-s3-m3-l3"><a href="#qapost2Preview">Preview</a></li>
+                                <ul class="tabs">
+                                    <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
+                                    <li class="tab col s3 grid-s3-m3-l3"><a onclick="previewTabClicked(event)">Preview</a></li>
                                 </ul>
                             </div>
-                            <div id="qapost2Write" class="grid-s12-m12-l12">
+                            <div class="active writeTabContent grid-s12-m12-l12">
                                 <textarea class="validate" ng-model="qa_current_reply"></textarea>
                             </div>
-                            <div id="qapost2Preview" class="grid-s12-m12-l12 input-field">
+                            <div class="previewTabContent grid-s12-m12-l12 input-field">
                                 Preview Text
                             </div>
                         </div>
@@ -153,19 +166,18 @@
                             <a class="waves-effect btn-flat qaReplyBtn" href=""
                                 ng-click="gen_qa_reply_button_clicked(post3.id, '{{ qa_type }}')"><u>Reply</u></a>
                             <div class="input-field" ng-show="post3.replying">
-                                <!-- <textarea class="validate" ng-model="qa_current_reply"></textarea> -->
                                 <!-- ------------------------------------------------------------------------------------ -->
-                                <div class="row left-align col s12 grid-s12-m12-l12" style="margin-bottom: 0px; margin-top:15px; border: 1px solid #9e9e9e; border-radius: 3px;">
+                                <div class="row qaTabs left-align col s12 grid-s12-m12-l12">
                                     <div class="grid-s12-m12-l12">
-                                        <ul class="tabs" id="qapost3Tabs">
-                                            <li id="qapost3WriteTab" class="tab col s3 grid-s3-m3-l3"><a class="active" href="#qapost3Write">Write</a></li>
-                                            <li id="qapost3PreviewTab" class="tab col s3 grid-s3-m3-l3"><a href="#qapost3Preview">Preview</a></li>
+                                        <ul class="tabs">
+                                            <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
+                                            <li class="tab col s3 grid-s3-m3-l3"><a onclick="previewTabClicked(event)">Preview</a></li>
                                         </ul>
                                     </div>
-                                    <div id="qapost3Write" class="grid-s12-m12-l12">
+                                    <div class="active writeTabContent grid-s12-m12-l12">
                                         <textarea class="validate" ng-model="qa_current_reply"></textarea>
                                     </div>
-                                    <div id="qapost3Preview" class="grid-s12-m12-l12 input-field">
+                                    <div class="previewTabContent grid-s12-m12-l12 input-field">
                                         Preview Text
                                     </div>
                                 </div>
@@ -197,20 +209,18 @@
                                     <a class="waves-effect btn-flat qaReplyBtn" href=""
                                         ng-click="gen_qa_reply_button_clicked(post4.id, '{{ qa_type }}')"><u>Reply</u></a>
                                     <div class="input-field" ng-show="post4.replying">
-                                        <!-- <textarea class="validate"
-                                            ng-model="qa_current_reply"></textarea> -->
                                         <!-- ------------------------------------------------------------------------------------ -->
-                                        <div class="row left-align col s12 grid-s12-m12-l12" style="margin-bottom: 0px; margin-top:15px; border: 1px solid #9e9e9e; border-radius: 3px;">
+                                        <div class="row qaTabs left-align col s12 grid-s12-m12-l12">
                                             <div class="grid-s12-m12-l12">
-                                                <ul class="tabs" id="qapost4Tabs">
-                                                    <li id="qapost4WriteTab" class="tab col s3 grid-s3-m3-l3"><a class="active" href="#qapost4Write">Write</a></li>
-                                                    <li id="qapost4PreviewTab" class="tab col s3 grid-s3-m3-l3"><a href="#qapost4Preview">Preview</a></li>
+                                                <ul class="tabs">
+                                                    <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
+                                                    <li class="tab col s3 grid-s3-m3-l3"><a onclick="previewTabClicked(event)">Preview</a></li>
                                                 </ul>
                                             </div>
-                                            <div id="qapost4Write" class="grid-s12-m12-l12">
+                                            <div class="active writeTabContent grid-s12-m12-l12">
                                                 <textarea class="validate" ng-model="qa_current_reply"></textarea>
                                             </div>
-                                            <div id="qapost4Preview" class="grid-s12-m12-l12 input-field">
+                                            <div class="previewTabContent grid-s12-m12-l12 input-field">
                                                 Preview Text
                                             </div>
                                         </div>
