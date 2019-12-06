@@ -293,6 +293,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 if (!$scope.profile_clients.length) {
                     $scope.profile_clients = [{name: '', client: ''}];
                 }
+                else {
+                    //Push an empty 
+                    $scope.profile_clients.push({name: '', client: ''});
+                }
 
                 $timeout(function(){M.updateTextFields()}, 10);
             },
@@ -349,11 +353,37 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             },
             function(data) {
                 $scope.toast('Execution Client added succesfully', 'success');
+                $scope.profile_clients = data['profile_clients'];
+                $scope.profile_clients.push({name: '', client: ''});
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');
             },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
+    };
+
+    /*
+    * Profile --> Execution Clients --> '-' --> clicked
+    */
+    $scope.profile_delete_client = function(index) {
+
+        $scope.ajax(
+            'user_delete_client/',
+            {
+                name: $scope.profile_clients[index].name,
+            },
             function(data) {
+                $scope.toast('Execution Client deleted succesfully', 'success');
+                $scope.profile_clients = data['profile_clients'];
+                $scope.profile_clients.push({name: '', client: ''});
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
                 $scope.toast(statusText, 'error');
             }
         );

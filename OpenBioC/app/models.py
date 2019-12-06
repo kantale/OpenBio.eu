@@ -19,6 +19,7 @@ class ExecutionClient(models.Model):
 
     name = models.CharField(max_length=256, null=False)
     client = models.URLField(max_length=256, null=False)
+    created_at = models.DateTimeField(auto_now_add=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#datefield 
 
 
 class OBC_user(models.Model):
