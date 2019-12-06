@@ -186,6 +186,9 @@ class Tool(models.Model):
     #validation_status = models.CharField(max_length=256) # unvalidated, submitted, ...
     last_validation = models.ForeignKey(to="ToolValidations", null=True, on_delete=models.CASCADE, related_name='last_validation_related')
 
+    upvotes = models.IntegerField() # Number of upvotes
+    downvotes = models.IntegerField() # Number of downvotes
+
     comment = models.ForeignKey(to='Comment', null=True, on_delete=models.CASCADE, related_name='tool_comment') # The comments of the tool
     
 
@@ -252,6 +255,9 @@ class Workflow(models.Model):
     tools = models.ManyToManyField(Tool)
 
     created_at = models.DateTimeField(auto_now_add=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#datefield 
+
+    upvotes = models.IntegerField() # Number of upvotes
+    downvotes = models.IntegerField() # Number of downvotes
 
     comment = models.ForeignKey(to='Comment', null=True, on_delete=models.CASCADE, related_name='workflow_comment') # The comments of the tool
 
@@ -418,6 +424,53 @@ class UpDownCommentVote(models.Model):
 
     obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
     comment = models.ForeignKey(Comment, null=False, on_delete=models.CASCADE)
+    upvote = models.BooleanField() # True --> upvote, False --> downvote
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class UpDownToolVote(models.Model):
+    '''
+    Represents one Up/Down vote at a comment
+    '''
+
+    class Meta:
+        '''
+        https://docs.djangoproject.com/en/2.1/ref/models/options/#unique-together
+        '''
+        unique_together = (('obc_user', 'tool'),)
+
+        indexes = [
+                models.Index(
+                    fields=['obc_user', 'tool',],
+                    name='UpDownToolVote_idx',
+                ),
+            ]
+
+    obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
+    tool = models.ForeignKey(Tool, null=False, on_delete=models.CASCADE)
+    upvote = models.BooleanField() # True --> upvote, False --> downvote
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class UpDownWorkflowVote(models.Model):
+    '''
+    Represents one Up/Down vote at a comment
+    '''
+
+    class Meta:
+        '''
+        https://docs.djangoproject.com/en/2.1/ref/models/options/#unique-together
+        '''
+        unique_together = (('obc_user', 'workflow'),)
+
+        indexes = [
+                models.Index(
+                    fields=['obc_user', 'workflow',],
+                    name='UpDownWorkflowVote_idx',
+                ),
+            ]
+
+    obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
+    workflow = models.ForeignKey(Workflow, null=False, on_delete=models.CASCADE)
     upvote = models.BooleanField() # True --> upvote, False --> downvote
     created_at = models.DateTimeField(auto_now_add=True)
 

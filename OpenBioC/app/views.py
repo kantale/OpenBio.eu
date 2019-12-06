@@ -28,7 +28,7 @@ from django.middleware.csrf import get_token
 #Import database objects
 from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations, \
     OS_types, Keyword, Report, ReportToken, Reference, ReferenceField, Comment, \
-    UpDownCommentVote, ExecutionClient
+    UpDownCommentVote, UpDownToolVote, UpDownWorkflowVote, ExecutionClient
 
 #Import executor
 from ExecutionEnvironment.executor import create_bash_script, OBC_Executor_Exception
@@ -1548,6 +1548,20 @@ def tools_search_3(request, **kwargs):
     else:
         obc_user = OBC_user.objects.get(user=request.user)
 
+    #Is it voted?
+    if obc_user:
+        try:
+            v = UpDownToolVote.objects.get(obc_user=obc_user, tool=tool)
+        except ObjectDoesNotExist as e:
+            # It is not voted
+            tool_voted = {'up': False, 'down': False}
+        else:
+            # It is noted
+            tool_voted = {'up': v.upvote, 'down': not v.upvote}
+
+    else:
+        tool_voted = {'up': False, 'down': False}
+
     ret = {
         'website': tool.website,
         'description': tool.description,
@@ -1575,7 +1589,10 @@ def tools_search_3(request, **kwargs):
         'validation_created_at' : datetime_to_str(tool.last_validation.created_at) if tool.last_validation else None,
         'tool_pk': tool.pk, # Used in comments
         'tool_thread': qa_create_thread(tool.comment, obc_user), # Tool comment thread. This is a list
+        'tool_score': tool.upvotes - tool.downvotes,
+        'tool_voted': tool_voted,
         'tool_comment_id': tool.comment.pk, # Used to create a permalink to the comments
+
 
     }
 
@@ -2065,6 +2082,21 @@ def workflows_search_3(request, **kwargs):
     else:
         obc_user = OBC_user.objects.get(user=request.user)
 
+    #Is it voted?
+    if obc_user:
+        try:
+            v = UpDownWorkflowVote.objects.get(obc_user=obc_user, workflow=workflow)
+        except ObjectDoesNotExist as e:
+            # It is not voted
+            workflow_voted = {'up': False, 'down': False}
+        else:
+            # It is noted
+            workflow_voted = {'up': v.upvote, 'down': not v.upvote}
+
+    else:
+        workflow_voted = {'up': False, 'down': False}
+
+
     ret = {
         'username': workflow.obc_user.user.username,
         'website': workflow.website,
@@ -2077,6 +2109,8 @@ def workflows_search_3(request, **kwargs):
         'changes': workflow.changes,
         'workflow_pk': workflow.pk, # Used in comments (QAs)
         'workflow_thread': qa_create_thread(workflow.comment, obc_user), # Workflow comment thread 
+        'workflow_score': workflow.upvotes - workflow.downvotes,
+        'workflow_voted': workflow_voted,
         'workflow_comment_id': workflow.comment.pk, # Used to create a permalink to the comments
     }
 
@@ -3445,7 +3479,114 @@ def updownvote_comment(request, **kwargs):
 
     return success(ret)
 
+@has_data
+def updownvote_tool_workflow(request, **kwargs):
+    '''
+    Called from $scope.updownvote_tool_workflow
+    Called when a user hit the buttons for upvote or downvote or a tool or for a workflow
+    '''
 
+    if request.user.is_anonymous:
+        return fail('Please login to upvote/downvote Research Objects')
+
+    if not user_is_validated(request):
+        return fail('Please validate your email to upvote/downvote' + validate_toast_button());
+
+    # Get the user
+    obc_user = OBC_user.objects.get(user=request.user)
+
+    ro = kwargs.get('ro', '')
+    if not ro:
+        return fail('Error 1023')
+    if not ro in ['tool', 'workflow']:
+        return fail('Error 1026')
+
+    ro_obj = kwargs.get('ro_obj', '')
+    if not ro_obj:
+        return fail('Error 1024')
+    upvote = kwargs.get('upvote', '')
+    if upvote == '':
+        return fail('Error 1025')
+
+    if not upvote in [True, False]:
+        return fail('Error 1027')
+
+    # Get the tool/workflow database object
+    ro_table = {
+        'tool': Tool,
+        'workflow': Workflow,
+    }[ro]
+
+    ro_ud_table = {
+        'tool': UpDownToolVote,
+        'workflow': UpDownWorkflowVote,
+    }[ro]
+
+    try:
+        ro_table_obj = ro_table.objects.get(**ro_obj)
+    except ObjectDoesNotExist as e:
+        return fail('Error 1027')
+
+    # Check if this user has already upvoted or downvoted this RO
+    try:
+        ro_ud_table_obj = ro_ud_table.objects.get(**{
+            'obc_user': obc_user,
+            ro: ro_table_obj,
+        })
+    except ObjectDoesNotExist as e:
+        # This user has **not** upvoted or downvoted this RO
+        pass
+    else:
+        # This user has upvoted or downvoted this RO in the past
+        if ro_ud_table_obj.upvote and upvote:
+            return fail('You cannot upvote twice')
+        elif (not ro_ud_table_obj.upvote) and (not upvote):
+            return fail('You cannot downvote twice')
+        elif ro_ud_table_obj.upvote and (not upvote):
+            # Delete upvote vote!
+            ro_ud_table_obj.delete()
+
+            # Update votes
+            ro_table_obj.upvotes -= 1
+            ro_table_obj.save()
+            return success({
+                'score': ro_table_obj.upvotes-ro_table_obj.downvotes,
+                'voted': {'up': False, 'down': False},
+                })
+
+        elif (not ro_ud_table_obj.upvote) and upvote:
+            # Delete downvote vote
+            ro_ud_table_obj.delete()
+
+            ro_table_obj.downvotes -= 1
+            ro_table_obj.save()
+            return success({
+                'score': ro_table_obj.upvotes-ro_table_obj.downvotes,
+                'voted': {'up': False, 'down': False},
+                })
+
+    #This user has not upvoted or downvoted before this RO
+    #Create a new vote database object
+    new_vote_obj = ro_ud_table(**{
+        'obc_user': obc_user,
+        ro: ro_table_obj,
+        'upvote': upvote,
+        })
+    new_vote_obj.save()
+
+    # Change the upvote / downvote counter of this research object
+    if upvote:
+        ro_table_obj.upvotes += 1
+    else:
+        ro_table_obj.downvotes += 1
+    ro_table_obj.save()
+
+    ret = {
+        'score': ro_table_obj.upvotes-ro_table_obj.downvotes,
+        'voted': {'up': upvote, 'down': not upvote},
+    }
+
+    return success(ret)
 
 ### END OF Q&A
 ### VIEWS END ######
