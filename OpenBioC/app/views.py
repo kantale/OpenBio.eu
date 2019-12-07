@@ -3588,6 +3588,19 @@ def updownvote_tool_workflow(request, **kwargs):
 
     return success(ret)
 
+@has_data
+def markdown_preview(request, **kwargs):
+    text = kwargs.get('text', '')
+
+    if not type(text) is str:
+        return fail('Error 2871')
+
+    ret = {
+        'html': markdown(text),
+    }
+
+    return success(ret)
+
 ### END OF Q&A
 ### VIEWS END ######
 
