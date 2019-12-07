@@ -4308,7 +4308,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     $scope.qa_reply_button_clicked = function(id) {
 
         $scope.qa_set_replying($scope.qa_thread, id, true);
-        $scope.qa_current_reply = '';
+        $scope.qa_current_reply_1 = '';
+        $scope.qa_current_reply_2 = '';
+        $scope.qa_current_reply_3 = '';
+        $scope.qa_current_reply_4 = '';
         $scope.qa_reply_opinion = 'note';
 
     };
@@ -4330,6 +4333,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     $scope.qa_reply_save_button_pressed = function(id, comment, opinion) {
         //console.log('Reply to id: ', id);
         //console.log('Comment:', comment);
+
+        //console.log('qa_current_reply:', $scope.qa_current_reply);
 
         $scope.qa_add_comment(id, comment, opinion);
         $scope.qa_current_reply = '';
@@ -4693,6 +4698,64 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.toast(statusText, 'error');
             }
         );
+    };
+
+    /*
+    * Called when we hit the "Preview" tab in a field that supports markdown preview
+    * event: The click event
+    * source: A string. Where it happened
+    * original: The original (with markdown) content 
+    */ 
+    $scope.angular_previewTabClicked = function(event, source, original) {
+
+        $scope.ajax(
+            'markdown_preview/',
+            {
+                'text': original
+            },
+            function(data) {
+
+                var html = data['html'];
+
+                if (source == 'tool_description') {
+                    $scope.tool_description_preview = html;
+                }
+                else if (source == 'workflow_description') {
+                    $scope.workflow_description_preview = html;
+                }
+                else if (source == 'qa_comment') {
+                    $scope.qa_comment_preview = html;
+                }
+                else if (source == 'qa_current_comment') {
+                    $scope.qa_current_comment_preview = html;
+                }
+                else if (source == 'qa_current_reply_1') {
+                    $scope.qa_current_reply_1_preview = html;
+                }
+                else if (source == 'qa_current_reply_2') {
+                    $scope.qa_current_reply_2_preview = html;
+                }
+                else if (source == 'qa_current_reply_3') {
+                    $scope.qa_current_reply_3_preview = html;
+                }
+                else if (source == 'qa_current_reply_4') {
+                    $scope.qa_current_reply_4_preview = html;
+                }
+                else {
+                    //console.log('Unknown source:', source);
+                }
+
+                previewTabClicked (event);
+
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
+
     };
 
 }); 

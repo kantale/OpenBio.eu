@@ -50,5 +50,6 @@ urlpatterns = [
 	path('gen_qa_add_comment/', views.gen_qa_add_comment), # Genetic version of the above # Add a comment to a QA
 	path('updownvote_comment/', views.updownvote_comment), # thumbs up or a thumbs down was pressed on a comment
 	path('updownvote_tool_workflow/', views.updownvote_tool_workflow), # thumbs up or thumbs down was pressed on a tool or on a workflow
+	path('markdown_preview/', views.markdown_preview), # Called from markdown preview tab. angular_previewTabClicked 
 
 ]

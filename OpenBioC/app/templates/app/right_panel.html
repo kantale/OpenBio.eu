@@ -103,7 +103,7 @@
                                     <div class="grid-s12-m12-l12">
                                         <ul class="tabs">
                                             <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
-                                            <li class="tab col s3 grid-s3-m3-l3"><a onclick="previewTabClicked(event)">Preview</a></li>
+                                            <li class="tab col s3 grid-s3-m3-l3"><a ng-click="angular_previewTabClicked($event, 'tool_description', tool_description)">Preview</a></li>
                                         </ul>
                                     </div>
                                     <div class="active writeTabContent grid-s12-m12-l12">
@@ -115,7 +115,7 @@
                                         </div>
                                     </div>
                                     <div class="previewTabContent grid-s12-m12-l12 input-field">
-                                        Preview Text
+                                        <span ng-bind-html="tool_description_preview"></span>
                                     </div>
                                 </div>
                                 <!-- ------------------------------------------------------------------------------------ -->
@@ -505,7 +505,7 @@
                                     <div class="grid-s12-m12-l12">
                                         <ul class="tabs">
                                             <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
-                                            <li class="tab col s3 grid-s3-m3-l3"><a onclick="previewTabClicked(event)">Preview</a></li>
+                                            <li class="tab col s3 grid-s3-m3-l3"><a ng-click="angular_previewTabClicked($event, 'workflow_description', workflow_description)">Preview</a></li>
                                         </ul>
                                     </div>
                                     <div class="active writeTabContent grid-s12-m12-l12">
@@ -516,7 +516,7 @@
                                         </div>
                                     </div>
                                     <div class="previewTabContent grid-s12-m12-l12 input-field">
-                                        Preview Text
+                                        <span ng-bind-html="workflow_description_preview"></span>
                                     </div>
                                 </div>
                                 <!-- ------------------------------------------------------------------------------------ -->
@@ -1248,7 +1248,7 @@
                                 <div class="grid-s12-m12-l12">
                                     <ul class="tabs">
                                         <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
-                                        <li class="tab col s3 grid-s3-m3-l3"><a onclick="previewTabClicked(event)">Preview</a></li>
+                                        <li class="tab col s3 grid-s3-m3-l3"><a ng-click="angular_previewTabClicked($event, 'qa_comment', qa_comment)">Preview</a></li>
                                     </ul>
                                 </div>
                                 <div class="active writeTabContent grid-s12-m12-l12">
@@ -1259,7 +1259,7 @@
                                     </div>
                                 </div>
                                 <div class="previewTabContent grid-s12-m12-l12 input-field">
-                                    Preview Text
+                                    <span ng-bind-html="qa_comment_preview"></span>
                                 </div>
                             </div>
                             <!-- ------------------------------------------------------------------------------------ -->
@@ -1299,14 +1299,14 @@
                             <div class="grid-s12-m12-l12">
                                 <ul class="tabs">
                                     <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
-                                    <li class="tab col s3 grid-s3-m3-l3"><a onclick="previewTabClicked(event)">Preview</a></li>
+                                    <li class="tab col s3 grid-s3-m3-l3"><a ng-click="angular_previewTabClicked($event, 'qa_current_comment', qa_current_comment)">Preview</a></li>
                                 </ul>
                             </div>
                             <div class="active writeTabContent grid-s12-m12-l12">
                                 <textarea class="validate" ng-model="qa_current_comment"></textarea>
                             </div>
                             <div class="previewTabContent grid-s12-m12-l12 input-field">
-                                Preview Text
+                                <span ng-bind-html="qa_current_comment_preview"></span>
                             </div>
                         </div>
                         <!-- ------------------------------------------------------------------------------------ -->
@@ -1394,14 +1394,14 @@
                                     <div class="grid-s12-m12-l12">
                                         <ul class="tabs">
                                             <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
-                                            <li class="tab col s3 grid-s3-m3-l3"><a onclick="previewTabClicked(event)">Preview</a></li>
+                                            <li class="tab col s3 grid-s3-m3-l3"><a ng-click="angular_previewTabClicked($event, 'qa_current_reply_1', qa_current_reply_1)">Preview</a></li>
                                         </ul>
                                     </div>
                                     <div class="active writeTabContent grid-s12-m12-l12">
-                                        <textarea class="validate" ng-model="qa_current_reply"></textarea>
+                                        <textarea class="validate" ng-model="qa_current_reply_1"></textarea>
                                     </div>
                                     <div class="previewTabContent grid-s12-m12-l12 input-field">
-                                        Preview Text
+                                        <span ng-bind-html="qa_current_reply_1_preview"></span>
                                     </div>
                                 </div>
                                 <!-- ------------------------------------------------------------------------------------ -->
@@ -1412,7 +1412,7 @@
                                 </div>
 
                                 <a class="waves-effect waves-light btn-small" href=""
-                                    ng-click="qa_reply_save_button_pressed(post.id, qa_current_reply, qa_reply_opinion)">Save</a>
+                                    ng-click="qa_reply_save_button_pressed(post.id, qa_current_reply_1, qa_reply_opinion)">Save</a>
                                 <a class="waves-effect waves-light btn-small" href=""
                                     ng-click="qa_reply_cancel_button_pressed(post.id)">Cancel</a>
                             </div>
@@ -1437,14 +1437,14 @@
                                             <div class="grid-s12-m12-l12">
                                                 <ul class="tabs">
                                                     <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
-                                                    <li class="tab col s3 grid-s3-m3-l3"><a onclick="previewTabClicked(event)">Preview</a></li>
+                                                    <li class="tab col s3 grid-s3-m3-l3"><a ng-click="angular_previewTabClicked($event, 'qa_current_reply_2', qa_current_reply_2)">Preview</a></li>
                                                 </ul>
                                             </div>
                                             <div class="active writeTabContent grid-s12-m12-l12">
-                                                <textarea class="validate" ng-model="qa_current_reply"></textarea>
+                                                <textarea class="validate" ng-model="qa_current_reply_2"></textarea>
                                             </div>
                                             <div class="previewTabContent grid-s12-m12-l12 input-field">
-                                                Preview Text
+                                                <span ng-bind-html="qa_current_reply_2_preview"></span>
                                             </div>
                                         </div>
                                         <!-- ------------------------------------------------------------------------------------ -->
@@ -1454,7 +1454,7 @@
                                             <label><input type="radio" ng-model="qa_reply_opinion" value="disagree"/><span>Disagree</span></label>
                                         </div>
                                         <a class="waves-effect waves-light btn-small" href=""
-                                            ng-click="qa_reply_save_button_pressed(post2.id, qa_current_reply, qa_reply_opinion)">Save</a>
+                                            ng-click="qa_reply_save_button_pressed(post2.id, qa_current_reply_2, qa_reply_opinion)">Save</a>
                                         <a class="waves-effect waves-light btn-small" href=""
                                             ng-click="qa_reply_cancel_button_pressed(post2.id)">Cancel</a>
                                     </div>
@@ -1480,14 +1480,14 @@
                                                     <div class="grid-s12-m12-l12">
                                                         <ul class="tabs">
                                                             <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
-                                                            <li class="tab col s3 grid-s3-m3-l3"><a onclick="previewTabClicked(event)">Preview</a></li>
+                                                            <li class="tab col s3 grid-s3-m3-l3"><a ng-click="angular_previewTabClicked($event, 'qa_current_reply_3', qa_current_reply_3)">Preview</a></li>
                                                         </ul>
                                                     </div>
                                                     <div class="active writeTabContent grid-s12-m12-l12">
-                                                        <textarea class="validate" ng-model="qa_current_reply"></textarea>
+                                                        <textarea class="validate" ng-model="qa_current_reply_3"></textarea>
                                                     </div>
                                                     <div class="previewTabContent grid-s12-m12-l12 input-field">
-                                                        Preview Text
+                                                        <span ng-bind-html="qa_current_reply_3_preview"></span>
                                                     </div>
                                                 </div>
                                                 <!-- ------------------------------------------------------------------------------------ -->
@@ -1497,7 +1497,7 @@
                                                     <label><input type="radio" ng-model="qa_reply_opinion" value="disagree"/><span>Disagree</span></label>
                                                 </div>
                                                 <a class="waves-effect waves-light btn-small" href=""
-                                                    ng-click="qa_reply_save_button_pressed(post3.id, qa_current_reply, qa_reply_opinion)">Save</a>
+                                                    ng-click="qa_reply_save_button_pressed(post3.id, qa_current_reply_3, qa_reply_opinion)">Save</a>
                                                 <a class="waves-effect waves-light btn-small" href=""
                                                     ng-click="qa_reply_cancel_button_pressed(post3.id)">Cancel</a>
                                             </div>
@@ -1523,14 +1523,14 @@
                                                             <div class="grid-s12-m12-l12">
                                                                 <ul class="tabs">
                                                                     <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
-                                                                    <li class="tab col s3 grid-s3-m3-l3"><a onclick="previewTabClicked(event)">Preview</a></li>
+                                                                    <li class="tab col s3 grid-s3-m3-l3"><a ng-click="angular_previewTabClicked($event, 'qa_current_reply_4', qa_current_reply_4)">Preview</a></li>
                                                                 </ul>
                                                             </div>
                                                             <div class="active writeTabContent grid-s12-m12-l12">
-                                                                <textarea class="validate" ng-model="qa_current_reply"></textarea>
+                                                                <textarea class="validate" ng-model="qa_current_reply_4"></textarea>
                                                             </div>
                                                             <div class="previewTabContent grid-s12-m12-l12 input-field">
-                                                                Preview Text
+                                                                <span ng-bind-html="qa_current_reply_4_preview"></span>
                                                             </div>
                                                         </div>
                                                         <!-- ------------------------------------------------------------------------------------ -->
@@ -1540,7 +1540,7 @@
                                                             <label><input type="radio" ng-model="qa_reply_opinion" value="disagree"/><span>Disagree</span></label>
                                                         </div>
                                                         <a class="waves-effect waves-light btn-small" href=""
-                                                            ng-click="qa_reply_save_button_pressed(post4.id, qa_current_reply, qa_reply_opinion)">Save</a>
+                                                            ng-click="qa_reply_save_button_pressed(post4.id, qa_current_reply_4, qa_reply_opinion)">Save</a>
                                                         <a class="waves-effect waves-light btn-small" href=""
                                                             ng-click="qa_reply_cancel_button_pressed(post4.id)">Cancel</a>
                                                     </div>
