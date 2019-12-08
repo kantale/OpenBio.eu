@@ -2058,7 +2058,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 //                ];
                 
                 $scope.qa_thread = data['qa_thread'];
-
+                $scope.qa_visualize_pressed();
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');
@@ -2108,6 +2108,12 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.qa_gen[qa_type].qa_score = {score: data['qa_score']};
                 $scope.qa_gen[qa_type].qa_voted = data['qa_voted'];
 
+                if (qa_type == 'tool') {
+                    $scope.tool_visualize_pressed();
+                }
+                else if (qa_type == 'workflow') {
+                    $scope.workflow_visualize_pressed();
+                }
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');

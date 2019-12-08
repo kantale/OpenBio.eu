@@ -85,7 +85,7 @@ function discourse_setup_cytoscape(cydisc_id) {
     });
 
     cydisc.cxtmenu({
-		selector: 'node, edge',
+		selector: 'node',
 		commands: [
 			{
 				content: 'Edit',
@@ -112,8 +112,9 @@ function discourse_setup_cytoscape(cydisc_id) {
 		    {
 			    content: 'Delete',
 			    select: function(ele){
-				    var scope = angular.element($('#angular_div')).scope();
-				    scope.toast('Not supported yet!', 'error');
+				    var comment_id = ele.data().id;
+				    var is_root = ele.data().is_root;
+				    delete_comment(comment_id, is_root);
 			    }
 		    }
 		]
@@ -219,6 +220,8 @@ function discourse_clear(cydisc_id){
     window[cydisc_id].center();
 }
 
+var discourse_type = null;
+var root_id = null
 /*
 * Called when the "visualization" button is pressed in Q&A
 * It is called through the angular wrapper $scope.qa_visualize_pressed
@@ -232,6 +235,7 @@ function discourse_visualize_pressed(
     cydisc_id
     ) {
 
+    discourse_type = cydisc_id;
     var nodes = [];
     var edges = [];
 
@@ -324,6 +328,7 @@ function discourse_visualize_pressed(
 
     // Create and add the root node
     var root_node = create_root_node();
+    root_id = root_node.data.id;
     nodes.push(root_node);
 
     // Create the rest of the nodes, edges
@@ -379,6 +384,15 @@ function openModal(ele) {
 	node = ele;
 	var scope = angular.element($('#angular_div')).scope();
 
+	var comment_type = ele.data().type;
+
+    if (comment_type == 'issue') {
+        $('#comment-type-radio-buttons').hide()
+    }
+    else {
+        $('#comment-type-radio-buttons').show();
+    }
+
 	$('#modal-title').text('Edit Node: ' + ele.data().id);
 	$('#node-text').val(ele.data().tooltipText);
 	$('#editor-date').text(ele.data().date);
@@ -394,21 +408,160 @@ function openModal(ele) {
 	editor.content.innerHTML = ele.data().tooltipText;
 
 	$('#editor-modal').modal('open');
+
+	$('#solution-radio').removeAttr('checked');
+	$('#note-radio').removeAttr('checked');
+	$('#position-in-favor-radio').removeAttr('checked');
+	$('#position-against-radio').removeAttr('checked');
+
+	if (comment_type == 'solution') {
+	    $('#solution-radio').attr('checked', true);
+	}
+	else if (comment_type == 'note') {
+	    $('#note-radio').attr('checked', true);
+	}
+	else if (comment_type == 'position-in-favor') {
+	    $('#position-in-favor-radio').attr('checked', true);
+	}
+	else if (comment_type == 'position-against') {
+	    $('#position-against-radio').attr('checked', true);
+	}
+}
+
+function delete_comment(comment_id, is_root) {
+	var scope = angular.element($('#angular_div')).scope();
+	scope.$apply(function () {
+        scope.ajax(
+            'edit_comment/',
+            {
+                'comment_id': comment_id,
+                'new_html': '<i>Deleted comment.</i>',
+                'is_root': is_root
+            },
+            function (data) {
+                scope.toast(data['message'], 'success');
+                if (discourse_type == 'cydisc') {
+                    scope.qa_search_3({
+                        'id': root_id
+                    });
+                }
+                else if (discourse_type == 'cydisc-tool') {
+                    scope.ajax(
+                    'get_pk_from_root_comment/',
+                    {
+                        'comment_id': root_id,
+                        'type': 'tool'
+                    },
+                    function (data) {
+                        scope.gen_qa_search_3(data.pk, 'tool');
+                    },
+                    function (data) {
+                        scope.toast(data['error_message'], 'error');
+                    },
+                    function (statusText) {
+                        scope.toast(statusText, 'error');
+                    }
+                    );
+                }
+                else if (discourse_type == 'cydisc-workflow') {
+                    scope.ajax(
+                    'get_pk_from_root_comment/',
+                    {
+                        'comment_id': root_id,
+                        'type': 'workflow'
+                    },
+                    function (data) {
+                        scope.gen_qa_search_3(data.pk, 'workflow');
+                    },
+                    function (data) {
+                        scope.toast(data['error_message'], 'error');
+                    },
+                    function (statusText) {
+                        scope.toast(statusText, 'error');
+                    }
+                    );
+                }
+            },
+            function (data) {
+                scope.toast(data['error_message'], 'error');
+            },
+            function (statusText) {
+                scope.toast(statusText, 'error');
+            }
+        );
+    });
 }
 
 function saveNodeTextChanges() {
 	var new_html = editor.content.innerHTML;
 	var scope = angular.element($('#angular_div')).scope();
+
+    var comment_type = '';
+	if ($('#solution-radio').prop('checked')) {
+        comment_type = 'solution';
+	}
+	else if ($('#note-radio').prop('checked')) {
+	    comment_type = 'note';
+	}
+	else if ($('#position-in-favor-radio').prop('checked')) {
+	    comment_type = 'agree';
+	}
+	else if ($('#position-against-radio').prop('checked')) {
+	    comment_type = 'disagree';
+	}
+
 	scope.$apply(function () {
         scope.ajax(
             'edit_comment/',
             {
                 'comment_id': node.data().id,
                 'new_html': new_html,
-                'is_root': node.data().is_root
+                'is_root': node.data().is_root,
+                'comment_type': comment_type
             },
             function (data) {
                 scope.toast(data['message'], 'success');
+                if (discourse_type == 'cydisc') {
+                    scope.qa_search_3({
+                        'id': root_id
+                    });
+                }
+                else if (discourse_type == 'cydisc-tool') {
+                    scope.ajax(
+                    'get_pk_from_root_comment/',
+                    {
+                        'comment_id': root_id,
+                        'type': 'tool'
+                    },
+                    function (data) {
+                        scope.gen_qa_search_3(data.pk, 'tool');
+                    },
+                    function (data) {
+                        scope.toast(data['error_message'], 'error');
+                    },
+                    function (statusText) {
+                        scope.toast(statusText, 'error');
+                    }
+                    );
+                }
+                else if (discourse_type == 'cydisc-workflow') {
+                    scope.ajax(
+                    'get_pk_from_root_comment/',
+                    {
+                        'comment_id': root_id,
+                        'type': 'workflow'
+                    },
+                    function (data) {
+                        scope.gen_qa_search_3(data.pk, 'workflow');
+                    },
+                    function (data) {
+                        scope.toast(data['error_message'], 'error');
+                    },
+                    function (statusText) {
+                        scope.toast(statusText, 'error');
+                    }
+                    );
+                }
             },
             function (data) {
                 scope.toast(data['error_message'], 'error');
