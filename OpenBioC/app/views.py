@@ -3139,6 +3139,33 @@ def qa_search_3(request, **kwargs):
 
     return success(ret)
 
+
+@has_data
+def get_pk_from_root_comment(request, **kwargs):
+    '''
+    path: get_pk_from_root_comment/
+    '''
+
+    comment_id = int(kwargs['comment_id'])
+    pk_type = kwargs['type']
+
+    try:
+        if pk_type == 'tool':
+            tool = Tool.objects.filter(comment_id=comment_id).first()
+            pk = tool.id
+        elif pk_type == 'workflow':
+            workflow = Workflow.objects.filter(comment_id=comment_id).first()
+            pk = workflow.id
+        else:
+            return fail('ERROR: 2919 . Unknown pk_type: {}'.format(pk_type))
+    except ObjectDoesNotExist as e:
+        return fail('Could not find tool or workflow database object')
+
+    ret = {
+        'pk': pk
+    }
+    return success(ret)
+
 @has_data
 def gen_qa_search_3(request, **kwargs):
     '''
@@ -3375,6 +3402,7 @@ def edit_comment(request, **kwargs):
     comment_id = int(kwargs['comment_id'])
     new_html = kwargs['new_html']
     is_root = kwargs['is_root']
+    comment_type = kwargs.get('comment_type')
 
     # Get the comment
     comment = Comment.objects.get(pk=comment_id)
@@ -3388,6 +3416,8 @@ def edit_comment(request, **kwargs):
     if not is_root:
         comment.comment = markdown(new_html)
         comment.comment_html = new_html
+        if comment_type in ['solution', 'note', 'agree', 'disagree']:
+            comment.opinion = comment_type
     else:
         comment.title = new_html
     comment.save()

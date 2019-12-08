@@ -299,6 +299,28 @@
 		</footer>
 		{% endcomment %}
 
+		<!-- Modal Structure -->
+		<div id="editor-modal" class="modal">
+			<div class="modal-content">
+				<h4 id="modal-title"></h4>
+				<div class="input-field">
+					<div id="editor" class="pell"></div>
+					<p>Type: <b id="node-type"></b></p>
+					<div id="comment-type-radio-buttons">
+						<label><input name="comment-type-radio" id="solution-radio" type="radio"/><span>Solution</span></label>
+						<label><input name="comment-type-radio" id="note-radio" type="radio"/><span>Note</span></label>
+						<label><input name="comment-type-radio" id="position-in-favor-radio" type="radio"/><span>Agree</span></label>
+						<label><input name="comment-type-radio" id="position-against-radio" type="radio"/><span>Disagree</span></label>
+					</div>
+					<p>User: <b id="node-author"></b></p>
+					<p>Date: <b id="editor-date">30/01/2019</b></p>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<a href="#!" class="modal-close waves-effect waves-green btn-flat" onclick="saveNodeTextChanges()">Save</a>
+				<a href="#!" class="modal-close waves-effect waves-green btn-flat" onclick="cancelNodeTextChanges()">Cancel</a>
+			</div>
+		</div>
 	</div> <!-- angular controler -->
 
     <!-- tippy popup for cydisc cytoscape discourse -->
@@ -309,23 +331,6 @@
       Text: <p id="tippy-text"></p>
       Date: <p id="tippy-date">15/02/2019</p>
     </div>
-
-	<!-- Modal Structure -->
-	<div id="editor-modal" class="modal">
-		<div class="modal-content">
-			<h4 id="modal-title"></h4>
-			<div class="input-field">
-				<div id="editor" class="pell"></div>
-				<p>User: <b id="node-author"></b></p>
-				<p>Date: <b id="editor-date">30/01/2019</b></p>
-				<p>Type: <b id="node-type"></b></p>
-			</div>
-		</div>
-		<div class="modal-footer">
-			<a href="#!" class="modal-close waves-effect waves-green btn-flat" onclick="saveNodeTextChanges()">Save</a>
-			<a href="#!" class="modal-close waves-effect waves-green btn-flat" onclick="cancelNodeTextChanges()">Cancel</a>
-		</div>
-	</div>
 
 	<script type="text/javascript" src="/static/app/OBC.js" charset="utf-8"></script>
 
