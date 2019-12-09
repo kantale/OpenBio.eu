@@ -1644,7 +1644,7 @@ def validate_toast_button():
 def tools_add(request, **kwargs):
     '''
     Add a new tool
-    tool add tool save tool
+    tool add tool save tool . Create tool 
 
     * names and version is searched case insensitive
     '''
@@ -1740,6 +1740,8 @@ def tools_add(request, **kwargs):
         changes = tool_changes,
         installation_commands=tool_installation_commands,
         validation_commands=tool_validation_commands,
+        upvotes = 0,
+        downvotes = 0,
         
         last_validation=None,
     )
@@ -2019,6 +2021,8 @@ def workflows_add(request, **kwargs):
         workflow = simplejson.dumps(workflow),
         forked_from = workflow_forked_from,
         changes = workflow_changes,
+        upvotes = 0,
+        downvotes = 0,
 
     )
 
