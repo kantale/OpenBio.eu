@@ -5,6 +5,7 @@
 * Features:
    * [Add execution environment option in profile #142](https://github.com/kantale/OpenBioC/issues/142)
    * [Upvote / Downvote Tools and Workflows #128](https://github.com/kantale/OpenBioC/issues/128)
+   * [Preview markdown #135](https://github.com/kantale/OpenBioC/issues/135)
 
 ### 0.1.4 (21 November 2019)
 * Features:

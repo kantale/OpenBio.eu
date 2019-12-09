@@ -1435,6 +1435,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.qa_gen['tool'].object_pk = data['tool_pk'];
                 $scope.qa_gen['tool'].qa_thread = data['tool_thread'];
 
+                //Set Score, and upvote / downvotes arrows
+                $scope.tool_score = 0;
+                $scope.tool_voted = {'up': false, 'down': false};
+
                 //EXPERIMENTAL. UPDATE SEARCH RESULTS
                 $scope.all_search_2();
             },
@@ -2903,7 +2907,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.workflow_description_html = data['description_html'];
                 $scope.workflow_info_forked_from = data['forked_from'];
                 $scope.workflow_changes = data['changes'];
-                $scope.workflow_score = data['workflow_score']; // For upvotes / downcvotes
+                $scope.workflow_score = data['workflow_score']; // For upvotes / downvotes
                 $scope.workflow_voted = data['workflow_voted']; //Check if this workflow is voted from the user 
 
                 // Load the graph. TODO: WHAT HAPPENS WHEN WE CLICK TO NODE? IT IS NOT REGISTERED
@@ -3780,6 +3784,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 //Load comment thread
                 $scope.qa_gen['workflow'].object_pk = data['workflow_pk'];
                 $scope.qa_gen['workflow'].qa_thread = data['workflow_thread'];
+
+                //Set score and upvote / downvote arrows
+                $scope.workflow_score = 0;
+                $scope.workflow_voted = {'up': false, 'down': false};
 
                 //EXPERIMENTAL. UPDATE SEARCH RESULTS
                 $scope.all_search_2();
