@@ -565,7 +565,8 @@ class Workflow:
             ret += '### CREATING BASH WITH TOOL VARIABLES\n'
             ret += "cat > {} << ENDOFFILE\n".format(variables_sh_filename_write)
             for tool_variable in tool['variables']:
-                ret +='{VAR}="{VALUE}"\n'.format(VAR=tool_variable['name'], VALUE=tool_variable['value'])
+                tool_bash_variable=self.get_tool_bash_variable(tool, tool_variable['name'])
+                ret +='{VAR}="{VALUE}"\n'.format(VAR=tool_bash_variable, VALUE=tool_variable['value'])
             ret += 'ENDOFFILE\n'
 
 
@@ -991,7 +992,7 @@ class Workflow:
         ret += 'OBC_START=$(eval "declare")\n'
         ret += bash + '\n'
         ret += 'OBC_CURRENT=$(eval "declare")\n'
-        ret += 'comm -3 <(echo "$OBC_START" | grep -v "_=") <(echo "$OBC_CURRENT" | grep -v OBC_START | grep -v PIPESTATUS | grep -v "_=") > ./{}\n'.format(save_to)
+        ret += 'comm -3 <(echo "$OBC_START" | grep -v "_=") <(echo "$OBC_CURRENT" | grep -v OBC_START | grep -v PIPESTATUS | grep -v "_=") > {}\n'.format(save_to)
 
         return ret
 
@@ -1023,8 +1024,15 @@ class Workflow:
 
         return input_variables_to_final
 
-    def break_down_step_generator(self,):
+    def break_down_step_generator(self,
+        enable_read_arguments_from_commandline = True,
+        enable_save_variables_to_json = True,
+        enable_save_variables_to_sh = True,
+        ):
         '''
+        enable_read_arguments_from_commandline: If true, arguments are read from command line
+        enable_save_variables_to_json: If true, variables are saved in json format
+        enable_save_variables_to_sh: If True, variables are saved to sh format
         '''
 
         # First, check for circles in step calls
@@ -1070,16 +1078,15 @@ class Workflow:
             '''
 
             ret = ''
-            if read_from or input_tool_variables or input_workflow_variables:
+            if enable_read_arguments_from_commandline and (read_from or input_tool_variables or input_workflow_variables):
                 ret += Workflow.read_arguments_from_commandline([read_from] + input_tool_variables + input_workflow_variables)
             if read_from:
                 ret += '. ${{{}}}\n'.format(read_from)
 
-            ret += 'OBC_START=$(eval "declare")\n'
-            ret += bash + '\n'
-            ret += 'OBC_CURRENT=$(eval "declare")\n'
-            ret += 'comm -3 <(echo "$OBC_START" | grep -v "_=") <(echo "$OBC_CURRENT" | grep -v OBC_START | grep -v PIPESTATUS | grep -v "_=") > ./{}\n'.format(save_to)
-            return ret
+            if enable_save_variables_to_sh:
+                return Workflow.declare_decorate_bash(bash, save_to)
+            else:
+                return bash
 
 
         def create_json(bash, step, step_breaked_id, is_last, output_variables):
@@ -1088,6 +1095,9 @@ class Workflow:
             We do not actually have to pass the intermediate VAR_SH name in the json.. We do not read it.. Maybe we will correct this in the future
             We read the VAR_SH from command line
             '''
+
+            if not enable_save_variables_to_json:
+                return bash
 
             filename_with_intermediate = '{}__{}__VARS.sh'.format(step['id'], step_breaked_id)
             output_filename = '{}__{}.json'.format(step['id'], step_breaked_id)
@@ -1906,7 +1916,6 @@ steps:
         self.cwl_files = []
 
         for tool in self.workflow.tool_bash_script_generator():
-
             self.tool_cwl_bash(tool)
             self.tool_cwl(tool)
 
@@ -2004,22 +2013,24 @@ from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
 from datetime import datetime, timedelta
 
-dag = DAG(
-    '{WORKFLOW_ID}', default_args=default_args, schedule_interval=timedelta(days=1))
-
 default_args = {{
     'owner': 'Airflow',
     'start_date': datetime(2015, 6, 1),
 }}
 
-{TOOL_BASH_OPERATORS}
 
-{TOOL_ORDER}
+dag = DAG(
+    '{WORKFLOW_ID}', default_args=default_args, schedule_interval=None)
+
+{BASH_OPERATORS}
+
+{ORDER}
 
 '''
 
-    tool_bash_operator = '''
+    bash_operator_pattern = '''
 {ID} = BashOperator(
+    {ENVS}
     task_id='{ID}',
     bash_command="""
 {BASH}
@@ -2027,9 +2038,15 @@ default_args = {{
     dag=dag)
 '''
 
-    def build(self,):
+    def build(self, output):
         '''
         '''
+
+        d = {env:g[env] for env in ['OBC_DATA_PATH', 'OBC_TOOL_PATH', 'OBC_WORK_PATH'] if env in g}
+        if d:
+            envs = 'env={},'.format(str(d))
+        else:
+            envs = ''
 
         previous_tools = []
         tool_bash_operators = []
@@ -2048,32 +2065,69 @@ default_args = {{
                 variables_sh_filename_read = previous_tools,
                 variables_sh_filename_write=tool_vars_filename,
             )
-            airflow_bash = self.tool_bash_operator.format(
+            airflow_bash = self.bash_operator_pattern.format(
                 ID=tool_id,
                 BASH=bash,
+                ENVS=envs,
             )
 
             tool_bash_operators.append(airflow_bash)
             tool_ids.append(tool_id)
 
             previous_tools.append(tool_vars_filename)
-            #print ('=======================')
-            #print ('=======================')
-            #print ('=======================')
 
 
-            #Workflow.declare_decorate_bash
-            #print (tool['bash'])
+        previous_steps_vars = []
+        step_ids = []
+        step_bash_operators = []
+        for step in self.workflow.break_down_step_generator(
+            enable_read_arguments_from_commandline=False,
+            enable_save_variables_to_json=False,
+            enable_save_variables_to_sh=False,
+            ):
 
-        print ('\n'.join(tool_bash_operators))
+            step_id = step['id']
+            step_ids.append(step_id)
+            count = step['count']
+            bash = step['bash']
+            step_inter_id = '{}__{}'.format(step_id, str(count))
+            step_vars_filename = os.path.join('${OBC_WORK_PATH}', step_inter_id + '.sh')
+
+            # Add declare. This should be first
+            bash = self.workflow.declare_decorate_bash(bash, step_vars_filename)
+
+            # Add all variables from previous tools
+            load_tool_vars = ''
+            for tool_filename in previous_tools:
+                load_tool_vars += '. {}\n'.format(tool_filename)
+            
+
+            # Load all variables from previous steps
+            load_step_vars = ''
+            for step_filename in previous_steps_vars:
+                load_step_vars += '. {}\n'.format(step_filename)
+            
+            bash = load_tool_vars + load_step_vars + bash
+
+            previous_steps_vars.append(step_vars_filename)
+
+            airflow_bash = self.bash_operator_pattern.format(
+                ID = step_id,
+                BASH = bash,
+                ENVS=envs,
+            )
+            step_bash_operators.append(airflow_bash)
 
         airflow_python = self.pattern.format(
             WORKFLOW_ID = self.workflow.root_workflow_id,
-            TOOL_BASH_OPERATORS = '\n'.join(tool_bash_operators),
-            TOOL_ORDER = ' >> '.join(tool_ids)
+            BASH_OPERATORS = '\n'.join(tool_bash_operators + step_bash_operators),
+            ORDER = ' >> '.join(tool_ids + step_ids)
         )
 
-        print (airflow_python)
+        log_info('Saving airflow to {}'.format(output))
+        with open(output, 'w') as f:
+            f.write(airflow_python)
+
 
 
 class DockerExecutor(BaseExecutor):
@@ -2138,8 +2192,18 @@ if __name__ == '__main__':
     parser.add_argument('--askinput', dest='askinput', 
         help="Where to get input parameters from. Available options are: 'JSON', during convert JSON to BASH, 'BASH' ask for input in bash, 'NO' do not ask for input.", 
         default='JSON', choices=['JSON', 'BASH', 'NO'])
+    parser.add_argument('--OBC_DATA_PATH', dest='OBC_DATA_PATH', required=False, help="Set the ${OBC_DATA_PATH} environment variable. This is were the data are stored")
+    parser.add_argument('--OBC_TOOL_PATH', dest='OBC_TOOL_PATH', required=False, help="Set the ${OBC_TOOL_PATH} environment variable. This is were the tools are installed")
+    parser.add_argument('--OBC_WORK_PATH', dest='OBC_WORK_PATH', required=False, help="Set the ${OBC_WORK_PATH} environment variable. This is were the tools are installed")
 
     args = parser.parse_args()
+
+    if args.OBC_DATA_PATH:
+        g['OBC_DATA_PATH'] = args.OBC_DATA_PATH
+    if args.OBC_TOOL_PATH:
+        g['OBC_TOOL_PATH'] = args.OBC_TOOL_PATH
+    if args.OBC_WORK_PATH:
+        g['OBC_WORK_PATH'] = args.OBC_WORK_PATH
 
     setup_bash_patterns(args)
 
@@ -2165,7 +2229,7 @@ if __name__ == '__main__':
         e.build(output = args.output, output_format=args.format)
     elif args.format in ['airflow']:
         e = AirflowExecutor(w)
-        e.build()
+        e.build(output = args.output)
     else:
         raise OBC_Executor_Exception('Unknown format: {}'.format(args.format))
 

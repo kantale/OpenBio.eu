@@ -135,7 +135,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.show_sign_up = false;
         $scope.show_reset_password = false;
 
-         $scope.references_button_process_doi_activated = true;
+        $scope.references_button_process_doi_activated = true;
 
         $scope.get_init_data();
 
@@ -287,6 +287,16 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.profile_affiliation = data['profile_affiliation'];
                 $scope.profile_publicinfo = data['profile_publicinfo'];
                 $scope.profile_created_at = data['profile_created_at'];
+                $scope.profile_clients = data['profile_clients'];
+
+                //If the server did not return any client. Add an empty placeholder
+                if (!$scope.profile_clients.length) {
+                    $scope.profile_clients = [{name: '', client: ''}];
+                }
+                else {
+                    //Push an empty 
+                    $scope.profile_clients.push({name: '', client: ''});
+                }
 
                 $timeout(function(){M.updateTextFields()}, 10);
             },
@@ -326,6 +336,57 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             }
         );
 
+    };
+
+    /*
+    * Profile --> Execution Clients --> '+' --> clicked 
+    */
+    $scope.profile_add_client = function(index) {
+        //alert('hello!');
+        //alert($scope.profile_clients[index].name);
+
+        $scope.ajax(
+            'user_add_client/',
+            {
+                name: $scope.profile_clients[index].name,
+                client: $scope.profile_clients[index].client
+            },
+            function(data) {
+                $scope.toast('Execution Client added succesfully', 'success');
+                $scope.profile_clients = data['profile_clients'];
+                $scope.profile_clients.push({name: '', client: ''});
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
+    };
+
+    /*
+    * Profile --> Execution Clients --> '-' --> clicked
+    */
+    $scope.profile_delete_client = function(index) {
+
+        $scope.ajax(
+            'user_delete_client/',
+            {
+                name: $scope.profile_clients[index].name,
+            },
+            function(data) {
+                $scope.toast('Execution Client deleted succesfully', 'success');
+                $scope.profile_clients = data['profile_clients'];
+                $scope.profile_clients.push({name: '', client: ''});
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
     };
 
     /*
@@ -872,6 +933,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.tool_description_html = data['description_html'];
                 $scope.tool_changes = data['changes'];
                 $scope.tool_info_created_at = data['created_at'];
+                $scope.tool_score = data['tool_score'];
+                $scope.tool_voted = data['tool_voted'];
                 $scope.tools_info_forked_from = data['forked_from'];
                 $scope.tools_info_name = item.name;
                 $scope.tools_info_version = item.version;
@@ -1373,6 +1436,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 //Load comment thread
                 $scope.qa_gen['tool'].object_pk = data['tool_pk'];
                 $scope.qa_gen['tool'].qa_thread = data['tool_thread'];
+
+                //Set Score, and upvote / downvotes arrows
+                $scope.tool_score = 0;
+                $scope.tool_voted = {'up': false, 'down': false};
 
                 //EXPERIMENTAL. UPDATE SEARCH RESULTS
                 $scope.all_search_2();
@@ -2848,6 +2915,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.workflow_description_html = data['description_html'];
                 $scope.workflow_info_forked_from = data['forked_from'];
                 $scope.workflow_changes = data['changes'];
+                $scope.workflow_score = data['workflow_score']; // For upvotes / downvotes
+                $scope.workflow_voted = data['workflow_voted']; //Check if this workflow is voted from the user 
 
                 // Load the graph. TODO: WHAT HAPPENS WHEN WE CLICK TO NODE? IT IS NOT REGISTERED
                 window.initializeTree();
@@ -3727,6 +3796,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.qa_gen['workflow'].object_pk = data['workflow_pk'];
                 $scope.qa_gen['workflow'].qa_thread = data['workflow_thread'];
 
+                //Set score and upvote / downvote arrows
+                $scope.workflow_score = 0;
+                $scope.workflow_voted = {'up': false, 'down': false};
+
                 //EXPERIMENTAL. UPDATE SEARCH RESULTS
                 $scope.all_search_2();
             },
@@ -4254,7 +4327,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     $scope.qa_reply_button_clicked = function(id) {
 
         $scope.qa_set_replying($scope.qa_thread, id, true);
-        $scope.qa_current_reply = '';
+        $scope.qa_current_reply_1 = '';
+        $scope.qa_current_reply_2 = '';
+        $scope.qa_current_reply_3 = '';
+        $scope.qa_current_reply_4 = '';
         $scope.qa_reply_opinion = 'note';
 
     };
@@ -4265,7 +4341,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     */
     $scope.gen_qa_reply_button_clicked = function(id, qa_type) {
         $scope.qa_set_replying($scope.qa_gen[qa_type].qa_thread, id, true);
-        $scope.qa_gen[qa_type].qa_current_reply = '';
+        $scope.qa_gen[qa_type].qa_current_reply_1 = '';
+        $scope.qa_gen[qa_type].qa_current_reply_2 = '';
+        $scope.qa_gen[qa_type].qa_current_reply_3 = '';
+        $scope.qa_gen[qa_type].qa_current_reply_4 = '';
         $scope.qa_gen[qa_type].qa_reply_opinion = 'note';
 
     };
@@ -4277,8 +4356,13 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         //console.log('Reply to id: ', id);
         //console.log('Comment:', comment);
 
+        //console.log('qa_current_reply:', $scope.qa_current_reply);
+
         $scope.qa_add_comment(id, comment, opinion);
-        $scope.qa_current_reply = '';
+        $scope.qa_current_reply_1 = '';
+        $scope.qa_current_reply_2 = '';
+        $scope.qa_current_reply_3 = '';
+        $scope.qa_current_reply_4 = '';
         $scope.qa_reply_opinion = 'note';
 
     };
@@ -4291,7 +4375,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         // $scope.gen_qa_add_comment = function(comment_pk, object_pk, comment, qa_type) 
 
         $scope.gen_qa_add_comment(id, $scope.qa_gen[qa_type].object_pk, comment, opinion, qa_type);
-        $scope.qa_gen[qa_type].qa_current_reply = '';
+        $scope.qa_gen[qa_type].qa_current_reply_1 = '';
+        $scope.qa_gen[qa_type].qa_current_reply_2 = '';
+        $scope.qa_gen[qa_type].qa_current_reply_3 = '';
+        $scope.qa_gen[qa_type].qa_current_reply_4 = '';
     };
 
     /*
@@ -4431,7 +4518,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         $scope.qa_gen[qa_type].qa_show_new_comment = true;
         $scope.qa_gen[qa_type].qa_current_comment = '';
-        $scope.qa_gen[qa_type].qa_comment_opinion = 'solution';
+        $scope.qa_gen[qa_type].qa_current_comment_preview = {'html': ''};
+        $scope.qa_gen[qa_type].qa_comment_opinion = 'note';
     };
 
 
@@ -4586,9 +4674,61 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     };
 
     /*
+    * A thumbs-up or thumbs-down was pressed on a tool or on a workflow
+    * ro = 'tool', or 'workflow'
+    * upvote = True --> upvote, false-->downvote
+    */
+    $scope.updownvote_tool_workflow = function(ro, upvote) {
+
+        var ro_obj = {};
+        //Get the TOOL
+        if (ro=='tool') {
+            ro_obj = {
+                'name': $scope.tools_info_name,
+                'version': $scope.tools_info_version,
+                'edit': $scope.tools_info_edit
+            }
+        }
+        else if (ro=='workflow') {
+            ro_obj = {
+                'name': $scope.workflow_info_name,
+                'edit': $scope.workflow_info_edit
+            }
+        }
+        else {
+            return;
+        }
+
+        $scope.ajax(
+            'updownvote_tool_workflow/',
+            {
+                'ro': ro,
+                'ro_obj': ro_obj,
+                'upvote': upvote,
+            },
+            function(data) {
+                if (ro=='tool') {
+                    $scope.tool_score = data['score'];
+                    $scope.tool_voted = data['voted'];
+                }
+                else if (ro=='workflow') {
+                    $scope.workflow_score = data['score'];
+                    $scope.workflow_voted = data['voted'];
+                }
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
+    };
+
+    /*
     * A thumbs-up or thumbs-down was pressed on a comment
     * comment_id is the id of the comment
-    * upvate: true --> Upvate, false --> downvote
+    * upvate: true --> Upvote, false --> downvote
     * score is an object that contains a score atttribute
     * voted is the current voted state: i.e. {'up': false, 'down': true}
     */
@@ -4623,6 +4763,63 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.toast(statusText, 'error');
             }
         );
+    };
+
+    /*
+    * Called when we hit the "Preview" tab in a field that supports markdown preview
+    * event: The click event
+    * source: A string. Where it happened. It can also be an object. In that case it sets the 'html' attribute.
+    * original: The original (with markdown) content 
+    */ 
+    $scope.angular_previewTabClicked = function(event, source, original) {
+
+        $scope.ajax(
+            'markdown_preview/',
+            {
+                'text': original
+            },
+            function(data) {
+
+                var html = data['html'];
+
+                if (source === 'tool_description') {
+                    $scope.tool_description_preview = html;
+                }
+                else if (source === 'workflow_description') {
+                    $scope.workflow_description_preview = html;
+                }
+                else if (source === 'qa_comment') {
+                    $scope.qa_comment_preview = html;
+                }
+                else if (source === 'qa_current_comment') {
+                    $scope.qa_current_comment_preview = html;
+                }
+                else if (source === 'qa_current_reply_1') {
+                    $scope.qa_current_reply_1_preview = html;
+                }
+                else if (source === 'qa_current_reply_2') {
+                    $scope.qa_current_reply_2_preview = html;
+                }
+                else if (source === 'qa_current_reply_3') {
+                    $scope.qa_current_reply_3_preview = html;
+                }
+                else if (source === 'qa_current_reply_4') {
+                    $scope.qa_current_reply_4_preview = html;
+                }
+                else {
+                    source.html = html;
+                }
+
+                previewTabClicked (event);
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
+
     };
 
 }); 

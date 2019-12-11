@@ -28,7 +28,7 @@ from django.middleware.csrf import get_token
 #Import database objects
 from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations, \
     OS_types, Keyword, Report, ReportToken, Reference, ReferenceField, Comment, \
-    UpDownCommentVote
+    UpDownCommentVote, UpDownToolVote, UpDownWorkflowVote, ExecutionClient
 
 #Import executor
 from ExecutionEnvironment.executor import create_bash_script, OBC_Executor_Exception
@@ -119,6 +119,8 @@ g = {
         'qas': 'forum',
     },
     'url_validator': URLValidator(), # Can be customized: URLValidator(schemes=('http', 'https', 'ftp', 'ftps', 'rtsp', 'rtmp'))
+    'client_name_regex': r'^[\w]+$', # The regular expression to validate the name of exutation client
+    'client_max': 10, # Max number of execution clients
 }
 
 ### HELPING FUNCTIONS AND DECORATORS #####
@@ -783,7 +785,10 @@ def get_instance_settings():
 @has_data
 def users_search_3(request, **kwargs):
     '''
-    Get profile info for a single user
+    Get profile info for a single user.
+    This is called from: 
+    * Click on profile
+    * Click on a user node in left panel jstree
     '''
 
     username = kwargs.get('username', '')
@@ -805,13 +810,101 @@ def users_search_3(request, **kwargs):
         'profile_created_at': datetime_to_str(u.user.date_joined), # https://docs.djangoproject.com/en/2.2/ref/contrib/auth/#django.contrib.auth.models.User.date_joined
     }
 
-    # We fetch mail only for registered user 
+    # only for registered user:
+    # * get mail
+    # * get ExecutionClients
     if username == request.user.username:
         ret['profile_email'] = u.user.email
+        ret['profile_clients'] = [{'name': client.name, 'client': client.client} for client in u.clients.all()]
     else:
         ret['profile_email'] = ''
 
     return success(ret)
+
+@has_data
+def user_add_client(request, **kwargs):
+    '''
+    Called from $scope.profile_add_client when user adds a new Execution Client
+    URL: user_add_client/
+    '''
+
+    # Get the user
+    try:
+        obc_user = OBC_user.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        return fail('Error 8619'); # This should never happen
+
+    #Get and validate the name
+    name = kwargs.get('name', '')
+    if not re.match(g['client_name_regex'], name):
+        return fail('Invalid client name (allowed characters, a-z, A-Z, 0-9, _)')
+
+    # Get and validate the client    
+    client = kwargs.get('client', '')
+    if not valid_url(client):
+        return fail('URL is invalid')
+
+    # Check that the name and the client does not exist and that maximum number has not been reached
+    existing_clients = [{'name':x.name, 'client': x.client} for x in obc_user.clients.all()]
+    if len(existing_clients) >= g['client_max']:
+        return fail('Maximum number of Execution Clients has been reached')
+
+    existing_names = {x['name'] for x in existing_clients}
+    existing_urls = {x['client'] for x in existing_clients}
+
+    if name in existing_names:
+        return fail('There is already an Execution Client with this name')
+
+    if client in existing_urls:
+        return fail('There is already an Execution Client with this URL')
+
+    ## Add the execution environment
+    new_execution_client = ExecutionClient(name=name, client=client)
+    new_execution_client.save()
+    obc_user.clients.add(new_execution_client)
+
+    # Return all the profile clients
+    ret = {
+        'profile_clients' : [{'name': client.name, 'client': client.client} for client in obc_user.clients.all()]
+    }
+
+    obc_user.save()
+
+    return success(ret)
+
+@has_data
+def user_delete_client(request, **kwargs):
+    '''
+    Called from $scope.profile_delete_client
+    URL:  user_delete_client
+    '''
+
+    name = kwargs.get('name', '')
+    if not name:
+        return fail('Error 3498')
+
+    # Get the user
+    try:
+        obc_user = OBC_user.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        return fail('Error 8686'); # This should never happen
+
+    # Get the Execution Client
+    try:
+        ec = ExecutionClient.objects.get(obc_user=obc_user, name=name)
+    except ObjectDoesNotExist as e:
+        return fail('Error 4555')
+
+    # Delete the Execution Client
+    ec.delete()
+
+    # Return all the profile clients
+    ret = {
+        'profile_clients' : [{'name': client.name, 'client': client.client} for client in obc_user.clients.all()]
+    }
+
+    return success(ret)    
+
 
 @has_data
 def users_edit_data(request, **kwargs):
@@ -1455,6 +1548,20 @@ def tools_search_3(request, **kwargs):
     else:
         obc_user = OBC_user.objects.get(user=request.user)
 
+    #Is it voted?
+    if obc_user:
+        try:
+            v = UpDownToolVote.objects.get(obc_user=obc_user, tool=tool)
+        except ObjectDoesNotExist as e:
+            # It is not voted
+            tool_voted = {'up': False, 'down': False}
+        else:
+            # It is noted
+            tool_voted = {'up': v.upvote, 'down': not v.upvote}
+
+    else:
+        tool_voted = {'up': False, 'down': False}
+
     ret = {
         'website': tool.website,
         'description': tool.description,
@@ -1482,10 +1589,13 @@ def tools_search_3(request, **kwargs):
         'validation_created_at' : datetime_to_str(tool.last_validation.created_at) if tool.last_validation else None,
         'tool_pk': tool.pk, # Used in comments
         'tool_thread': qa_create_thread(tool.comment, obc_user), # Tool comment thread. This is a list
+        'tool_score': tool.upvotes - tool.downvotes,
+        'tool_voted': tool_voted,
         'tool_comment_id': tool.comment.pk, # Used to create a permalink to the comments
         'tool_comment_title': tool.comment.title,
         'tool_comment_created_at': datetime_to_str(tool.comment.created_at),
         'tool_comment_username': tool.comment.obc_user.user.username,
+
 
     }
 
@@ -1537,7 +1647,7 @@ def validate_toast_button():
 def tools_add(request, **kwargs):
     '''
     Add a new tool
-    tool add tool save tool
+    tool add tool save tool . Create tool 
 
     * names and version is searched case insensitive
     '''
@@ -1633,6 +1743,8 @@ def tools_add(request, **kwargs):
         changes = tool_changes,
         installation_commands=tool_installation_commands,
         validation_commands=tool_validation_commands,
+        upvotes = 0,
+        downvotes = 0,
         
         last_validation=None,
     )
@@ -1912,6 +2024,8 @@ def workflows_add(request, **kwargs):
         workflow = simplejson.dumps(workflow),
         forked_from = workflow_forked_from,
         changes = workflow_changes,
+        upvotes = 0,
+        downvotes = 0,
 
     )
 
@@ -1975,6 +2089,21 @@ def workflows_search_3(request, **kwargs):
     else:
         obc_user = OBC_user.objects.get(user=request.user)
 
+    #Is it voted?
+    if obc_user:
+        try:
+            v = UpDownWorkflowVote.objects.get(obc_user=obc_user, workflow=workflow)
+        except ObjectDoesNotExist as e:
+            # It is not voted
+            workflow_voted = {'up': False, 'down': False}
+        else:
+            # It is noted
+            workflow_voted = {'up': v.upvote, 'down': not v.upvote}
+
+    else:
+        workflow_voted = {'up': False, 'down': False}
+
+
     ret = {
         'username': workflow.obc_user.user.username,
         'website': workflow.website,
@@ -1987,6 +2116,8 @@ def workflows_search_3(request, **kwargs):
         'changes': workflow.changes,
         'workflow_pk': workflow.pk, # Used in comments (QAs)
         'workflow_thread': qa_create_thread(workflow.comment, obc_user), # Workflow comment thread 
+        'workflow_score': workflow.upvotes - workflow.downvotes,
+        'workflow_voted': workflow_voted,
         'workflow_comment_id': workflow.comment.pk, # Used to create a permalink to the comments
         'workflow_comment_title': workflow.comment.title,
         'workflow_comment_created_at': datetime_to_str(workflow.comment.created_at),
@@ -3386,6 +3517,125 @@ def updownvote_comment(request, **kwargs):
 
     return success(ret)
 
+@has_data
+def updownvote_tool_workflow(request, **kwargs):
+    '''
+    Called from $scope.updownvote_tool_workflow
+    Called when a user hit the buttons for upvote or downvote or a tool or for a workflow
+    '''
+
+    if request.user.is_anonymous:
+        return fail('Please login to upvote/downvote Research Objects')
+
+    if not user_is_validated(request):
+        return fail('Please validate your email to upvote/downvote' + validate_toast_button());
+
+    # Get the user
+    obc_user = OBC_user.objects.get(user=request.user)
+
+    ro = kwargs.get('ro', '')
+    if not ro:
+        return fail('Error 1023')
+    if not ro in ['tool', 'workflow']:
+        return fail('Error 1026')
+
+    ro_obj = kwargs.get('ro_obj', '')
+    if not ro_obj:
+        return fail('Error 1024')
+    upvote = kwargs.get('upvote', '')
+    if upvote == '':
+        return fail('Error 1025')
+
+    if not upvote in [True, False]:
+        return fail('Error 1027')
+
+    # Get the tool/workflow database object
+    ro_table = {
+        'tool': Tool,
+        'workflow': Workflow,
+    }[ro]
+
+    ro_ud_table = {
+        'tool': UpDownToolVote,
+        'workflow': UpDownWorkflowVote,
+    }[ro]
+
+    try:
+        ro_table_obj = ro_table.objects.get(**ro_obj)
+    except ObjectDoesNotExist as e:
+        return fail('Error 1027')
+
+    # Check if this user has already upvoted or downvoted this RO
+    try:
+        ro_ud_table_obj = ro_ud_table.objects.get(**{
+            'obc_user': obc_user,
+            ro: ro_table_obj,
+        })
+    except ObjectDoesNotExist as e:
+        # This user has **not** upvoted or downvoted this RO
+        pass
+    else:
+        # This user has upvoted or downvoted this RO in the past
+        if ro_ud_table_obj.upvote and upvote:
+            return fail('You cannot upvote twice')
+        elif (not ro_ud_table_obj.upvote) and (not upvote):
+            return fail('You cannot downvote twice')
+        elif ro_ud_table_obj.upvote and (not upvote):
+            # Delete upvote vote!
+            ro_ud_table_obj.delete()
+
+            # Update votes
+            ro_table_obj.upvotes -= 1
+            ro_table_obj.save()
+            return success({
+                'score': ro_table_obj.upvotes-ro_table_obj.downvotes,
+                'voted': {'up': False, 'down': False},
+                })
+
+        elif (not ro_ud_table_obj.upvote) and upvote:
+            # Delete downvote vote
+            ro_ud_table_obj.delete()
+
+            ro_table_obj.downvotes -= 1
+            ro_table_obj.save()
+            return success({
+                'score': ro_table_obj.upvotes-ro_table_obj.downvotes,
+                'voted': {'up': False, 'down': False},
+                })
+
+    #This user has not upvoted or downvoted before this RO
+    #Create a new vote database object
+    new_vote_obj = ro_ud_table(**{
+        'obc_user': obc_user,
+        ro: ro_table_obj,
+        'upvote': upvote,
+        })
+    new_vote_obj.save()
+
+    # Change the upvote / downvote counter of this research object
+    if upvote:
+        ro_table_obj.upvotes += 1
+    else:
+        ro_table_obj.downvotes += 1
+    ro_table_obj.save()
+
+    ret = {
+        'score': ro_table_obj.upvotes-ro_table_obj.downvotes,
+        'voted': {'up': upvote, 'down': not upvote},
+    }
+
+    return success(ret)
+
+@has_data
+def markdown_preview(request, **kwargs):
+    text = kwargs.get('text', '')
+
+    if not type(text) is str:
+        return fail('Error 2871')
+
+    ret = {
+        'html': markdown(text),
+    }
 
 @has_data
 def edit_comment(request, **kwargs):
