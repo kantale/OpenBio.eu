@@ -10,13 +10,24 @@ django.setup()
 
 from django.contrib.auth.models import User
 
-from app.models import Comment, UpDownCommentVote 
+from app.models import Comment, UpDownCommentVote, Tool, Workflow
 
 UpDownCommentVote.objects.all().delete()
 for c in Comment.objects.all():
-	c.upvotes = 0
-	c.downvotes = 0
-	c.save()
+    c.upvotes = 0
+    c.downvotes = 0
+    c.save()
+
+
+for c in Tool.objects.all():
+    c.upvotes = 0
+    c.downvotes = 0
+    c.save()
+
+for c in Workflow.objects.all():
+    c.upvotes = 0
+    c.downvotes = 0
+    c.save()
 
 def do_1():
 	pass
