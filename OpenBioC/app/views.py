@@ -3637,6 +3637,8 @@ def markdown_preview(request, **kwargs):
         'html': markdown(text),
     }
 
+    return success(ret)
+
 @has_data
 def edit_comment(request, **kwargs):
     '''

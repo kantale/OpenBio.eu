@@ -212,5 +212,14 @@ wget -O "dagre_0.7.4.tar.gz" https://github.com/dagrejs/dagre/archive/v0.7.4.tar
 tar zxvf dagre_0.7.4.tar.gz
 ```
 
+### pell.js REQUIRED
+<!-- run -->
+```
+wget -O pell-1.0.6.tar.gz https://github.com/jaredreich/pell/archive/v1.0.6.tar.gz 
+tar zxvf pell-1.0.6.tar.gz
+```
+
+
+
 
 
