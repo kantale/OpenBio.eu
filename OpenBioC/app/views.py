@@ -1592,6 +1592,9 @@ def tools_search_3(request, **kwargs):
         'tool_score': tool.upvotes - tool.downvotes,
         'tool_voted': tool_voted,
         'tool_comment_id': tool.comment.pk, # Used to create a permalink to the comments
+        'tool_comment_title': tool.comment.title,
+        'tool_comment_created_at': datetime_to_str(tool.comment.created_at),
+        'tool_comment_username': tool.comment.obc_user.user.username,
 
 
     }
@@ -2116,6 +2119,10 @@ def workflows_search_3(request, **kwargs):
         'workflow_score': workflow.upvotes - workflow.downvotes,
         'workflow_voted': workflow_voted,
         'workflow_comment_id': workflow.comment.pk, # Used to create a permalink to the comments
+        'workflow_comment_title': workflow.comment.title,
+        'workflow_comment_created_at': datetime_to_str(workflow.comment.created_at),
+        'workflow_comment_username': workflow.comment.obc_user.user.username,
+
     }
 
     return success(ret)
@@ -3263,6 +3270,33 @@ def qa_search_3(request, **kwargs):
 
     return success(ret)
 
+
+@has_data
+def get_pk_from_root_comment(request, **kwargs):
+    '''
+    path: get_pk_from_root_comment/
+    '''
+
+    comment_id = int(kwargs['comment_id'])
+    pk_type = kwargs['type']
+
+    try:
+        if pk_type == 'tool':
+            tool = Tool.objects.filter(comment_id=comment_id).first()
+            pk = tool.id
+        elif pk_type == 'workflow':
+            workflow = Workflow.objects.filter(comment_id=comment_id).first()
+            pk = workflow.id
+        else:
+            return fail('ERROR: 2919 . Unknown pk_type: {}'.format(pk_type))
+    except ObjectDoesNotExist as e:
+        return fail('Could not find tool or workflow database object')
+
+    ret = {
+        'pk': pk
+    }
+    return success(ret)
+
 @has_data
 def gen_qa_search_3(request, **kwargs):
     '''
@@ -3325,7 +3359,7 @@ def qa_add_comment(request, **kwargs):
     current_comment_html = markdown(current_comment)
 
     opinion = kwargs.get('qa_opinion', None)
-    if not opinion in ['note', 'agree', 'disagree']:
+    if not opinion in ['solution', 'note', 'agree', 'disagree']:
         return fail('Error 9177. opinion value unknown')
 
     try:
@@ -3603,8 +3637,46 @@ def markdown_preview(request, **kwargs):
         'html': markdown(text),
     }
 
+@has_data
+def edit_comment(request, **kwargs):
+    '''
+    url: edit_comment/
+    '''
+
+    if request.user.is_anonymous:
+        return fail('Please login to upvote/downvote comments')
+
+    if not user_is_validated(request):
+        return fail('Please validate your email to edit the comment.' + validate_toast_button());
+
+    comment_id = int(kwargs['comment_id'])
+    new_html = kwargs['new_html']
+    is_root = kwargs['is_root']
+    comment_type = kwargs.get('comment_type')
+
+    # Get the comment
+    comment = Comment.objects.get(pk=comment_id)
+
+    # Get the user
+    obc_user = OBC_user.objects.get(user=request.user)
+
+    if comment.obc_user.id != obc_user.id:
+        return fail("You don't have the permission to edit this comment!")
+
+    if not is_root:
+        comment.comment = markdown(new_html)
+        comment.comment_html = new_html
+        if comment_type in ['solution', 'note', 'agree', 'disagree']:
+            comment.opinion = comment_type
+    else:
+        comment.title = new_html
+    comment.save()
+
+    ret = {
+        'message': 'The comment has been updated!'
+    }
+
     return success(ret)
 
 ### END OF Q&A
 ### VIEWS END ######
-

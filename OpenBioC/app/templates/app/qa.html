@@ -12,6 +12,22 @@
 " style="vertical-align: bottom;">Link</a>  
         <a class="waves-effect waves-light btn-small" href=""
             ng-click="gen_qa_add_comment_button_pressed('{{ qa_type }}')">Add Comment</a>
+
+        <!-- START VISUALIZE -->
+        <ul class="collapsible expandable">
+	    <li id="DiscourseRightPanelGeneral-{{ qa_type }}">
+                <div class="collapsible-header customCollapsibleHeader">
+                    <i class="material-icons arrow left">keyboard_arrow_right</i>
+                    <span class="left" style="margin-right: 10px;">Visualize <small>(beta)</small></span>
+                </div>
+                <div class="collapsible-body">
+                    <!-- <a class="waves-effect waves-light btn-small" href="" ng-click="qa_visualize_pressed()">Visualize</a> -->
+                    <div id="cydisc-{{ qa_type }}"></div>
+                </div>
+            </li>
+        </ul>
+        <!-- END VISUALIZE -->
+
     </div>
     <div class="input-field" ng-show="qa_gen['{{ qa_type }}'].qa_show_new_comment">
         <!-- ------------------------------------------------------------------------------------ -->
