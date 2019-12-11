@@ -4,10 +4,10 @@
     <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
     <div>
         <div class="scrollspyMenu col s12 m12 l2 hide-on-med-and-down pushpin pushpin-demo-nav"
-            style="position:fixed; padding-top: 200px">
+            style="position:fixed; padding-top: 200px; margin-left: -40px;">
             <ul class="section table-of-contents">
                 <li><a class="lien_projet" href="#profileCard">Profile</a></li>
-                <li><a class="lien_projet" href="#inboxCard" ng-show="false">Inbox</a></li>
+                <li><a class="lien_projet" href="#executionCard">Execution Environment</a></li>
                 <li><a class="lien_projet" href="#notificationsCard" ng-show="false">Notifications</a></li>
                 <li><a class="lien_projet" href="#settingsCard" ng-show="false">Settings</a></li>
             </ul>
@@ -109,32 +109,48 @@
                     </section>
                 </div>
                 <!-- --------------------------------------------------------------------------------------- -->
-                <!-- ------------------------------------- Temp Card --------------------------------------- -->
+                <!-- ----------------------------- Execution Environment Card ------------------------------ -->
                 <!-- --------------------------------------------------------------------------------------- -->
-                <div class="col s12" ng-show="false">
-                    <section id="inboxCard" class="scrollspy section_projet">
+                <div class="col s12">
+                    <section id="executionCard" class="scrollspy section_projet">
                         <div class="card">
                             <div class="card-content">
-                                <blockquote><span class="card-title">Indox</span></blockquote>
-                                <div class="row">
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-                                    incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-                                    nostrud
-                                    exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem
-                                    ipsum
-                                    dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-                                    labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-                                    exercitation
-                                    ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit
-                                    amet,
-                                    consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-                                    dolore
-                                    magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-                                    nisi ut aliquip ex ea commodo consequat.
+                                <div class="row right">
+                                    <a class="waves-effect waves-teal btn-flat">Cancel</a>
+                                    <a class="waves-effect waves-teal btn-flat">Update</a>
                                 </div>
-                            </div>
-                            <div class="card-action right-align">
-                                <button class="btn waves-effect waves-light" type="submit" name="action">Update</button>
+                                <blockquote><span class="card-title">Execution Environment</span></blockquote>
+                                <div class="row">
+                                    <p style="padding-left: 0.7rem;">Manage your execution environments</p>
+                                    <table class="centered highlight">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>URL</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="client in profile_clients track by $index">
+                                                <td><input type="text" placeholder="Name" ng-model="client.name" ng-disabled="!$last"></td>
+                                                <td><input type="text" placeholder="URL" ng-model="client.client" ng-disabled="!$last"></td>   
+                                                <td>
+                                                    <a class="waves-effect waves-light btn-small tooltipped green darken-1"
+                                                        ng-show="client.name && client.client && $last"
+                                                        ng-click="profile_add_client($index)"
+                                                        style="padding-left: 7px; padding-right:7px" data-position="bottom"
+                                                        data-tooltip="Add URL"><i class="material-icons">add</i></a>
+                                                </td>
+                                                <td>
+                                                    <a class="waves-effect waves-light btn-small tooltipped red darken-1"
+                                                        ng-show="client.name && client.client && (!$last)"
+                                                        ng-click="profile_delete_client($index)"
+                                                        style="padding-left: 7px; padding-right:7px" data-position="bottom"
+                                                        data-tooltip="Remove URL"><i class="material-icons">remove</i></a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </section>

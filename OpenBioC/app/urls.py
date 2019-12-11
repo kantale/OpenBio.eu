@@ -41,6 +41,8 @@ urlpatterns = [
 	path('references_search_3/', views.references_search_3), # Search (and get the details) for a specific SINGLE Reference
 	path('users_search_3/', views.users_search_3), # Search and get the results for a single user
 	path('users_edit_data/', views.users_edit_data), # User changes (edit), profile info data
+	path('user_add_client/', views.user_add_client), # Add a new Execution Client in profile
+	path('user_delete_client/', views.user_delete_client), # Delete an Execution Client from profile
 	path('qa_add_1/', views.qa_add_1), # Add a new Title and a new comment.
 	path('qa_search_3/', views.qa_search_3), # Get a unique Q&A thread 
 	path('gen_qa_search_3/', views.gen_qa_search_3), # Generic version of the above.  Get a unique Q&A thread  
@@ -48,5 +50,7 @@ urlpatterns = [
 	path('gen_qa_add_comment/', views.gen_qa_add_comment), # Genetic version of the above # Add a comment to a QA
 	path('updownvote_comment/', views.updownvote_comment), # thumbs up or a thumbs down was pressed on a comment
 	path('edit_comment/', views.edit_comment), # edit a comment
-    path('get_pk_from_root_comment/', views.get_pk_from_root_comment),
+  path('get_pk_from_root_comment/', views.get_pk_from_root_comment), # COMMENT IS MISSING!! PLEASE ADD !
+	path('updownvote_tool_workflow/', views.updownvote_tool_workflow), # thumbs up or thumbs down was pressed on a tool or on a workflow
+	path('markdown_preview/', views.markdown_preview), # Called from markdown preview tab. angular_previewTabClicked 
 ]

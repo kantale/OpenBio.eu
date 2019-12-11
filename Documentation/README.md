@@ -1,7 +1,8 @@
 
 
 ## Tools/Data
-Tools and Data are indistinguishable in the platform.  
+Tools and Data are indistinguishable in the platform. 
+ 
 
 
 ## Workflows 

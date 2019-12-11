@@ -13,25 +13,33 @@
             </div>
         </div>
         <div style="margin: 20px;">
-            <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
-                <p>
-                    <h5>
-                        <span ng-bind="tools_info_name"></span>/<span ng-bind="tools_info_version"></span><span
-                            ng-show="!tools_info_editable">/<span ng-bind="tools_info_edit"></span></span>
-                    </h5>
-                    <small class="form-text text-muted" ng-show="!tools_info_editable">
-                        created by <a ng-click="interlink({type: 'u', username: tool_info_username})">u/<span ng-bind="tool_info_username"></span></a>, created at <span
-                            ng-bind="tool_info_created_at"></span>
-                        {% verbatim %}
-                        <a href="/platform/t/{{tools_info_name}}/{{tools_info_version}}/{{tools_info_edit}}">link</a>
-                        {% endverbatim %}
-                        <span ng-show="tools_info_forked_from">, forked from <a href
-                                ng-click="tools_search_show_item(tools_info_forked_from)">t/<span
-                                    ng-bind="tools_info_forked_from | tool_label"></span></a></span>
-                    </small>
-                </p>
+            <div class="left-align">
+                <div style="overflow: auto;">
+                    <div class="box upDownVoteBoxTitle" ng-show="!tools_info_editable">
+                        <div class="upvoteDiv upDownvoteDivTitle" ng-class="{'active': tool_voted['up']}"><i class="material-icons" style="font-size: 1.64rem;" ng-click="updownvote_tool_workflow('tool', true)">arrow_upward</i></div>
+                        <h5 style="margin: 0px;"><span ng-bind="tool_score"></span></h5>
+                        <div class="downvoteDiv upDownvoteDivTitle" ng-class="{'active': tool_voted['down']}"><i class="material-icons" style="font-size: 1.64rem;" ng-click="updownvote_tool_workflow('tool', false)">arrow_downward</i></div>
+                    </div>
+                    <div style="float: left;">
+                        <h5 style="margin-top: 0px;">
+                            <span ng-bind="tools_info_name"></span>/<span ng-bind="tools_info_version"></span><span
+                                ng-show="!tools_info_editable">/<span ng-bind="tools_info_edit"></span></span>
+                        </h5>
+                        <small class="form-text text-muted" ng-show="!tools_info_editable">
+                            created by <a ng-click="interlink({type: 'u', username: tool_info_username})">u/<span ng-bind="tool_info_username"></span></a>, created at <span
+                                ng-bind="tool_info_created_at"></span>
+                            {% verbatim %}
+                            <a href="/platform/t/{{tools_info_name}}/{{tools_info_version}}/{{tools_info_edit}}">link</a>
+                            {% endverbatim %}
+                            <span ng-show="tools_info_forked_from">, forked from <a href
+                                    ng-click="tools_search_show_item(tools_info_forked_from)">t/<span
+                                        ng-bind="tools_info_forked_from | tool_label"></span></a></span>
+                        </small>
+                    </div>
+                </div>
                 <!-- Buttons -->
                 <div class="row right-align">
+                    <a class="dropdown-trigger btn" data-target='runDropdownTool' style="margin-bottom:2px">Run</a>
                     <a class="dropdown-trigger btn" data-target='downloadDropdownTool' style="margin-bottom:2px">Download</a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Save" ng-click="tool_create_save_pressed()" ng-show="tools_info_editable"><i
@@ -40,6 +48,13 @@
                         data-tooltip="Fork" ng-click="tool_info_fork_pressed()" ng-show="!tools_info_editable"
                         ng-class="{'disabled': !username}"><i class="material-icons">call_split</i></a>
 
+                    <!-- Run Dropdown -->
+                    <ul id='runDropdownTool' class='dropdown-content'>
+                        <li><a>test1</a></li>
+                        <li><a>test2</a></li>
+                        <li><a>test3</a></li>
+                        <li><a>test4</a></li>
+                    </ul>
                     <!-- Download Dropdown -->
                     <ul id='downloadDropdownTool' class='dropdown-content'>
                         <li><a ng-click="tool_info_run_pressed('BASH')">BASH executable</a></li>
@@ -83,12 +98,27 @@
                                         ng-model="tool_website">
                                     <label for="generalWebsite">Website</label>
                                 </div>
-                                <div class="input-field col s12 grid-s12-m12-l12">
-                                    <textarea id="generalDescription" class="validate materialize-textarea tooltipped"
-                                        data-tooltip="General tool/data description. You can use markdown"
-                                        ng-model="tool_description"></textarea>
-                                    <label for="generalDescription">Description</label>
+                                <!-- ------------------------------------------------------------------------------------ -->
+                                <div class="row qaTabs left-align col s12 grid-s12-m12-l12">
+                                    <div class="grid-s12-m12-l12">
+                                        <ul class="tabs">
+                                            <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
+                                            <li class="tab col s3 grid-s3-m3-l3"><a ng-click="angular_previewTabClicked($event, 'tool_description', tool_description)">Preview</a></li>
+                                        </ul>
+                                    </div>
+                                    <div class="active writeTabContent grid-s12-m12-l12">
+                                        <div class="input-field">
+                                            <textarea id="generalDescription" class="validate materialize-textarea tooltipped"
+                                                data-tooltip="General tool/data description. You can use markdown"
+                                                ng-model="tool_description"></textarea>
+                                            <label for="generalDescription">Description</label>
+                                        </div>
+                                    </div>
+                                    <div class="previewTabContent grid-s12-m12-l12 input-field">
+                                        <span ng-bind-html="tool_description_preview"></span>
+                                    </div>
                                 </div>
+                                <!-- ------------------------------------------------------------------------------------ -->
                                 <div class="input-field col s12 grid-s12-m12-l12" ng-show="tools_info_forked_from">
                                     <textarea id="generalEditSummary" class="validate materialize-textarea"
                                         ng-model="tool_changes"></textarea>
@@ -384,28 +414,36 @@
             </div>
         </div>
         <div style="margin: 20px;">
-            <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
-                <p ng-show="!workflows_info_editable">
-                    <h5>
-                        <span ng-bind="workflow_info_name"></span><span ng-show="!workflows_info_editable">/<span
-                                ng-bind="workflow_info_edit"></span></span>
-                    </h5>
-                    <small class="form-text text-muted" ng-show="!workflows_info_editable">
-                        created by <a ng-click="interlink({type: 'u', username: workflows_info_username})">u/<span ng-bind="workflows_info_username"></span></a>
-                        <span>, created at <span ng-bind="workflow_info_created_at"></span></span>
-                        {% verbatim %}
-                        <a href="/platform/w/{{workflow_info_name}}/{{workflow_info_edit}}">link</a>
-                        {% endverbatim %}
-                        <span ng-show="workflow_info_forked_from">, forked from <a href
+            <div class="left-align">
+                <div style="overflow: auto;">
+                    <div class="box upDownVoteBoxTitle" ng-show="!workflows_info_editable">
+                        <div class="upvoteDiv upDownvoteDivTitle" ng-class="{'active': workflow_voted['up']}"><i class="material-icons" style="font-size: 1.64rem;" ng-click="updownvote_tool_workflow('workflow', true)">arrow_upward</i></div>
+                            <h5 style="margin: 0px;"><span ng-bind="workflow_score"></span></h5>
+                        <div class="downvoteDiv upDownvoteDivTitle" ng-class="{'active': workflow_voted['down']}"><i class="material-icons" style="font-size: 1.64rem;" ng-click="updownvote_tool_workflow('workflow', false)">arrow_downward</i></div>
+                    </div>
+                    <div style="float: left;">
+                        <h5 style="margin-top: 0px;">
+                            <span ng-bind="workflow_info_name"></span><span ng-show="!workflows_info_editable">/<span
+                                    ng-bind="workflow_info_edit"></span></span>
+                        </h5>
+                        <small class="form-text text-muted" ng-show="!workflows_info_editable">
+                            created by <a ng-click="interlink({type: 'u', username: workflows_info_username})">u/<span ng-bind="workflows_info_username"></span></a>
+                            <span>, created at <span ng-bind="workflow_info_created_at"></span></span>
+                            {% verbatim %}
+                            <a href="/platform/w/{{workflow_info_name}}/{{workflow_info_edit}}">link</a>
+                            {% endverbatim %}
+                            <span ng-show="workflow_info_forked_from">, forked from <a href
                                 ng-click="workflows_search_show_item(workflow_info_forked_from)">w/<span
-                                    ng-bind="workflow_info_forked_from | workflow_label"></span></a></span>
-                    </small>
-                </p>
+                                ng-bind="workflow_info_forked_from | workflow_label"></span></a></span>
+                        </small>
+                    </div>
+                </div>
                 <!-- Buttons -->
-                <div class="row right-align" style="margin-bottom: 0px;">
+                <div class="row right-align">
                     <!-- <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Run" ng-click="workflow_info_run_pressed()"
                         ng-disabled="workflows_info_editable">Run</a> -->
+                    <a class="dropdown-trigger btn" data-target='runDropdownWorkflow' style="margin-bottom:2px">Run</a>
                     <a class="dropdown-trigger btn" data-target='downloadDropdownWorkflow' style="margin-bottom:2px">Download</a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fit" ng-click="workflow_info_fit_pressed()">Fit</a>
@@ -418,6 +456,13 @@
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fork" ng-click="workflows_info_fork_pressed()" ng-show="!workflows_info_editable"
                         ng-class="{'disabled': !username}"><i class="material-icons">call_split</i></a>
+                    <!-- Run Dropdown -->
+                    <ul id='runDropdownWorkflow' class='dropdown-content'>
+                        <li><a>test1</a></li>
+                        <li><a>test2</a></li>
+                        <li><a>test3</a></li>
+                        <li><a>test4</a></li>
+                    </ul>
                     <!-- Download Dropdown -->
                     <ul id='downloadDropdownWorkflow' class='dropdown-content'>
                         <li><a ng-click="workflow_info_run_pressed('BASH')">BASH executable</a></li>
@@ -455,11 +500,26 @@
                                         ng-model="workflow_website">
                                     <label for="workflowsGeneralWebsite">Website</label>
                                 </div>
-                                <div class="input-field col s12 grid-s12-m12-l12">
-                                    <textarea id="workflowsGeneralDescription" class="validate materialize-textarea"
-                                        ng-model="workflow_description"></textarea>
-                                    <label for="workflowsGeneralDescription">Description</label>
+                                <!-- ------------------------------------------------------------------------------------ -->
+                                <div class="row qaTabs left-align col s12 grid-s12-m12-l12">
+                                    <div class="grid-s12-m12-l12">
+                                        <ul class="tabs">
+                                            <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
+                                            <li class="tab col s3 grid-s3-m3-l3"><a ng-click="angular_previewTabClicked($event, 'workflow_description', workflow_description)">Preview</a></li>
+                                        </ul>
+                                    </div>
+                                    <div class="active writeTabContent grid-s12-m12-l12">
+                                        <div class="input-field">
+                                            <textarea id="workflowsGeneralDescription" class="validate materialize-textarea"
+                                                ng-model="workflow_description"></textarea>
+                                            <label for="workflowsGeneralDescription">Description</label>
+                                        </div>
+                                    </div>
+                                    <div class="previewTabContent grid-s12-m12-l12 input-field">
+                                        <span ng-bind-html="workflow_description_preview"></span>
+                                    </div>
                                 </div>
+                                <!-- ------------------------------------------------------------------------------------ -->
                                 <div class="input-field col s12 m12 grid-s12-m12-l12">
                                     <div id="workflowChips" class="input-field chips left-align" style="margin:0px">
                                     </div>
@@ -1183,12 +1243,26 @@
                                 <input id="qatitle" type="text" class="validate" ng-model="qa_title">
                                 <label for="qatitle">Title</label>
                             </div>
-
-                            <div class="input-field">
-                                <textarea id="comment" class="validate materialize-textarea"
-                                    ng-model="qa_comment"></textarea>
-                                <label for="comment">Comment</label>
+                            <!-- ------------------------------------------------------------------------------------ -->
+                            <div class="row qaTabs left-align col s12 grid-s12-m12-l12">
+                                <div class="grid-s12-m12-l12">
+                                    <ul class="tabs">
+                                        <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
+                                        <li class="tab col s3 grid-s3-m3-l3"><a ng-click="angular_previewTabClicked($event, 'qa_comment', qa_comment)">Preview</a></li>
+                                    </ul>
+                                </div>
+                                <div class="active writeTabContent grid-s12-m12-l12">
+                                    <div class="input-field">
+                                        <textarea id="comment" class="validate materialize-textarea"
+                                            ng-model="qa_comment"></textarea>
+                                        <label for="comment">Comment</label>
+                                    </div>
+                                </div>
+                                <div class="previewTabContent grid-s12-m12-l12 input-field">
+                                    <span ng-bind-html="qa_comment_preview"></span>
+                                </div>
                             </div>
+                            <!-- ------------------------------------------------------------------------------------ -->
                         </div>
                     </form>
                 </div>
@@ -1219,7 +1293,23 @@
                             ng-click="qa_add_comment_button_pressed()">Add Comment</a>
                     </div>
                     <div class="input-field" ng-show="qa_show_new_comment">
-                        <textarea class="validate" ng-model="qa_current_comment"></textarea>
+                        <!-- <textarea class="validate" ng-model="qa_current_comment"></textarea> -->
+                        <!-- ------------------------------------------------------------------------------------ -->
+                        <div class="row qaTabs left-align col s12 grid-s12-m12-l12">
+                            <div class="grid-s12-m12-l12">
+                                <ul class="tabs">
+                                    <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
+                                    <li class="tab col s3 grid-s3-m3-l3"><a ng-click="angular_previewTabClicked($event, 'qa_current_comment', qa_current_comment)">Preview</a></li>
+                                </ul>
+                            </div>
+                            <div class="active writeTabContent grid-s12-m12-l12">
+                                <textarea class="validate" ng-model="qa_current_comment"></textarea>
+                            </div>
+                            <div class="previewTabContent grid-s12-m12-l12 input-field">
+                                <span ng-bind-html="qa_current_comment_preview"></span>
+                            </div>
+                        </div>
+                        <!-- ------------------------------------------------------------------------------------ -->
                         <div>
                             <label><input type="radio" ng-model="qa_comment_opinion" value="solution"/><span>Solution</span></label>
                             <label><input type="radio" ng-model="qa_comment_opinion" value="note" checked /><span>Note</span></label>
@@ -1300,7 +1390,22 @@
                             <a class="waves-effect btn-flat qaReplyBtn" href=""
                                 ng-click="qa_reply_button_clicked(post.id)"><u>Reply</u></a>
                             <div class="input-field" ng-show="post.replying">
-                                <textarea class="validate" ng-model="qa_current_reply"></textarea>
+                                <!-- ------------------------------------------------------------------------------------ -->
+                                <div class="row qaTabs left-align col s12 grid-s12-m12-l12">
+                                    <div class="grid-s12-m12-l12">
+                                        <ul class="tabs">
+                                            <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
+                                            <li class="tab col s3 grid-s3-m3-l3"><a ng-click="angular_previewTabClicked($event, 'qa_current_reply_1', qa_current_reply_1)">Preview</a></li>
+                                        </ul>
+                                    </div>
+                                    <div class="active writeTabContent grid-s12-m12-l12">
+                                        <textarea class="validate" ng-model="qa_current_reply_1"></textarea>
+                                    </div>
+                                    <div class="previewTabContent grid-s12-m12-l12 input-field">
+                                        <span ng-bind-html="qa_current_reply_1_preview"></span>
+                                    </div>
+                                </div>
+                                <!-- ------------------------------------------------------------------------------------ -->
                                 <div>
                                     <label><input type="radio" ng-model="qa_reply_opinion" value="note" checked /><span>Note</span></label>
                                     <label><input type="radio" ng-model="qa_reply_opinion" value="agree"/><span>Agree</span></label>
@@ -1308,7 +1413,7 @@
                                 </div>
 
                                 <a class="waves-effect waves-light btn-small" href=""
-                                    ng-click="qa_reply_save_button_pressed(post.id, qa_current_reply, qa_reply_opinion)">Save</a>
+                                    ng-click="qa_reply_save_button_pressed(post.id, qa_current_reply_1, qa_reply_opinion)">Save</a>
                                 <a class="waves-effect waves-light btn-small" href=""
                                     ng-click="qa_reply_cancel_button_pressed(post.id)">Cancel</a>
                             </div>
@@ -1328,14 +1433,29 @@
                                     <a class="waves-effect btn-flat qaReplyBtn" href=""
                                         ng-click="qa_reply_button_clicked(post2.id)"><u>Reply</u></a>
                                     <div class="input-field" ng-show="post2.replying">
-                                        <textarea class="validate" ng-model="qa_current_reply"></textarea>
+                                        <!-- ------------------------------------------------------------------------------------ -->
+                                        <div class="row qaTabs left-align col s12 grid-s12-m12-l12">
+                                            <div class="grid-s12-m12-l12">
+                                                <ul class="tabs">
+                                                    <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
+                                                    <li class="tab col s3 grid-s3-m3-l3"><a ng-click="angular_previewTabClicked($event, 'qa_current_reply_2', qa_current_reply_2)">Preview</a></li>
+                                                </ul>
+                                            </div>
+                                            <div class="active writeTabContent grid-s12-m12-l12">
+                                                <textarea class="validate" ng-model="qa_current_reply_2"></textarea>
+                                            </div>
+                                            <div class="previewTabContent grid-s12-m12-l12 input-field">
+                                                <span ng-bind-html="qa_current_reply_2_preview"></span>
+                                            </div>
+                                        </div>
+                                        <!-- ------------------------------------------------------------------------------------ -->
                                         <div>
                                             <label><input type="radio" ng-model="qa_reply_opinion" value="note" checked /><span>Note</span></label>
                                             <label><input type="radio" ng-model="qa_reply_opinion" value="agree"/><span>Agree</span></label>
                                             <label><input type="radio" ng-model="qa_reply_opinion" value="disagree"/><span>Disagree</span></label>
                                         </div>
                                         <a class="waves-effect waves-light btn-small" href=""
-                                            ng-click="qa_reply_save_button_pressed(post2.id, qa_current_reply, qa_reply_opinion)">Save</a>
+                                            ng-click="qa_reply_save_button_pressed(post2.id, qa_current_reply_2, qa_reply_opinion)">Save</a>
                                         <a class="waves-effect waves-light btn-small" href=""
                                             ng-click="qa_reply_cancel_button_pressed(post2.id)">Cancel</a>
                                     </div>
@@ -1356,14 +1476,29 @@
                                             <a class="waves-effect btn-flat qaReplyBtn" href=""
                                                 ng-click="qa_reply_button_clicked(post3.id)"><u>Reply</u></a>
                                             <div class="input-field" ng-show="post3.replying">
-                                                <textarea class="validate" ng-model="qa_current_reply"></textarea>
+                                                <!-- ------------------------------------------------------------------------------------ -->
+                                                <div class="row qaTabs left-align col s12 grid-s12-m12-l12">
+                                                    <div class="grid-s12-m12-l12">
+                                                        <ul class="tabs">
+                                                            <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
+                                                            <li class="tab col s3 grid-s3-m3-l3"><a ng-click="angular_previewTabClicked($event, 'qa_current_reply_3', qa_current_reply_3)">Preview</a></li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="active writeTabContent grid-s12-m12-l12">
+                                                        <textarea class="validate" ng-model="qa_current_reply_3"></textarea>
+                                                    </div>
+                                                    <div class="previewTabContent grid-s12-m12-l12 input-field">
+                                                        <span ng-bind-html="qa_current_reply_3_preview"></span>
+                                                    </div>
+                                                </div>
+                                                <!-- ------------------------------------------------------------------------------------ -->
                                                 <div>
                                                     <label><input type="radio" ng-model="qa_reply_opinion" value="note" checked /><span>Note</span></label>
                                                     <label><input type="radio" ng-model="qa_reply_opinion" value="agree"/><span>Agree</span></label>
                                                     <label><input type="radio" ng-model="qa_reply_opinion" value="disagree"/><span>Disagree</span></label>
                                                 </div>
                                                 <a class="waves-effect waves-light btn-small" href=""
-                                                    ng-click="qa_reply_save_button_pressed(post3.id, qa_current_reply, qa_reply_opinion)">Save</a>
+                                                    ng-click="qa_reply_save_button_pressed(post3.id, qa_current_reply_3, qa_reply_opinion)">Save</a>
                                                 <a class="waves-effect waves-light btn-small" href=""
                                                     ng-click="qa_reply_cancel_button_pressed(post3.id)">Cancel</a>
                                             </div>
@@ -1384,15 +1519,29 @@
                                                     <a class="waves-effect btn-flat qaReplyBtn" href=""
                                                         ng-click="qa_reply_button_clicked(post4.id)"><u>Reply</u></a>
                                                     <div class="input-field" ng-show="post4.replying">
-                                                        <textarea class="validate"
-                                                            ng-model="qa_current_reply"></textarea>
+                                                        <!-- ------------------------------------------------------------------------------------ -->
+                                                        <div class="row qaTabs left-align col s12 grid-s12-m12-l12">
+                                                            <div class="grid-s12-m12-l12">
+                                                                <ul class="tabs">
+                                                                    <li class="tab col s3 grid-s3-m3-l3"><a class="active" onclick="writeTabClicked(event)">Write</a></li>
+                                                                    <li class="tab col s3 grid-s3-m3-l3"><a ng-click="angular_previewTabClicked($event, 'qa_current_reply_4', qa_current_reply_4)">Preview</a></li>
+                                                                </ul>
+                                                            </div>
+                                                            <div class="active writeTabContent grid-s12-m12-l12">
+                                                                <textarea class="validate" ng-model="qa_current_reply_4"></textarea>
+                                                            </div>
+                                                            <div class="previewTabContent grid-s12-m12-l12 input-field">
+                                                                <span ng-bind-html="qa_current_reply_4_preview"></span>
+                                                            </div>
+                                                        </div>
+                                                        <!-- ------------------------------------------------------------------------------------ -->
                                                         <div>
                                                             <label><input type="radio" ng-model="qa_reply_opinion" value="note" checked /><span>Note</span></label>
                                                             <label><input type="radio" ng-model="qa_reply_opinion" value="agree"/><span>Agree</span></label>
                                                             <label><input type="radio" ng-model="qa_reply_opinion" value="disagree"/><span>Disagree</span></label>
                                                         </div>
                                                         <a class="waves-effect waves-light btn-small" href=""
-                                                            ng-click="qa_reply_save_button_pressed(post4.id, qa_current_reply, qa_reply_opinion)">Save</a>
+                                                            ng-click="qa_reply_save_button_pressed(post4.id, qa_current_reply_4, qa_reply_opinion)">Save</a>
                                                         <a class="waves-effect waves-light btn-small" href=""
                                                             ng-click="qa_reply_cancel_button_pressed(post4.id)">Cancel</a>
                                                     </div>
