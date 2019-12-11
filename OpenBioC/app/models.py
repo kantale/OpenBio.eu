@@ -385,11 +385,17 @@ class Comment(models.Model):
     OPINION_AGREE = 'agree'
     OPINION_DISAGREE_CODE = 3
     OPINION_DISAGREE = 'disagree'
+    OPINION_SOLUTION_CODE = 4
+    OPINION_SOLUTION = 'solution'
+    OPINION_ISSUE_CODE = 5
+    OPINION_ISSUE = 'issue'
 
     OPINION_CHOICES = (
         (OPINION_NOTE_CODE, OPINION_NOTE),
         (OPINION_AGREE_CODE, OPINION_AGREE),
         (OPINION_DISAGREE_CODE, OPINION_DISAGREE),
+        (OPINION_SOLUTION_CODE, OPINION_SOLUTION),
+        (OPINION_ISSUE_CODE, OPINION_ISSUE),
     )
 
     obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
