@@ -16,9 +16,18 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+try:
+    from .obc_private import INSTALLED_APPS_URLS
+except ImportError:
+    INSTALLED_APPS_URLS = []
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('static.urls')),
+    # path('', include('static.urls')),
     path('platform/', include('app.urls')),
 ]
+
+for app_url, app_url_file in INSTALLED_APPS_URLS:
+   urlpatterns.append(path(app_url, include(app_url_file)))
 
