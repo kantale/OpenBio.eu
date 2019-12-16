@@ -17,4 +17,8 @@ A workflow should contain one (and only one) "main" step. When the Workflow gets
 * Round Rectangle with green border: An input node
 * Round Rectangle with red border: An output node
 
+## API
+```bash
+curl -H 'Accept: application/json; indent=4'  http://0.0.0.0:8200/platform/rest/tools/
+```
 

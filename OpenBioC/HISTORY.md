@@ -2,6 +2,8 @@
 # Version changes and updates
 
 ### 0.1.5 (Not yet released)
+* Bugs Fixed
+   * [Provide the ability to not require static site #136](https://github.com/kantale/OpenBioC/issues/136)
 * Features:
    * [Add execution environment option in profile #142](https://github.com/kantale/OpenBioC/issues/142)
    * [Upvote / Downvote Tools and Workflows #128](https://github.com/kantale/OpenBioC/issues/128)
