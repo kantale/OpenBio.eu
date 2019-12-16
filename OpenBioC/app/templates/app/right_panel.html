@@ -14,6 +14,7 @@
         </div>
         <div style="margin: 20px;">
             <div class="left-align">
+                <span class="red lighten-2 draft tooltipped" data-position="left" data-tooltip="Draft">DRAFT</span>
                 <div style="overflow: auto;">
                     <div class="box upDownVoteBoxTitle" ng-show="!tools_info_editable">
                         <div class="upvoteDiv upDownvoteDivTitle" ng-class="{'active': tool_voted['up']}"><i class="material-icons" style="font-size: 1.64rem;" ng-click="updownvote_tool_workflow('tool', true)">arrow_upward</i></div>
@@ -39,6 +40,9 @@
                 </div>
                 <!-- Buttons -->
                 <div class="row right-align">
+                    <a class="btn tooltipped" data-position="bottom" data-tooltip="Edit" style="margin-bottom:2px">Edit</a>
+                    <a class="btn tooltipped" data-position="bottom" data-tooltip="Finalize" style="margin-bottom:2px">Finalize</a>
+                    <a class="btn tooltipped" data-position="bottom" data-tooltip="Delete" style="margin-bottom:2px">Delete</a>
                     <a class="dropdown-trigger btn" data-target='runDropdownTool' style="margin-bottom:2px">Run</a>
                     <a class="dropdown-trigger btn" data-target='downloadDropdownTool' style="margin-bottom:2px">Download</a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
@@ -415,7 +419,8 @@
         </div>
         <div style="margin: 20px;">
             <div class="left-align">
-                <div style="overflow: auto;">
+                <span class="red lighten-2 draft tooltipped" data-position="left" data-tooltip="Draft">DRAFT</span>
+                <div style="overflow: auto; height: 2.5rem;">
                     <div class="box upDownVoteBoxTitle" ng-show="!workflows_info_editable">
                         <div class="upvoteDiv upDownvoteDivTitle" ng-class="{'active': workflow_voted['up']}"><i class="material-icons" style="font-size: 1.64rem;" ng-click="updownvote_tool_workflow('workflow', true)">arrow_upward</i></div>
                             <h5 style="margin: 0px;"><span ng-bind="workflow_score"></span></h5>
@@ -443,6 +448,9 @@
                     <!-- <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Run" ng-click="workflow_info_run_pressed()"
                         ng-disabled="workflows_info_editable">Run</a> -->
+                    <a class="btn tooltipped" data-position="bottom" data-tooltip="Edit" style="margin-bottom:2px">Edit</a>
+                    <a class="btn tooltipped" data-position="bottom" data-tooltip="Finalize" style="margin-bottom:2px">Finalize</a>
+                    <a class="btn tooltipped" data-position="bottom" data-tooltip="Delete" style="margin-bottom:2px">Delete</a>
                     <a class="dropdown-trigger btn" data-target='runDropdownWorkflow' style="margin-bottom:2px">Run</a>
                     <a class="dropdown-trigger btn" data-target='downloadDropdownWorkflow' style="margin-bottom:2px">Download</a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
