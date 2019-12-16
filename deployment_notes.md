@@ -62,6 +62,8 @@ logout
 pip install Django==2.1.5 simplejson pybtex mistune requests ansi2html  
 pip install psycopg2 # If we want to run on postgresql
 pip install bashlex # https://github.com/idank/bashlex , python bash parser 
+pip install mistune # Markdown parser 
+pip install djangorestframework
 ```
 
 ### Clone and configure openbio.eu
