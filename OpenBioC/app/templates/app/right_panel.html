@@ -14,7 +14,8 @@
         </div>
         <div style="margin: 20px;">
             <div class="left-align">
-                <span class="red lighten-2 draft tooltipped" data-position="left" data-tooltip="Draft">DRAFT</span>
+                <span class="red lighten-2 draft tooltipped" data-position="left" data-tooltip="This tool is not finalized. It might change in the future!"
+                    ng-show="tools_info_draft">DRAFT</span>
                 <div style="overflow: auto;">
                     <div class="box upDownVoteBoxTitle" ng-show="!tools_info_editable">
                         <div class="upvoteDiv upDownvoteDivTitle" ng-class="{'active': tool_voted['up']}"><i class="material-icons" style="font-size: 1.64rem;" ng-click="updownvote_tool_workflow('tool', true)">arrow_upward</i></div>
@@ -26,7 +27,7 @@
                             <span ng-bind="tools_info_name"></span>/<span ng-bind="tools_info_version"></span><span
                                 ng-show="!tools_info_editable">/<span ng-bind="tools_info_edit"></span></span>
                         </h5>
-                        <small class="form-text text-muted" ng-show="!tools_info_editable">
+                        <small class="form-text text-muted" ng-show="(!tools_info_editable) || tools_info_draft">
                             created by <a ng-click="interlink({type: 'u', username: tool_info_username})">u/<span ng-bind="tool_info_username"></span></a>, created at <span
                                 ng-bind="tool_info_created_at"></span>
                             {% verbatim %}
@@ -40,9 +41,15 @@
                 </div>
                 <!-- Buttons -->
                 <div class="row right-align">
-                    <a class="btn tooltipped" data-position="bottom" data-tooltip="Edit" style="margin-bottom:2px">Edit</a>
-                    <a class="btn tooltipped" data-position="bottom" data-tooltip="Finalize" style="margin-bottom:2px">Finalize</a>
-                    <a class="btn tooltipped" data-position="bottom" data-tooltip="Delete" style="margin-bottom:2px">Delete</a>
+                    <a class="btn tooltipped" data-position="bottom" data-tooltip="Edit" style="margin-bottom:2px" 
+                        ng-show="tools_info_draft && tool_info_username==username && !tools_info_editable"
+                        ng-click="tool_edit_pressed()">Edit</a>
+                    <a class="btn tooltipped" data-position="bottom" data-tooltip="Finalize" style="margin-bottom:2px"
+                        ng-show="tools_info_draft && tool_info_username==username && !tools_info_editable"
+                        ng-click="tool_finalize_delete_pressed('FINALIZE')">Finalize</a>
+                    <a class="btn tooltipped" data-position="bottom" data-tooltip="Delete" style="margin-bottom:2px"
+                        ng-show="tools_info_draft && tool_info_username==username && !tools_info_editable"
+                        ng-click="tool_finalize_delete_pressed('DELETE')">Delete</a>
                     <a class="dropdown-trigger btn" data-target='runDropdownTool' style="margin-bottom:2px">Run</a>
                     <a class="dropdown-trigger btn" data-target='downloadDropdownTool' style="margin-bottom:2px">Download</a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
@@ -87,13 +94,13 @@
                                     <input id="generalName" type="text" class="validate tooltipped" 
                                         data-tooltip="Name of the tool or dataset. Available characters: a-z, A-Z, 0-9, _"
                                         ng-model="tools_info_name"
-                                        ng-disabled="tools_info_forked_from">
+                                        ng-disabled="tools_info_forked_from || tools_info_edit_state">
                                     <label for="generalName">Name</label>
                                 </div>
                                 <div class="input-field col s12 m4 grid-s12-m4-l4">
                                     <input id="generalVersion" type="text" class="validate tooltipped"
                                         data-tooltip="Version of the tool or dataset. Available characters: a-z, A-Z, 0-0, _, ."
-                                        ng-model="tools_info_version" ng-disabled="tools_info_forked_from">
+                                        ng-model="tools_info_version" ng-disabled="tools_info_forked_from || tools_info_edit_state">
                                     <label for="generalVersion">Version</label>
                                 </div>
                                 <div class="input-field col s12 grid-s12-m12-l12">
