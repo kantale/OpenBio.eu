@@ -2,11 +2,11 @@
 <div id="deleteModal" class="modal">
     <div class="modal-content">
         <h4 class="red-text text-lighten-2">Warning</h4>
-        <p>This tool will be permanently deleted. Are you sure?</p>
+        <p><span ng-bind="warning_modal_message"></span></p>
     </div>
     <div class="modal-footer">
         <a href="#!" class="modal-close waves-effect waves-red btn-flat">No</a>
         <a href="#!" class="modal-close waves-effect waves-green btn-flat"
-        ng-click="tool_finalize_delete_pressed('DELETE', true)">Yes</a>
+        ng-click="tool_finalize_delete_pressed(warning_modal_action, true)">Yes</a>
     </div>
 </div>

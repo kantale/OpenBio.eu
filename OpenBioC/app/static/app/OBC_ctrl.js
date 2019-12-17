@@ -1479,6 +1479,14 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     $scope.tool_finalize_delete_pressed = function(action, confirm) {
 
         if (action == 'DELETE' && !confirm) {
+            $scope.warning_modal_message = 'This tool will be permanently deleted. Are you sure?';
+            $scope.warning_modal_action = 'DELETE';
+            $('#deleteModal').modal('open');
+            return;
+        }
+        else if (action == 'FINALIZE' && !confirm) {
+            $scope.warning_modal_message = 'You will not be able to make any more changes to this tool. Are you sure?';
+            $scope.warning_modal_action = 'FINALIZE';
             $('#deleteModal').modal('open');
             return;
         }
