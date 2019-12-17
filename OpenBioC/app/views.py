@@ -1596,6 +1596,8 @@ def tools_search_3(request, **kwargs):
         'tool_comment_created_at': datetime_to_str(tool.comment.created_at),
         'tool_comment_username': tool.comment.obc_user.user.username,
 
+        'draft': tool.draft,
+
 
     }
 
@@ -1656,7 +1658,9 @@ def tools_add(request, **kwargs):
         return fail('Please login to create new tools')
 
     if not user_is_validated(request):
-        return fail('Please validate your email to create new tools ' + validate_toast_button());
+        return fail('Please validate your email to create new tools ' + validate_toast_button())
+
+    obc_user = OBC_user.objects.get(user=request.user)
     
     tool_website = kwargs.get('tool_website', '')
     #if not tool_website:
@@ -1680,6 +1684,37 @@ def tools_add(request, **kwargs):
     if not tools_search_version:
         return fail('Invalid version')
 
+    tool_edit_state = kwargs.get('tool_edit_state', '')
+    if not type(tool_edit_state) is bool:
+        return fail('Error 8715')
+
+    if tool_edit_state:
+        # Get the edit of the tool
+        tools_search_edit = kwargs.get('tools_search_edit', '')
+        if not tools_search_edit:
+            return fail('Invalid tool edit number. Error 8712')
+        try:
+            tools_search_edit = int(tools_search_edit)
+        except ValueError as e:
+            return fail('Invalid tool edit number. Error 8713')
+        except Exception as e:
+            return fail('Invalid tool edit number. Error 8714')
+
+
+    if tool_edit_state:
+        # We are editing this tool!
+        # Delete the existing!
+        try:
+            tool = Tool.objects.get(name=tools_search_name, version=tools_search_version, edit=tools_search_edit)
+        except ObjectDoesNotExist as e:
+            return fail('Error 8716')
+
+        # Check that the user who created this tool is the one who deletes it!
+        if tool.obc_user != obc_user:
+            return fail('Error 8717') # This is strange.. The user who edits this tool is not the one who created it???
+        
+        tool.delete()
+ 
     #os_type Update 
     tool_os_choices = kwargs.get('tool_os_choices',[])
     if not tool_os_choices:
@@ -1688,13 +1723,18 @@ def tools_add(request, **kwargs):
     #print ('Operating Systems:')
     #print (tool_os_choices)
 
-    #Get the maximum version
-    tool_all = Tool.objects.filter(name__iexact=tools_search_name, version__iexact=tools_search_version) # https://docs.djangoproject.com/en/dev/ref/models/querysets/#std:fieldlookup-iexact
-    if not tool_all.exists():
-        next_edit = 1
+    # If we are editing this tool, set the same edit number
+    # Otherwise get the maximum edit    
+    if tool_edit_state:
+        next_edit = tools_search_edit
     else:
-        max_edit = tool_all.aggregate(Max('edit'))
-        next_edit = max_edit['edit__max'] + 1
+        #Get the maximum edit
+        tool_all = Tool.objects.filter(name__iexact=tools_search_name, version__iexact=tools_search_version) # https://docs.djangoproject.com/en/dev/ref/models/querysets/#std:fieldlookup-iexact
+        if not tool_all.exists():
+            next_edit = 1
+        else:
+            max_edit = tool_all.aggregate(Max('edit'))
+            next_edit = max_edit['edit__max'] + 1
 
     # Get forked from and edit summary
     tool_forked_from_info = kwargs.get('tool_forked_from', None)
@@ -1728,8 +1768,6 @@ def tools_add(request, **kwargs):
         if variable_name_counter>1:
             return fail('Two variables cannot have the same name!')
 
-    obc_user = OBC_user.objects.get(user=request.user)
-
     #Create new tool
     new_tool = Tool(
         obc_user= obc_user, 
@@ -1745,6 +1783,7 @@ def tools_add(request, **kwargs):
         validation_commands=tool_validation_commands,
         upvotes = 0,
         downvotes = 0,
+        draft = True, # By defaut all new tools are draft 
         
         last_validation=None,
     )
@@ -1803,6 +1842,62 @@ def tools_add(request, **kwargs):
     }
 
     return success(ret)
+
+@has_data
+def tools_finalize_delete(request, **kwargs):
+    '''
+    Called from tools_finalize_delete/
+    if action is FINALIZE:
+        finalize a tool (from draft to no draft!)
+    if action is DELETE
+        DELETE a tool
+    '''
+
+    tools_search_name = kwargs.get('tools_search_name', '')
+    if not tools_search_name:
+        return fail('Error 5467')
+
+    tools_search_version = kwargs.get('tools_search_version', '')
+    if not tools_search_version:
+        return fail('Error 5468')
+
+    tools_search_edit = kwargs.get('tools_search_edit', '')
+    if not tools_search_edit:
+        return fail('Error 5469')
+
+    action = kwargs.get('action', '')
+    if not action in ['FINALIZE', 'DELETE']:
+        return fail('Error 5475')
+
+    try:
+        tools_search_edit = int(tools_search_edit)
+    except ValueError as e:
+        return fail('Error 5470')
+
+    try:
+        tool = Tool.objects.get(name=tools_search_name, version=tools_search_version, edit=tools_search_edit)
+    except ObjectDoesNotExist as e:
+        return fail('Error 5471')
+
+    try:
+        obc_user = OBC_user.objects.get(user=request.user)
+    except ObjectDoesNotExist as e:
+        return fail('Error 5472')
+
+    if not tool.obc_user == obc_user:
+        return fail('Error 5473')
+
+    if not tool.draft:
+        return fail('Error 5474')
+
+    if action == 'FINALIZE':
+        tool.draft = False
+        tool.save()
+    elif action == 'DELETE':
+        tool.delete()
+
+    return success()
+
 
 def create_workflow_edge_id(source_id, target_id):
     '''

@@ -188,6 +188,7 @@ class Tool(models.Model):
 
     upvotes = models.IntegerField() # Number of upvotes
     downvotes = models.IntegerField() # Number of downvotes
+    draft = models.BooleanField() # Is this a draft Tool?
 
     comment = models.ForeignKey(to='Comment', null=True, on_delete=models.CASCADE, related_name='tool_comment') # The comments of the tool
     

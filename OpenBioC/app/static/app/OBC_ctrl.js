@@ -82,6 +82,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.tools_info_editable = false; // Can we edit tools_info ?
 
         $scope.tools_info_forked_from = null; //From which tool is this tool forked from?
+        $scope.tools_info_edit_state = false; //Are we editing this tool?
         $scope.tool_changes = ''; // Changes from forked
         // TODO : fix the values (the debian versions is not correct for Dockerfile)
         $scope.os_choices = window.OBC_OS_CHOICES;
@@ -941,6 +942,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.tools_info_edit = item.edit;
                 $scope.tools_info_success_message = '';
                 $scope.tools_info_error_message = '';
+                $scope.tools_info_draft = data['draft'];
 
                 //Set chip data
                 window.OBCUI.set_chip_data('toolChips', data['tool_keywords']);
@@ -1131,6 +1133,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         //$scope.show_workflows_info = false; // TODO. THIS SHOULDN'T BE HERE
 
         $scope.set_tools_info_editable(true);
+        $scope.tools_info_draft = true;
 
         if (!is_new) {
             //This is not a new tool. So.. left values unchanged.
@@ -1404,6 +1407,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             {   'username':$scope.username,
                 'tools_search_name': $scope.tools_info_name,
                 'tools_search_version': $scope.tools_info_version,
+                'tools_search_edit': $scope.tools_info_edit, // We need this in case this is a draft and we need to edit it
                 'tool_website': $scope.tool_website,
                 'tool_description': $scope.tool_description,
                 'tool_keywords': window.OBCUI.get_chip_data('toolChips'),
@@ -1413,7 +1417,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 'tool_dependencies': tool_dependencies,
                 'tool_variables': $scope.tool_variables,
                 'tool_installation_commands': tool_installation_editor.getValue(),
-                'tool_validation_commands': tool_validation_editor.getValue()
+                'tool_validation_commands': tool_validation_editor.getValue(),
+                'tool_edit_state' : $scope.tools_info_edit_state // Are we editing this tool ?
             },
             function(data) {
                 $scope.tools_info_success_message = 'Tool/Data successfully saved';
@@ -1452,6 +1457,55 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.tools_info_error_message = statusText;
                 $scope.toast($scope.tools_info_error_message, 'error');
             }
+        );
+    };
+
+    /*
+    * Tool in draft mode --> EDIT button --> pressed 
+    * tool edit tool
+    */
+    $scope.tool_edit_pressed = function() {
+        $scope.tools_info_editable = true;
+        $scope.tools_info_edit_state = true;
+    };
+
+    /*
+    * Tool in draft mode --> FINALIZE button --> pressed 
+    * tool finalize tool 
+    * actions: 
+    * FINALIZE --> finalize tool
+    * DELETE --> Delete toool
+    */
+    $scope.tool_finalize_delete_pressed = function(action) {
+        $scope.ajax(
+            'tools_finalize_delete/',
+            {
+                'tools_search_name': $scope.tools_info_name,
+                'tools_search_version': $scope.tools_info_version,
+                'tools_search_edit': $scope.tools_info_edit, // We need this in case this is a draft and we need to edit it
+                'action': action
+            },
+            function (data) {
+                if (action == 'FINALIZE') {
+                    $scope.tools_info_draft = false;
+                    $scope.tools_info_edit_state = false;
+                    $scope.tools_info_editable = false;
+                    $scope.toast('Tool is finalized!', 'success');
+                }
+                else if (action == 'DELETE') {
+                    $scope.toast('Tool is deleted!', 'success');
+                    $scope.tools_button_cancel_clicked(); // Empty all right space
+                    $scope.all_search_2(); // Update search results
+
+                }
+            },
+            function (data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function (statusText) {
+                $scope.toast(statusText, 'error');
+            }
+
         );
     };
 
