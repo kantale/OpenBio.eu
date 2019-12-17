@@ -1476,7 +1476,13 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * FINALIZE --> finalize tool
     * DELETE --> Delete toool
     */
-    $scope.tool_finalize_delete_pressed = function(action) {
+    $scope.tool_finalize_delete_pressed = function(action, confirm) {
+
+        if (action == 'DELETE' && !confirm) {
+            $('#deleteModal').modal('open');
+            return;
+        }
+
         $scope.ajax(
             'tools_finalize_delete/',
             {
@@ -1508,6 +1514,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         );
     };
+
 
     /*
     * Navbar --> tools/data --> Appropriate Input --> List Item --> clicked
