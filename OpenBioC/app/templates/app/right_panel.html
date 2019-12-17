@@ -419,8 +419,7 @@
         </div>
         <div style="margin: 20px;">
             <div class="left-align">
-                <span class="red lighten-2 draft tooltipped" data-position="left" data-tooltip="Draft">DRAFT</span>
-                <div style="overflow: auto; height: 2.5rem;">
+                <div style="overflow: auto; margin-bottom: 5px;">
                     <div class="box upDownVoteBoxTitle" ng-show="!workflows_info_editable">
                         <div class="upvoteDiv upDownvoteDivTitle" ng-class="{'active': workflow_voted['up']}"><i class="material-icons" style="font-size: 1.64rem;" ng-click="updownvote_tool_workflow('workflow', true)">arrow_upward</i></div>
                             <h5 style="margin: 0px;"><span ng-bind="workflow_score"></span></h5>
@@ -442,6 +441,7 @@
                                 ng-bind="workflow_info_forked_from | workflow_label"></span></a></span>
                         </small>
                     </div>
+                    <span class="red lighten-2 draft tooltipped" data-position="left" data-tooltip="Draft">DRAFT</span>
                 </div>
                 <!-- Buttons -->
                 <div class="row right-align">
