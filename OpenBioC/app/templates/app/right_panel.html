@@ -46,10 +46,10 @@
                         ng-click="tool_edit_pressed()">Edit</a>
                     <a class="btn tooltipped" data-position="bottom" data-tooltip="Finalize" style="margin-bottom:2px"
                         ng-show="tools_info_draft && tool_info_username==username && !tools_info_editable"
-                        ng-click="tool_finalize_delete_pressed('FINALIZE')">Finalize</a>
+                        ng-click="tool_finalize_delete_pressed('FINALIZE', false)">Finalize</a>
                     <a class="btn tooltipped" data-position="bottom" data-tooltip="Delete" style="margin-bottom:2px"
                         ng-show="tools_info_draft && tool_info_username==username && !tools_info_editable"
-                        ng-click="tool_finalize_delete_pressed('DELETE')">Delete</a>
+                        ng-click="tool_finalize_delete_pressed('DELETE', false)">Delete</a>
                     <a class="dropdown-trigger btn" data-target='runDropdownTool' style="margin-bottom:2px">Run</a>
                     <a class="dropdown-trigger btn" data-target='downloadDropdownTool' style="margin-bottom:2px">Download</a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
