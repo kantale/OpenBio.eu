@@ -1892,6 +1892,16 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                         }
                     }
 
+                    //Check if any of the dependencies that we imported contains... the tool itself!
+                    for (var i=0; i<data['dependencies_jstree'].length; i++) {
+                        var this_tool = data['dependencies_jstree'][i];
+                        if (this_tool.name == $scope.tools_info_name && this_tool.version == $scope.tools_info_version && this_tool.edit == $scope.tools_info_edit) {
+                            $scope.toast('You cannot add a tool as a dependency to.. itself!', 'error');
+                            return;
+                        }
+                    }
+
+
                     //We suppose there is no error
                     $scope.tools_info_error_message = '';
 
