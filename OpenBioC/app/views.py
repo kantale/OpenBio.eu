@@ -1897,9 +1897,14 @@ def tools_finalize_delete(request, **kwargs):
         return fail('Error 5474')
 
     if action == 'FINALIZE':
+        # Does it depend on any tool that is draft?
         tool.draft = False
         tool.save()
     elif action == 'DELETE':
+        # Is there any other tool that depends from this tool?
+        dependendants = Tool.objects.filter(dependencies__in=[tool])
+        if dependendants.count():
+            return fail('This tool cannot be deleted. There are {} tool(s) that depend on this tool. For example: {}'.format(dependendants.count(), dependendants.first()))
         tool.delete()
 
     return success()
