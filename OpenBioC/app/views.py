@@ -1898,6 +1898,9 @@ def tools_finalize_delete(request, **kwargs):
 
     if action == 'FINALIZE':
         # Does it depend on any tool that is draft?
+        draft_dependencies = [t for t in tool_get_dependencies_internal(tool, include_as_root=False) if t['dependency'].draft]
+        if draft_dependencies:
+            return fail('This tool cannot be finalized. It depends from {} draft tool(s). For example: {}'.format(len(draft_dependencies), str(draft_dependencies[0]['dependency'])))
         tool.draft = False
         tool.save()
     elif action == 'DELETE':
