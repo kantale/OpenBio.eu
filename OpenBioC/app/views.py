@@ -110,8 +110,10 @@ g = {
 #        'pybtex_parser': pybtex.database.input.bibtex.Parser()
 #    }
     # materialize js tree icons
+    # https://materializecss.com/icons.html 
     'jstree_icons': {
         'tools': 'settings',
+        'variables': 'chevron_right', # Tool variables
         'workflows': 'device_hub',
         'reports': 'description',
         'references': 'link',
@@ -572,6 +574,12 @@ def tool_text_jstree(tool):
     '''
     return '/'.join(map(str, [tool.name, tool.version, tool.edit]))
 
+def tool_node_jstree(tool):
+    '''
+    The HTML that is node in a jstree that contains a tool
+    '''
+    return tool_text_jstree(tool) + (' <span class="red lighten-3">DRAFT</span>' if tool.draft else '') + jstree_icon_html('tools'),    
+
 
 def workflow_text_jstree(workflow):
     '''
@@ -665,11 +673,11 @@ def report_id_jstree(report, id_):
 
     return simplejson.dumps([report.workflow.name, str(report.workflow.edit), str(report.nice_id), str(id_)])
 
-def tool_variable_text_jstree(variable):
+def tool_variable_node_jstree(variable):
     '''
-    The JSTree variable text
+    The JSTree variable html 
     '''
-    return '{}:{}'.format(variable.name, variable.description)
+    return '{}:{}'.format(variable.name, variable.description) + jstree_icon_html('variables')   
 
 def tool_variable_id_jstree(variable, tool, id_):
     '''
@@ -722,7 +730,7 @@ def tool_build_dependencies_jstree(tool_dependencies, add_variables=False):
 #                    'edit': tool_dependency['dependency'].edit,
                     'type': 'tool',
              },
-            'text': tool_text_jstree(tool_dependency['dependency']),
+            'text': tool_node_jstree(tool_dependency['dependency']), # tool_text_jstree(tool_dependency['dependency']), # This is what is shown on the tree
             'id': tool_id_jstree(tool_dependency['dependency'], g['DEPENDENCY_TOOL_TREE_ID']),
             'parent': tool_id_jstree(tool_dependency['dependant'], g['DEPENDENCY_TOOL_TREE_ID']) if tool_dependency['dependant'] else '#',
             'type': 'tool', ### This is redundant with ['data']['type'], but we need it because 
@@ -732,8 +740,6 @@ def tool_build_dependencies_jstree(tool_dependencies, add_variables=False):
             'name': tool_dependency['dependency'].name,
             'version': tool_dependency['dependency'].version,
             'edit': tool_dependency['dependency'].edit,
-
-
 
         })
 
@@ -747,7 +753,7 @@ def tool_build_dependencies_jstree(tool_dependencies, add_variables=False):
                         'value': variable.value,
                         'description': variable.description,
                     },
-                    'text': tool_variable_text_jstree(variable),
+                    'text': tool_variable_node_jstree(variable),
                     'id': tool_variable_id_jstree(variable, tool_dependency['dependency'], g['VARIABLES_TOOL_TREE_ID']),
                     'parent': tool_id_jstree(tool_dependency['dependency'], g['DEPENDENCY_TOOL_TREE_ID']),
                     'type': 'variable', # TODO: FIX REDUNDANCY WITH ['data']['type']
@@ -1453,7 +1459,7 @@ def tools_search_2(tools_search_name, tools_search_version, tools_search_edit):
     for x in results:
         to_add = {
             'data': {'name': x.name, 'version': x.version, 'edit': x.edit},
-            'text': tool_text_jstree(x) + jstree_icon_html('tools'),
+            'text': tool_node_jstree(x), #  tool_text_jstree(x) + (' <span class="red lighten-3">DRAFT</span>' if x.draft else '') + jstree_icon_html('tools'),
             'id': tool_id_jstree(x, g['SEARCH_TOOL_TREE_ID']),
             'parent': tool_id_jstree(x.forked_from, g['SEARCH_TOOL_TREE_ID']) if x.forked_from else '#',
             'state': { 'opened': True},

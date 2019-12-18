@@ -1467,6 +1467,13 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     $scope.tool_edit_pressed = function() {
         $scope.tools_info_editable = true;
         $scope.tools_info_edit_state = true;
+        tool_installation_editor.setReadOnly(false);
+        tool_validation_editor.setReadOnly(false);
+
+        //If the variables fetched are empty, add a dummy variable for the UI
+        if (!$scope.tool_variables.length) {
+            $scope.tool_variables = [{name: '', value: '', description: ''}];
+        }
     };
 
     /*
@@ -1842,7 +1849,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
     /*
     * Get the dependencies of this tool
-    * This is called from OBC.js
+    * This is called from ui.js
     * what_to_do == 1: DRAG FROM SEARCH TREE TO DEPENDENCY TREE
     * what_to_do == 2: DRAG FROM SEARCH TREE TO CYTOSCAPE CYWORKFLOW DIV
     */
@@ -2549,7 +2556,11 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
                     return true;
                 },
-                worker : true
+                worker : true,
+                themes: {
+                    "icons": false
+                }
+
             },
 //            types : {
 //                default : {
@@ -2563,12 +2574,12 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 //                }
 //            },
             version : 1,
-            plugins : ['dnd', 'contextmenu', 'types'],
-            types : {
-                default : {
-                    icon : 'fa fa-cog'
-                }
-            },
+            plugins : ['dnd', 'contextmenu'],
+//            types : {
+//                default : {
+//                    icon : 'fa fa-cog'
+//                }
+//            },
             contextmenu: {
                 items: function(node) {
 
@@ -2628,18 +2639,22 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
                     return true;
                 },
-                worker : true
-            },
-            types : {
-                tool : {
-                    icon : 'fa fa-cog'
-                },
-                variable : {
-                    icon : 'fa fa-star' // other ideas: bullseye , dot-circle , star , circle  
+                worker : true,
+                themes: {
+                    "icons": false
                 }
+
             },
+//            types : {
+//                tool : {
+//                    icon : 'fa fa-cog'
+//                },
+//                variable : {
+//                    icon : 'fa fa-star' // other ideas: bullseye , dot-circle , star , circle  
+//                }
+//            },
             version : 1, // Remnant. DELETE IT
-            plugins : ['dnd', 'types'],
+            plugins : ['dnd'],
             dnd: {
                 is_draggable : function(node) {
                     if (node.length!=1) {
