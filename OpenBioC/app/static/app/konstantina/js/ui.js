@@ -889,14 +889,15 @@ window.onload = function () {
 
         if (this_id_array[3] === "1") { // We are moving an item from the tool search tree
 
-            //The tools that we are dragging.
+            var tool_data = $('#tools_search_jstree_id').jstree(true).get_node(this_id).data; // With help from: https://stackoverflow.com/a/50038715/5626738 ... 
+
+            //The tool that we are dragging.
             var tool = {
-                'name': this_id_array[0],
-                'version': this_id_array[1],
-                'edit': this_id_array[2]
+                'name': tool_data.name,
+                'version': tool_data.version,
+                'edit': tool_data.edit
             };
 
-            //console.log(tool);
 
             if (target.closest('#tools_dep_jstree_id').length) { // We are dropping it to the dependency tool js tree div
 
