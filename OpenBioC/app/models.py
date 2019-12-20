@@ -234,6 +234,18 @@ class Workflow(models.Model):
         '''
         unique_together = (('name', 'edit'),)
 
+    @staticmethod
+    def get_repr(name, edit):
+        '''
+        A string reporesentation of the workflow
+        '''
+        return f'{name}/{edit}'
+
+    def __str__(self,):
+        '''
+        A string representation of the workflow
+        '''
+        return Workflow.get_repr(self.name, self.edit)
 
     name = models.CharField(max_length=256)
     edit = models.IntegerField()

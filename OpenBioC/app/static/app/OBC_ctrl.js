@@ -1555,7 +1555,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                         $scope.toast('Workflow is finalized!', 'success');
                     }
                     else if (action == 'DELETE') {
-
+                        $scope.toast('Workflow is deleted!', 'success');
+                        $scope.workflows_button_cancel_clicked(); // Empty all right space
+                        $scope.all_search_2(); // Update search results
                     }
                 }
             },
@@ -4027,7 +4029,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
                 //the information regarding edges exists on the nodes. 
                 //We do not have to pass the complete worfklow, or edge information.
-                var nodes_to_add = []
+                var nodes_to_add = [];
                 workflow_cytoscape.elements.nodes.forEach(function(node){
                     if (node.data.type == 'step') {
                         //We store the information whether or not this step used to be the main step of the DND'd WF
@@ -4038,6 +4040,11 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                         }
                         //There can only be one main step on the workflow! See issue: #121
                         node.data.main=false;
+                    }
+                    else if (node.data.type == 'tool') {
+                        //If we are adding a workflow, buildTree function, expects the label of the node to exist in the cy_label field
+                        //cy_label is the label used in the jstree search tree
+                        node.data.cy_label = node.data.label;
                     }
 
                     //Add All Nodes 
