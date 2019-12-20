@@ -106,6 +106,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.workflow_description = '';
         $scope.workflow_changes = '';
         $scope.workflow_info_forked_from = null; // From which workflow was this workflow forked from?
+        $scope.workflows_info_edit_state = false; //Are we editing this workflow?
         $scope.workflows_info_error_message = '';
         $scope.workflows_step_name = '';
         $scope.workflows_step_main = false;
@@ -1314,7 +1315,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         $scope.workflow_info_name = '';
         $scope.workflows_info_username = $scope.username;
-        $scope.workflows_info_editable = true;
+        $scope.workflows_info_editable = true; // Workflow right panel is editable
+        $scope.workflows_info_edit_state = false; // We clicked plus to create a new workflow. This is not an editing state
+        $scope.workflows_info_draft = true;
         $scope.workflow_info_created_at = null;
         $scope.workflow_info_forked_from = null;
         $scope.workflow_website = '';
@@ -1477,47 +1480,83 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     };
 
     /*
-    * Tool in draft mode --> FINALIZE button --> pressed 
-    * tool finalize tool 
-    * actions: 
-    * FINALIZE --> finalize tool
-    * DELETE --> Delete toool
+    * Workflow in draft mode --> EDIT button --> pressed 
+    * workflow edit workflow
     */
-    $scope.tool_finalize_delete_pressed = function(action, confirm) {
+    $scope.workflow_edit_pressed = function() {
+        $scope.workflows_info_edit_state = true;
+        $scope.workflows_info_fork_pressed('EDIT');
+    };
 
+    /*
+    * Tool/Workflow in draft mode --> FINALIZE button --> pressed 
+    * tool finalize tool
+    * workflow finalize workflow  
+    * actions: 
+    *   FINALIZE --> finalize tool
+    *   DELETE --> Delete toool
+    * confirm: If False: Raise confirm Modal. If True: Do it!
+    * ro : 'tool' / 'workflow'
+    */
+    $scope.ro_finalize_delete_pressed = function(ro, action, confirm) {
+
+        $scope.warning_modal_ro = ro;
         if (action == 'DELETE' && !confirm) {
-            $scope.warning_modal_message = 'This tool will be permanently deleted. Are you sure?';
+            $scope.warning_modal_message = 'This ' + ro +' will be permanently deleted. Are you sure?';
             $scope.warning_modal_action = 'DELETE';
             $('#deleteModal').modal('open');
             return;
         }
         else if (action == 'FINALIZE' && !confirm) {
-            $scope.warning_modal_message = 'You will not be able to make any more changes to this tool. Are you sure?';
+            $scope.warning_modal_message = 'You will not be able to make any more changes to this ' + ro + '. Are you sure?';
             $scope.warning_modal_action = 'FINALIZE';
             $('#deleteModal').modal('open');
             return;
         }
 
-        $scope.ajax(
-            'tools_finalize_delete/',
-            {
-                'tools_search_name': $scope.tools_info_name,
-                'tools_search_version': $scope.tools_info_version,
-                'tools_search_edit': $scope.tools_info_edit, // We need this in case this is a draft and we need to edit it
-                'action': action
-            },
-            function (data) {
-                if (action == 'FINALIZE') {
-                    $scope.tools_info_draft = false;
-                    $scope.tools_info_edit_state = false;
-                    $scope.tools_info_editable = false;
-                    $scope.toast('Tool is finalized!', 'success');
-                }
-                else if (action == 'DELETE') {
-                    $scope.toast('Tool is deleted!', 'success');
-                    $scope.tools_button_cancel_clicked(); // Empty all right space
-                    $scope.all_search_2(); // Update search results
+        //Form the object that we will send to backend
+        var to_send = {};
+        if (ro == 'tool') {
+            to_send.tools_info_name = $scope.tools_info_name;
+            to_send.tools_info_version = $scope.tools_info_version;
+            to_send.tools_info_edit = $scope.tools_info_edit; // We need this in case this is a draft and we need to edit it
+        }
+        else if (ro == 'workflow') {
+            to_send.workflow_info_name = $scope.workflow_info_name;
+            to_send.workflow_info_edit = $scope.workflow_info_edit; // We need it in case this is a a draft and we need to edit it
+        }
+        to_send.action = action;
+        to_send.ro = ro;
 
+
+        $scope.ajax(
+            'ro_finalize_delete/',
+            to_send,
+            function (data) {
+                if (ro == 'tool') {
+                    if (action == 'FINALIZE') {
+                        $scope.tools_info_draft = false;
+                        $scope.tools_info_edit_state = false;
+                        $scope.tools_info_editable = false;
+                        $scope.toast('Tool is finalized!', 'success');
+                    }
+                    else if (action == 'DELETE') {
+                        $scope.toast('Tool is deleted!', 'success');
+                        $scope.tools_button_cancel_clicked(); // Empty all right space
+                        $scope.all_search_2(); // Update search results
+
+                    }
+                }
+                else if (ro == 'workflow') {
+                    if (action == 'FINALIZE') {
+                        $scope.workflows_info_draft = false;
+                        $scope.workflows_info_edit_state = false;
+                        $scope.workflows_info_editable = false;
+                        $scope.toast('Workflow is finalized!', 'success');
+                    }
+                    else if (action == 'DELETE') {
+
+                    }
                 }
             },
             function (data) {
@@ -3011,6 +3050,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.workflow_changes = data['changes'];
                 $scope.workflow_score = data['workflow_score']; // For upvotes / downvotes
                 $scope.workflow_voted = data['workflow_voted']; //Check if this workflow is voted from the user 
+                $scope.workflows_info_draft = data['draft'];
 
                 // Load the graph. TODO: WHAT HAPPENS WHEN WE CLICK TO NODE? IT IS NOT REGISTERED
                 window.initializeTree();
@@ -3862,13 +3902,15 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             'workflows_add/',
             {
                 workflow_info_name: $scope.workflow_info_name,
+                workflow_info_edit: $scope.workflow_info_edit, // We want this in order to delete the workflow, when we are saving a new edit
                 workflow_info_forked_from : $scope.workflow_info_forked_from,
 
                 workflow_website : $scope.workflow_website,
                 workflow_description : $scope.workflow_description,
                 workflow_changes: $scope.workflow_changes,
                 workflow_keywords: window.OBCUI.get_chip_data('workflowChips'),
-                workflow_json : cy.json()
+                workflow_json : cy.json(),
+                workflow_edit_state : $scope.workflows_info_edit_state // Are we editing this tool ?
             },
             function(data) {
                 $scope.workflow_info_created_at = data['created_at'];
@@ -3911,8 +3953,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     /*
     * Workflows --> Fork Icon --> Pressed
     * workflow fork workflow 
+    * action: If 'FORK' this is a fork. If 'EDIT' this is an edit
     */
-    $scope.workflows_info_fork_pressed = function() {
+    $scope.workflows_info_fork_pressed = function(action) {
         if (!$scope.username) {
             //It will never reach here. FORK is disabled in UI if user is not logged in.
             $scope.toast("Login to create new Workflows", 'error');
@@ -3929,13 +3972,15 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         window.forkWorkflow();
 
         $scope.workflows_info_editable = true;
-        $scope.toast("Workflow successfully forked. Press Save after completing your edits", 'success');
+        if (action == 'FORK') {
+            $scope.toast("Workflow successfully forked. Press Save after completing your edits", 'success');
 
-        $scope.workflow_info_forked_from = {
-            'name': $scope.workflow_info_name,  
-            'edit': $scope.workflow_info_edit
+            $scope.workflow_info_forked_from = {
+                'name': $scope.workflow_info_name,  
+                'edit': $scope.workflow_info_edit
+            }
+            $scope.workflow_changes = '';
         }
-        $scope.workflow_changes = '';
 
         //Initialize step editor
         workflow_step_editor.setReadOnly(false);

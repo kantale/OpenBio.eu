@@ -250,6 +250,9 @@ class Workflow(models.Model):
 
     obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
     forked_from = models.ForeignKey(to="Workflow", null=True, on_delete=models.CASCADE, related_name='forked_from_related') #Is this forked from another tool?
+    tools = models.ManyToManyField(to='Tool', related_name='workflows_using_me')
+    workflows = models.ManyToManyField(to='Workflow', related_name='workflows_using_me')
+
     changes = models.TextField(null=True) # What changes have been made from forked tool?
 
     # Links to the tools used (for stats)
@@ -259,7 +262,7 @@ class Workflow(models.Model):
 
     upvotes = models.IntegerField() # Number of upvotes
     downvotes = models.IntegerField() # Number of downvotes
-
+    draft = models.BooleanField() # Is this a draft Workflow?
     comment = models.ForeignKey(to='Comment', null=True, on_delete=models.CASCADE, related_name='workflow_comment') # The comments of the tool
 
 class ReportToken(models.Model):

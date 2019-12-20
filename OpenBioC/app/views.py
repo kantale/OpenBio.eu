@@ -1850,67 +1850,117 @@ def tools_add(request, **kwargs):
     return success(ret)
 
 @has_data
-def tools_finalize_delete(request, **kwargs):
+def ro_finalize_delete(request, **kwargs):
     '''
-    Called from tools_finalize_delete/
+    Called from ro_finalize_delete/
     if action is FINALIZE:
-        finalize a tool (from draft to no draft!)
+        finalize a tool/workflow (from draft to no draft!)
     if action is DELETE
-        DELETE a tool
+        DELETE a tool/workflow
+    ro: tool or workflow
     '''
 
-    tools_search_name = kwargs.get('tools_search_name', '')
-    if not tools_search_name:
-        return fail('Error 5467')
-
-    tools_search_version = kwargs.get('tools_search_version', '')
-    if not tools_search_version:
-        return fail('Error 5468')
-
-    tools_search_edit = kwargs.get('tools_search_edit', '')
-    if not tools_search_edit:
-        return fail('Error 5469')
+    ro = kwargs.get('ro', '')
+    if not ro:
+        return fail('Error 5476')
+    if not ro in ['tool', 'workflow']:
+        return fail('Error 5477')
 
     action = kwargs.get('action', '')
     if not action in ['FINALIZE', 'DELETE']:
         return fail('Error 5475')
 
-    try:
-        tools_search_edit = int(tools_search_edit)
-    except ValueError as e:
-        return fail('Error 5470')
 
-    try:
-        tool = Tool.objects.get(name=tools_search_name, version=tools_search_version, edit=tools_search_edit)
-    except ObjectDoesNotExist as e:
-        return fail('Error 5471')
-
+    # Get the user
     try:
         obc_user = OBC_user.objects.get(user=request.user)
     except ObjectDoesNotExist as e:
         return fail('Error 5472')
 
-    if not tool.obc_user == obc_user:
-        return fail('Error 5473')
 
-    if not tool.draft:
-        return fail('Error 5474')
+    if ro == 'tool':
 
-    if action == 'FINALIZE':
-        # Does it depend on any tool that is draft?
-        draft_dependencies = [t for t in tool_get_dependencies_internal(tool, include_as_root=False) if t['dependency'].draft]
-        if draft_dependencies:
-            return fail('This tool cannot be finalized. It depends from {} draft tool(s). For example: {}'.format(len(draft_dependencies), str(draft_dependencies[0]['dependency'])))
-        tool.draft = False
-        tool.save()
-    elif action == 'DELETE':
-        # Is there any other tool that depends from this tool?
-        dependendants = Tool.objects.filter(dependencies__in=[tool])
-        if dependendants.count():
-            return fail('This tool cannot be deleted. There are {} tool(s) that depend on this tool. For example: {}'.format(dependendants.count(), dependendants.first()))
-        tool.delete()
+        tools_info_name = kwargs.get('tools_info_name', '')
+        if not tools_info_name:
+            return fail('Error 5467')
 
-    return success()
+        tools_info_version = kwargs.get('tools_info_version', '')
+        if not tools_info_version:
+            return fail('Error 5468')
+
+        tools_info_edit = kwargs.get('tools_info_edit', '')
+        if not tools_info_edit:
+            return fail('Error 5469')
+
+        try:
+            tools_info_edit = int(tools_info_edit)
+        except ValueError as e:
+            return fail('Error 5470')
+
+        # Get the tool
+        try:
+            tool = Tool.objects.get(name=tools_info_name, version=tools_info_version, edit=tools_info_edit)
+        except ObjectDoesNotExist as e:
+            return fail('Error 5471')
+
+        # Is the user who created the tool, the same as the user who wants to edit/delete it?
+        if not tool.obc_user == obc_user:
+            return fail('Error 5473')
+
+        if not tool.draft:
+            return fail('Error 5474')
+
+        if action == 'FINALIZE':
+            # Does it depend on any tool that is draft?
+            draft_dependencies = [t for t in tool_get_dependencies_internal(tool, include_as_root=False) if t['dependency'].draft]
+            if draft_dependencies:
+                return fail('This tool cannot be finalized. It depends from {} draft tool(s). For example: {}'.format(len(draft_dependencies), str(draft_dependencies[0]['dependency'])))
+            tool.draft = False
+            tool.save()
+        elif action == 'DELETE':
+            # Is there any other tool that depends from this tool?
+            dependendants = Tool.objects.filter(dependencies__in=[tool])
+            if dependendants.count():
+                return fail('This tool cannot be deleted. There are {} tool(s) that depend on this tool. For example: {}'.format(dependendants.count(), dependendants.first()))
+            tool.delete()
+
+        return success()
+
+    elif ro == 'workflow':
+        workflow_info_name = kwargs.get('workflow_info_name', '')
+        if not workflow_info_name:
+            return fail('Error 5478')
+
+        workflow_info_edit = kwargs.get('workflow_info_edit', '')
+        if not workflow_info_edit:
+            return fail('Error 5479')
+
+        try:
+            workflow_info_edit = int(workflow_info_edit)
+        except ValueError as e:
+            return fail('Error 5480')
+
+        # Get the workflow
+        try:
+            workflow = Workflow.objects.get(name=workflow_info_name, edit=workflow_info_edit)
+        except ObjectDoesNotExist as e:
+            return fail('Error 5481')
+
+        #Is the user who created the workflow the same as the one who wants to edit/delete it?
+        if obc_user != workflow.obc_user:
+            return fail('Error 5482')
+
+        # Basic sanity check..
+        if not workflow.draft:
+            return fail('Error 5483')
+
+        if action == 'FINALIZE':
+            # Does it contain any tool that it is draft
+            w = workflow.tools.filter(draft=True)
+            if w.count():
+                return fail('This workflow cannot be finalized. It contains {} draft tools. For example: {}'.format(w.count(), str(w.first())))
+
+        return success()
 
 
 def create_workflow_edge_id(source_id, target_id):
@@ -2053,11 +2103,49 @@ def workflows_add(request, **kwargs):
     if not user_is_validated(request):
         return fail('Please validate your email to create new workflows ' + validate_toast_button());
 
+    obc_user = OBC_user.objects.get(user=request.user)
+
     workflow_info_name = kwargs.get('workflow_info_name', '')
     if not workflow_info_name.strip():
         return fail('Invalid workflow name')
 
     workflow_info_forked_from = kwargs['workflow_info_forked_from'] # If it does not exist, it should raise an Exception
+
+    workflow_edit_state = kwargs.get('workflow_edit_state', '')
+    if not type(workflow_edit_state) is bool:
+        return fail('Error 4877')
+
+    if workflow_edit_state:
+        # We are editing this workflow
+
+        # Get the edit
+        workflow_info_edit = kwargs.get('workflow_info_edit', '')
+
+        # Is this an int?
+        try:
+            workflow_info_edit = int(workflow_info_edit)
+        except ValueError as e:
+            return fail('Error 4878')
+
+        # Does this workflow exist?
+        try:
+            w = Workflow.objects.get(name=workflow_info_name, edit=workflow_info_edit)
+        except ObjectDoesNotExist as e:
+            return fail('Error 4879')
+
+        # Basic sanity check. We shouldn't be able to edit a workflow which is not a draft..
+        if not w.draft:
+            return fail('Error 4880')
+
+        # Is the creator of the workflow the same as the user who edits it?
+        if obc_user != w.obc_user:
+            return fail('Error 4881')
+
+        w.delete()
+
+    else:
+        # This is a new workflow
+        pass
 
     workflow_changes = kwargs.get('workflow_changes', None)
     if workflow_info_forked_from:
@@ -2095,14 +2183,16 @@ def workflows_add(request, **kwargs):
 
     #Check that one and only one step is main
 
-
-    #Get the maximum version. FIXME DUPLICATE CODE
-    workflow_all = Workflow.objects.filter(name__iexact=workflow_info_name)
-    if not workflow_all.exists():
-        next_edit = 1
+    if workflow_edit_state:
+        next_edit = workflow_info_edit
     else:
-        max_edit = workflow_all.aggregate(Max('edit'))
-        next_edit = max_edit['edit__max'] + 1
+        #Get the maximum version. FIXME DUPLICATE CODE
+        workflow_all = Workflow.objects.filter(name__iexact=workflow_info_name)
+        if not workflow_all.exists():
+            next_edit = 1
+        else:
+            max_edit = workflow_all.aggregate(Max('edit'))
+            next_edit = max_edit['edit__max'] + 1
 
 #    print ('BEFORE')
 #    print (simplejson.dumps(workflow, indent=4))
@@ -2120,7 +2210,7 @@ def workflows_add(request, **kwargs):
         return fail('Error 49188') # This should never happen
 
     new_workflow = Workflow(
-        obc_user=OBC_user.objects.get(user=request.user), 
+        obc_user=obc_user, 
         name = workflow_info_name,
         edit = next_edit,
         website = workflow_website,
@@ -2135,6 +2225,7 @@ def workflows_add(request, **kwargs):
         changes = workflow_changes,
         upvotes = 0,
         downvotes = 0,
+        draft = True, # We always save new workflows as draft. 
 
     )
 
@@ -2147,6 +2238,15 @@ def workflows_add(request, **kwargs):
     if tools:
         new_workflow.tools.add(*tools)
         new_workflow.save()
+
+    # Get all workflows that are used in this workflow
+    workflow_nodes = [x for x in workflow['elements']['nodes'] if x['data']['type'] == 'workflow']
+    # Remove self workflow
+    workflow_nodes = [{'name': x['data']['name'], 'edit': x['data']['edit']} for x in workflow_nodes if not (x['data']['name'] == workflow_info_name and x['data']['edit'] == next_edit) ]
+    # Get workflow database objects
+    workflows = [Workflow.objects.get(**x) for x in workflow_nodes]
+    new_workflow.workflows.add(*workflows)
+    new_workflow.save()
 
     # Add keywords
     keywords = [Keyword.objects.get_or_create(keyword=keyword)[0] for keyword in kwargs['workflow_keywords']]
@@ -2231,6 +2331,7 @@ def workflows_search_3(request, **kwargs):
         'workflow_comment_title': workflow.comment.title,
         'workflow_comment_created_at': datetime_to_str(workflow.comment.created_at),
         'workflow_comment_username': workflow.comment.obc_user.user.username,
+        'draft': workflow.draft, # Is this a draft workflow?
 
     }
 
