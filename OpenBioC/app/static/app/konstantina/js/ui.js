@@ -907,7 +907,7 @@ window.onload = function () {
                     angular.element($('#angular_div')).scope().tool_get_dependencies(tool, 1); // 1 = drag from search jstree to dependencies jstree
                 });
             }
-            else if (target.closest('#cywf').length) { // We are dropping it to the workflow graph editor. //Changed from old: d3wf
+            else if (target.closest('#cywf').length) { // We are dropping a tool to the workflow graph editor. //Changed from old: d3wf
 
                 angular.element($('#angular_div')).scope().$apply(function () {
                     angular.element($('#angular_div')).scope().tool_get_dependencies(tool, 2); // 2 = drag from search jstree to workflow editing
@@ -1569,7 +1569,7 @@ window.onload = function () {
 							}
 
 							//var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'no', variables: d.variables } };
-							var myNode = { data: { id: d.id, text: d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'no', dep_id: d.dep_id, variables: d.variables, belongto: this_node_wf_belong_to }};
+							var myNode = { data: { id: d.id, text: d.cy_label, label: d.cy_label, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'no', dep_id: d.dep_id, variables: d.variables, belongto: this_node_wf_belong_to }};
 
 							myNodes.push(myNode);
 							var myEdge = { data: { id: window.OBCUI.create_workflow_edge_id(d.dep_id, d.id), weight: 1, source: d.dep_id, target: d.id } };
@@ -1577,7 +1577,7 @@ window.onload = function () {
 
 						} else {
 							//var myNode = { data: { id: d.id, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'yes', variables: d.variables } };
-							var myNode = { data: { id: d.id, text: d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'yes', dep_id: d.dep_id, variables: d.variables, belongto: this_node_wf_belong_to } };
+							var myNode = { data: { id: d.id, text: d.cy_label, label: d.cy_label, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'yes', dep_id: d.dep_id, variables: d.variables, belongto: this_node_wf_belong_to } };
 							myNodes.push(myNode);
 							myEdges.push({ data: { source: this_node_wf_belong_to_id, target: d.id, id: window.OBCUI.create_workflow_edge_id(this_node_wf_belong_to_id, d.id), edgebelongto: 'true' } });
 						}

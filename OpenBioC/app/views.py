@@ -731,7 +731,8 @@ def tool_build_dependencies_jstree(tool_dependencies, add_variables=False):
                     'type': 'tool',
              },
             'text': tool_node_jstree(tool_dependency['dependency']), # tool_text_jstree(tool_dependency['dependency']), # This is what is shown on the tree
-            'id': tool_id_jstree(tool_dependency['dependency'], g['DEPENDENCY_TOOL_TREE_ID']),
+            'cy_label': tool_label_cytoscape(tool_dependency['dependency']), # Label to show in the cytoscape graph
+            'id': tool_id_jstree(tool_dependency['dependency'], g['DEPENDENCY_TOOL_TREE_ID']), # This is a unique id
             'parent': tool_id_jstree(tool_dependency['dependant'], g['DEPENDENCY_TOOL_TREE_ID']) if tool_dependency['dependant'] else '#',
             'type': 'tool', ### This is redundant with ['data']['type'], but we need it because 
                             ### The node[0].data.type is checked in $scope.tools_var_jstree_model. 
@@ -1922,6 +1923,11 @@ def ro_finalize_delete(request, **kwargs):
             dependendants = Tool.objects.filter(dependencies__in=[tool])
             if dependendants.count():
                 return fail('This tool cannot be deleted. There are {} tool(s) that depend on this tool. For example: {}'.format(dependendants.count(), dependendants.first()))
+            
+            # Is there any workflow that contains this tool?
+            w = Workflow.objects.filter(tools__in=[tool])
+            if w.count():
+                return fail('This tool cannot be deleted. It is used in {} workflow(s). For example: {}'.format(w.count(), str(w.first())))
             tool.delete()
 
         return success()
@@ -1955,10 +1961,26 @@ def ro_finalize_delete(request, **kwargs):
             return fail('Error 5483')
 
         if action == 'FINALIZE':
-            # Does it contain any tool that it is draft
-            w = workflow.tools.filter(draft=True)
+            # Does it contain any tool that it is draft?
+            t = workflow.tools.filter(draft=True)
+            if t.count():
+                return fail('This workflow cannot be finalized. It contains {} draft tool(s). For example: {}'.format(t.count(), str(t.first())))
+
+            # Does it contain any draft workflow?
+            w = workflow.workflows.filter(draft=True)
             if w.count():
-                return fail('This workflow cannot be finalized. It contains {} draft tools. For example: {}'.format(w.count(), str(w.first())))
+                return fail('This workflow cannot be finalized. It contains {} draft workflow(s). For example: {}'.format(w.count(), str(w.first())))
+
+            workflow.draft = False
+            workflow.save()
+
+        elif action == 'DELETE':
+            # Is there any workflow that contains this workflow?
+            w = Workflow.objects.filter(workflows__in = [workflow])
+            if w.count():
+                return fail('This workflow cannot be deleted. It is used in {} workflow(s). For example: {}'.format(w.count(), str(w.first())))
+
+            workflow.delete()
 
         return success()
 
