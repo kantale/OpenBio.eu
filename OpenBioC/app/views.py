@@ -1703,6 +1703,8 @@ def tools_add(request, **kwargs):
 
     upvoted = False
     downvoted = False
+    tool_forked_from = None
+    tool_changes = None
     if tool_edit_state:
         # We are editing this tool!
 
@@ -1746,6 +1748,19 @@ def tools_add(request, **kwargs):
             vote.tool = None
             vote.save()
 
+        # Get the tools that are forks of this tool
+        tool_forks = Tool.objects.filter(forked_from=tool)
+        # Temporary set that these tools are not forked from any tool
+        for tool_fork in tool_forks:
+            tool_fork.forked_from = None
+            tool_fork.save()
+
+        # Get the tool that this tool is forked from
+        tool_forked_from = tool.forked_from
+
+        # Get the created at. It needs to be sorted accorfing to this, otherwise the jstree becomes messy
+        tool_created_at = tool.created_at
+
         # Delete it!
         tool.delete()
     else:
@@ -1782,9 +1797,7 @@ def tools_add(request, **kwargs):
             return fail('Edit summary cannot be empty')
 
     else:
-        tool_forked_from = None
-        tool_changes = None
-    
+        pass # Do nothing
     
     #Installation/Validation commands 
     tool_installation_commands = kwargs['tool_installation_commands']
@@ -1829,6 +1842,11 @@ def tools_add(request, **kwargs):
     #Save it
     new_tool.save()
 
+    if tool_edit_state:
+        # Preserve the created at date. We have to do that AFTER the save! https://stackoverflow.com/questions/7499767/temporarily-disable-auto-now-auto-now-add
+        new_tool.created_at = tool_created_at
+        new_tool.save()
+
     #Add dependencies 
     if tool_dependencies_objects:
         new_tool.dependencies.add(*tool_dependencies_objects)
@@ -1861,6 +1879,11 @@ def tools_add(request, **kwargs):
         for vote in votes:
             vote.tool = new_tool
             vote.save()
+
+        # Add the tools that were forked from this tool (that was deleted before) to the new tool
+        for tool_fork in tool_forks:
+            tool_fork.forked_from = new_tool
+            tool_fork.save()
 
     else:
         #Add an empty comment. This will be the root comment for the QA thread
@@ -2211,6 +2234,8 @@ def workflows_add(request, **kwargs):
 
     upvoted = False
     downvoted = False
+    workflow_forked_from = None
+    workflow_changes = None
     if workflow_edit_state:
         # We are editing this workflow
 
@@ -2255,6 +2280,18 @@ def workflows_add(request, **kwargs):
             vote.workflow = None
             vote.save()
 
+        # Get the workflows that are forks of this workflow
+        workflow_forks = Workflow.objects.filter(forked_from=w)
+        # Temporary set that these workflows are not forked from any workflow
+        for workflow_fork in workflow_forks:
+            workflow_fork.forked_from = None
+            workflow_fork.save()
+
+        # Get the workflow that this workflow is forked from
+        workflow_forked_from = w.forked_from
+
+        # Get the created at. It needs to be sorted according to this, otherwise the jstree becomes messy
+        workflow_created_at = w.created_at
 
         # Delete it!
         w.delete()
@@ -2270,8 +2307,8 @@ def workflows_add(request, **kwargs):
             return fail('Edit Summary cannot be empty')
         workflow_forked_from = Workflow.objects.get(name=workflow_info_forked_from['name'], edit=workflow_info_forked_from['edit'])
     else:
-        workflow_forked_from = None
-        workflow_changes = None
+        pass # Do nothing 
+
 
     workflow_website = kwargs.get('workflow_website', '')
     if workflow_website:
@@ -2348,6 +2385,11 @@ def workflows_add(request, **kwargs):
     #Save it
     new_workflow.save()
 
+    if workflow_edit_state:
+        # Preserve the created at date. We have to do that AFTER the save! https://stackoverflow.com/questions/7499767/temporarily-disable-auto-now-auto-now-add
+        new_workflow.created_at = workflow_created_at
+        new_workflow.save()
+
     # Get all tools that are used in this workflow
     tool_nodes = [x for x in workflow['elements']['nodes'] if x['data']['type'] == 'tool']
     tools = [Tool.objects.get(name=x['data']['name'], version=x['data']['version'], edit=x['data']['edit']) for x in tool_nodes]
@@ -2376,7 +2418,12 @@ def workflows_add(request, **kwargs):
         for vote in votes:
             vote.workflow = new_workflow
             vote.save()
-    
+
+        # Add the workflows that were forked from this workflow (that was deleted before) to the new workflow
+        for workflow_fork in workflow_forks:
+            workflow_fork.forked_from = new_workflow
+            workflow_fork.save()
+
     else:
         # Add an empty comment. This will be the root comment for the QA thread
         comment = Comment(

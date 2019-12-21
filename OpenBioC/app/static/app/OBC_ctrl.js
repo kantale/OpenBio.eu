@@ -1428,6 +1428,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.toast($scope.tools_info_success_message, 'success');
                 $scope.set_tools_info_editable(false);
                 //$scope.tools_info_editable = false;
+                $scope.tool_edit_state = false;
                 $scope.tool_info_created_at = data['created_at'];
                 $scope.tools_info_edit = data['edit'];
                 //$scope.tools_search_input_changed(); //Update search results
@@ -3921,6 +3922,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.workflow_info_edit = data['edit'];
                 $scope.workflow_description_html = data['description_html'];
                 $scope.workflows_info_editable = false;
+                $scope.workflow_edit_state = false;
                 workflow_step_editor.setReadOnly(true);
 
                 $scope.toast('Workflow successfully saved', 'success');
