@@ -1970,6 +1970,17 @@ def ro_finalize_delete(request, **kwargs):
             if w.count():
                 return fail('This tool cannot be deleted. It is used in {} workflow(s). For example: {}'.format(w.count(), str(w.first())))
 
+            # Get the tools that are forks of this tool
+            tool_forks = Tool.objects.filter(forked_from=tool)
+
+            # Get the tool that this tool is forked from
+            tool_forked_from = tool.forked_from
+
+            # All the tools that are forked from this tool are now forked from the tool that this tool was forked from!
+            for tool_fork in tool_forks:
+                tool_fork.forked_from = tool_forked_from
+                tool_fork.save()
+
             # Delete the comment
             tool.comment.delete()
 
@@ -2025,6 +2036,17 @@ def ro_finalize_delete(request, **kwargs):
             w = Workflow.objects.filter(workflows__in = [workflow])
             if w.count():
                 return fail('This workflow cannot be deleted. It is used in {} workflow(s). For example: {}'.format(w.count(), str(w.first())))
+
+            # Get the workflows that are forks of this workflow
+            workflow_forks = Workflow.objects.filter(forked_from=workflow)
+
+            # Get the workflow that this workflow is forked from
+            workflow_forked_from = workflow.forked_from
+
+            # All the workflows that are forked from this workflow are now forked from the workflow that this workflow was forked from!
+            for workflow_fork in workflow_forks:
+                workflow_fork.forked_from = workflow_forked_from
+                workflow_fork.save()
 
             # Delete the comments
             workflow.comment.delete()
