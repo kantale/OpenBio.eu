@@ -1446,8 +1446,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.qa_gen['tool'].qa_thread = data['tool_thread'];
 
                 //Set Score, and upvote / downvotes arrows
-                $scope.tool_score = 0;
-                $scope.tool_voted = {'up': false, 'down': false};
+                $scope.tool_score = data['score'];
+                $scope.tool_voted = data['voted']; // {'up': false, 'down': false};
 
                 //EXPERIMENTAL. UPDATE SEARCH RESULTS
                 $scope.all_search_2();
@@ -1539,6 +1539,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                         $scope.tools_info_edit_state = false;
                         $scope.tools_info_editable = false;
                         $scope.toast('Tool is finalized!', 'success');
+                        $scope.all_search_2(); // Update search results
                     }
                     else if (action == 'DELETE') {
                         $scope.toast('Tool is deleted!', 'success');
@@ -1553,6 +1554,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                         $scope.workflows_info_edit_state = false;
                         $scope.workflows_info_editable = false;
                         $scope.toast('Workflow is finalized!', 'success');
+                        $scope.all_search_2(); // Update search results
                     }
                     else if (action == 'DELETE') {
                         $scope.toast('Workflow is deleted!', 'success');
@@ -3935,8 +3937,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.qa_gen['workflow'].qa_thread = data['workflow_thread'];
 
                 //Set score and upvote / downvote arrows
-                $scope.workflow_score = 0;
-                $scope.workflow_voted = {'up': false, 'down': false};
+                $scope.workflow_score = data['score'];
+                $scope.workflow_voted = data['voted']; // {'up': false, 'down': false};
 
                 //EXPERIMENTAL. UPDATE SEARCH RESULTS
                 $scope.all_search_2();

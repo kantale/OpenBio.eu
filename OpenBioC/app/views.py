@@ -587,6 +587,12 @@ def workflow_text_jstree(workflow):
     '''
     return '/'.join(map(str, [workflow.name, workflow.edit]))
 
+def workflow_node_jstree(workflow):
+    '''
+    The HTML that is node in a jstree that contains a workflow
+    '''
+    return workflow_text_jstree(workflow) + (' <span class="red lighten-3">DRAFT</span>' if workflow.draft else '') + jstree_icon_html('workflows')
+
 def report_text_jstree(report):
     '''
     The JS tree report text
@@ -1500,7 +1506,7 @@ def workflows_search_2(workflows_search_name, workflows_search_edit):
     for x in results:
         to_add = {
             'data': {'name': x.name, 'edit': x.edit},
-            'text': workflow_text_jstree(x) + jstree_icon_html('workflows'),
+            'text': workflow_node_jstree(x),
             'id': workflow_id_jstree(x, g['SEARCH_WORKFLOW_TREE_ID']),
             'parent': workflow_id_jstree(x.forked_from, g['SEARCH_WORKFLOW_TREE_ID']) if x.forked_from else '#',
             'state': { 'opened': True},
@@ -1695,7 +1701,11 @@ def tools_add(request, **kwargs):
     if not type(tool_edit_state) is bool:
         return fail('Error 8715')
 
+    upvoted = False
+    downvoted = False
     if tool_edit_state:
+        # We are editing this tool!
+
         # Get the edit of the tool
         tools_search_edit = kwargs.get('tools_search_edit', '')
         if not tools_search_edit:
@@ -1708,9 +1718,7 @@ def tools_add(request, **kwargs):
             return fail('Invalid tool edit number. Error 8714')
 
 
-    if tool_edit_state:
-        # We are editing this tool!
-        # Delete the existing!
+        # Delete the previous object!
         try:
             tool = Tool.objects.get(name=tools_search_name, version=tools_search_version, edit=tools_search_edit)
         except ObjectDoesNotExist as e:
@@ -1720,7 +1728,29 @@ def tools_add(request, **kwargs):
         if tool.obc_user != obc_user:
             return fail('Error 8717') # This is strange.. The user who edits this tool is not the one who created it???
         
+        # Store a reference to the comment
+        comment = tool.comment
+
+        # Store upvotes/downvotes
+        upvotes = tool.upvotes
+        downvotes = tool.downvotes
+
+        # Store vote objects
+        votes = UpDownToolVote.objects.filter(tool=tool)
+        # Disassociate from this tool (this is allowed because null=true)
+        for vote in votes:
+            if vote.obc_user == obc_user:
+                upvoted = vote.upvote
+                downvoted = not upvoted
+
+            vote.tool = None
+            vote.save()
+
+        # Delete it!
         tool.delete()
+    else:
+        upvotes = 0
+        downvotes = 0
  
     #os_type Update 
     tool_os_choices = kwargs.get('tool_os_choices',[])
@@ -1762,8 +1792,8 @@ def tools_add(request, **kwargs):
 
     #Dependencies
     tool_dependencies = kwargs['tool_dependencies']
-    #print ('tool_dependencies:')
-    #print (tool_dependencies)
+    
+    # FIXME! What if a dependency is deleted???
     tool_dependencies_objects = [Tool.objects.get(name=t['name'], version=t['version'], edit=int(t['edit'])) for t in tool_dependencies]
 
     #Variables
@@ -1774,6 +1804,7 @@ def tools_add(request, **kwargs):
     for variable_name, variable_name_counter in Counter([x['name'] for x in tool_variables]).items():
         if variable_name_counter>1:
             return fail('Two variables cannot have the same name!')
+
 
     #Create new tool
     new_tool = Tool(
@@ -1788,8 +1819,8 @@ def tools_add(request, **kwargs):
         changes = tool_changes,
         installation_commands=tool_installation_commands,
         validation_commands=tool_validation_commands,
-        upvotes = 0,
-        downvotes = 0,
+        upvotes = upvotes,
+        downvotes = downvotes,
         draft = True, # By defaut all new tools are draft 
         
         last_validation=None,
@@ -1825,17 +1856,25 @@ def tools_add(request, **kwargs):
     new_tool.keywords.add(*keywords)
     new_tool.save()
 
-    #Add an empty comment. This will be the root comment for the QA thread
-    comment = Comment(
-        obc_user = OBC_user.objects.get(user=request.user),
-        comment = '',
-        comment_html = '',
-        title = markdown('Discussion on Tool: t/{}/{}/{}'.format(tools_search_name, tools_search_version, next_edit)),
-        parent = None,
-        upvotes = 0,
-        downvotes = 0,
-    )
-    comment.save()
+    if tool_edit_state:
+        # Add the votes from the previous edit
+        for vote in votes:
+            vote.tool = new_tool
+            vote.save()
+
+    else:
+        #Add an empty comment. This will be the root comment for the QA thread
+        comment = Comment(
+            obc_user = OBC_user.objects.get(user=request.user),
+            comment = '',
+            comment_html = '',
+            title = markdown('Discussion on Tool: t/{}/{}/{}'.format(tools_search_name, tools_search_version, next_edit)),
+            parent = None,
+            upvotes = 0,
+            downvotes = 0,
+        )
+        comment.save()
+
     new_tool.comment = comment
     new_tool.save()
 
@@ -1846,6 +1885,8 @@ def tools_add(request, **kwargs):
 
         'tool_pk': new_tool.pk, # Used in comments
         'tool_thread': qa_create_thread(new_tool.comment, obc_user), # Tool comment thread 
+        'score': upvotes-downvotes,
+        'voted': {'up': upvoted, 'down': downvoted},
     }
 
     return success(ret)
@@ -1928,6 +1969,11 @@ def ro_finalize_delete(request, **kwargs):
             w = Workflow.objects.filter(tools__in=[tool])
             if w.count():
                 return fail('This tool cannot be deleted. It is used in {} workflow(s). For example: {}'.format(w.count(), str(w.first())))
+
+            # Delete the comment
+            tool.comment.delete()
+
+            # Delete the tool
             tool.delete()
 
         return success()
@@ -1980,6 +2026,10 @@ def ro_finalize_delete(request, **kwargs):
             if w.count():
                 return fail('This workflow cannot be deleted. It is used in {} workflow(s). For example: {}'.format(w.count(), str(w.first())))
 
+            # Delete the comments
+            workflow.comment.delete()
+
+            # Delete the workflow
             workflow.delete()
 
         return success()
@@ -2137,6 +2187,8 @@ def workflows_add(request, **kwargs):
     if not type(workflow_edit_state) is bool:
         return fail('Error 4877')
 
+    upvoted = False
+    downvoted = False
     if workflow_edit_state:
         # We are editing this workflow
 
@@ -2163,11 +2215,32 @@ def workflows_add(request, **kwargs):
         if obc_user != w.obc_user:
             return fail('Error 4881')
 
+        # Store a reference to the comments
+        comment = w.comment
+
+        # Store upvotes/downvotes
+        upvotes = w.upvotes
+        downvotes = w.downvotes
+
+        # Store votes
+        votes = UpDownWorkflowVote.objects.filter(workflow=w)
+        # Disassociate from this tool and get upvoted/downvoted status
+        for vote in votes:
+            if vote.obc_user == obc_user:
+                upvoted = vote.upvote
+                downvoted = not upvoted
+
+            vote.workflow = None
+            vote.save()
+
+
+        # Delete it!
         w.delete()
 
     else:
         # This is a new workflow
-        pass
+        upvotes = 0
+        downvotes = 0
 
     workflow_changes = kwargs.get('workflow_changes', None)
     if workflow_info_forked_from:
@@ -2245,10 +2318,9 @@ def workflows_add(request, **kwargs):
         workflow = simplejson.dumps(workflow),
         forked_from = workflow_forked_from,
         changes = workflow_changes,
-        upvotes = 0,
-        downvotes = 0,
+        upvotes = upvotes,
+        downvotes = downvotes,
         draft = True, # We always save new workflows as draft. 
-
     )
 
     #Save it
@@ -2277,17 +2349,25 @@ def workflows_add(request, **kwargs):
 
     obc_user = OBC_user.objects.get(user=request.user)
 
-    # Add an empty comment. This will be the root comment for the QA thread
-    comment = Comment(
-        obc_user = obc_user,
-        comment = '',
-        comment_html = '',
-        title = markdown('Discussion on Workflow: w/{}/{}'.format(workflow_info_name, next_edit)),
-        parent = None,
-        upvotes = 0,
-        downvotes = 0,
-    )
-    comment.save()
+    if workflow_edit_state:
+        # Add the votes from the previous edit
+        for vote in votes:
+            vote.workflow = new_workflow
+            vote.save()
+    
+    else:
+        # Add an empty comment. This will be the root comment for the QA thread
+        comment = Comment(
+            obc_user = obc_user,
+            comment = '',
+            comment_html = '',
+            title = markdown('Discussion on Workflow: w/{}/{}'.format(workflow_info_name, next_edit)),
+            parent = None,
+            upvotes = 0,
+            downvotes = 0,
+        )
+        comment.save()
+
     new_workflow.comment = comment
     new_workflow.save()
 
@@ -2296,6 +2376,8 @@ def workflows_add(request, **kwargs):
         'description_html': workflow_description_html, 
         'edit': next_edit,
         'created_at': datetime_to_str(new_workflow.created_at),
+        'score': upvotes-downvotes,
+        'voted': {'up': upvoted, 'down': downvoted},
 
         'workflow_pk': new_workflow.pk, # Used in comments
         'workflow_thread': qa_create_thread(new_workflow.comment, obc_user), # Tool comment thread 
