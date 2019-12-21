@@ -469,7 +469,7 @@ class UpDownToolVote(models.Model):
             ]
 
     obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
-    tool = models.ForeignKey(Tool, null=False, on_delete=models.CASCADE)
+    tool = models.ForeignKey(Tool, null=True, on_delete=models.CASCADE) # null=true to make them votes transferable to other tools
     upvote = models.BooleanField() # True --> upvote, False --> downvote
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -492,7 +492,7 @@ class UpDownWorkflowVote(models.Model):
             ]
 
     obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
-    workflow = models.ForeignKey(Workflow, null=False, on_delete=models.CASCADE)
+    workflow = models.ForeignKey(Workflow, null=True, on_delete=models.CASCADE) # null=true to make them votes transferable to other tools
     upvote = models.BooleanField() # True --> upvote, False --> downvote
     created_at = models.DateTimeField(auto_now_add=True)
 
