@@ -1761,6 +1761,14 @@ def tools_add(request, **kwargs):
         # Get the created at. It needs to be sorted accorfing to this, otherwise the jstree becomes messy
         tool_created_at = tool.created_at
 
+        # Get the workflows that use this tool
+        workflows_using_this_tool = Workflow.objects.filter(tools__in = [tool])
+
+        # Remove this tool from these workflows
+        for workflow_using_this_tool in workflows_using_this_tool:
+            workflow_using_this_tool.tools.remove(tool)
+            workflow_using_this_tool.save()
+
         # Delete it!
         tool.delete()
     else:
@@ -1884,6 +1892,11 @@ def tools_add(request, **kwargs):
         for tool_fork in tool_forks:
             tool_fork.forked_from = new_tool
             tool_fork.save()
+
+        # Add to the workflows that were using this tool, the new tool
+        for workflow_using_this_tool in workflows_using_this_tool:
+            workflow_using_this_tool.tools.add(new_tool)
+            workflow_using_this_tool.save()
 
     else:
         #Add an empty comment. This will be the root comment for the QA thread
@@ -2293,6 +2306,14 @@ def workflows_add(request, **kwargs):
         # Get the created at. It needs to be sorted according to this, otherwise the jstree becomes messy
         workflow_created_at = w.created_at
 
+        # Get the workflows that use this workflow
+        workflows_using_this_workflow = Workflow.objects.filter(workflows__in = [w])
+
+        # Remove this workflow from these workflows
+        for workflow_using_this_workflow in workflows_using_this_workflow:
+            workflow_using_this_workflow.workflows.remove(w)
+            workflow_using_this_workflow.save()
+
         # Delete it!
         w.delete()
 
@@ -2423,6 +2444,11 @@ def workflows_add(request, **kwargs):
         for workflow_fork in workflow_forks:
             workflow_fork.forked_from = new_workflow
             workflow_fork.save()
+
+        # Add to the workflows that were using this workflow, the new workflow
+        for workflow_using_this_workflow in workflows_using_this_workflow:
+            workflow_using_this_workflow.workflows.add(new_workflow)
+            workflow_using_this_workflow.save()
 
     else:
         # Add an empty comment. This will be the root comment for the QA thread
