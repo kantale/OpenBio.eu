@@ -1141,6 +1141,7 @@ def index(request, **kwargs):
             logger.warning('WARNING: YOU ARE RUNNING IN DEFAULT DJANGO PORT (8000)')
         if port != g['DEFAULT_DEBUG_PORT']:
             logger.warning(f'WARNING: You are not runining on port {g["DEFAULT_DEBUG_PORT"]}')
+    context['debug'] = settings.DEBUG
 
     # Add port information or other insrtance settings on template
     instance_settings = get_instance_settings()
