@@ -1590,7 +1590,7 @@ window.onload = function () {
                     //TODO add root feature (different than tools): wfroot:yes
                     var this_workflow_id = window.OBCUI.create_workflow_id(d);
 
-                    var myNode = { data: { id: this_workflow_id, name: d.name, edit: d.edit, label: create_workflow_label(d), type: 'workflow', belongto: this_node_wf_belong_to } };
+                    var myNode = { data: { id: this_workflow_id, name: d.name, edit: d.edit, label: create_workflow_label(d), type: 'workflow', draft: d.draft, belongto: this_node_wf_belong_to } };
                     myNodes.push(myNode);
                     myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_workflow_id, id: window.OBCUI.create_workflow_edge_id(this_node_wf_belong_to_id, this_workflow_id), edgebelongto: 'true' } });
 					
@@ -2128,12 +2128,23 @@ window.onload = function () {
                     },
 
                     {
-                        selector: 'node[type="workflow"]',
+                        selector: 'node[type="workflow"][!draft]',
                         "style": {
                             'shape': 'octagon',
                             //'border-width': '3',
                             //'border-color': '#5A5A5A',
                             'background-color': '#5A5A5A',
+                            //"height": 15,
+                            //"width": 15
+                        }
+                    },
+                    {
+                        selector: 'node[type="workflow"][?draft]',
+                        "style": {
+                            'shape': 'octagon',
+                            //'border-width': '3',
+                            //'border-color': '#5A5A5A',
+                            'background-color': '#E53935',
                             //"height": 15,
                             //"width": 15
                         }
@@ -2916,7 +2927,7 @@ window.onload = function () {
             cy.json({
                 elements: {
                     nodes: [
-                        { data: { id: window.OBCUI.create_workflow_id({ name: name, edit: null }), label: name, name: name, edit: null, type: "workflow", belongto: null } },
+                        { data: { id: window.OBCUI.create_workflow_id({ name: name, edit: null }), label: name, name: name, edit: null, type: "workflow", draft: true, belongto: null } },
                     ]
                 }
             });

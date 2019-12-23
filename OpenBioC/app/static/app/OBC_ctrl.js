@@ -1554,6 +1554,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                         $scope.workflows_info_draft = false;
                         $scope.workflows_info_edit_state = false;
                         $scope.workflows_info_editable = false;
+                        cy.$('node[type="workflow"][!belong]').data({'draft':false}); // Set root workflow as non draft 
                         $scope.toast('Workflow is finalized!', 'success');
                         $scope.all_search_2(); // Update search results
                     }
