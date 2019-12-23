@@ -747,6 +747,7 @@ def tool_build_dependencies_jstree(tool_dependencies, add_variables=False):
             'name': tool_dependency['dependency'].name,
             'version': tool_dependency['dependency'].version,
             'edit': tool_dependency['dependency'].edit,
+            'draft': tool_dependency['dependency'].draft,
 
         })
 
