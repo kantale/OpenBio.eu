@@ -1141,7 +1141,7 @@ def index(request, **kwargs):
             logger.warning('WARNING: YOU ARE RUNNING IN DEFAULT DJANGO PORT (8000)')
         if port != g['DEFAULT_DEBUG_PORT']:
             logger.warning(f'WARNING: You are not runining on port {g["DEFAULT_DEBUG_PORT"]}')
-    context['debug'] = settings.DEBUG
+    context['debug'] = settings.DEBUG # If this is True, then we include tests.js 
 
     # Add port information or other insrtance settings on template
     instance_settings = get_instance_settings()
@@ -1853,6 +1853,7 @@ def tools_add(request, **kwargs):
 
     if tool_edit_state:
         # Preserve the created at date. We have to do that AFTER the save! https://stackoverflow.com/questions/7499767/temporarily-disable-auto-now-auto-now-add
+        # If we do not preserve the created at, then the jstree becomes messy.
         new_tool.created_at = tool_created_at
         new_tool.save()
 
@@ -1927,6 +1928,49 @@ def tools_add(request, **kwargs):
     }
 
     return success(ret)
+
+def workflow_json_get_all_workflow_elements(workflow_json):
+    '''
+    '''
+
+    for element in workflow_json['elements']['nodes']:
+        if not element['data']['type'] == 'workflow':
+            continue
+
+        yield element
+
+def workflow_json_get_workflow(workflow_json, workflow):
+    '''
+    '''
+
+    for workflow_element in workflow_json_get_all_workflow_elements(workflow_json):
+        if workflow_element['data']['name'] == workflow.name and workflow_element['data']['edit'] == workflow.edit:
+            return workflow_element
+
+def workflow_json_update_workflow(containing, contained):
+    '''
+    '''
+
+    graph_json = simplejson.loads(containing.workflow)
+    this_node = workflow_json_get_workflow(graph_json, contained)
+    this_node['data']['draft'] = contained.draft
+    containing.workflow = simplejson.dumps(graph_json)
+    containing.save()
+
+
+def workflow_has_changed(workflow):
+    '''
+    This workflow has changed.
+    Update all workflows that are using this
+    '''
+
+    workflow_json_update_workflow(workflow, workflow)
+
+
+    workflows_using_this_workflow = Workflow.objects.filter(workflows__in = [workflow])
+    for workflow_using_this_workflow in workflows_using_this_workflow:
+        workflow_json_update_workflow(workflow_using_this_workflow, workflow)
+
 
 @has_data
 def ro_finalize_delete(request, **kwargs):
@@ -2067,6 +2111,7 @@ def ro_finalize_delete(request, **kwargs):
 
             workflow.draft = False
             workflow.save()
+            workflow_has_changed(workflow) # Update other workflows that are using this
 
         elif action == 'DELETE':
             # Is there any workflow that contains this workflow?
@@ -2425,8 +2470,9 @@ def workflows_add(request, **kwargs):
     workflow_nodes = [{'name': x['data']['name'], 'edit': x['data']['edit']} for x in workflow_nodes if not (x['data']['name'] == workflow_info_name and x['data']['edit'] == next_edit) ]
     # Get workflow database objects
     workflows = [Workflow.objects.get(**x) for x in workflow_nodes]
-    new_workflow.workflows.add(*workflows)
-    new_workflow.save()
+    if workflows:
+        new_workflow.workflows.add(*workflows)
+        new_workflow.save()
 
     # Add keywords
     keywords = [Keyword.objects.get_or_create(keyword=keyword)[0] for keyword in kwargs['workflow_keywords']]
