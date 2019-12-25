@@ -2060,10 +2060,10 @@ window.onload = function () {
                     {
                         selector: 'node',
                         "style": {
-                            "shape": "round-rectangle",
-                            "background-color": "#5A5A5A",
+                            //"shape": "round-rectangle",
+                            //"background-color": "#5A5A5A",
                             //"label": "data(id)",
-                            "label": "data(label)",
+                            "label": "data(label)" // Set the label universally 
                             //"height": 15,
                             //"width": 15
                         }
@@ -2074,7 +2074,7 @@ window.onload = function () {
                             "shape": "round-rectangle",
                             'background-color': '#E53935', // red
                             //"label": "data(id)",
-                            "label": "data(label)",
+                            //"label": "data(label)",
                             //"height": 15,
                             //"width": 15
                         }

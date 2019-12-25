@@ -3930,7 +3930,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 //$scope.workflows_search_input_changed(); //Update search results
 
                 //When we save a workflow, the UI keeps the cy version that has not been processed by the server
-                //This version contains "null" values for the root id. Do we fetch it from the server.
+                //This version contains "null" values for the root id. Hence, we fetch it from the server.
                 $scope.workflows_search_3({name: $scope.workflow_info_name, edit:data['edit']});
 
                 $scope.workflow_keywords = window.OBCUI.get_chip_data('workflowChips');
