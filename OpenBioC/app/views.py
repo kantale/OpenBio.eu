@@ -649,6 +649,9 @@ def workflow_id_cytoscape(workflow, name, edit):
     The cytoscape workflow id
     '''
 
+    if type(workflow) is dict:
+        return workflow['name'] + '__' + str(workflow['edit'])
+
     if workflow:
         return workflow.name + '__' + str(workflow.edit)
 
@@ -659,9 +662,9 @@ def workflow_label_cytoscape(workflow, name, edit):
     The cytoscape workflow label
     '''
     if workflow:
-        return workflow.name
+        return workflow.name + '/' + str(workflow.edit)
 
-    return name
+    return name + '/' + str(edit)
 
 
 def workflow_id_jstree(workflow, id_):
@@ -1930,47 +1933,195 @@ def tools_add(request, **kwargs):
 
     return success(ret)
 
-def workflow_json_get_all_workflow_elements(workflow_json):
-    '''
-    '''
 
-    for element in workflow_json['elements']['nodes']:
-        if not element['data']['type'] == 'workflow':
-            continue
-
-        yield element
-
-def workflow_json_get_workflow(workflow_json, workflow):
+class WorkflowJSON:
     '''
+    Basically a function collection for dealing with the workflow json object
     '''
 
-    for workflow_element in workflow_json_get_all_workflow_elements(workflow_json):
-        if workflow_element['data']['name'] == workflow.name and workflow_element['data']['edit'] == workflow.edit:
-            return workflow_element
+    def __init__(self, workflow):
+        '''
+        workflow is a database Workflow opbject
+        '''
+        self.workflow = workflow
+        self.key = workflow_id_cytoscape(self.workflow, None, None)
+        self.graph = simplejson.loads(self.workflow.workflow)
+        self.all_ids = {node['data']['id'] for node in self.graph['elements']['nodes']} # All node ids
+        self.workflows_using_me = Workflow.objects.filter(workflows__in = [self.workflow])
+        self.belongto, self.workflow_nodes = self.__build_workflow_belongto(self.graph)
 
-def workflow_json_update_workflow(containing, contained):
-    '''
-    '''
-
-    graph_json = simplejson.loads(containing.workflow)
-    this_node = workflow_json_get_workflow(graph_json, contained)
-    this_node['data']['draft'] = contained.draft
-    containing.workflow = simplejson.dumps(graph_json)
-    containing.save()
-
-
-def workflow_has_changed(workflow):
-    '''
-    This workflow has changed.
-    Update all workflows that are using this
-    '''
-
-    workflow_json_update_workflow(workflow, workflow)
+    def __iter_workflows(self, graph):
+        '''
+        '''
+        for element in graph['elements']['nodes']:
+            if element['data']['type'] == 'workflow':
+                yield element
 
 
-    workflows_using_this_workflow = Workflow.objects.filter(workflows__in = [workflow])
-    for workflow_using_this_workflow in workflows_using_this_workflow:
-        workflow_json_update_workflow(workflow_using_this_workflow, workflow)
+
+    def __build_workflow_belongto(self, graph):
+        '''
+        Create dictionaries: 
+        self.belongto
+        Keys: workflow tuple (name, edit)
+        Value: The workflow element where this workflow belongs to
+
+        self.workflow_nodes
+        Keys: workflow tuple
+        Value: The workflow element
+        '''
+        
+        
+        all_workflows = list(self.__iter_workflows(graph))
+
+        workflow_nodes = {workflow_element['data']['id'] : workflow_element for workflow_element in all_workflows}
+            
+        belongto = {}
+        for workflow_element in all_workflows:
+            workflow_key = workflow_element['data']['id']
+            if workflow_element['data']['belongto']:
+                belongto[workflow_key] = workflow_nodes[workflow_id_cytoscape(workflow_element['data']['belongto'], None, None)]
+            else:
+                belongto[workflow_key] = None
+
+        return belongto, workflow_nodes
+
+    def __node_belongs_to_a_workflow(self, node, workflow, belongto):
+        '''
+        Recursive
+        '''
+
+        if not node: # We are running this for ALL workflow nodes. Including the root workflow that its belong to is None
+            return False
+
+        # We reached the root
+        if not node['data']['belongto']:
+            return False
+
+        workflow_key = workflow['data']['id']
+        node_belongto_key = workflow_id_cytoscape(node['data']['belongto'], None, None)
+        if workflow_key == node_belongto_key:
+            return True
+
+        # This node does not belong to this workflow. Perhaps the node.belongto workflow belongs to this workflow
+        return self.__node_belongs_to_a_workflow(belongto[node_belongto_key], workflow, belongto)
+
+
+    def __nodes_belonging_to_a_workflow(self, graph, workflow_node, belongto):
+        '''
+        Returns a set
+        '''
+
+        ret = {element['data']['id'] for element in graph['elements']['nodes'] 
+            if self.__node_belongs_to_a_workflow(element, workflow_node, belongto)}
+        ret.add(workflow_node['data']['id']) # As the workflow node as well
+        return ret
+
+    def __remove_nodes_edges(self, graph, node_ids_to_remove, node_ids_to_add):
+        '''
+        CRITICAL: A mistake here could produce a corrupted graph..
+        '''
+
+        # Determine which edges should be removed
+        edge_ids_to_remove = set() 
+        for edge in graph['elements']['edges']:
+            source_id = edge['data']['source']
+            target_id = edge['data']['target']
+            edge_id = edge['data']['id']
+            source_id_in = source_id in node_ids_to_remove
+            target_id_in = target_id in node_ids_to_remove
+
+            # This is an edge from inside to inside. Remove it
+            if source_id_in and target_id_in:
+                edge_ids_to_remove.add(edge_id)
+                continue
+            
+            # This is an edge from inside to outside
+            # Also, on the new workflow, the inside node does not exist!
+            # Se we are removing the edge. This might render the workflow useless, but not corrupted!
+            if source_id_in and not target_id_in:
+                if not source_id in node_ids_to_add:
+                    edge_ids_to_remove.add(edge_id)
+                continue
+
+            # Same as before but the edge is from outside to inside
+            if not source_id_in and target_id_in:
+                if not target_id in node_ids_to_add:
+                    edge_ids_to_remove.add(edge_id)
+
+        # Remove edges
+        graph['elements']['edges'] = [edge for edge in graph['elements']['edges'] if not edge['data']['id'] in edge_ids_to_remove]
+
+        # Remove nodes
+        graph['elements']['nodes'] = [node for node in graph['elements']['nodes'] if not node['data']['id'] in node_ids_to_remove]
+
+
+    def __update_workflow_node(self, workflow_node, workflow_object):
+        '''
+        Update a workflow node according to the data from the workflow_object
+        '''
+        workflow_node['data']['draft'] = workflow_object.draft
+
+    def update(self,):
+        '''
+        update this workflow
+        TODO: Update also the tool dependencies
+        '''
+
+        self.__update_workflow_node(self.workflow_nodes[self.key], self.workflow)
+        self.workflow.workflow = simplejson.dumps(self.graph)
+        self.workflow.save()
+
+
+        # Update also the workflows that are using me
+        for workflow_using_me in self.workflows_using_me:
+
+            print ('workflow using me:', workflow_using_me)
+
+            graph = simplejson.loads(workflow_using_me.workflow)
+            belongto, workflow_nodes = self.__build_workflow_belongto(graph)
+
+            # Get the workflow that the workflow that we want to update belongs to 
+            belongto_root = belongto[self.key]
+            print ('   belongto_root: ', belongto_root)
+
+            # Get the workflow node that we want to update
+            workflow_node_root = workflow_nodes[self.key]
+            print ('   Workflow root node:', workflow_node_root)
+
+            # This is a set of all the nodes that this sub-workflow has
+            workflow_nodes_set = self.__nodes_belonging_to_a_workflow(graph, workflow_node_root, belongto)
+            print ('  workflow nodes set:', workflow_nodes_set)
+
+            # Remove these nodes (and edges connected to them) from the graph
+            self.__remove_nodes_edges(graph, workflow_nodes_set, self.all_ids)
+
+            # Add the edges of this graph
+            graph['elements']['edges'].extend(self.graph['elements']['edges'])
+
+            # Add the nodes of this graph
+            # Make sure that any main step becomes sub_main
+            nodes_to_add = self.graph['elements']['nodes']
+            for node in nodes_to_add:
+                if node['data']['type'] == 'step':
+                    if node['data']['main']:
+                        node['data']['main'] = False
+                        node['data']['sub_main'] = True
+
+            graph['elements']['nodes'].extend(nodes_to_add)
+
+            # Update the belongto info on the root workflow node. We cannot use the belongto and workflow_nodes any more
+            workflow_node_root = [node for node in graph['elements']['nodes'] if node['data']['id'] == self.key][0]
+            workflow_node_root['data']['belongto'] = {'name': belongto_root['data']['name'] , 'edit': belongto_root['data']['edit']}
+
+            # Update the root workflow node
+            self.__update_workflow_node(workflow_node_root, self.workflow)
+
+            # Save the graph
+            workflow_using_me.workflow = simplejson.dumps(graph)
+            workflow_using_me.save()
+
+
 
 
 @has_data
@@ -2112,7 +2263,9 @@ def ro_finalize_delete(request, **kwargs):
 
             workflow.draft = False
             workflow.save()
-            workflow_has_changed(workflow) # Update other workflows that are using this
+            #workflow_has_changed(workflow) # Update other workflows that are using this
+            workflow_json = WorkflowJSON(workflow) # TODO limit action to finalize!
+            workflow_json.update()
 
         elif action == 'DELETE':
             # Is there any workflow that contains this workflow?
@@ -2189,6 +2342,9 @@ def set_edit_to_cytoscape_json(cy, edit, workflow_info_name):
 
     # Set the edit value
     new_worfklow_node[0]['data']['edit'] = edit
+
+    # Set the label value
+    new_worfklow_node[0]['data']['label'] = workflow_label_cytoscape(None, workflow_info_name, edit)
 
     belongto = {
         'name': workflow_info_name,
@@ -2498,6 +2654,10 @@ def workflows_add(request, **kwargs):
             workflow_using_this_workflow.workflows.add(new_workflow)
             workflow_using_this_workflow.save()
 
+            # Update the json graph
+            workflow_json = WorkflowJSON(new_workflow)
+            workflow_json.update()
+
     else:
         # Add an empty comment. This will be the root comment for the QA thread
         comment = Comment(
@@ -2648,7 +2808,7 @@ def tool_node_cytoscape(tool):
 
 def step_node_cytoscape(name='main'):
     '''
-    Create a cytoscape step npde
+    Create a cytoscape step node
     '''
 
     return {
