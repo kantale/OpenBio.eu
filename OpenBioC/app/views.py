@@ -48,7 +48,7 @@ import hashlib
 
 import logging # https://docs.djangoproject.com/en/2.1/topics/logging/
 
-from collections import Counter
+from collections import Counter, defaultdict
 import urllib.parse # https://stackoverflow.com/questions/40557606/how-to-url-encode-in-python-3/40557716 
 
 # Installed packages imports 
@@ -706,6 +706,8 @@ def tool_get_dependencies_internal(tool, include_as_root=False):
     Get the dependencies of this tool in a flat list
     Recursive
     include_as_root: Should we add this tool as root?
+
+    'dependant' needs dependencies..
     '''
 
     if include_as_root:
@@ -1904,6 +1906,10 @@ def tools_add(request, **kwargs):
             workflow_using_this_tool.tools.add(new_tool)
             workflow_using_this_tool.save()
 
+        # Update the json graph
+        WJ = WorkflowJSON()
+        WJ.update_tool(new_tool)
+
     else:
         #Add an empty comment. This will be the root comment for the QA thread
         comment = Comment(
@@ -1939,7 +1945,7 @@ class WorkflowJSON:
     Basically a function collection for dealing with the workflow json object
     '''
 
-    def __init__(self, workflow):
+    def update_workflow(self, workflow):
         '''
         workflow is a database Workflow opbject
         '''
@@ -1949,6 +1955,18 @@ class WorkflowJSON:
         self.all_ids = {node['data']['id'] for node in self.graph['elements']['nodes']} # All node ids
         self.workflows_using_me = Workflow.objects.filter(workflows__in = [self.workflow])
         self.belongto, self.workflow_nodes = self.__build_workflow_belongto(self.graph)
+        self.__update_workflow()
+
+    def update_tool(self, tool):
+        '''
+        tool is a database Tool object
+        '''
+        self.tool = tool
+        self.graph = self.__create_cytoscape_graph_from_tool_dependencies(self.tool)
+        self.all_ids = {node['data']['id'] for node in self.graph['elements']['nodes']} # All node ids
+        self.workflows_using_me = Workflow.objects.filter(tools__in = [self.tool])
+        self.key = tool_id_cytoscape(self.tool)
+        self.__update_tool()
 
     def __iter_workflows(self, graph):
         '''
@@ -1985,6 +2003,91 @@ class WorkflowJSON:
                 belongto[workflow_key] = None
 
         return belongto, workflow_nodes
+
+    def __build_edges_dict(self, graph):
+        '''
+        Create a dictionary 's': source, 't': target
+        Keys are node ids
+        Values are a set containing all the nodes that there is an edge
+        '''
+
+        ret = {
+            's' : defaultdict(set),
+            't' : defaultdict(set),
+        }
+        for edge in graph['elements']['edges']:
+            ret['s'][edge['data']['source']].add(edge['data']['target'])
+            ret['t'][edge['data']['target']].add(edge['data']['source'])
+
+        return ret
+
+    def __tool_dependencies(self, tool_node, all_nodes, edges):
+        '''
+        Edge A --> B: Tool A has dependency B . Or else, A depends from B. Or else first install B then A
+        Return a set of all tool ids that belong to the dependencies of tool
+        '''
+
+        ret = set()
+
+        def recurse(rec_tool_node):
+            tool_id = rec_tool_node['data']['id']
+
+            if not tool_id in edges['s'][tool_id]:
+                return 
+
+            for target_id in edges['s'][tool_id]:
+                target_node = all_nodes[target_id]
+                
+                if not target_node['data']['type'] == 'tool':
+                    continue
+
+                # This is a tool. There exist an edge rec_tool_node --> target_node. This means that rec_tool_node dependes from target_node
+                if not target_id in ret:
+                    ret.add(target_id)
+                    recurse(targe_node)
+
+        recurse(tool_node)
+        ret.add(tool_node['data']['id'])
+
+        return ret
+
+    def __create_cytoscape_graph_from_tool_dependencies(self, tool):
+        '''
+        tool is a database object.
+        Return a workflow cytoscape worflow. It does not contain the workflow node!
+
+        tool_depending_from_me=None
+        '''
+
+        all_ids = set()
+        workflow = {
+            'elements': {
+                'nodes': [],
+                'edges': [],
+            }
+        }
+
+        this_tool_cytoscape_node = tool_node_cytoscape(tool)
+        workflow['elements']['nodes'].append(this_tool_cytoscape_node)       
+
+        # FIXME !!! DUPLICATE CODE
+        root_tool_all_dependencies = tool_get_dependencies_internal(tool, include_as_root=False)
+        for root_tool_all_dependency in root_tool_all_dependencies:
+            # For each dependency create a cytoscape node
+            cytoscape_node = tool_node_cytoscape(root_tool_all_dependency['dependency'], tool_depending_from_me=root_tool_all_dependency['dependant'])
+            if not cytoscape_node['data']['id'] in all_ids: # An id should exist only once in the graph... FIXME!! all_ids is always empty!
+                workflow['elements']['nodes'].append(cytoscape_node)
+
+                # Connect this tool with its dependent tool node
+                if root_tool_all_dependency['dependant']:
+                    workflow['elements']['edges'].append(edge_cytoscape(tool_node_cytoscape(root_tool_all_dependency['dependant']), cytoscape_node))
+                else:
+                    # This tool does not have a dependant!
+                    # This is a dependency of the root tool!
+                    workflow['elements']['edges'].append(edge_cytoscape(this_tool_cytoscape_node, cytoscape_node))
+
+        return workflow
+
 
     def __node_belongs_to_a_workflow(self, node, workflow, belongto):
         '''
@@ -2062,10 +2165,9 @@ class WorkflowJSON:
         '''
         workflow_node['data']['draft'] = workflow_object.draft
 
-    def update(self,):
+    def __update_workflow(self,):
         '''
         update this workflow
-        TODO: Update also the tool dependencies
         '''
 
         self.__update_workflow_node(self.workflow_nodes[self.key], self.workflow)
@@ -2121,7 +2223,68 @@ class WorkflowJSON:
             workflow_using_me.workflow = simplejson.dumps(graph)
             workflow_using_me.save()
 
+    def __update_tool(self,):
+        '''
+        '''
 
+        # Update all the workflows who are using this tool
+        for workflow_using_me in self.workflows_using_me:
+
+
+            print ('Workflow using me:', workflow_using_me.name, workflow_using_me.edit)
+
+            graph = simplejson.loads(workflow_using_me.workflow)
+
+            print ('   My graph:')
+            print (simplejson.dumps(graph, indent=4))
+
+            all_nodes = {node['data']['id']:node for node in graph['elements']['nodes']}
+            belongto = {node['data']['id']: node['data']['belongto'] for node in graph['elements']['nodes']}
+            edges = self.__build_edges_dict(graph)
+
+            print ('   All nodes:')
+            print (all_nodes)
+
+            print ('   Belongto:')
+            print (belongto)
+
+            print ('   self.key:', self.key)
+
+            tool_node = all_nodes[self.key]
+            tool_node_belongto = belongto[self.key]
+
+            # Use run_tool() does the same task. The problem is that it works directly with the UI. 
+            # We want to construct a cytoscape graph from the database object
+
+            # Get a set of the node ids that depend from this tool
+            tool_dependencies = self.__tool_dependencies(tool_node, all_nodes, edges)
+
+            print ('   Nodes to delete:')
+            print (tool_dependencies)
+
+            # Remove these nodes (and edges connected to them) from the graph
+            self.__remove_nodes_edges(graph, tool_dependencies, self.all_ids)
+
+            print ('   Graph After Deletion:')
+            print (simplejson.dumps(graph, indent=4))
+
+            
+            # Add the edges of the graph
+            graph['elements']['edges'].extend(self.graph['elements']['edges'])
+
+            # Add the nodes of this graph
+            # Make sure that they have the right belongto info
+            nodes_to_add = self.graph['elements']['nodes']
+            for node_to_add in nodes_to_add:
+                node_to_add['data']['belongto'] = tool_node_belongto
+            graph['elements']['nodes'].extend(nodes_to_add)
+
+            print ('  Graph after adding new tool dependencies')
+            print (simplejson.dumps(graph, indent=4))
+
+            # Save the graph
+            workflow_using_me.workflow = simplejson.dumps(graph)
+            workflow_using_me.save()
 
 
 @has_data
@@ -2264,8 +2427,8 @@ def ro_finalize_delete(request, **kwargs):
             workflow.draft = False
             workflow.save()
             #workflow_has_changed(workflow) # Update other workflows that are using this
-            workflow_json = WorkflowJSON(workflow) # TODO limit action to finalize!
-            workflow_json.update()
+            WJ = WorkflowJSON()
+            WJ.update_workflow(workflow) # TODO limit action to finalize!
 
         elif action == 'DELETE':
             # Is there any workflow that contains this workflow?
@@ -2655,8 +2818,8 @@ def workflows_add(request, **kwargs):
             workflow_using_this_workflow.save()
 
             # Update the json graph
-            workflow_json = WorkflowJSON(new_workflow)
-            workflow_json.update()
+            WJ = WorkflowJSON()
+            WJ.update_workflow(new_workflow)
 
     else:
         # Add an empty comment. This will be the root comment for the QA thread
@@ -2765,10 +2928,11 @@ def workflow_node_cytoscape(workflow, name='root', edit=0):
     }
 
 
-def tool_node_cytoscape(tool):
+def tool_node_cytoscape(tool, tool_depending_from_me=None):
     '''
     Create a cytoscape tool node
     tool: A database object tool node
+    tool_depending_from_me: If i was added as a dependency, this should be the tool that depends from me. FIXME: REMOVE THIS
     '''
 
     if isinstance(tool, Tool):
@@ -2776,32 +2940,34 @@ def tool_node_cytoscape(tool):
         return {
             'data': {
                 'belongto': {'name': 'root', 'edit': 0},
-                # 'dep_id' : None, ## Not used in executor
+                'dep_id' : tool_id_cytoscape(tool_depending_from_me) if tool_depending_from_me else '#', # Not used in executor
                 'edit': tool.edit,
                 'id': tool_id_cytoscape(tool),
                 'label': tool_label_cytoscape(tool),
                 'name': tool.name,
-                # root: None ### Not used in executor,
+                'root': 'yes' if tool_depending_from_me else 'no', # Not used in executor. 'yes/no' should be True/False for Christ sake! FIXME
                 'text': tool_label_cytoscape(tool),
                 'type': 'tool',
                 'variables': [{'description': variable.description, 'name': variable.name, 'type': 'variable', 'value': variable.value} for variable in tool.variables.all()],
                 'version': tool.version,
+                'draft': tool.draft,
             }
         }
     elif type(tool) is dict:
         return {
             'data': {
                 'belongto': {'name': 'root', 'edit': 0},
-                # 'dep_id' : None, ## Not used in executor
+                'dep_id' : tool_id_cytoscape(tool_depending_from_me) if tool_depending_from_me else '#', # See comment above. Not used in executor
                 'edit': tool['edit'],
                 'id': tool_id_cytoscape(tool),
                 'label': tool_label_cytoscape(tool),
                 'name': tool['name'],
-                # root: None ### Not used in executor,
+                'root' : 'yes' if tool_depending_from_me else 'no', # Not used in executor,
                 'text': tool_label_cytoscape(tool),
                 'type': 'tool',
                 'variables': [{'description': variable['description'], 'name': variable['name'], 'type': 'variable', 'value': variable['value']} for variable in tool['variables']],
                 'version': tool['version'],
+                'draft': tool['draft'],
             }
         }
 
@@ -2838,7 +3004,18 @@ def edge_cytoscape(source, target):
             'source': source['data']['id'],
             'target': target['data']['id'],
             'id': create_workflow_edge_id(source['data']['id'], target['data']['id']),
-        }
+        },
+        'position': {
+            'x': 0,
+            'y': 0,
+        },
+        'group': 'edges',
+        'removed': False,
+        'selected': False,
+        'selectable': True,
+        'locked': False,
+        'grabbable': True,
+        'classes': '',
     }
 
 @has_data
@@ -2859,7 +3036,7 @@ def run_tool(request, **kwargs):
     workflow_node = workflow_node_cytoscape(None)
     workflow['elements']['nodes'].append(workflow_node)
 
-    # this does not contain recursively all the dependenfies. Only the first level
+    # this does not contain recursively all the dependencies. Only the first level
     root_tool_dependencies = kwargs['tool_dependencies']
     root_tool_objects = [Tool.objects.get(name=t['name'], version=t['version'], edit=t['edit']) for t in root_tool_dependencies]
     all_dependencies_str = list(map(str, root_tool_objects))
@@ -2896,7 +3073,7 @@ def run_tool(request, **kwargs):
         for root_tool_all_dependency in root_tool_all_dependencies:
             # For each dependency create a cytoscape node
             cytoscape_node = tool_node_cytoscape(root_tool_all_dependency['dependency'])
-            if not cytoscape_node['data']['id'] in all_ids: # An id should exist only once in the graph...
+            if not cytoscape_node['data']['id'] in all_ids: # An id should exist only once in the graph.... FIXME all_ids is always empty!
                 workflow['elements']['nodes'].append(cytoscape_node)
 
                 # Connect this tool with its dependent tool node
