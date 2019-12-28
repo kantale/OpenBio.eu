@@ -958,6 +958,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 //$scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === data['tool_os_choices'][0]})  ; // Take just the first. The model allows for multiple choices
                 $scope.tool_os_choices_tmp = data['tool_os_choices']; 
 
+                console.log($scope.tool_os_choices_tmp);
+
                 //The server returns data['tool_os_choices'] which has the structure that ui-select "wants"
                 //Nevertheless $scope.tool_os_choices is the model for the select element.
                 //This variable (tool_os_choices) MUST HAVE items from the variable in the ng-repeat attribute (in our case $scope.os_choices)

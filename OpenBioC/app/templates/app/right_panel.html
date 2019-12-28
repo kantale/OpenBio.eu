@@ -52,7 +52,7 @@
                         ng-click="ro_finalize_delete_pressed('tool', 'DELETE', false)">Delete</a>
                     <a class="dropdown-trigger btn" data-target='runDropdownTool' style="margin-bottom:2px">Run</a>
                     <a class="dropdown-trigger btn" data-target='downloadDropdownTool' style="margin-bottom:2px">Download</a>
-                    <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
+                    <a id="tool_save_button_id" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Save" ng-click="tool_create_save_pressed()" ng-show="tools_info_editable"><i
                             class="material-icons">save</i></a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
@@ -275,7 +275,6 @@
                             <!-- adding values to use it for dockerfile-->
                             <div class="col s12 left-align">
                                 <span>Select Operating Systems</span>
-                                <!-- TODO add multiple -->
                                 <select id="tool_os_choices_select" ng-model="tool_os_choices"
                                     ng-options="os.name group by os.group for os in os_choices" multiple></select>
                             </div>
