@@ -420,7 +420,7 @@
         <div class="card blue-grey lighten-4 rightPanelTitleCard">
             <div class="card-content rightPanelTitleContent">
                 <h5 class="rightPanelTitleHeader">Workflow</h5>
-                <a class="waves-effect btn-flat right" style="margin-top: -30px;" ng-click="workflows_button_cancel_clicked()">Cancel</a>
+                <a id="workflow_cancel_button_id" class="waves-effect btn-flat right" style="margin-top: -30px;" ng-click="workflows_button_cancel_clicked()">Cancel</a>
             </div>
         </div>
         <div style="margin: 20px;">
@@ -471,7 +471,7 @@
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Clear" ng-click="workflow_info_clear_pressed()"
                         ng-disabled="!workflows_info_editable">Clear</a>
-                    <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
+                    <a id="workflow_save_button_id" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Save" ng-click="workflows_create_save_pressed()"
                         ng-show="workflows_info_editable"><i class="material-icons">save</i></a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
