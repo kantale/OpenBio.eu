@@ -889,14 +889,15 @@ window.onload = function () {
 
         if (this_id_array[3] === "1") { // We are moving an item from the tool search tree
 
-            //The tools that we are dragging.
+            var tool_data = $('#tools_search_jstree_id').jstree(true).get_node(this_id).data; // With help from: https://stackoverflow.com/a/50038715/5626738 ... 
+
+            //The tool that we are dragging.
             var tool = {
-                'name': this_id_array[0],
-                'version': this_id_array[1],
-                'edit': this_id_array[2]
+                'name': tool_data.name,
+                'version': tool_data.version,
+                'edit': tool_data.edit
             };
 
-            //console.log(tool);
 
             if (target.closest('#tools_dep_jstree_id').length) { // We are dropping it to the dependency tool js tree div
 
@@ -906,7 +907,7 @@ window.onload = function () {
                     angular.element($('#angular_div')).scope().tool_get_dependencies(tool, 1); // 1 = drag from search jstree to dependencies jstree
                 });
             }
-            else if (target.closest('#cywf').length) { // We are dropping it to the workflow graph editor. //Changed from old: d3wf
+            else if (target.closest('#cywf').length) { // We are dropping a tool to the workflow graph editor. //Changed from old: d3wf
 
                 angular.element($('#angular_div')).scope().$apply(function () {
                     angular.element($('#angular_div')).scope().tool_get_dependencies(tool, 2); // 2 = drag from search jstree to workflow editing
@@ -1568,7 +1569,7 @@ window.onload = function () {
 							}
 
 							//var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'no', variables: d.variables } };
-							var myNode = { data: { id: d.id, text: d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'no', dep_id: d.dep_id, variables: d.variables, belongto: this_node_wf_belong_to }};
+							var myNode = { data: { id: d.id, text: d.cy_label, label: d.cy_label, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'no', dep_id: d.dep_id, variables: d.variables, draft: d.draft, belongto: this_node_wf_belong_to }};
 
 							myNodes.push(myNode);
 							var myEdge = { data: { id: window.OBCUI.create_workflow_edge_id(d.dep_id, d.id), weight: 1, source: d.dep_id, target: d.id } };
@@ -1576,7 +1577,7 @@ window.onload = function () {
 
 						} else {
 							//var myNode = { data: { id: d.id, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'yes', variables: d.variables } };
-							var myNode = { data: { id: d.id, text: d.text, label: d.text, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'yes', dep_id: d.dep_id, variables: d.variables, belongto: this_node_wf_belong_to } };
+							var myNode = { data: { id: d.id, text: d.cy_label, label: d.cy_label, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'yes', dep_id: d.dep_id, variables: d.variables, draft: d.draft, belongto: this_node_wf_belong_to } };
 							myNodes.push(myNode);
 							myEdges.push({ data: { source: this_node_wf_belong_to_id, target: d.id, id: window.OBCUI.create_workflow_edge_id(this_node_wf_belong_to_id, d.id), edgebelongto: 'true' } });
 						}
@@ -1589,7 +1590,7 @@ window.onload = function () {
                     //TODO add root feature (different than tools): wfroot:yes
                     var this_workflow_id = window.OBCUI.create_workflow_id(d);
 
-                    var myNode = { data: { id: this_workflow_id, name: d.name, edit: d.edit, label: create_workflow_label(d), type: 'workflow', belongto: this_node_wf_belong_to } };
+                    var myNode = { data: { id: this_workflow_id, name: d.name, edit: d.edit, label: create_workflow_label(d), type: 'workflow', draft: d.draft, belongto: this_node_wf_belong_to } };
                     myNodes.push(myNode);
                     myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_workflow_id, id: window.OBCUI.create_workflow_edge_id(this_node_wf_belong_to_id, this_workflow_id), edgebelongto: 'true' } });
 					
@@ -2059,10 +2060,21 @@ window.onload = function () {
                     {
                         selector: 'node',
                         "style": {
-                            "shape": "round-rectangle",
-                            "background-color": "#5A5A5A",
+                            //"shape": "round-rectangle",
+                            //"background-color": "#5A5A5A",
                             //"label": "data(id)",
-                            "label": "data(label)",
+                            "label": "data(label)" // Set the label universally 
+                            //"height": 15,
+                            //"width": 15
+                        }
+                    },
+                    {
+                        selector: 'node[type="tool"][?draft]',
+                        "style": {
+                            "shape": "round-rectangle",
+                            'background-color': '#E53935', // red
+                            //"label": "data(id)",
+                            //"label": "data(label)",
                             //"height": 15,
                             //"width": 15
                         }
@@ -2127,12 +2139,23 @@ window.onload = function () {
                     },
 
                     {
-                        selector: 'node[type="workflow"]',
+                        selector: 'node[type="workflow"][!draft]',
                         "style": {
                             'shape': 'octagon',
                             //'border-width': '3',
                             //'border-color': '#5A5A5A',
                             'background-color': '#5A5A5A',
+                            //"height": 15,
+                            //"width": 15
+                        }
+                    },
+                    {
+                        selector: 'node[type="workflow"][?draft]',
+                        "style": {
+                            'shape': 'octagon',
+                            //'border-width': '3',
+                            //'border-color': '#5A5A5A',
+                            'background-color': '#E53935',
                             //"height": 15,
                             //"width": 15
                         }
@@ -2915,7 +2938,7 @@ window.onload = function () {
             cy.json({
                 elements: {
                     nodes: [
-                        { data: { id: window.OBCUI.create_workflow_id({ name: name, edit: null }), label: name, name: name, edit: null, type: "workflow", belongto: null } },
+                        { data: { id: window.OBCUI.create_workflow_id({ name: name, edit: null }), label: name, name: name, edit: null, type: "workflow", draft: true, belongto: null } },
                     ]
                 }
             });

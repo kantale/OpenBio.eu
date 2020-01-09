@@ -9,7 +9,7 @@
         <div class="card blue-grey lighten-4 rightPanelTitleCard">
             <div class="card-content rightPanelTitleContent">
                 <h5 class="rightPanelTitleHeader">Tool/Data</h5>
-                <a class="waves-effect btn-flat right" style="margin-top: -30px;" ng-click="tools_button_cancel_clicked()">Cancel</a>
+                <a id="tool_cancel_button_id" class="waves-effect btn-flat right" style="margin-top: -30px;" ng-click="tools_button_cancel_clicked()">Cancel</a>
             </div>
         </div>
         <div style="margin: 20px;">
@@ -46,13 +46,13 @@
                         ng-click="tool_edit_pressed()">Edit</a>
                     <a class="btn tooltipped" data-position="bottom" data-tooltip="Finalize" style="margin-bottom:2px"
                         ng-show="tools_info_draft && tool_info_username==username && !tools_info_editable"
-                        ng-click="tool_finalize_delete_pressed('FINALIZE', false)">Finalize</a>
+                        ng-click="ro_finalize_delete_pressed('tool', 'FINALIZE', false)">Finalize</a>
                     <a class="btn tooltipped" data-position="bottom" data-tooltip="Delete" style="margin-bottom:2px"
                         ng-show="tools_info_draft && tool_info_username==username && !tools_info_editable"
-                        ng-click="tool_finalize_delete_pressed('DELETE', false)">Delete</a>
+                        ng-click="ro_finalize_delete_pressed('tool', 'DELETE', false)">Delete</a>
                     <a class="dropdown-trigger btn" data-target='runDropdownTool' style="margin-bottom:2px">Run</a>
                     <a class="dropdown-trigger btn" data-target='downloadDropdownTool' style="margin-bottom:2px">Download</a>
-                    <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
+                    <a id="tool_save_button_id" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Save" ng-click="tool_create_save_pressed()" ng-show="tools_info_editable"><i
                             class="material-icons">save</i></a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
@@ -275,7 +275,6 @@
                             <!-- adding values to use it for dockerfile-->
                             <div class="col s12 left-align">
                                 <span>Select Operating Systems</span>
-                                <!-- TODO add multiple -->
                                 <select id="tool_os_choices_select" ng-model="tool_os_choices"
                                     ng-options="os.name group by os.group for os in os_choices" multiple></select>
                             </div>
@@ -421,7 +420,7 @@
         <div class="card blue-grey lighten-4 rightPanelTitleCard">
             <div class="card-content rightPanelTitleContent">
                 <h5 class="rightPanelTitleHeader">Workflow</h5>
-                <a class="waves-effect btn-flat right" style="margin-top: -30px;" ng-click="workflows_button_cancel_clicked()">Cancel</a>
+                <a id="workflow_cancel_button_id" class="waves-effect btn-flat right" style="margin-top: -30px;" ng-click="workflows_button_cancel_clicked()">Cancel</a>
             </div>
         </div>
         <div style="margin: 20px;">
@@ -437,7 +436,7 @@
                             <span ng-bind="workflow_info_name"></span><span ng-show="!workflows_info_editable">/<span
                                     ng-bind="workflow_info_edit"></span></span>
                         </h5>
-                        <small class="form-text text-muted" ng-show="!workflows_info_editable">
+                        <small class="form-text text-muted" ng-show="(!workflows_info_editable) || workflows_info_edit_state">
                             created by <a ng-click="interlink({type: 'u', username: workflows_info_username})">u/<span ng-bind="workflows_info_username"></span></a>
                             <span>, created at <span ng-bind="workflow_info_created_at"></span></span>
                             {% verbatim %}
@@ -448,16 +447,23 @@
                                 ng-bind="workflow_info_forked_from | workflow_label"></span></a></span>
                         </small>
                     </div>
-                    <span class="red lighten-2 draft tooltipped" data-position="left" data-tooltip="Draft">DRAFT</span>
+                    <span class="red lighten-2 draft tooltipped" data-position="left" data-tooltip="This workflow is not finalized. It might change in the future!"
+                    ng-show="workflows_info_draft">DRAFT</span>
                 </div>
                 <!-- Buttons -->
                 <div class="row right-align">
                     <!-- <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Run" ng-click="workflow_info_run_pressed()"
                         ng-disabled="workflows_info_editable">Run</a> -->
-                    <a class="btn tooltipped" data-position="bottom" data-tooltip="Edit" style="margin-bottom:2px">Edit</a>
-                    <a class="btn tooltipped" data-position="bottom" data-tooltip="Finalize" style="margin-bottom:2px">Finalize</a>
-                    <a class="btn tooltipped" data-position="bottom" data-tooltip="Delete" style="margin-bottom:2px">Delete</a>
+                    <a class="btn tooltipped" data-position="bottom" data-tooltip="Edit" style="margin-bottom:2px"
+                        ng-show="workflows_info_draft && workflows_info_username==username && !workflows_info_editable"
+                        ng-click="workflow_edit_pressed()">Edit</a>
+                    <a class="btn tooltipped" data-position="bottom" data-tooltip="Finalize" style="margin-bottom:2px"
+                        ng-show="workflows_info_draft && workflows_info_username==username && !workflows_info_editable"
+                        ng-click="ro_finalize_delete_pressed('workflow', 'FINALIZE', false)">Finalize</a>
+                    <a class="btn tooltipped" data-position="bottom" data-tooltip="Delete" style="margin-bottom:2px"
+                        ng-show="workflows_info_draft && workflows_info_username==username && !workflows_info_editable"
+                        ng-click="ro_finalize_delete_pressed('workflow', 'DELETE', false)">Delete</a>
                     <a class="dropdown-trigger btn" data-target='runDropdownWorkflow' style="margin-bottom:2px">Run</a>
                     <a class="dropdown-trigger btn" data-target='downloadDropdownWorkflow' style="margin-bottom:2px">Download</a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
@@ -465,11 +471,11 @@
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Clear" ng-click="workflow_info_clear_pressed()"
                         ng-disabled="!workflows_info_editable">Clear</a>
-                    <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
+                    <a id="workflow_save_button_id" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Save" ng-click="workflows_create_save_pressed()"
                         ng-show="workflows_info_editable"><i class="material-icons">save</i></a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
-                        data-tooltip="Fork" ng-click="workflows_info_fork_pressed()" ng-show="!workflows_info_editable"
+                        data-tooltip="Fork" ng-click="workflows_info_fork_pressed('FORK')" ng-show="!workflows_info_editable"
                         ng-class="{'disabled': !username}"><i class="material-icons">call_split</i></a>
                     <!-- Run Dropdown -->
                     <ul id='runDropdownWorkflow' class='dropdown-content'>
@@ -507,7 +513,7 @@
                                 <div class="input-field col s12 m12 grid-s12-m12-l12">
                                     <input id="generalWorkflowName" type="text" class="validate"
                                         ng-model="workflow_info_name" ng-change="workflow_info_name_changed()"
-                                        ng-disabled="workflow_info_forked_from">
+                                        ng-disabled="workflow_info_forked_from || workflows_info_edit_state">
                                     <label for="generalWorkflowName" required>Name</label>
                                 </div>
                                 <div class="input-field col s12 grid-s12-m12-l12">

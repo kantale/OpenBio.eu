@@ -234,6 +234,18 @@ class Workflow(models.Model):
         '''
         unique_together = (('name', 'edit'),)
 
+    @staticmethod
+    def get_repr(name, edit):
+        '''
+        A string reporesentation of the workflow
+        '''
+        return f'{name}/{edit}'
+
+    def __str__(self,):
+        '''
+        A string representation of the workflow
+        '''
+        return Workflow.get_repr(self.name, self.edit)
 
     name = models.CharField(max_length=256)
     edit = models.IntegerField()
@@ -250,6 +262,9 @@ class Workflow(models.Model):
 
     obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
     forked_from = models.ForeignKey(to="Workflow", null=True, on_delete=models.CASCADE, related_name='forked_from_related') #Is this forked from another tool?
+    tools = models.ManyToManyField(to='Tool', related_name='workflows_using_me')
+    workflows = models.ManyToManyField(to='Workflow', related_name='workflows_using_me')
+
     changes = models.TextField(null=True) # What changes have been made from forked tool?
 
     # Links to the tools used (for stats)
@@ -259,7 +274,7 @@ class Workflow(models.Model):
 
     upvotes = models.IntegerField() # Number of upvotes
     downvotes = models.IntegerField() # Number of downvotes
-
+    draft = models.BooleanField() # Is this a draft Workflow?
     comment = models.ForeignKey(to='Comment', null=True, on_delete=models.CASCADE, related_name='workflow_comment') # The comments of the tool
 
 class ReportToken(models.Model):
@@ -454,7 +469,7 @@ class UpDownToolVote(models.Model):
             ]
 
     obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
-    tool = models.ForeignKey(Tool, null=False, on_delete=models.CASCADE)
+    tool = models.ForeignKey(Tool, null=True, on_delete=models.CASCADE) # null=true to make them votes transferable to other tools
     upvote = models.BooleanField() # True --> upvote, False --> downvote
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -477,7 +492,7 @@ class UpDownWorkflowVote(models.Model):
             ]
 
     obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
-    workflow = models.ForeignKey(Workflow, null=False, on_delete=models.CASCADE)
+    workflow = models.ForeignKey(Workflow, null=True, on_delete=models.CASCADE) # null=true to make them votes transferable to other tools
     upvote = models.BooleanField() # True --> upvote, False --> downvote
     created_at = models.DateTimeField(auto_now_add=True)
 
