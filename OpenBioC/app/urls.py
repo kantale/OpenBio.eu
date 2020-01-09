@@ -30,7 +30,7 @@ urlpatterns = [
 	path('workflows_search_2/', views.workflows_search_2), # icontains search for workflows from search
 	path('tools_search_3/', views.tools_search_3), # Search for a specific tool
 	path('tools_add/', views.tools_add), # Add a new tool
-	path('tools_finalize_delete/', views.tools_finalize_delete), # Finalize (from draft to no draft) or delete a tool 
+	path('ro_finalize_delete/', views.ro_finalize_delete), # Finalize (from draft to no draft) or delete a Research Object (ro) 
 	path('tool_get_dependencies/', views.tool_get_dependencies), # Get a JSTREE with a dependencies of this tool
 	path('workflows_add/', views.workflows_add), # Add (or Save) a new workflow 
 	path('workflows_search_3/', views.workflows_search_3), # Search (and get the details) for a specific SINGLE workflow. 
@@ -58,7 +58,7 @@ urlpatterns = [
 	path('gen_qa_add_comment/', views.gen_qa_add_comment), # Genetic version of the above # Add a comment to a QA
 	path('updownvote_comment/', views.updownvote_comment), # thumbs up or a thumbs down was pressed on a comment
 	path('edit_comment/', views.edit_comment), # edit a comment
-  path('get_pk_from_root_comment/', views.get_pk_from_root_comment), # COMMENT IS MISSING!! PLEASE ADD !
+  	path('get_pk_from_root_comment/', views.get_pk_from_root_comment), # COMMENT IS MISSING!! PLEASE ADD !
 	path('updownvote_tool_workflow/', views.updownvote_tool_workflow), # thumbs up or thumbs down was pressed on a tool or on a workflow
 	path('markdown_preview/', views.markdown_preview), # Called from markdown preview tab. angular_previewTabClicked 
 ]

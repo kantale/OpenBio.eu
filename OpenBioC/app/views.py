@@ -48,7 +48,7 @@ import hashlib
 
 import logging # https://docs.djangoproject.com/en/2.1/topics/logging/
 
-from collections import Counter
+from collections import Counter, defaultdict
 import urllib.parse # https://stackoverflow.com/questions/40557606/how-to-url-encode-in-python-3/40557716 
 
 # Installed packages imports 
@@ -110,8 +110,10 @@ g = {
 #        'pybtex_parser': pybtex.database.input.bibtex.Parser()
 #    }
     # materialize js tree icons
+    # https://materializecss.com/icons.html 
     'jstree_icons': {
         'tools': 'settings',
+        'variables': 'chevron_right', # Tool variables
         'workflows': 'device_hub',
         'reports': 'description',
         'references': 'link',
@@ -572,12 +574,24 @@ def tool_text_jstree(tool):
     '''
     return '/'.join(map(str, [tool.name, tool.version, tool.edit]))
 
+def tool_node_jstree(tool):
+    '''
+    The HTML that is node in a jstree that contains a tool
+    '''
+    return tool_text_jstree(tool) + (' <span class="red lighten-3">DRAFT</span>' if tool.draft else '') + jstree_icon_html('tools'),    
+
 
 def workflow_text_jstree(workflow):
     '''
     The JS tree workflow text
     '''
     return '/'.join(map(str, [workflow.name, workflow.edit]))
+
+def workflow_node_jstree(workflow):
+    '''
+    The HTML that is node in a jstree that contains a workflow
+    '''
+    return workflow_text_jstree(workflow) + (' <span class="red lighten-3">DRAFT</span>' if workflow.draft else '') + jstree_icon_html('workflows')
 
 def report_text_jstree(report):
     '''
@@ -635,6 +649,9 @@ def workflow_id_cytoscape(workflow, name, edit):
     The cytoscape workflow id
     '''
 
+    if type(workflow) is dict:
+        return workflow['name'] + '__' + str(workflow['edit'])
+
     if workflow:
         return workflow.name + '__' + str(workflow.edit)
 
@@ -645,9 +662,9 @@ def workflow_label_cytoscape(workflow, name, edit):
     The cytoscape workflow label
     '''
     if workflow:
-        return workflow.name
+        return workflow.name + '/' + str(workflow.edit)
 
-    return name
+    return name + '/' + str(edit)
 
 
 def workflow_id_jstree(workflow, id_):
@@ -665,11 +682,11 @@ def report_id_jstree(report, id_):
 
     return simplejson.dumps([report.workflow.name, str(report.workflow.edit), str(report.nice_id), str(id_)])
 
-def tool_variable_text_jstree(variable):
+def tool_variable_node_jstree(variable):
     '''
-    The JSTree variable text
+    The JSTree variable html 
     '''
-    return '{}:{}'.format(variable.name, variable.description)
+    return '{}:{}'.format(variable.name, variable.description) + jstree_icon_html('variables')   
 
 def tool_variable_id_jstree(variable, tool, id_):
     '''
@@ -689,6 +706,8 @@ def tool_get_dependencies_internal(tool, include_as_root=False):
     Get the dependencies of this tool in a flat list
     Recursive
     include_as_root: Should we add this tool as root?
+
+    'dependant' needs dependencies..
     '''
 
     if include_as_root:
@@ -722,8 +741,9 @@ def tool_build_dependencies_jstree(tool_dependencies, add_variables=False):
 #                    'edit': tool_dependency['dependency'].edit,
                     'type': 'tool',
              },
-            'text': tool_text_jstree(tool_dependency['dependency']),
-            'id': tool_id_jstree(tool_dependency['dependency'], g['DEPENDENCY_TOOL_TREE_ID']),
+            'text': tool_node_jstree(tool_dependency['dependency']), # tool_text_jstree(tool_dependency['dependency']), # This is what is shown on the tree
+            'cy_label': tool_label_cytoscape(tool_dependency['dependency']), # Label to show in the cytoscape graph
+            'id': tool_id_jstree(tool_dependency['dependency'], g['DEPENDENCY_TOOL_TREE_ID']), # This is a unique id
             'parent': tool_id_jstree(tool_dependency['dependant'], g['DEPENDENCY_TOOL_TREE_ID']) if tool_dependency['dependant'] else '#',
             'type': 'tool', ### This is redundant with ['data']['type'], but we need it because 
                             ### The node[0].data.type is checked in $scope.tools_var_jstree_model. 
@@ -732,8 +752,7 @@ def tool_build_dependencies_jstree(tool_dependencies, add_variables=False):
             'name': tool_dependency['dependency'].name,
             'version': tool_dependency['dependency'].version,
             'edit': tool_dependency['dependency'].edit,
-
-
+            'draft': tool_dependency['dependency'].draft,
 
         })
 
@@ -747,7 +766,7 @@ def tool_build_dependencies_jstree(tool_dependencies, add_variables=False):
                         'value': variable.value,
                         'description': variable.description,
                     },
-                    'text': tool_variable_text_jstree(variable),
+                    'text': tool_variable_node_jstree(variable),
                     'id': tool_variable_id_jstree(variable, tool_dependency['dependency'], g['VARIABLES_TOOL_TREE_ID']),
                     'parent': tool_id_jstree(tool_dependency['dependency'], g['DEPENDENCY_TOOL_TREE_ID']),
                     'type': 'variable', # TODO: FIX REDUNDANCY WITH ['data']['type']
@@ -1128,6 +1147,7 @@ def index(request, **kwargs):
             logger.warning('WARNING: YOU ARE RUNNING IN DEFAULT DJANGO PORT (8000)')
         if port != g['DEFAULT_DEBUG_PORT']:
             logger.warning(f'WARNING: You are not runining on port {g["DEFAULT_DEBUG_PORT"]}')
+    context['debug'] = settings.DEBUG # If this is True, then we include tests.js 
 
     # Add port information or other insrtance settings on template
     instance_settings = get_instance_settings()
@@ -1453,7 +1473,7 @@ def tools_search_2(tools_search_name, tools_search_version, tools_search_edit):
     for x in results:
         to_add = {
             'data': {'name': x.name, 'version': x.version, 'edit': x.edit},
-            'text': tool_text_jstree(x) + jstree_icon_html('tools'),
+            'text': tool_node_jstree(x), #  tool_text_jstree(x) + (' <span class="red lighten-3">DRAFT</span>' if x.draft else '') + jstree_icon_html('tools'),
             'id': tool_id_jstree(x, g['SEARCH_TOOL_TREE_ID']),
             'parent': tool_id_jstree(x.forked_from, g['SEARCH_TOOL_TREE_ID']) if x.forked_from else '#',
             'state': { 'opened': True},
@@ -1493,7 +1513,7 @@ def workflows_search_2(workflows_search_name, workflows_search_edit):
     for x in results:
         to_add = {
             'data': {'name': x.name, 'edit': x.edit},
-            'text': workflow_text_jstree(x) + jstree_icon_html('workflows'),
+            'text': workflow_node_jstree(x),
             'id': workflow_id_jstree(x, g['SEARCH_WORKFLOW_TREE_ID']),
             'parent': workflow_id_jstree(x.forked_from, g['SEARCH_WORKFLOW_TREE_ID']) if x.forked_from else '#',
             'state': { 'opened': True},
@@ -1688,7 +1708,13 @@ def tools_add(request, **kwargs):
     if not type(tool_edit_state) is bool:
         return fail('Error 8715')
 
+    upvoted = False
+    downvoted = False
+    tool_forked_from = None
+    tool_changes = None
     if tool_edit_state:
+        # We are editing this tool!
+
         # Get the edit of the tool
         tools_search_edit = kwargs.get('tools_search_edit', '')
         if not tools_search_edit:
@@ -1701,9 +1727,7 @@ def tools_add(request, **kwargs):
             return fail('Invalid tool edit number. Error 8714')
 
 
-    if tool_edit_state:
-        # We are editing this tool!
-        # Delete the existing!
+        # Delete the previous object!
         try:
             tool = Tool.objects.get(name=tools_search_name, version=tools_search_version, edit=tools_search_edit)
         except ObjectDoesNotExist as e:
@@ -1713,7 +1737,50 @@ def tools_add(request, **kwargs):
         if tool.obc_user != obc_user:
             return fail('Error 8717') # This is strange.. The user who edits this tool is not the one who created it???
         
+        # Store a reference to the comment
+        comment = tool.comment
+
+        # Store upvotes/downvotes
+        upvotes = tool.upvotes
+        downvotes = tool.downvotes
+
+        # Store vote objects
+        votes = UpDownToolVote.objects.filter(tool=tool)
+        # Disassociate from this tool (this is allowed because null=true)
+        for vote in votes:
+            if vote.obc_user == obc_user:
+                upvoted = vote.upvote
+                downvoted = not upvoted
+
+            vote.tool = None
+            vote.save()
+
+        # Get the tools that are forks of this tool
+        tool_forks = Tool.objects.filter(forked_from=tool)
+        # Temporary set that these tools are not forked from any tool
+        for tool_fork in tool_forks:
+            tool_fork.forked_from = None
+            tool_fork.save()
+
+        # Get the tool that this tool is forked from
+        tool_forked_from = tool.forked_from
+
+        # Get the created at. It needs to be sorted accorfing to this, otherwise the jstree becomes messy
+        tool_created_at = tool.created_at
+
+        # Get the workflows that use this tool
+        workflows_using_this_tool = Workflow.objects.filter(tools__in = [tool])
+
+        # Remove this tool from these workflows
+        for workflow_using_this_tool in workflows_using_this_tool:
+            workflow_using_this_tool.tools.remove(tool)
+            workflow_using_this_tool.save()
+
+        # Delete it!
         tool.delete()
+    else:
+        upvotes = 0
+        downvotes = 0
  
     #os_type Update 
     tool_os_choices = kwargs.get('tool_os_choices',[])
@@ -1745,9 +1812,7 @@ def tools_add(request, **kwargs):
             return fail('Edit summary cannot be empty')
 
     else:
-        tool_forked_from = None
-        tool_changes = None
-    
+        pass # Do nothing
     
     #Installation/Validation commands 
     tool_installation_commands = kwargs['tool_installation_commands']
@@ -1755,8 +1820,8 @@ def tools_add(request, **kwargs):
 
     #Dependencies
     tool_dependencies = kwargs['tool_dependencies']
-    #print ('tool_dependencies:')
-    #print (tool_dependencies)
+    
+    # FIXME! What if a dependency is deleted???
     tool_dependencies_objects = [Tool.objects.get(name=t['name'], version=t['version'], edit=int(t['edit'])) for t in tool_dependencies]
 
     #Variables
@@ -1767,6 +1832,7 @@ def tools_add(request, **kwargs):
     for variable_name, variable_name_counter in Counter([x['name'] for x in tool_variables]).items():
         if variable_name_counter>1:
             return fail('Two variables cannot have the same name!')
+
 
     #Create new tool
     new_tool = Tool(
@@ -1781,8 +1847,8 @@ def tools_add(request, **kwargs):
         changes = tool_changes,
         installation_commands=tool_installation_commands,
         validation_commands=tool_validation_commands,
-        upvotes = 0,
-        downvotes = 0,
+        upvotes = upvotes,
+        downvotes = downvotes,
         draft = True, # By defaut all new tools are draft 
         
         last_validation=None,
@@ -1790,6 +1856,12 @@ def tools_add(request, **kwargs):
 
     #Save it
     new_tool.save()
+
+    if tool_edit_state:
+        # Preserve the created at date. We have to do that AFTER the save! https://stackoverflow.com/questions/7499767/temporarily-disable-auto-now-auto-now-add
+        # If we do not preserve the created at, then the jstree becomes messy.
+        new_tool.created_at = tool_created_at
+        new_tool.save()
 
     #Add dependencies 
     if tool_dependencies_objects:
@@ -1818,17 +1890,39 @@ def tools_add(request, **kwargs):
     new_tool.keywords.add(*keywords)
     new_tool.save()
 
-    #Add an empty comment. This will be the root comment for the QA thread
-    comment = Comment(
-        obc_user = OBC_user.objects.get(user=request.user),
-        comment = '',
-        comment_html = '',
-        title = markdown('Discussion on Tool: t/{}/{}/{}'.format(tools_search_name, tools_search_version, next_edit)),
-        parent = None,
-        upvotes = 0,
-        downvotes = 0,
-    )
-    comment.save()
+    if tool_edit_state:
+        # Add the votes from the previous edit
+        for vote in votes:
+            vote.tool = new_tool
+            vote.save()
+
+        # Add the tools that were forked from this tool (that was deleted before) to the new tool
+        for tool_fork in tool_forks:
+            tool_fork.forked_from = new_tool
+            tool_fork.save()
+
+        # Add to the workflows that were using this tool, the new tool
+        for workflow_using_this_tool in workflows_using_this_tool:
+            workflow_using_this_tool.tools.add(new_tool)
+            workflow_using_this_tool.save()
+
+        # Update the json graph
+        WJ = WorkflowJSON()
+        WJ.update_tool(new_tool)
+
+    else:
+        #Add an empty comment. This will be the root comment for the QA thread
+        comment = Comment(
+            obc_user = OBC_user.objects.get(user=request.user),
+            comment = '',
+            comment_html = '',
+            title = markdown('Discussion on Tool: t/{}/{}/{}'.format(tools_search_name, tools_search_version, next_edit)),
+            parent = None,
+            upvotes = 0,
+            downvotes = 0,
+        )
+        comment.save()
+
     new_tool.comment = comment
     new_tool.save()
 
@@ -1839,64 +1933,527 @@ def tools_add(request, **kwargs):
 
         'tool_pk': new_tool.pk, # Used in comments
         'tool_thread': qa_create_thread(new_tool.comment, obc_user), # Tool comment thread 
+        'score': upvotes-downvotes,
+        'voted': {'up': upvoted, 'down': downvoted},
     }
 
     return success(ret)
 
+
+class WorkflowJSON:
+    '''
+    Basically a function collection for dealing with the workflow json object
+    '''
+
+    def update_workflow(self, workflow):
+        '''
+        workflow is a database Workflow opbject
+        '''
+        self.workflow = workflow
+        self.key = workflow_id_cytoscape(self.workflow, None, None)
+        self.graph = simplejson.loads(self.workflow.workflow)
+        self.all_ids = {node['data']['id'] for node in self.graph['elements']['nodes']} # All node ids
+        self.workflows_using_me = Workflow.objects.filter(workflows__in = [self.workflow])
+        self.belongto, self.workflow_nodes = self.__build_workflow_belongto(self.graph)
+        self.__update_workflow()
+
+    def update_tool(self, tool):
+        '''
+        tool is a database Tool object
+        '''
+        self.tool = tool
+        self.graph = self.__create_cytoscape_graph_from_tool_dependencies(self.tool)
+        self.all_ids = {node['data']['id'] for node in self.graph['elements']['nodes']} # All node ids
+        self.workflows_using_me = Workflow.objects.filter(tools__in = [self.tool])
+        self.key = tool_id_cytoscape(self.tool)
+        self.__update_tool()
+
+    def __iter_workflows(self, graph):
+        '''
+        '''
+        for element in graph['elements']['nodes']:
+            if element['data']['type'] == 'workflow':
+                yield element
+
+
+
+    def __build_workflow_belongto(self, graph):
+        '''
+        Create dictionaries: 
+        self.belongto
+        Keys: workflow tuple (name, edit)
+        Value: The workflow element where this workflow belongs to
+
+        self.workflow_nodes
+        Keys: workflow tuple
+        Value: The workflow element
+        '''
+        
+        
+        all_workflows = list(self.__iter_workflows(graph))
+
+        workflow_nodes = {workflow_element['data']['id'] : workflow_element for workflow_element in all_workflows}
+            
+        belongto = {}
+        for workflow_element in all_workflows:
+            workflow_key = workflow_element['data']['id']
+            if workflow_element['data']['belongto']:
+                belongto[workflow_key] = workflow_nodes[workflow_id_cytoscape(workflow_element['data']['belongto'], None, None)]
+            else:
+                belongto[workflow_key] = None
+
+        return belongto, workflow_nodes
+
+    def __build_edges_dict(self, graph):
+        '''
+        Create a dictionary 's': source, 't': target
+        Keys are node ids
+        Values are a set containing all the nodes that there is an edge
+        '''
+
+        ret = {
+            's' : defaultdict(set),
+            't' : defaultdict(set),
+        }
+        for edge in graph['elements']['edges']:
+            ret['s'][edge['data']['source']].add(edge['data']['target'])
+            ret['t'][edge['data']['target']].add(edge['data']['source'])
+
+        return ret
+
+    def __tool_dependencies(self, tool_node, all_nodes, edges):
+        '''
+        Edge A --> B: Tool A has dependency B . Or else, A depends from B. Or else first install B then A
+        Return a set of all tool ids that belong to the dependencies of tool
+        '''
+
+        ret = set()
+
+        def recurse(rec_tool_node):
+            tool_id = rec_tool_node['data']['id']
+
+            if not tool_id in edges['s'][tool_id]:
+                return 
+
+            for target_id in edges['s'][tool_id]:
+                target_node = all_nodes[target_id]
+                
+                if not target_node['data']['type'] == 'tool':
+                    continue
+
+                # This is a tool. There exist an edge rec_tool_node --> target_node. This means that rec_tool_node dependes from target_node
+                if not target_id in ret:
+                    ret.add(target_id)
+                    recurse(targe_node)
+
+        recurse(tool_node)
+        ret.add(tool_node['data']['id'])
+
+        return ret
+
+    def __create_cytoscape_graph_from_tool_dependencies(self, tool):
+        '''
+        tool is a database object.
+        Return a workflow cytoscape worflow. It does not contain the workflow node!
+
+        tool_depending_from_me=None
+        '''
+
+        all_ids = set()
+        workflow = {
+            'elements': {
+                'nodes': [],
+                'edges': [],
+            }
+        }
+
+        this_tool_cytoscape_node = tool_node_cytoscape(tool)
+        workflow['elements']['nodes'].append(this_tool_cytoscape_node)       
+
+        # FIXME !!! DUPLICATE CODE
+        root_tool_all_dependencies = tool_get_dependencies_internal(tool, include_as_root=False)
+        for root_tool_all_dependency in root_tool_all_dependencies:
+            # For each dependency create a cytoscape node
+            cytoscape_node = tool_node_cytoscape(root_tool_all_dependency['dependency'], tool_depending_from_me=root_tool_all_dependency['dependant'])
+            if not cytoscape_node['data']['id'] in all_ids: # An id should exist only once in the graph... FIXME!! all_ids is always empty!
+                workflow['elements']['nodes'].append(cytoscape_node)
+
+                # Connect this tool with its dependent tool node
+                if root_tool_all_dependency['dependant']:
+                    workflow['elements']['edges'].append(edge_cytoscape(tool_node_cytoscape(root_tool_all_dependency['dependant']), cytoscape_node))
+                else:
+                    # This tool does not have a dependant!
+                    # This is a dependency of the root tool!
+                    workflow['elements']['edges'].append(edge_cytoscape(this_tool_cytoscape_node, cytoscape_node))
+
+        return workflow
+
+
+    def __node_belongs_to_a_workflow(self, node, workflow, belongto):
+        '''
+        Recursive
+        '''
+
+        if not node: # We are running this for ALL workflow nodes. Including the root workflow that its belong to is None
+            return False
+
+        # We reached the root
+        if not node['data']['belongto']:
+            return False
+
+        workflow_key = workflow['data']['id']
+        node_belongto_key = workflow_id_cytoscape(node['data']['belongto'], None, None)
+        if workflow_key == node_belongto_key:
+            return True
+
+        # This node does not belong to this workflow. Perhaps the node.belongto workflow belongs to this workflow
+        return self.__node_belongs_to_a_workflow(belongto[node_belongto_key], workflow, belongto)
+
+
+    def __nodes_belonging_to_a_workflow(self, graph, workflow_node, belongto):
+        '''
+        Returns a set
+        '''
+
+        ret = {element['data']['id'] for element in graph['elements']['nodes'] 
+            if self.__node_belongs_to_a_workflow(element, workflow_node, belongto)}
+        ret.add(workflow_node['data']['id']) # As the workflow node as well
+        return ret
+
+    def __remove_nodes_edges(self, graph, node_ids_to_remove, node_ids_to_add):
+        '''
+        CRITICAL: A mistake here could produce a corrupted graph..
+        '''
+
+        # Determine which edges should be removed
+        edge_ids_to_remove = set() 
+        for edge in graph['elements']['edges']:
+            source_id = edge['data']['source']
+            target_id = edge['data']['target']
+            edge_id = edge['data']['id']
+            source_id_in = source_id in node_ids_to_remove
+            target_id_in = target_id in node_ids_to_remove
+
+            # This is an edge from inside to inside. Remove it
+            if source_id_in and target_id_in:
+                edge_ids_to_remove.add(edge_id)
+                continue
+            
+            # This is an edge from inside to outside
+            # Also, on the new workflow, the inside node does not exist!
+            # Se we are removing the edge. This might render the workflow useless, but not corrupted!
+            if source_id_in and not target_id_in:
+                if not source_id in node_ids_to_add:
+                    edge_ids_to_remove.add(edge_id)
+                continue
+
+            # Same as before but the edge is from outside to inside
+            if not source_id_in and target_id_in:
+                if not target_id in node_ids_to_add:
+                    edge_ids_to_remove.add(edge_id)
+
+        # Remove edges
+        graph['elements']['edges'] = [edge for edge in graph['elements']['edges'] if not edge['data']['id'] in edge_ids_to_remove]
+
+        # Remove nodes
+        graph['elements']['nodes'] = [node for node in graph['elements']['nodes'] if not node['data']['id'] in node_ids_to_remove]
+
+
+    def __update_workflow_node(self, workflow_node, workflow_object):
+        '''
+        Update a workflow node according to the data from the workflow_object
+        '''
+        workflow_node['data']['draft'] = workflow_object.draft
+
+    def __update_workflow(self,):
+        '''
+        update this workflow
+        '''
+
+        self.__update_workflow_node(self.workflow_nodes[self.key], self.workflow)
+        self.workflow.workflow = simplejson.dumps(self.graph)
+        self.workflow.save()
+
+
+        # Update also the workflows that are using me
+        for workflow_using_me in self.workflows_using_me:
+
+            print ('workflow using me:', workflow_using_me)
+
+            graph = simplejson.loads(workflow_using_me.workflow)
+            belongto, workflow_nodes = self.__build_workflow_belongto(graph)
+
+            # Get the workflow that the workflow that we want to update belongs to 
+            belongto_root = belongto[self.key]
+            print ('   belongto_root: ', belongto_root)
+
+            # Get the workflow node that we want to update
+            workflow_node_root = workflow_nodes[self.key]
+            print ('   Workflow root node:', workflow_node_root)
+
+            # This is a set of all the nodes that this sub-workflow has
+            workflow_nodes_set = self.__nodes_belonging_to_a_workflow(graph, workflow_node_root, belongto)
+            print ('  workflow nodes set:', workflow_nodes_set)
+
+            # Remove these nodes (and edges connected to them) from the graph
+            self.__remove_nodes_edges(graph, workflow_nodes_set, self.all_ids)
+
+            # Add the edges of this graph
+            graph['elements']['edges'].extend(self.graph['elements']['edges'])
+
+            # Add the nodes of this graph
+            # Make sure that any main step becomes sub_main
+            nodes_to_add = self.graph['elements']['nodes']
+            for node in nodes_to_add:
+                if node['data']['type'] == 'step':
+                    if node['data']['main']:
+                        node['data']['main'] = False
+                        node['data']['sub_main'] = True
+
+            graph['elements']['nodes'].extend(nodes_to_add)
+
+            # Update the belongto info on the root workflow node. We cannot use the belongto and workflow_nodes any more
+            workflow_node_root = [node for node in graph['elements']['nodes'] if node['data']['id'] == self.key][0]
+            workflow_node_root['data']['belongto'] = {'name': belongto_root['data']['name'] , 'edit': belongto_root['data']['edit']}
+
+            # Update the root workflow node
+            self.__update_workflow_node(workflow_node_root, self.workflow)
+
+            # Save the graph
+            workflow_using_me.workflow = simplejson.dumps(graph)
+            workflow_using_me.save()
+
+    def __update_tool(self,):
+        '''
+        '''
+
+        # Update all the workflows who are using this tool
+        for workflow_using_me in self.workflows_using_me:
+
+
+            print ('Workflow using me:', workflow_using_me.name, workflow_using_me.edit)
+
+            graph = simplejson.loads(workflow_using_me.workflow)
+
+            print ('   My graph:')
+            print (simplejson.dumps(graph, indent=4))
+
+            all_nodes = {node['data']['id']:node for node in graph['elements']['nodes']}
+            belongto = {node['data']['id']: node['data']['belongto'] for node in graph['elements']['nodes']}
+            edges = self.__build_edges_dict(graph)
+
+            print ('   All nodes:')
+            print (all_nodes)
+
+            print ('   Belongto:')
+            print (belongto)
+
+            print ('   self.key:', self.key)
+
+            tool_node = all_nodes[self.key]
+            tool_node_belongto = belongto[self.key]
+
+            # Use run_tool() does the same task. The problem is that it works directly with the UI. 
+            # We want to construct a cytoscape graph from the database object
+
+            # Get a set of the node ids that depend from this tool
+            tool_dependencies = self.__tool_dependencies(tool_node, all_nodes, edges)
+
+            print ('   Nodes to delete:')
+            print (tool_dependencies)
+
+            # Remove these nodes (and edges connected to them) from the graph
+            self.__remove_nodes_edges(graph, tool_dependencies, self.all_ids)
+
+            print ('   Graph After Deletion:')
+            print (simplejson.dumps(graph, indent=4))
+
+            
+            # Add the edges of the graph
+            graph['elements']['edges'].extend(self.graph['elements']['edges'])
+
+            # Add the nodes of this graph
+            # Make sure that they have the right belongto info
+            nodes_to_add = self.graph['elements']['nodes']
+            for node_to_add in nodes_to_add:
+                node_to_add['data']['belongto'] = tool_node_belongto
+            graph['elements']['nodes'].extend(nodes_to_add)
+
+            print ('  Graph after adding new tool dependencies')
+            print (simplejson.dumps(graph, indent=4))
+
+            # Save the graph
+            workflow_using_me.workflow = simplejson.dumps(graph)
+            workflow_using_me.save()
+
+
 @has_data
-def tools_finalize_delete(request, **kwargs):
+def ro_finalize_delete(request, **kwargs):
     '''
-    Called from tools_finalize_delete/
+    Called from ro_finalize_delete/
     if action is FINALIZE:
-        finalize a tool (from draft to no draft!)
+        finalize a tool/workflow (from draft to no draft!)
     if action is DELETE
-        DELETE a tool
+        DELETE a tool/workflow
+    ro: tool or workflow
     '''
 
-    tools_search_name = kwargs.get('tools_search_name', '')
-    if not tools_search_name:
-        return fail('Error 5467')
-
-    tools_search_version = kwargs.get('tools_search_version', '')
-    if not tools_search_version:
-        return fail('Error 5468')
-
-    tools_search_edit = kwargs.get('tools_search_edit', '')
-    if not tools_search_edit:
-        return fail('Error 5469')
+    ro = kwargs.get('ro', '')
+    if not ro:
+        return fail('Error 5476')
+    if not ro in ['tool', 'workflow']:
+        return fail('Error 5477')
 
     action = kwargs.get('action', '')
     if not action in ['FINALIZE', 'DELETE']:
         return fail('Error 5475')
 
-    try:
-        tools_search_edit = int(tools_search_edit)
-    except ValueError as e:
-        return fail('Error 5470')
 
-    try:
-        tool = Tool.objects.get(name=tools_search_name, version=tools_search_version, edit=tools_search_edit)
-    except ObjectDoesNotExist as e:
-        return fail('Error 5471')
-
+    # Get the user
     try:
         obc_user = OBC_user.objects.get(user=request.user)
     except ObjectDoesNotExist as e:
         return fail('Error 5472')
 
-    if not tool.obc_user == obc_user:
-        return fail('Error 5473')
 
-    if not tool.draft:
-        return fail('Error 5474')
+    if ro == 'tool':
 
-    if action == 'FINALIZE':
-        tool.draft = False
-        tool.save()
-    elif action == 'DELETE':
-        tool.delete()
+        tools_info_name = kwargs.get('tools_info_name', '')
+        if not tools_info_name:
+            return fail('Error 5467')
 
-    return success()
+        tools_info_version = kwargs.get('tools_info_version', '')
+        if not tools_info_version:
+            return fail('Error 5468')
+
+        tools_info_edit = kwargs.get('tools_info_edit', '')
+        if not tools_info_edit:
+            return fail('Error 5469')
+
+        try:
+            tools_info_edit = int(tools_info_edit)
+        except ValueError as e:
+            return fail('Error 5470')
+
+        # Get the tool
+        try:
+            tool = Tool.objects.get(name=tools_info_name, version=tools_info_version, edit=tools_info_edit)
+        except ObjectDoesNotExist as e:
+            return fail('Error 5471')
+
+        # Is the user who created the tool, the same as the user who wants to edit/delete it?
+        if not tool.obc_user == obc_user:
+            return fail('Error 5473')
+
+        if not tool.draft:
+            return fail('Error 5474')
+
+        if action == 'FINALIZE':
+            # Does it depend on any tool that is draft?
+            draft_dependencies = [t for t in tool_get_dependencies_internal(tool, include_as_root=False) if t['dependency'].draft]
+            if draft_dependencies:
+                return fail('This tool cannot be finalized. It depends from {} draft tool(s). For example: {}'.format(len(draft_dependencies), str(draft_dependencies[0]['dependency'])))
+            tool.draft = False
+            tool.save()
+        elif action == 'DELETE':
+            # Is there any other tool that depends from this tool?
+            dependendants = Tool.objects.filter(dependencies__in=[tool])
+            if dependendants.count():
+                return fail('This tool cannot be deleted. There are {} tool(s) that depend on this tool. For example: {}'.format(dependendants.count(), dependendants.first()))
+            
+            # Is there any workflow that contains this tool?
+            w = Workflow.objects.filter(tools__in=[tool])
+            if w.count():
+                return fail('This tool cannot be deleted. It is used in {} workflow(s). For example: {}'.format(w.count(), str(w.first())))
+
+            # Get the tools that are forks of this tool
+            tool_forks = Tool.objects.filter(forked_from=tool)
+
+            # Get the tool that this tool is forked from
+            tool_forked_from = tool.forked_from
+
+            # All the tools that are forked from this tool are now forked from the tool that this tool was forked from!
+            for tool_fork in tool_forks:
+                tool_fork.forked_from = tool_forked_from
+                tool_fork.save()
+
+            # Delete the comment
+            tool.comment.delete()
+
+            # Delete the tool
+            tool.delete()
+
+        return success()
+
+    elif ro == 'workflow':
+        workflow_info_name = kwargs.get('workflow_info_name', '')
+        if not workflow_info_name:
+            return fail('Error 5478')
+
+        workflow_info_edit = kwargs.get('workflow_info_edit', '')
+        if not workflow_info_edit:
+            return fail('Error 5479')
+
+        try:
+            workflow_info_edit = int(workflow_info_edit)
+        except ValueError as e:
+            return fail('Error 5480')
+
+        # Get the workflow
+        try:
+            workflow = Workflow.objects.get(name=workflow_info_name, edit=workflow_info_edit)
+        except ObjectDoesNotExist as e:
+            return fail('Error 5481')
+
+        #Is the user who created the workflow the same as the one who wants to edit/delete it?
+        if obc_user != workflow.obc_user:
+            return fail('Error 5482')
+
+        # Basic sanity check..
+        if not workflow.draft:
+            return fail('Error 5483')
+
+        if action == 'FINALIZE':
+            # Does it contain any tool that it is draft?
+            t = workflow.tools.filter(draft=True)
+            if t.count():
+                return fail('This workflow cannot be finalized. It contains {} draft tool(s). For example: {}'.format(t.count(), str(t.first())))
+
+            # Does it contain any draft workflow?
+            w = workflow.workflows.filter(draft=True)
+            if w.count():
+                return fail('This workflow cannot be finalized. It contains {} draft workflow(s). For example: {}'.format(w.count(), str(w.first())))
+
+            workflow.draft = False
+            workflow.save()
+            #workflow_has_changed(workflow) # Update other workflows that are using this
+            WJ = WorkflowJSON()
+            WJ.update_workflow(workflow) # TODO limit action to finalize!
+
+        elif action == 'DELETE':
+            # Is there any workflow that contains this workflow?
+            w = Workflow.objects.filter(workflows__in = [workflow])
+            if w.count():
+                return fail('This workflow cannot be deleted. It is used in {} workflow(s). For example: {}'.format(w.count(), str(w.first())))
+
+            # Get the workflows that are forks of this workflow
+            workflow_forks = Workflow.objects.filter(forked_from=workflow)
+
+            # Get the workflow that this workflow is forked from
+            workflow_forked_from = workflow.forked_from
+
+            # All the workflows that are forked from this workflow are now forked from the workflow that this workflow was forked from!
+            for workflow_fork in workflow_forks:
+                workflow_fork.forked_from = workflow_forked_from
+                workflow_fork.save()
+
+            # Delete the comments
+            workflow.comment.delete()
+
+            # Delete the workflow
+            workflow.delete()
+
+        return success()
 
 
 def create_workflow_edge_id(source_id, target_id):
@@ -1948,6 +2505,9 @@ def set_edit_to_cytoscape_json(cy, edit, workflow_info_name):
 
     # Set the edit value
     new_worfklow_node[0]['data']['edit'] = edit
+
+    # Set the label value
+    new_worfklow_node[0]['data']['label'] = workflow_label_cytoscape(None, workflow_info_name, edit)
 
     belongto = {
         'name': workflow_info_name,
@@ -2039,11 +2599,94 @@ def workflows_add(request, **kwargs):
     if not user_is_validated(request):
         return fail('Please validate your email to create new workflows ' + validate_toast_button());
 
+    obc_user = OBC_user.objects.get(user=request.user)
+
     workflow_info_name = kwargs.get('workflow_info_name', '')
     if not workflow_info_name.strip():
         return fail('Invalid workflow name')
 
     workflow_info_forked_from = kwargs['workflow_info_forked_from'] # If it does not exist, it should raise an Exception
+
+    workflow_edit_state = kwargs.get('workflow_edit_state', '')
+    if not type(workflow_edit_state) is bool:
+        return fail('Error 4877')
+
+    upvoted = False
+    downvoted = False
+    workflow_forked_from = None
+    workflow_changes = None
+    if workflow_edit_state:
+        # We are editing this workflow
+
+        # Get the edit
+        workflow_info_edit = kwargs.get('workflow_info_edit', '')
+
+        # Is this an int?
+        try:
+            workflow_info_edit = int(workflow_info_edit)
+        except ValueError as e:
+            return fail('Error 4878')
+
+        # Does this workflow exist?
+        try:
+            w = Workflow.objects.get(name=workflow_info_name, edit=workflow_info_edit)
+        except ObjectDoesNotExist as e:
+            return fail('Error 4879')
+
+        # Basic sanity check. We shouldn't be able to edit a workflow which is not a draft..
+        if not w.draft:
+            return fail('Error 4880')
+
+        # Is the creator of the workflow the same as the user who edits it?
+        if obc_user != w.obc_user:
+            return fail('Error 4881')
+
+        # Store a reference to the comments
+        comment = w.comment
+
+        # Store upvotes/downvotes
+        upvotes = w.upvotes
+        downvotes = w.downvotes
+
+        # Store votes
+        votes = UpDownWorkflowVote.objects.filter(workflow=w)
+        # Disassociate from this tool and get upvoted/downvoted status
+        for vote in votes:
+            if vote.obc_user == obc_user:
+                upvoted = vote.upvote
+                downvoted = not upvoted
+
+            vote.workflow = None
+            vote.save()
+
+        # Get the workflows that are forks of this workflow
+        workflow_forks = Workflow.objects.filter(forked_from=w)
+        # Temporary set that these workflows are not forked from any workflow
+        for workflow_fork in workflow_forks:
+            workflow_fork.forked_from = None
+            workflow_fork.save()
+
+        # Get the workflow that this workflow is forked from
+        workflow_forked_from = w.forked_from
+
+        # Get the created at. It needs to be sorted according to this, otherwise the jstree becomes messy
+        workflow_created_at = w.created_at
+
+        # Get the workflows that use this workflow
+        workflows_using_this_workflow = Workflow.objects.filter(workflows__in = [w])
+
+        # Remove this workflow from these workflows
+        for workflow_using_this_workflow in workflows_using_this_workflow:
+            workflow_using_this_workflow.workflows.remove(w)
+            workflow_using_this_workflow.save()
+
+        # Delete it!
+        w.delete()
+
+    else:
+        # This is a new workflow
+        upvotes = 0
+        downvotes = 0
 
     workflow_changes = kwargs.get('workflow_changes', None)
     if workflow_info_forked_from:
@@ -2051,8 +2694,8 @@ def workflows_add(request, **kwargs):
             return fail('Edit Summary cannot be empty')
         workflow_forked_from = Workflow.objects.get(name=workflow_info_forked_from['name'], edit=workflow_info_forked_from['edit'])
     else:
-        workflow_forked_from = None
-        workflow_changes = None
+        pass # Do nothing 
+
 
     workflow_website = kwargs.get('workflow_website', '')
     if workflow_website:
@@ -2081,14 +2724,16 @@ def workflows_add(request, **kwargs):
 
     #Check that one and only one step is main
 
-
-    #Get the maximum version. FIXME DUPLICATE CODE
-    workflow_all = Workflow.objects.filter(name__iexact=workflow_info_name)
-    if not workflow_all.exists():
-        next_edit = 1
+    if workflow_edit_state:
+        next_edit = workflow_info_edit
     else:
-        max_edit = workflow_all.aggregate(Max('edit'))
-        next_edit = max_edit['edit__max'] + 1
+        #Get the maximum version. FIXME DUPLICATE CODE
+        workflow_all = Workflow.objects.filter(name__iexact=workflow_info_name)
+        if not workflow_all.exists():
+            next_edit = 1
+        else:
+            max_edit = workflow_all.aggregate(Max('edit'))
+            next_edit = max_edit['edit__max'] + 1
 
 #    print ('BEFORE')
 #    print (simplejson.dumps(workflow, indent=4))
@@ -2106,7 +2751,7 @@ def workflows_add(request, **kwargs):
         return fail('Error 49188') # This should never happen
 
     new_workflow = Workflow(
-        obc_user=OBC_user.objects.get(user=request.user), 
+        obc_user=obc_user, 
         name = workflow_info_name,
         edit = next_edit,
         website = workflow_website,
@@ -2119,19 +2764,34 @@ def workflows_add(request, **kwargs):
         workflow = simplejson.dumps(workflow),
         forked_from = workflow_forked_from,
         changes = workflow_changes,
-        upvotes = 0,
-        downvotes = 0,
-
+        upvotes = upvotes,
+        downvotes = downvotes,
+        draft = True, # We always save new workflows as draft. 
     )
 
     #Save it
     new_workflow.save()
+
+    if workflow_edit_state:
+        # Preserve the created at date. We have to do that AFTER the save! https://stackoverflow.com/questions/7499767/temporarily-disable-auto-now-auto-now-add
+        new_workflow.created_at = workflow_created_at
+        new_workflow.save()
 
     # Get all tools that are used in this workflow
     tool_nodes = [x for x in workflow['elements']['nodes'] if x['data']['type'] == 'tool']
     tools = [Tool.objects.get(name=x['data']['name'], version=x['data']['version'], edit=x['data']['edit']) for x in tool_nodes]
     if tools:
         new_workflow.tools.add(*tools)
+        new_workflow.save()
+
+    # Get all workflows that are used in this workflow
+    workflow_nodes = [x for x in workflow['elements']['nodes'] if x['data']['type'] == 'workflow']
+    # Remove self workflow
+    workflow_nodes = [{'name': x['data']['name'], 'edit': x['data']['edit']} for x in workflow_nodes if not (x['data']['name'] == workflow_info_name and x['data']['edit'] == next_edit) ]
+    # Get workflow database objects
+    workflows = [Workflow.objects.get(**x) for x in workflow_nodes]
+    if workflows:
+        new_workflow.workflows.add(*workflows)
         new_workflow.save()
 
     # Add keywords
@@ -2141,17 +2801,39 @@ def workflows_add(request, **kwargs):
 
     obc_user = OBC_user.objects.get(user=request.user)
 
-    # Add an empty comment. This will be the root comment for the QA thread
-    comment = Comment(
-        obc_user = obc_user,
-        comment = '',
-        comment_html = '',
-        title = markdown('Discussion on Workflow: w/{}/{}'.format(workflow_info_name, next_edit)),
-        parent = None,
-        upvotes = 0,
-        downvotes = 0,
-    )
-    comment.save()
+    if workflow_edit_state:
+        # Add the votes from the previous edit
+        for vote in votes:
+            vote.workflow = new_workflow
+            vote.save()
+
+        # Add the workflows that were forked from this workflow (that was deleted before) to the new workflow
+        for workflow_fork in workflow_forks:
+            workflow_fork.forked_from = new_workflow
+            workflow_fork.save()
+
+        # Add to the workflows that were using this workflow, the new workflow
+        for workflow_using_this_workflow in workflows_using_this_workflow:
+            workflow_using_this_workflow.workflows.add(new_workflow)
+            workflow_using_this_workflow.save()
+
+            # Update the json graph
+            WJ = WorkflowJSON()
+            WJ.update_workflow(new_workflow)
+
+    else:
+        # Add an empty comment. This will be the root comment for the QA thread
+        comment = Comment(
+            obc_user = obc_user,
+            comment = '',
+            comment_html = '',
+            title = markdown('Discussion on Workflow: w/{}/{}'.format(workflow_info_name, next_edit)),
+            parent = None,
+            upvotes = 0,
+            downvotes = 0,
+        )
+        comment.save()
+
     new_workflow.comment = comment
     new_workflow.save()
 
@@ -2160,6 +2842,8 @@ def workflows_add(request, **kwargs):
         'description_html': workflow_description_html, 
         'edit': next_edit,
         'created_at': datetime_to_str(new_workflow.created_at),
+        'score': upvotes-downvotes,
+        'voted': {'up': upvoted, 'down': downvoted},
 
         'workflow_pk': new_workflow.pk, # Used in comments
         'workflow_thread': qa_create_thread(new_workflow.comment, obc_user), # Tool comment thread 
@@ -2217,6 +2901,7 @@ def workflows_search_3(request, **kwargs):
         'workflow_comment_title': workflow.comment.title,
         'workflow_comment_created_at': datetime_to_str(workflow.comment.created_at),
         'workflow_comment_username': workflow.comment.obc_user.user.username,
+        'draft': workflow.draft, # Is this a draft workflow?
 
     }
 
@@ -2243,10 +2928,11 @@ def workflow_node_cytoscape(workflow, name='root', edit=0):
     }
 
 
-def tool_node_cytoscape(tool):
+def tool_node_cytoscape(tool, tool_depending_from_me=None):
     '''
     Create a cytoscape tool node
     tool: A database object tool node
+    tool_depending_from_me: If i was added as a dependency, this should be the tool that depends from me. FIXME: REMOVE THIS
     '''
 
     if isinstance(tool, Tool):
@@ -2254,39 +2940,41 @@ def tool_node_cytoscape(tool):
         return {
             'data': {
                 'belongto': {'name': 'root', 'edit': 0},
-                # 'dep_id' : None, ## Not used in executor
+                'dep_id' : tool_id_cytoscape(tool_depending_from_me) if tool_depending_from_me else '#', # Not used in executor
                 'edit': tool.edit,
                 'id': tool_id_cytoscape(tool),
                 'label': tool_label_cytoscape(tool),
                 'name': tool.name,
-                # root: None ### Not used in executor,
+                'root': 'yes' if tool_depending_from_me else 'no', # Not used in executor. 'yes/no' should be True/False for Christ sake! FIXME
                 'text': tool_label_cytoscape(tool),
                 'type': 'tool',
                 'variables': [{'description': variable.description, 'name': variable.name, 'type': 'variable', 'value': variable.value} for variable in tool.variables.all()],
                 'version': tool.version,
+                'draft': tool.draft,
             }
         }
     elif type(tool) is dict:
         return {
             'data': {
                 'belongto': {'name': 'root', 'edit': 0},
-                # 'dep_id' : None, ## Not used in executor
+                'dep_id' : tool_id_cytoscape(tool_depending_from_me) if tool_depending_from_me else '#', # See comment above. Not used in executor
                 'edit': tool['edit'],
                 'id': tool_id_cytoscape(tool),
                 'label': tool_label_cytoscape(tool),
                 'name': tool['name'],
-                # root: None ### Not used in executor,
+                'root' : 'yes' if tool_depending_from_me else 'no', # Not used in executor,
                 'text': tool_label_cytoscape(tool),
                 'type': 'tool',
                 'variables': [{'description': variable['description'], 'name': variable['name'], 'type': 'variable', 'value': variable['value']} for variable in tool['variables']],
                 'version': tool['version'],
+                'draft': tool['draft'],
             }
         }
 
 
 def step_node_cytoscape(name='main'):
     '''
-    Create a cytoscape step npde
+    Create a cytoscape step node
     '''
 
     return {
@@ -2316,7 +3004,18 @@ def edge_cytoscape(source, target):
             'source': source['data']['id'],
             'target': target['data']['id'],
             'id': create_workflow_edge_id(source['data']['id'], target['data']['id']),
-        }
+        },
+        'position': {
+            'x': 0,
+            'y': 0,
+        },
+        'group': 'edges',
+        'removed': False,
+        'selected': False,
+        'selectable': True,
+        'locked': False,
+        'grabbable': True,
+        'classes': '',
     }
 
 @has_data
@@ -2337,7 +3036,7 @@ def run_tool(request, **kwargs):
     workflow_node = workflow_node_cytoscape(None)
     workflow['elements']['nodes'].append(workflow_node)
 
-    # this does not contain recursively all the dependenfies. Only the first level
+    # this does not contain recursively all the dependencies. Only the first level
     root_tool_dependencies = kwargs['tool_dependencies']
     root_tool_objects = [Tool.objects.get(name=t['name'], version=t['version'], edit=t['edit']) for t in root_tool_dependencies]
     all_dependencies_str = list(map(str, root_tool_objects))
@@ -2374,7 +3073,7 @@ def run_tool(request, **kwargs):
         for root_tool_all_dependency in root_tool_all_dependencies:
             # For each dependency create a cytoscape node
             cytoscape_node = tool_node_cytoscape(root_tool_all_dependency['dependency'])
-            if not cytoscape_node['data']['id'] in all_ids: # An id should exist only once in the graph...
+            if not cytoscape_node['data']['id'] in all_ids: # An id should exist only once in the graph.... FIXME all_ids is always empty!
                 workflow['elements']['nodes'].append(cytoscape_node)
 
                 # Connect this tool with its dependent tool node
