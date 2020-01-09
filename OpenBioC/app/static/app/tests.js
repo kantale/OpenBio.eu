@@ -134,12 +134,12 @@
 		ret.click('workflowsPlusBtn');
 	};
 
-	var tools_set_name = function() {
-		ret.insert('generalName', ret.prefix)
+	var tools_set_name = function(args) {
+		ret.insert('generalName', args['name'])
 	};
 
-	var workflows_set_name = function() {
-		ret.insert('generalWorkflowName', ret.prefix)
+	var workflows_set_name = function(args) {
+		ret.insert('generalWorkflowName', args['name'])
 	};
 
 	var tools_set_version = function() {
@@ -155,6 +155,9 @@
 		setTimeout(function() { $('#tools_dep_jstree_id').mouseup(); }, 1000);
 	};
 
+	/*
+	* To run this, you need to.. move the mouse pointer inside the browser window
+	*/
 	var workflows_dnd_tool_graph = function() {
 		triggerDragAndDrop2('#tools_search_jstree_id a', '#cywf');
 		setTimeout(function() { $('#cywf').mouseup(); }, 1000);
@@ -195,7 +198,7 @@
 	};
 
 	var tools_close_all_accordions = function() {
-		M.Collapsible.getInstance($('#createToolDataAccordion')).close()
+		M.Collapsible.getInstance($('#createToolDataAccordion')).close();
 	};
 
 	var tools_open_all_accordions = function() {
@@ -203,23 +206,39 @@
 	};
 
 	var tool_save_button = function() {
-		ret.click('tool_save_button_id')
+		ret.click('tool_save_button_id');
+	};
+
+	var workflow_save_button = function() {
+		ret.click('workflow_save_button_id');
 	};
 
 	var tool_cancel_button = function() {
 		ret.click('tool_cancel_button_id');
 	};
 
+	var workflow_cancel_button = function() {
+		ret.click('workflow_cancel_button_id');
+	};
+
 	var remove_toast = function() {
 		$('.toast').remove();
 	};
 
-	var global_search = function() {
-		ret.insert('leftPanelSearch', ret.prefix);
+	var global_search = function(args) {
+		ret.insert('leftPanelSearch', args['search']);
+	};
+
+	var global_search_empty = function() {
+		ret.insert('leftPanelSearch', '');
 	};
 
 	var global_search_open_accordions = function() {
 		M.Collapsible.getInstance($('#searchResultsCollapsible')).open();
+	};
+
+	var global_search_close_accordions = function() {
+		M.Collapsible.getInstance($('#searchResultsCollapsible')).close();
 	};
 
 	var build_chain = function(fns, i) {
@@ -230,18 +249,25 @@
 
 		setTimeout(function() {
 			console.log('Running test:', i+1)
-			fns[i]();
+			if (typeof fns === 'function') {
+				fns[i]();	
+			}
+			else if (typeof fns === 'object') {
+				fns[i][0](fns[i][1]);
+			}
+			
 			build_chain(fns, i+1);
 		}, 1000)
 	};
 
 
-	var create_new_tool = function() {
+	var create_new_tool = function(args) {
+
 		var actions = [
 			click_plus_search_tools_button,
 			tools_close_all_accordions,
 			tools_open_all_accordions,
-			tools_set_name,
+			[tools_set_name, {'name': args['name']}],
 			tools_set_version,
 			tools_set_description,
 			tools_select_os_posix,
@@ -254,14 +280,19 @@
 		return build_chain(actions, 0);
 	};
 
-	var create_new_workflow = function() {
+	var create_new_workflow = function(args) {
 		var actions = [
 			click_plus_search_workflows_button,
-			workflows_set_name,
+			[workflows_set_name, {'name': args['name']}],
 			workflows_set_description,
-			global_search,
+			global_search, {'name': args['import_tool_name']},
 			global_search_open_accordions,
-			workflows_dnd_tool_graph
+			workflows_dnd_tool_graph,
+			workflow_save_button,
+			workflow_cancel_button,
+			remove_toast,
+			global_search_empty,
+			global_search_close_accordions
 		]
 
 		return build_chain(actions, 0);
@@ -270,10 +301,11 @@
 	ret.test = function(prefix) {
 
 		ret.prefix = prefix;
+		ret.args = {};
 
 		var actions = [
 			//create_new_tool,
-			create_new_workflow
+			//create_new_workflow
 		];
 
 		return build_chain(actions, 0);
