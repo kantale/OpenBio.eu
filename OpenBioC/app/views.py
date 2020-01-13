@@ -1005,6 +1005,21 @@ def get_server_url(request):
 
     return '{}://{}/platform'.format(get_scheme(request), request.get_host())
 
+def get_execution_clients(request):
+    '''
+    Get all execution clients of the user
+    '''
+
+    if request.user.is_anonymous:
+        return []
+
+    obc_user = OBC_user.objects.get(user=request.user)
+
+    ret = list(obc_user.clients.values('client', 'name'))
+
+    return ret
+
+
 ### END OF USERS 
 
 def index(request, **kwargs):
@@ -1156,6 +1171,9 @@ def index(request, **kwargs):
 
     # Get OS choices
     context['os_choices'] = simplejson.dumps(OS_types.get_angular_model());
+
+    # Get User clients
+    context['profile_clients'] = get_execution_clients(request) + [{'name': '', 'client': ''}]; # Angular excepts an empty entry at the end
 
     # Add version
     context['version'] = __version__

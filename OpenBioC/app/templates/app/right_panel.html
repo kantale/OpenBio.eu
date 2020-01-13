@@ -50,7 +50,7 @@
                     <a class="btn tooltipped" data-position="bottom" data-tooltip="Delete" style="margin-bottom:2px"
                         ng-show="tools_info_draft && tool_info_username==username && !tools_info_editable"
                         ng-click="ro_finalize_delete_pressed('tool', 'DELETE', false)">Delete</a>
-                    <a class="dropdown-trigger btn" data-target='runDropdownTool' style="margin-bottom:2px">Run</a>
+                    <a class="dropdown-trigger btn" data-target='runDropdownTool' style="margin-bottom:2px" ng-disabled="profile_clients.length<=1">Run</a>
                     <a class="dropdown-trigger btn" data-target='downloadDropdownTool' style="margin-bottom:2px">Download</a>
                     <a id="tool_save_button_id" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Save" ng-click="tool_create_save_pressed()" ng-show="tools_info_editable"><i
@@ -61,10 +61,11 @@
 
                     <!-- Run Dropdown -->
                     <ul id='runDropdownTool' class='dropdown-content'>
-                        <li><a>test1</a></li>
-                        <li><a>test2</a></li>
-                        <li><a>test3</a></li>
-                        <li><a>test4</a></li>
+                        <li ng-repeat="profile_client in profile_clients" ng-if="profile_client.name">
+                            <a>
+                                <span ng-bind="profile_client.name"></span>
+                            </a>
+                        </li>
                     </ul>
                     <!-- Download Dropdown -->
                     <ul id='downloadDropdownTool' class='dropdown-content'>
@@ -464,7 +465,7 @@
                     <a class="btn tooltipped" data-position="bottom" data-tooltip="Delete" style="margin-bottom:2px"
                         ng-show="workflows_info_draft && workflows_info_username==username && !workflows_info_editable"
                         ng-click="ro_finalize_delete_pressed('workflow', 'DELETE', false)">Delete</a>
-                    <a class="dropdown-trigger btn" data-target='runDropdownWorkflow' style="margin-bottom:2px">Run</a>
+                    <a class="dropdown-trigger btn" data-target='runDropdownWorkflow' style="margin-bottom:2px" ng-disabled="profile_clients.length<=1">Run</a>
                     <a class="dropdown-trigger btn" data-target='downloadDropdownWorkflow' style="margin-bottom:2px">Download</a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fit" ng-click="workflow_info_fit_pressed()">Fit</a>
@@ -479,10 +480,11 @@
                         ng-class="{'disabled': !username}"><i class="material-icons">call_split</i></a>
                     <!-- Run Dropdown -->
                     <ul id='runDropdownWorkflow' class='dropdown-content'>
-                        <li><a>test1</a></li>
-                        <li><a>test2</a></li>
-                        <li><a>test3</a></li>
-                        <li><a>test4</a></li>
+                        <li ng-repeat="profile_client in profile_clients" ng-if="profile_client.name">
+                            <a>
+                                <span ng-bind="profile_client.name"></span>
+                            </a>
+                        </li>
                     </ul>
                     <!-- Download Dropdown -->
                     <ul id='downloadDropdownWorkflow' class='dropdown-content'>
