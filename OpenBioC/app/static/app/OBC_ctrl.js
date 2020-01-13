@@ -62,6 +62,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.general_alert_message = window.general_alert_message;
         $scope.password_reset_token = window.password_reset_token;
         $scope.user_is_validated = window.user_is_validated;
+        $scope.profile_clients = window.profile_clients; // The execution engines of the user
 
         $scope.main_container_show = true;
         $scope.profile_container_show = false;
