@@ -241,6 +241,10 @@
 		M.Collapsible.getInstance($('#searchResultsCollapsible')).close();
 	};
 
+	var cytoscape_click_node = function() {
+		cy.$('#step__main_step__sss_w__1').trigger('click');
+	};
+
 	var build_chain = function(fns, i) {
 
 		if (i>=fns.length) {
@@ -249,10 +253,12 @@
 
 		setTimeout(function() {
 			console.log('Running test:', i+1)
-			if (typeof fns === 'function') {
+			if (typeof fns[i] === 'function') {
+				console.log('Function:', fns[i]);
 				fns[i]();	
 			}
-			else if (typeof fns === 'object') {
+			else if (typeof fns[i] === 'object') {
+				console.log('Array:', fns[i]);				
 				fns[i][0](fns[i][1]);
 			}
 			
@@ -285,7 +291,7 @@
 			click_plus_search_workflows_button,
 			[workflows_set_name, {'name': args['name']}],
 			workflows_set_description,
-			global_search, {'name': args['import_tool_name']},
+			[global_search, {'search': args['import_tool_name']}],
 			global_search_open_accordions,
 			workflows_dnd_tool_graph,
 			workflow_save_button,
@@ -304,8 +310,8 @@
 		ret.args = {};
 
 		var actions = [
-			//create_new_tool,
-			//create_new_workflow
+			[create_new_tool, {'name': prefix + '_t'}],
+			[create_new_workflow, {'name': prefix + '_w', 'import_tool_name': prefix + '_t'}]
 		];
 
 		return build_chain(actions, 0);
