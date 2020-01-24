@@ -1,16 +1,23 @@
 from django.urls import path, re_path, include
 
-from rest_framework import routers
+#from rest_framework import routers
 
 from . import views
 from . import rest_views
 
-router = routers.DefaultRouter()
-router.register(r'tools', rest_views.ToolViewSet)
+#router = routers.DefaultRouter()
+#router.register(r'tools', rest_views.ToolViewSet)
 
 urlpatterns = [
 	path('', views.index),
-	path('rest/', include(router.urls)),
+	#path('rest/', include(router.urls)),
+	re_path(r'^rest/tools/(?P<tool_name>[\w]+)/$', rest_views.tool_name),
+	re_path(r'^rest/tools/(?P<tool_name>[\w]+)/(?P<tool_version>[\w\.]+)/$', rest_views.tool_name_version),
+	re_path(r'^rest/tools/(?P<tool_name>[\w]+)/(?P<tool_version>[\w\.]+)/(?P<tool_edit>[\d]+)/$', rest_views.tool_complete),
+
+	re_path(r'^rest/workflows/(?P<workflow_name>[\w]+)/$', rest_views.workflow_name),
+	re_path(r'^rest/workflows/(?P<workflow_name>[\w]+)/(?P<workflow_edit>[\d]+)/$', rest_views.workflow_complete),
+
 	re_path(r'^[td]/(?P<tool_name>[\w]+)/(?P<tool_version>[\w\.]+)/(?P<tool_edit>[\d]+)/$', views.index), # tool link
 	re_path(r'^w/(?P<workflow_name>[\w]+)/(?P<workflow_edit>[\d]+)', views.index), # workflow link
 	re_path(r'^r/(?P<reference_name>[\w]+)', views.index), # reference link
