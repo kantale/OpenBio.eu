@@ -294,6 +294,7 @@ def has_data(f):
     '''
     def wrapper(*args, **kwargs):
             request = args[0]
+
             if request.method == 'POST':
                     if len(request.POST):
                             for k in request.POST:
@@ -3125,12 +3126,14 @@ def run_workflow(request, **kwargs):
 
     https://docs.djangoproject.com/en/2.2/ref/request-response/#telling-the-browser-to-treat-the-response-as-a-file-attachment
 
+    kwargs['workflow'] = {'name': <workflow_name>, 'edit': <workflow_edit>}
+
     kwargs['workflow_cy'] is the cytoscape workflow
     '''
 
     workflow_arg = kwargs['workflow']
     workflow_options_arg = kwargs['workflow_options']
-    download_type = kwargs['download_type'] # download_type can be "BASH" or "JSON"
+    download_type = kwargs['download_type'] # For a full list of types see below . if download_type == ...
     workflow_info_editable = kwargs['workflow_info_editable'] # IS this workflow saved or not ? . TRUE: NOT SAVED 
 
     #print ('Name:', workflow_arg['name'])
@@ -3197,7 +3200,12 @@ def run_workflow(request, **kwargs):
     # Create a new Report object 
     if (not user_is_validated(request)) or (not workflow):
         '''
-        If user is anonymous or with non-validated email or not saved workflow or this is a tool run (workflow is None), we do not create a report!
+        If :
+            user is anonymous or 
+            with non-validated email or 
+            not saved workflow or this is a tool run (workflow is None), 
+        then:
+            we do not create a report!
         '''
         run_report = None
         nice_id = None
@@ -3238,22 +3246,23 @@ def run_workflow(request, **kwargs):
 
     ret = {}
 
+    server_url = get_server_url(request)
 
     try:
         if download_type == 'JSON':
             output_object = urllib.parse.quote(simplejson.dumps(output_object))
             ret['output_object'] = output_object
         elif download_type == 'BASH':
-            output_object = urllib.parse.quote(create_bash_script(output_object, get_server_url(request), 'sh'))
+            output_object = urllib.parse.quote(create_bash_script(output_object, server_url, 'sh'))
             ret['output_object'] = output_object
         elif download_type == 'CWLTARGZ':
-            output_object = urllib.parse.quote(create_bash_script(output_object, get_server_url(request), 'cwltargz'))
+            output_object = urllib.parse.quote(create_bash_script(output_object, server_url, 'cwltargz'))
             ret['output_object'] = output_object
         elif download_type == 'CWLZIP':
-            output_object = urllib.parse.quote(create_bash_script(output_object, get_server_url(request), 'cwlzip'))
+            output_object = urllib.parse.quote(create_bash_script(output_object, server_url, 'cwlzip'))
             ret['output_object'] = output_object
         elif download_type == 'AIRFLOW':
-            output_object = urllib.parse.quote(create_bash_script(output_object, get_server_url(request), 'airflow'))
+            output_object = urllib.parse.quote(create_bash_script(output_object, server_url, 'airflow'))
             ret['output_object'] = output_object
     except OBC_Executor_Exception as e:
         return fail(str(e))
