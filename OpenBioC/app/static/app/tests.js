@@ -283,7 +283,8 @@
 			remove_toast
 		];
 
-		return build_chain(actions, 0);
+		//return build_chain(actions, 0);
+		return actions;
 	};
 
 	var create_new_workflow = function(args) {
@@ -301,7 +302,8 @@
 			global_search_close_accordions
 		]
 
-		return build_chain(actions, 0);
+		// return build_chain(actions, 0);
+		return actions;
 	};
 
 	ret.test = function(prefix) {
@@ -309,10 +311,10 @@
 		ret.prefix = prefix;
 		ret.args = {};
 
-		var actions = [
-			[create_new_tool, {'name': prefix + '_t'}],
-			[create_new_workflow, {'name': prefix + '_w', 'import_tool_name': prefix + '_t'}]
-		];
+		var actions = [];
+
+		actions.push(... create_new_tool({'name': prefix + '_t'})); // https://stackoverflow.com/questions/1374126/how-to-extend-an-existing-javascript-array-with-another-array-without-creating 
+		actions.push(... create_new_workflow({'name': prefix + '_w', 'import_tool_name': prefix + '_t'}));
 
 		return build_chain(actions, 0);
 	};
