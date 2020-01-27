@@ -2904,7 +2904,7 @@ window.onload = function () {
         /*
         * Called from angular $scope.workflow_info_run_pressed
         * * Check if input options are unset
-        * * Get the workflow options
+        * * Get the workflow options. This isa dictionary: key: name of option, value: option value
         */
         window.OBCUI.get_workflow_options = function () {
             var workflow_options = {};
