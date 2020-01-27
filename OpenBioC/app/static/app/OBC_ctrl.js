@@ -959,7 +959,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 //$scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === data['tool_os_choices'][0]})  ; // Take just the first. The model allows for multiple choices
                 $scope.tool_os_choices_tmp = data['tool_os_choices']; 
 
-                console.log($scope.tool_os_choices_tmp);
+                //console.log($scope.tool_os_choices_tmp);
 
                 //The server returns data['tool_os_choices'] which has the structure that ui-select "wants"
                 //Nevertheless $scope.tool_os_choices is the model for the select element.
@@ -1138,6 +1138,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         $scope.set_tools_info_editable(true);
         $scope.tools_info_draft = true;
+        $scope.tools_info_edit_state = false;
 
         if (!is_new) {
             //This is not a new tool. So.. left values unchanged.
@@ -1477,7 +1478,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
     /*
     * Tool in draft mode --> EDIT button --> pressed 
-    * tool edit tool
+    * tool edit tool . edit pressed 
     */
     $scope.tool_edit_pressed = function() {
         $scope.tools_info_editable = true;
@@ -1493,7 +1494,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
     /*
     * Workflow in draft mode --> EDIT button --> pressed 
-    * workflow edit workflow
+    * workflow edit workflow . edit pressed 
     */
     $scope.workflow_edit_pressed = function() {
         $scope.workflows_info_edit_state = true;
@@ -3115,6 +3116,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.qa_gen['workflow'].qa_comment_title = data['workflow_comment_title'];
                 $scope.qa_gen['workflow'].qa_comment_created_at = data['workflow_comment_created_at'];
                 $scope.qa_gen['workflow'].qa_comment_username = data['workflow_comment_username'];
+
+                // Run fit cytoscape. If the graph has been edited we need to reposition all nodes. 
+                $timeout(function(){$scope.workflow_info_fit_pressed()}, 10);
+                
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');
