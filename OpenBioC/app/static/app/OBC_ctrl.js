@@ -1177,7 +1177,15 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         // Default operating system is ubuntu:16.04 . FIXME!
         // $scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === 'ubuntu:16.04'});
+
         $scope.tool_os_choices = [];
+        $scope.os_choices.forEach(function (element){
+            if (element.value == 'posix') {
+                $scope.tool_os_choices.push(element);
+            }
+        });
+
+
         //console.log('$scope.os_choices:');
         //console.log($scope.os_choices);
         //console.log('$scope.tool_os_choices:');
