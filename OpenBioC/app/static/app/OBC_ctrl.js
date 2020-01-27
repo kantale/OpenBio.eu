@@ -4124,6 +4124,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 'tool_os_choices' : $scope.tool_os_choices,
                 'tool_installation_commands': tool_installation_editor.getValue(),
                 'tool_validation_commands': tool_validation_editor.getValue(),
+                'tool_draft': $scope.tools_info_draft, 
                 'download_type': download_type
             },
             function (data) {
@@ -4168,20 +4169,25 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             }).get(0).click();
         }
         else if (download_type == 'CWLTARGZ') {
-            var output_filename = 'workflow.tar.gz'
+            var output_filename = 'workflow.tar.gz';
             $("#hiddena").attr({
                 "download" : output_filename,      
                 "href" : "data:application/gzip," + data['output_object']
             }).get(0).click();
-
         }
         else if (download_type == 'CWLZIP') {
-            var output_filename = 'workflow.zip'
+            var output_filename = 'workflow.zip';
             $("#hiddena").attr({
                 "download" : output_filename,      
                 "href" : "data:application/zip," + data['output_object']
-            }).get(0).click();
-            
+            }).get(0).click();   
+        }
+        else if (download_type == 'AIRFLOW') {
+            var output_filename = 'airflow.py';
+            $("#hiddena").attr({
+                "download" : output_filename,      
+                "href" : "data:," + data['output_object']
+            }).get(0).click();              
         }
 
         else {

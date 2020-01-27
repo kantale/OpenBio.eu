@@ -3065,8 +3065,9 @@ def run_tool(request, **kwargs):
         'version': str(kwargs['tools_search_version']) if str(kwargs['tools_search_version']) else '0',
         'edit': kwargs['tools_search_edit'] if kwargs['tools_search_edit'] else 0, # If this is editable, then the edit is 0
         'variables': [variable for variable in kwargs['tool_variables'] if variable['name'] and variable['value'] and variable['description']],
-
+        'draft': kwargs['tool_draft'],
     }
+
     this_tool_cytoscape_node = tool_node_cytoscape(tool)
     this_tool_cytoscape_node['data']['installation_commands'] = kwargs['tool_installation_commands']
     this_tool_cytoscape_node['data']['validation_commands'] = kwargs['tool_validation_commands']
@@ -3250,6 +3251,9 @@ def run_workflow(request, **kwargs):
             ret['output_object'] = output_object
         elif download_type == 'CWLZIP':
             output_object = urllib.parse.quote(create_bash_script(output_object, get_server_url(request), 'cwlzip'))
+            ret['output_object'] = output_object
+        elif download_type == 'AIRFLOW':
+            output_object = urllib.parse.quote(create_bash_script(output_object, get_server_url(request), 'airflow'))
             ret['output_object'] = output_object
     except OBC_Executor_Exception as e:
         return fail(str(e))
