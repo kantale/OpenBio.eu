@@ -1784,7 +1784,11 @@ def tools_add(request, **kwargs):
         # Get the tool that this tool is forked from
         tool_forked_from = tool.forked_from
 
-        # Get the created at. It needs to be sorted accorfing to this, otherwise the jstree becomes messy
+        # Get the tools that depend from this tool
+        tools_depending_from_me = tool.dependencies_related.all()
+        tools_depending_from_me_list = list(tools_depending_from_me) # We need to add a reference to these object. Otherwise it will be cleared after we delete tool
+
+        # Get the created at. It needs to be sorted according to this, otherwise the jstree becomes messy
         tool_created_at = tool.created_at
 
         # Get the workflows that use this tool
@@ -1797,6 +1801,7 @@ def tools_add(request, **kwargs):
 
         # Delete it!
         tool.delete()
+
     else:
         upvotes = 0
         downvotes = 0
@@ -1919,6 +1924,12 @@ def tools_add(request, **kwargs):
         for tool_fork in tool_forks:
             tool_fork.forked_from = new_tool
             tool_fork.save()
+
+        # To the tools depending from me, add this tool to dependencies!
+        for tool_depending_from_me in tools_depending_from_me_list:
+            tool_depending_from_me.dependencies.add(new_tool)
+            #print ('Add {} as a dependency to {}'.format(new_tool, tool_depending_from_me))
+            tool_depending_from_me.save()
 
         # Add to the workflows that were using this tool, the new tool
         for workflow_using_this_tool in workflows_using_this_tool:
