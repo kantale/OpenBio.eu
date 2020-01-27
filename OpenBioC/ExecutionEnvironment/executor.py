@@ -2038,8 +2038,10 @@ dag = DAG(
     dag=dag)
 '''
 
-    def build(self, output):
+    def build(self, output, output_format='airflow'):
         '''
+        output: Name of output file. If None thjen the function returns a string
+        output_format: it is not currently used 
         '''
 
         d = {env:g[env] for env in ['OBC_DATA_PATH', 'OBC_TOOL_PATH', 'OBC_WORK_PATH'] if env in g}
@@ -2124,9 +2126,15 @@ dag = DAG(
             ORDER = ' >> '.join(tool_ids + step_ids)
         )
 
-        log_info('Saving airflow to {}'.format(output))
-        with open(output, 'w') as f:
-            f.write(airflow_python)
+        # Save output / Return
+        if output:
+            # Saving to a file
+            log_info('Saving airflow to {}'.format(output))
+            with open(output, 'w') as f:
+                f.write(airflow_python)
+        else:
+            # Return string
+            return airflow_python
 
 
 
@@ -2164,6 +2172,13 @@ def create_bash_script(workflow_object, server, output_format):
         w = Workflow(workflow_object = workflow_object, askinput='NO')
         e = CWLExecutor(w)
         return e.build(output=None, output_format=output_format)
+    elif output_format in ['airflow']:
+        w = Workflow(workflow_object = workflow_object, askinput='NO')
+        e = AirflowExecutor(w)
+        return e.build(output=None, output_format='airflow')
+    else:
+        raise OBC_Executor_Exception('Erro: 6912: Unknown output format: {}'.format(str(output_format)))
+
 
 
 if __name__ == '__main__':
