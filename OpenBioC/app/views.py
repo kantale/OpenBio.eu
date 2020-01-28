@@ -2054,16 +2054,19 @@ class WorkflowJSON:
     def __tool_dependencies(self, tool_node, all_nodes, edges):
         '''
         Edge A --> B: Tool A has dependency B . Or else, A depends from B. Or else first install B then A
-        Return a set of all tool ids that belong to the dependencies of tool
+        Return a set of all tool ids that belong to the dependencies of a tool (tool_node)
+
+        tool_node: The tool node in a workflow cy
+        all_nodes: A list of all nodes of a workflow cy
+        edges: The object returned from self.__build_edges_dict
         '''
 
         ret = set()
+        print ('tool_node:', tool_node)
+        print ('Edge set:', edges)
 
         def recurse(rec_tool_node):
             tool_id = rec_tool_node['data']['id']
-
-            if not tool_id in edges['s'][tool_id]:
-                return 
 
             for target_id in edges['s'][tool_id]:
                 target_node = all_nodes[target_id]
@@ -2074,7 +2077,9 @@ class WorkflowJSON:
                 # This is a tool. There exist an edge rec_tool_node --> target_node. This means that rec_tool_node dependes from target_node
                 if not target_id in ret:
                     ret.add(target_id)
-                    recurse(targe_node)
+                    recurse(target_node)
+
+        print ('set 2:', ret)
 
         recurse(tool_node)
         ret.add(tool_node['data']['id'])
@@ -2260,12 +2265,14 @@ class WorkflowJSON:
         # Update all the workflows who are using this tool
         for workflow_using_me in self.workflows_using_me:
 
+            print ('The graph of this tool:')
+            print (simplejson.dumps(self.graph, indent=4))
 
             print ('Workflow using me:', workflow_using_me.name, workflow_using_me.edit)
 
             graph = simplejson.loads(workflow_using_me.workflow)
 
-            print ('   My graph:')
+            print ('   The workflow graph:')
             print (simplejson.dumps(graph, indent=4))
 
             all_nodes = {node['data']['id']:node for node in graph['elements']['nodes']}
@@ -2273,10 +2280,10 @@ class WorkflowJSON:
             edges = self.__build_edges_dict(graph)
 
             print ('   All nodes:')
-            print (all_nodes)
+            print (simplejson.dumps(all_nodes, indent=4))
 
             print ('   Belongto:')
-            print (belongto)
+            print (simplejson.dumps(belongto, indent=4))
 
             print ('   self.key:', self.key)
 
@@ -2295,11 +2302,12 @@ class WorkflowJSON:
             # Remove these nodes (and edges connected to them) from the graph
             self.__remove_nodes_edges(graph, tool_dependencies, self.all_ids)
 
-            print ('   Graph After Deletion:')
+            print ('   Graph After Deletion of nodes and edges:')
             print (simplejson.dumps(graph, indent=4))
 
-            
             # Add the edges of the graph
+            print ('   Edges to add:')
+            print (simplejson.dumps(self.graph['elements']['edges'], indent=4))
             graph['elements']['edges'].extend(self.graph['elements']['edges'])
 
             # Add the nodes of this graph
@@ -2307,6 +2315,10 @@ class WorkflowJSON:
             nodes_to_add = self.graph['elements']['nodes']
             for node_to_add in nodes_to_add:
                 node_to_add['data']['belongto'] = tool_node_belongto
+
+            print ('   Nodes to add:')
+            print (simplejson.dumps(nodes_to_add, indent=4))
+
             graph['elements']['nodes'].extend(nodes_to_add)
 
             print ('  Graph after adding new tool dependencies')
