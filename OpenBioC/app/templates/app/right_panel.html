@@ -649,7 +649,7 @@
                                             ng-show="workflows_info_editable"
                                             ng-click="workflow_info_add_step_clicked()">Clear</a>
                                         <a class="waves-effect waves-light btn" style="margin:2px"
-                                            ng-show="workflows_info_editable"
+                                            ng-show="workflows_info_editable && workflow_step_previous_step"
                                             ng-click="workflow_step_delete()">Delete</a>
                                         <a class="waves-effect waves-light btn" style="margin:2px"
                                             ng-click="workflow_step_add()" ng-show="workflows_info_editable"><span
