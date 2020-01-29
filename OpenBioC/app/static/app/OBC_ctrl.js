@@ -3106,6 +3106,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
                 $scope.workflow_keywords = data['keywords'];
 
+                // This is a fresh WF. There is no "previous step"
+                $scope.workflow_step_previous_step = false;
+
                 // Update text fields
                 $timeout(function(){M.updateTextFields()}, 10);
 
@@ -3244,6 +3247,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         $scope.workflows_step_name = ''; //Clear STEP name
         $scope.workflows_step_main = false; 
+
+        $scope.workflow_step_previous_step = false;
         workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1); //Add default content
     };
 
