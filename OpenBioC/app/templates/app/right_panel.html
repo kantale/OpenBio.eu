@@ -27,7 +27,7 @@
                             <span ng-bind="tools_info_name"></span>/<span ng-bind="tools_info_version"></span><span
                                 ng-show="!tools_info_editable">/<span ng-bind="tools_info_edit"></span></span>
                         </h5>
-                        <small class="form-text text-muted" ng-show="(!tools_info_editable) || tools_info_draft">
+                        <small class="form-text text-muted" ng-show="(!tools_info_editable) || tools_info_edit_state">
                             created by <a ng-click="interlink({type: 'u', username: tool_info_username})">u/<span ng-bind="tool_info_username"></span></a>, created at <span
                                 ng-bind="tool_info_created_at"></span>
                             {% verbatim %}
