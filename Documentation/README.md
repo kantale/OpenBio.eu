@@ -1,4 +1,13 @@
 
+# Introduction
+[OpenBio.eu](https://www.openbio.eu) is an environment for open and collaborative science. 
+On OpenBio you can search, create, store, use, share and comment Tools and Workflows that take part in open scientific experiments. 
+But let's take things from the beginning...
+
+This is the home page of the OpenBio.eu platform:
+![img](screenshots/screen_1.png)
+
+
 
 ## Tools/Data
 Tools and Data are indistinguishable in the platform. 
