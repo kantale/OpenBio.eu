@@ -1020,6 +1020,12 @@ def get_execution_clients(request):
 
     return ret
 
+def get_execution_clients_angular(request):
+    '''
+    Angular excepts an empty entry at the end
+    '''
+
+    return get_execution_clients(request) + [{'name': '', 'client': ''}]; 
 
 ### END OF USERS 
 
@@ -1174,7 +1180,7 @@ def index(request, **kwargs):
     context['os_choices'] = simplejson.dumps(OS_types.get_angular_model());
 
     # Get User clients
-    context['profile_clients'] = get_execution_clients(request) + [{'name': '', 'client': ''}]; # Angular excepts an empty entry at the end
+    context['profile_clients'] = get_execution_clients_angular(request)
 
     # Add version
     context['version'] = __version__
@@ -1396,6 +1402,7 @@ def login(request, **kwargs):
         'username': login_username,
         'csrf_token': get_token(request),
         'user_is_validated': obc_user.email_validated,
+        'profile_clients': get_execution_clients_angular(request),
     }
 
     return success(ret)
