@@ -552,7 +552,7 @@ class Workflow:
         for tool_variable in tool['variables']:
             tool_bash_variable=self.get_tool_bash_variable(tool, tool_variable['name'])
             ret += 'export {}="{}" # {} \n'.format(tool_bash_variable, tool_variable['value'], tool_variable['description'])
-            ret += 'echo "OBC: SET {}=${}   <-- {} "\n'.format(tool_bash_variable, tool_bash_variable, tool_variable['description']) 
+            ret += 'echo "OBC: SET {}=\\"${}\\"   <-- {} "\n'.format(tool_bash_variable, tool_bash_variable, tool_variable['description']) 
         ret += '### END OF SETTING TOOL VARIABLES FOR: {}\n\n'.format(tool['label'])
 
         if variables_json_filename:
