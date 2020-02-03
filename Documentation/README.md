@@ -53,6 +53,8 @@ Each Tool/Data has a unique ID in openbio.eu. This unique ID is comprised by thr
 * The version that you have declared. 
 * A number provided by the system, called "edit". This number is derived so that the Name/Version/Edit of this tool/data is unique. 
 
+**In OpenBio.eu we refer to a unique tool with the following schema: ```<Name>/<Version>/<Edit>```. For example: ```my_tool/1/1```. This can be interpreted as "tool named my_tool version 1, edit 1".**
+
 ### Downloading a Tool/Data 
 On the "Download" dropdown, select "BASH executable". A file named ```bash.sh``` get's downloaded. As you might have guessed you can actually execute this file. If you don't know how, there are many online resources to help you on that (just google: run .sh file). Before executing it, you should read carefully the following:
 
@@ -142,10 +144,41 @@ Also notice the output of the "Istallation Commands": ```installing tool my_tool
 So far we have shown that OpenBio.eu is a repository of "downloadable" Tool/Data where each one has Installation and Validation commands in Bash language. The next part is to demonstrate the use of tool/data variables.
 
 ### Tool/Data Variables 
-When you have installed a Tool/Data you need to let other scripts know where these tools/data are. Apart from the installation path of the Tool/Data there might be other pieces of information that you want to share with other tools/data or with other workflows. This piece of information can be stored in the Tool/Data Variables section. 
+When you have installed a Tool/Data you need to let other scripts know where these tools/data are. Apart from the installation path of the Tool/Data there might be other pieces of information that you want to share with other tools/data or with other workflows. This piece of information can be stored in the Tool/Data Variables section. Each Tool/Data variable has a name, a value and a description. 
+
+Let's edit again the my_tool Tool/Data. Click the "EDIT" button, unfold the "Installation" panel and go to the bottom of this panel. There, add a variable with the name: ```var_1``` , value ```hello world``` and description: ```my first variable```. Click SAVE. This is what it should look like:
+
+![img](screenshots/screen_7.png)
+
+Now download again the BASH Executable, and run it. The output should be:
+
+```
+Workflow name: root
+Workflow edit: 0
+Workflow report: None
+OBC: INSTALLING TOOL: my_tool/1/1
+installing tool my_tool
+OBC: INSTALLATION OF TOOL: my_tool/1/1 . COMPLETED
+OBC: VALIDATING THE INSTALLATION OF THE TOOL: my_tool/1/1
+OBC: VALIDATION FOR TOOL: my_tool/1/1 SUCCEEDED
+OBC: SET my_tool__1__1__var_1="hello world"   <-- my first variable 
+OBC: CALLING STEP: step__main__root__None    CALLER: main
+Output Variables:
+```
+
+Notice that after validating the tool, it sets the variable named ```my_tool__1__1__var_1``` the value ```hello world```. The name of the variable (```my_tool__1__1__var_1```) can be interpreted as "variable named var_1 of the tool my_tool with version 1 and edit 1".
+
+### Tool/Data dependencies 
+Suppose that the we have another tool/data which depends from my_tool. Let's call this tool/data 'another_tool' and assume version 1. Since in OpenBio.eu we *have to* insert the installation / validation Bash commands, we also *have to* declare the depencencies of this tool/data. Click the '+' button on Tools/Data and add ```another_tool``` as name and ```1``` as version. Also unfold the 'Dependencies panel'
+
+Next, enter ```my_tool``` on the search text field on the left and locate the item on the results that you created before. Now drag and drop this item in the Dependencies panel (red border):
+
+![img](screenshots/screen_8.png)  
 
 
 
+
+Suppose that we want to add the tool [plink](http://zzz.bwh.harvard.edu/plink/) in the platform. If you are not familiar with plink or with what plink does, do not worry! What you need to know is that plink is one of the millions open source 
 
 
 
