@@ -2069,15 +2069,23 @@ window.onload = function () {
                         }
                     },
                     {
-                        selector: 'node[type="tool"][?draft]',
+                        selector: 'node[type="tool"][?draft]', // This is a draft tool
                         "style": {
                             "shape": "round-rectangle",
-                            'background-color': '#E53935', // red
+                            'background-color': '#E53935' // red
                             //"label": "data(id)",
                             //"label": "data(label)",
                             //"height": 15,
                             //"width": 15
                         }
+                    },
+                    {
+                        selector: 'node[type="tool"][!draft]', // This is NOT a draft tool
+                        "style": {
+                            "shape": "round-rectangle",
+                            'background-color': '#5A5A5A' // grey
+                        }
+
                     },
                     {
                         selector: 'node[type="step"][!sub_main][?main]', // http://js.cytoscape.org/#selectors/data 
@@ -2904,7 +2912,8 @@ window.onload = function () {
         /*
         * Called from angular $scope.workflow_info_run_pressed
         * * Check if input options are unset
-        * * Get the workflow options. This isa dictionary: key: name of option, value: option value
+        * * Get the workflow options. 
+        * Returns a dictionary: key: name of option, value: option value
         */
         window.OBCUI.get_workflow_options = function () {
             var workflow_options = {};

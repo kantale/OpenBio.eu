@@ -2402,8 +2402,13 @@ def ro_finalize_delete(request, **kwargs):
             draft_dependencies = [t for t in tool_get_dependencies_internal(tool, include_as_root=False) if t['dependency'].draft]
             if draft_dependencies:
                 return fail('This tool cannot be finalized. It depends from {} draft tool(s). For example: {}'.format(len(draft_dependencies), str(draft_dependencies[0]['dependency'])))
+            
             tool.draft = False
             tool.save()
+
+            WJ = WorkflowJSON()
+            WJ.update_tool(tool)
+
         elif action == 'DELETE':
             # Is there any other tool that depends from this tool?
             dependendants = Tool.objects.filter(dependencies__in=[tool])
