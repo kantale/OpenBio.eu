@@ -574,6 +574,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 window.user_is_validated = data['user_is_validated'];
                 $scope.user_is_validated = data['user_is_validated'];
                 $scope.username = data['username'];
+                window.profile_clients = data['profile_clients'];
+                $scope.profile_clients = data['profile_clients'];
+
                 $scope.show_login = false;
 
                 //Close modal sign in 
