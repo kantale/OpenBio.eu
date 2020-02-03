@@ -524,7 +524,7 @@ class Workflow:
 
         # We are adding the installation commands in parenthesis. 
         # By doing so, we are isolating the raw installation commands with the rest pre- and post- commands
-        ret += '(\n' + tool['installation_commands'] + '\n)\n' 
+        ret += '(\n:\n' + tool['installation_commands'] + '\n)\n' # Add A bash no-op command (:) to avoid empty installation instructions
         ret += 'echo "OBC: INSTALLATION OF TOOL: {} . COMPLETED"\n'.format(tool['label'])
         ret += '### END OF INSTALLATION COMMANDS FOR TOOL: {}\n\n'.format(tool['label'])
 
@@ -535,7 +535,7 @@ class Workflow:
             #ret += tool['validation_commands'] + '\n'
             #validation_script_filename = tool['label'].replace('/', '__') + '__validation.sh'
             #ret += "cat > {} << ENDOFFILE\n".format(validation_script_filename) # Add 'ENDOFFILE' in single quotes to have raw input
-            ret += '(\n' + tool['validation_commands'] + '\n)\n' # Run validation commands in a dedicated environment 
+            ret += '(\n:\n' + tool['validation_commands'] + '\n)\n' # Run validation commands in a dedicated environment  () . Add A bash no-op command (:) to avoid empty installation instructions
             #ret += 'ENDOFFILE\n\n'
             #ret += 'chmod +x {}\n'.format(validation_script_filename)
             #ret += './{}\n'.format(validation_script_filename)
