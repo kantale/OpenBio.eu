@@ -1451,6 +1451,11 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 //Disable chip
                 window.OBCUI.chip_disable('toolChips');
 
+                //Set installation and validation editors to readonle 
+                tool_installation_editor.setReadOnly(true);
+                tool_validation_editor.setReadOnly(true);
+                $scope.tools_var_jstree_id_show = false;  // Hide tool + variables dependency tree
+
                 //Load Chips
                 $scope.tool_keywords = window.OBCUI.get_chip_data('toolChips');
 
@@ -1658,6 +1663,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         // Enable chip edit
         window.OBCUI.chip_enable('toolChips'); // Enable them
+
+        // Every fork os a draft
+        $scope.tools_info_draft = true;
     };
 
     /*
@@ -4024,6 +4032,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         //Update Step Editor Tab completion 
         $scope.workflow_update_tab_completion_info_to_step();
+
+        //Every fork is a draft
+        $scope.workflows_info_draft = true;
     };
 
     /*

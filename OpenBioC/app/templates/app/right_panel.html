@@ -245,7 +245,8 @@
                             <strong><a href ng-click="tools_var_jstree_id_show_clicked()"><span
                                         ng-show="tools_var_jstree_id_show">Hide</span><span
                                         ng-show="!tools_var_jstree_id_show">Show</span> variables from dependent
-                                    tools</a></strong>
+                                    tools/data</a></strong>
+                            <strong ng-show="tools_var_jstree_id_show"><br>Select a variable from the tree below and drop it on the Bash editors below.</strong>
                             <div class="left-align" id="tools_var_jstree_id" js-tree="tools_var_jstree_config"
                                 should-apply="tools_search_jstree_config_apply()" ng-model="tools_var_jstree_model"
                                 tree="tools_var_jstree" ng-show="tools_var_jstree_id_show"></div>
