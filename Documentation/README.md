@@ -175,7 +175,92 @@ Next, enter ```my_tool``` on the search text field on the left and locate the it
 
 ![img](screenshots/screen_8.png)  
 
+This is how you declare Tool/Data dependencies in OpenBio.eu. It is important to note that during the installation of Tool/Data ```another_tool```, the ```my_tool``` will be installed first. Also the variables of ```my_tool``` are accessible in the Installation and Validation Commands of ```another_tool```. To use them, simply select them from the tree that appears above the Bash editors and drop them in the Bash editors:
 
+![img](screenshots/screen_9.png)
+
+Ta see what has happened we can add some dummy Installation and Validation Commands and we can also add a variable in ```another_tool```. For example add the following in the Installation commands:
+
+```bash
+echo "Installing another_tool"
+echo "The value of tool var_1 from my_tool/1/1 is:"
+echo "${my_tool__1__1__var_1}
+```
+
+And the following in the Validation Commands:
+```bash
+echo "validating another_tool"
+exit 0
+```
+
+We can also add a variable named ```var_2```. Now the data on ```another_tool``` should look like this: 
+
+![img](screenshots/screen_10.png)
+
+
+Now if we save, Download the "Bash Executable", and run it we will see something like this:
+
+```
+Workflow name: root
+Workflow edit: 0
+Workflow report: None
+OBC: INSTALLING TOOL: my_tool/1/1
+installing tool my_tool
+OBC: INSTALLATION OF TOOL: my_tool/1/1 . COMPLETED
+OBC: VALIDATING THE INSTALLATION OF THE TOOL: my_tool/1/1
+OBC: VALIDATION FOR TOOL: my_tool/1/1 SUCCEEDED
+OBC: SET my_tool__1__1__var_1="hello world"   <-- my first variable 
+OBC: INSTALLING TOOL: another_tool/1/1
+Installing another_tool
+The value of tool var_1 from my_tool/1/1 is:
+hello world
+OBC: INSTALLATION OF TOOL: another_tool/1/1 . COMPLETED
+OBC: VALIDATING THE INSTALLATION OF THE TOOL: another_tool/1/1
+validating another_tool
+OBC: VALIDATION FOR TOOL: another_tool/1/1 SUCCEEDED
+OBC: SET another_tool__1__1__var_2="hello from another tool"   <-- my second var 
+OBC: CALLING STEP: step__main__root__None    CALLER: main
+Output Variables:
+```
+
+Here we notice a few things:
+* ```my_tool``` was installed and validated before ```another_tool```. This is because ```my_tool``` is a dependency to ```another_tool```.
+* During the installation of ```another_tool```, the value of the variable var_1 from my_tool/1/1 is printed. Generally, all tool/data variables, are accessible from any tool/data that is installed after them. 
+
+### The ${OBC_TOOL_PATH} and ${OBC_DATA_PATH} variables 
+On your installation scripts, you are encouraged to use the ```${OBC_TOOL_PATH}``` variable as the root path of all the installed tools of OpenBio.eu. For example when you want to download a file, decompress an archive or install a tool you are encouraged to do this in a directoty that lies under ```${OBC_TOOL_PATH}```. For example you can do:
+
+```bash
+MY_TOOL_PATH=${OBC_TOOL_PATH}/my_tool
+mkdir ${MY_PATH}
+wget -O ${MY_TOOL_PATH}/tool.tgz http://www.example.com/tool.tgz
+```
+
+By confirming to this, you can let other users define the desired location they want to install the OpenBio.eu tools. They can do this by simply exporting the variable ${OBC_TOOL_PATH} on bash. Similarly you are encouraged to use the variable ${OBC_DATA_PATH} to define the location of the data downloaded from Bash scripts in OpenBio.eu. These variables can be used as values in the Tool/Data variables. For Example:
+
+![img](screenshots/screen_11.png)
+
+Notice the value of variable ```INSTALLATION_PATH``` that includes the ```${OBC_TOOL_PATH}``` variable. Now we can define the value of ${OBC_TOOL_PATH} and then run the bash.sh script. The output is (some lines were removed for brevity):
+```
+#> export OBC_TOOL_PATH=/my/precious/location
+#> bash bash.sh 
+The installation path is: /my/precious/location/another_tool
+OBC: SET another_tool__1__1__var_2="hello from another tool"   <-- my second var 
+OBC: SET another_tool__1__1__INSTALLATION_PATH="/my/precious/location/another_tool"   <-- installation path 
+```
+
+### Finalizing and Forking tool/data
+You may have noticed that so far you can save and edit a Tool/Data as many times as you want. Of course only the creator of a Tool/Data is allowed to edit it. This functionality has two side effects:
+
+* Allowing to make changes to a Tool/Data, strips out the "reproducibility" of these objects. What if an experiment is based on a Data and the creator decides to change the installation instructions? This might affect the reproducibility of the experiment. 
+* Allowing only the creator to edit a Tool/Data strips out the crowdsourcing ability. What if a user wants to make an edit to the tool/data of another user?
+
+To battle these issues, we employ two mechanisms. The first is the "Finalizing". By Finalizing a Tool/Data you permanently "freeze" this object from changes. You cannot edit a Tool/Data that has been finalized. Also Tool/Data that have not been finalized are labelled as **DRAFT**. It is a good practice to Finalize your Tool/Data after thorough testing. DRAFT Tool/Data should not be used in "serious" analysis since computational reproducibility is not guaranteed. The philosophy behind the "Finalizing" mechanism is to test and experiment with DRAFT tools/data, but once these object are ready to be used as independent components in public scientific pipelines, then they should be finalized.  
+
+The second mechanism is "Forking". By forking a Tool/Data you can create an indentical Tool/Data object that is is in DRAFT stage and is owned by you. Both Draft and Finalized Tools/Data can be Forked. 
+
+
+### Deleting a Tool/Data 
 
 
 Suppose that we want to add the tool [plink](http://zzz.bwh.harvard.edu/plink/) in the platform. If you are not familiar with plink or with what plink does, do not worry! What you need to know is that plink is one of the millions open source 
