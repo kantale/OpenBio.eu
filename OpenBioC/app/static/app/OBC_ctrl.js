@@ -3296,7 +3296,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             if ($scope.workflow_step_add_update_label == 'Update') {
                 var step_update_data = cy.$('node[id="' +  $scope.workflow_step_previous_step.id + '"]').data();
                 if (step_update_data.main) {
-                    //This node was a main and now is set to main. No need to chech for multiple mains
+                    //This node was a main and now is set to main. No need to check for multiple mains
                     escape_check = true; 
                 }
                 else {
@@ -3379,7 +3379,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.workflows_step_name = '';
         $scope.workflows_step_main = false;
         workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1);
-        $scope.workflow_step_add_update_label = 'Add'; 
+        $scope.workflow_step_add_update_label = 'Add';
+
+        //Close STEP accordion
+        M.Collapsible.getInstance($('#editWorkflowAccordion')).close();
 
     };
 
@@ -3977,6 +3980,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
                 //EXPERIMENTAL. UPDATE SEARCH RESULTS
                 $scope.all_search_2();
+
+                //Close STEP accordion
+                M.Collapsible.getInstance($('#editWorkflowAccordion')).close();
             },
             function(data) {
                 $scope.workflows_info_error_message = data['error_message'];

@@ -3233,12 +3233,14 @@ def run_workflow(request, **kwargs):
             workflow_tool['data']['dependencies'] = [str(tool) for tool in workflow_tool_obj.dependencies.all()]
 
     # Create a new Report object 
-    if (not user_is_validated(request)) or (not workflow):
+    if (not user_is_validated(request)) or (not workflow) or (workflow.draft):
         '''
         If :
             user is anonymous or 
             with non-validated email or 
-            not saved workflow or this is a tool run (workflow is None), 
+            not saved workflow or 
+            this is a tool run (workflow is None) or
+            workflow is draft 
         then:
             we do not create a report!
         '''

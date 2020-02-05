@@ -13,7 +13,7 @@ There are many repositories that store tools, data and workflows.  Examples are 
 2. **OpenBio.eu's language for object installation/download/execution description is Bash.**
 Since you need to provide explicit instructions of how to install a tool, download data or execute a workflow, we need a computer language to do so. We chose [Bash](https://www.gnu.org/software/bash/). Some people will find Bash, difficult or outdated. Nevertheless Bash is the defacto glue language of the [\*nix universe](https://en.wikipedia.org/wiki/Unix-like). Bash is present by default in OSx and even [Windows 10 supports it natively](https://docs.microsoft.com/en-us/windows/wsl/install-win10). By hosting our code in Bash we make sure that it is directly executable in as many as possible environments. 
 
-   2.1 **Hosting code in Bash does not mean that other languages are excluded**. 
+   Also: **Hosting code in Bash does not mean that other languages are excluded**. 
    On the contrary, Bash was chosen because it is easy to link together different languages, programs, other scripts and logic in a common script.
 
 3. **In OpenBio.eu Tools and Data are the same type of objects.**
@@ -55,6 +55,9 @@ Each Tool/Data has a unique ID in openbio.eu. This unique ID is comprised by thr
 
 **In OpenBio.eu we refer to a unique tool with the following schema: ```<Name>/<Version>/<Edit>```. For example: ```my_tool/1/1```. This can be interpreted as "tool named my_tool version 1, edit 1".**
 
+Here is the philosophy behind this naming/ID-ing scheme. In a repository of scientific objects, we want to store Tools/Data. Tools and Data have names and they also have versions (for Data they might also be called "releases"). An example is [Samtools version 1.8](https://github.com/samtools/samtools/releases/tag/1.8) and [1000 Genomes Project data release 20130502](ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/). In most scientific Tool/Data repositories these have a unique string based ID. For example could be called "Samtools" or "1000 Genomes Project", but that wouldn't identify precisely the research object at least not for reproducubility standards. Versions need to be part of the names. Then we face another problem which is that OpenBio.eu is a crowdsourced environment where you can name your Tool/Data however you like. This means that under the name/version Samtools/1.9 you can include Bash commands that download 1000 Genomes Project data (or anything else..). The solution here is to let anyone choose whatever name/version they like, but add on the ID of the Tool/Data a number (edit) that is provided by the system. That way we can have Samtools/1.8/1 created from user A and Samtools/1.8/2 created from user B. These two can be two completely unrelated Tool/Data objects. We should also let other users show preferences on which Tool/Data is better. This is possible with updvotes and downvotes that we describe later.
+
+
 ### Downloading a Tool/Data 
 On the "Download" dropdown, select "BASH executable". A file named ```bash.sh``` get's downloaded. As you might have guessed you can actually execute this file. If you don't know how, there are many online resources to help you on that (just google: run .sh file). Before executing it, you should read carefully the following:
 
@@ -67,15 +70,15 @@ bash bash.sh
 
 The output is:
 ```
-Workflow name: root
-Workflow edit: 0
-Workflow report: None
+OBC: Workflow name: root
+OBC: Workflow edit: 0
+OBC: Workflow report: None
 OBC: INSTALLING TOOL: my_tool/1/1
 OBC: INSTALLATION OF TOOL: my_tool/1/1 . COMPLETED
 OBC: VALIDATING THE INSTALLATION OF THE TOOL: my_tool/1/1
 OBC: VALIDATION FOR TOOL: my_tool/1/1 FAILED
 OBC: CALLING STEP: step__main__root__None    CALLER: main
-Output Variables:
+OBC: Output Variables:
 ```
 
 Let's break this down. When you download a tool a new Workflow is created (we will see more on Workflows, later). Workflows have a name and an edit (similar to Tools/Data having a name a version and an edit). Since here you downloaded a Tool/Data and not a Workflow, a dummy workflow is created that has the name "root" and edit 0. Also the execution of a Workflow creates a "Report" (more on this later as well..). The interesting part is:
@@ -85,7 +88,7 @@ OBC: INSTALLING TOOL: my_tool/1/1
 OBC: INSTALLATION OF TOOL: my_tool/1/1 . COMPLETED
 ```
 
-```OBC```  stands for "OpenBio-C" which is the name of the project. Initially the script tries to Install the tool by running the "Installation commands" of the tool. The line ```OBC: INSTALLATION OF TOOL: my_tool/1/1 . COMPLETED``` tell us, that the execution of the "Installation commands" has finished. Then it moves to the the execution of the "Validation commands":
+```OBC```  stands for "OpenBio-C" which is the name of the project. Everything that is printed that is OpenBio.eu specific, has the "OBC" suffix so that you can filter this out easily. Initially the script tries to Install the tool by running the "Installation commands" of the tool. The line ```OBC: INSTALLATION OF TOOL: my_tool/1/1 . COMPLETED``` tell us, that the execution of the "Installation commands" has finished. Then it moves to the the execution of the "Validation commands":
 
 ```
 OBC: VALIDATING THE INSTALLATION OF THE TOOL: my_tool/1/1
@@ -127,9 +130,9 @@ The environment should look like this:
 Now press "SAVE" again, then Download the "BASH executable" as before and run the ```bash.sh``` again in a sandboxed environment. Now you will notice that the validation status has changed to ```SUCCEEDED```:
 
 ```
-Workflow name: root
-Workflow edit: 0
-Workflow report: None
+OBC: Workflow name: root
+OBC: Workflow edit: 0
+OBC: Workflow report: None
 OBC: INSTALLING TOOL: my_tool/1/1
 installing tool my_tool
 OBC: INSTALLATION OF TOOL: my_tool/1/1 . COMPLETED
@@ -201,9 +204,9 @@ We can also add a variable named ```var_2```. Now the data on ```another_tool```
 Now if we save, Download the "Bash Executable", and run it we will see something like this:
 
 ```
-Workflow name: root
-Workflow edit: 0
-Workflow report: None
+OBC: Workflow name: root
+OBC: Workflow edit: 0
+OBC: Workflow report: None
 OBC: INSTALLING TOOL: my_tool/1/1
 installing tool my_tool
 OBC: INSTALLATION OF TOOL: my_tool/1/1 . COMPLETED
@@ -220,7 +223,7 @@ validating another_tool
 OBC: VALIDATION FOR TOOL: another_tool/1/1 SUCCEEDED
 OBC: SET another_tool__1__1__var_2="hello from another tool"   <-- my second var 
 OBC: CALLING STEP: step__main__root__None    CALLER: main
-Output Variables:
+OBC: Output Variables:
 ```
 
 Here we notice a few things:
@@ -257,17 +260,113 @@ You may have noticed that so far you can save and edit a Tool/Data as many times
 
 To battle these issues, we employ two mechanisms. The first is the "Finalizing". By Finalizing a Tool/Data you permanently "freeze" this object from changes. You cannot edit a Tool/Data that has been finalized. Also Tool/Data that have not been finalized are labelled as **DRAFT**. It is a good practice to Finalize your Tool/Data after thorough testing. DRAFT Tool/Data should not be used in "serious" analysis since computational reproducibility is not guaranteed. The philosophy behind the "Finalizing" mechanism is to test and experiment with DRAFT tools/data, but once these object are ready to be used as independent components in public scientific pipelines, then they should be finalized.  
 
-The second mechanism is "Forking". By forking a Tool/Data you can create an indentical Tool/Data object that is is in DRAFT stage and is owned by you. Both Draft and Finalized Tools/Data can be Forked. 
+The second mechanism is "forking". By forking a Tool/Data you can create an indentical Tool/Data object that is owned by you. Every forked Tool/Data is by default in a "draft" stage. Both Draft and Finalized Tools/Data can be forked. Let's see how it looks. Select the tool named ```another_tool``` that you created before. You can do that by entering ```another_tool/1``` in the search box on the left panel. From all the items that appear under the Tools/Data section, select the one created by you (or anything else that you like and you want to fork..). Once you click this item, a card with the details of this Tool/Data appears on the right. Now click the "Fork" button which is the rightmost button on the top of this card. Now the card becomes editable and you can make whatever changes you like. On this card there is an "Edit Summary" field that is obligatory. Here you should briefly describe the changes that you made from the original object. Once you complete with these changes you can save the new object. This is what it looks like:
 
+![img](screenshots/screen_12.png)
+
+There are a few things to notice here:
+* On the left side of the platform, where the search results appear, you can see that there is a new Tool/Data object named ```another_tool/1/2```. This object is "under" the ```another_tool/1/1```. **Search results appear as a tree of objects. Parent-Child nodes mean that Childs where forked from Parenst**.
+* The platform assigned a new "edit" number to the newly created Tool/Data. Remember that each Tool/Data has a unique ID which is comprised by three parts. A "name", a "version" and an "edit". Although the user sets the "name" and the "version", the "edit" is assigned by the platform. The new object that was created by forking ```another_tool/1/1``` has the same name and the same version, but different edit. This is also shown on the top of the right panel which states "forked from t/another_tool/1/1". Again the edit numbers might be different in your case.
 
 ### Deleting a Tool/Data 
+Deleting Tool/Data is possible if:
+* You own (have created) this Tool/Data.
+* The Tool/Dats is in Draft stage
+* There isn't any Tool/Data that uses this Tool as a dependency.
+* There isn't any workflow that uses this Tool.
 
+The deletion is permanent from the database and there is no action to restore it. 
+
+## Workflows
+[Scientific Workflow Management Systems (SWMS)](https://en.wikipedia.org/wiki/Scientific_workflow_system) have been around for many decades. [This awesome list](https://github.com/pditommaso/awesome-pipeline) contains hundreds of frameworks, libraries, platforms, languages, etc for managing and organizing tools and data into pipelines. OpenBio.eu is not exactly "Yet another SWMS". The purpose of OpenBio.eu is not to teach you "the correct language", or "data model" or "abstraction" in order to create scientific pipelines. The purpose is to help you create, publish and share your pipeline in whatever language / model / SWMS you like. There is only one prerequisite. The pipeline should be able to be expressed somehow in Bash. For example if your pipeline is a python script that runs with:
+
+```bash
+python my_awesome_pipeline.py --input input_file --output output_file
+```
+
+This is good enough for OpenBio.eu since this is valid Bash. But if the pipeline requires a GUI (Graphical User Interface), then chances are that OpenBio.eu is not for you. 
+
+Now let's start. On the left part of the platform click the green "+" button on "Workflows" section. This is what you will see:
+
+![img](screenshots/screen_13.png)
+
+Add a name to the workflow i.e. ```my_workflow``` and also add a description  (i.e. "my first workflow"). These two fields are obligatory. On the description you can use markdown. By default a new Workflow in OpenBio contains a single "step" which is called "main_step". On the workflow graph click the node "main_step". The Step editor below unfolds. Now you can edit this step. Enter: ```echo "Hello from my_workflow"``` and click "UPDATE". Save this new workflow by clicking on the "Save" icon which is the rightmost on the top of this card. With the Workflow saved the platform should look like this:
+
+![img](screenshots/screen_14.png)
+
+The most important part here is that the name of the workflow appears as ```my_workflow/1```. This is because a unique ID of a workflow is comprised by two parts:
+* A "name" provided by the user
+* A number called "edit" provided from the platform.
+
+The naming/ID-ing scheme is exactly the same as with Tools/Data. The only difference is that Workflows do not have versions. The idea here is that Tools/Data are items that get "fetched" (i.e. downloaded) from the Internet. They have versions that are maintained externally (outside OpenBio.eu), hence the "version" is part of the identity of a Tool/Data. On the other hand, Workflows are sets of Tool/Data, plus the logic that combines them for the purpose of an analysis. Workflow are merely constructs that exist only in OpenBio.eu this is why they don't have "version". Nevertheless they do have an edit, so it is possible to have multiple Workflows with the same name. 
+
+Now, let's download and run this workflow. Select "BASH Executable" from the "Downlood" dropdown. A file named "bash.sh" gets donloaded. Run this as before (i.e. with ```bash bash.sh```). The output should be:
+
+```
+OBC: Workflow name: my_workflow
+OBC: Workflow edit: 1
+OBC: Workflow report: None
+OBC: CALLING STEP: step__main_step__my_workflow__1    CALLER: main
+Hello from my_workflow
+OBC: Output Variables:
+```
+
+Notice that unlike before, when we run a Tool/Data object, it shows the Workflow name and Workflow edit. The "report" part will be explained later. Let's break the line: ```OBC: CALLING STEP: step__main_step__my_workflow__1    CALLER: main```:
+* OBC: Stands for OpenBio-C (the name of the project). 
+* ```step__main_step__my_workflow__1``` Means that we are executing the step called "main_step" that belongs to the workflow ```my_workflow/1```. 
+* ```CALLER: main``` means that this step is the "main" step, and it is not called from another step.
+
+The output ```Hello from my_workflow``` is the output from the command ```echo "Hello from my_workflow"``` that you entered in the main_step earlier. 
+
+Let's add a new step at the Workflow. First click the "EDIT" button on the ```my_workflow/1``` workflow. Click in the "Step" section, add the name "new_step" and add the following Bash commands:
+
+```bash
+echo "Hello from new_step"
+```
+
+This is what it should look like:
+
+![img](screenshots/screen_15.png)
+
+Now press the "ADD" button. A new node has been added on the workflow that represents the new step:
+
+![img](screenshots/screen_16.png)
+
+Although we have added a new step, we haven't declared how to call it. Let's alter the workflow so that the step ```main_step``` calls the step ```new_step```. Click on the ```main_step``` node. The Bash editor for the ```main_step``` opens. Then you can change the Bash commands from:
+
+```bash
+echo "Hello from my_workflow"
+```
+
+to:
+
+```bash
+echo "Hello from my_workflow"
+step__new_step__root__null
+```
+
+But what does the ```step__new_step__root__null``` mean? This actually means "call the step ```new_step``` that belongs to the root workflow". We will see later that workflows can contain other workflows. Also workflows have steps. A step in a workflow can have the same name with another step in another workflow. Therefore when you call a step you need to declare to which workflow this step belongs. Also ```root_null``` is the name of the main workflow, or else the workflow that is being edited right now. Now press the "UPDATE" button to update the ```main_step```. The workflow has been changed and an edge from step ```main_step``` to step ```new_step``` has been added:
+
+![img](screenshots/screen_17.png)
+
+Now we can save these edits (press the save button on top-right), download the workflow (press Download-->Bash Executable) and run the file that gets downloaded (with ```bash bash.sh```). The output is:
+
+```
+OBC: Workflow name: my_workflow
+OBC: Workflow edit: 1
+OBC: Workflow report: None
+OBC: CALLING STEP: step__main_step__my_workflow__1    CALLER: main
+Hello from my_workflow
+OBC: CALLING STEP: step__new_step__my_workflow__1    CALLER: main_step__my_workflow__1
+Hello from new_step
+OBC: Output Variables:
+```
+
+Notice that the first step called is the ```main_step``` that prints ```Hello from my_workflow```. Then this step calls ```new_step``` that prints ```Hello from new_step```. Now it is time to discuss on one of the main features of OpenBio.eu and how this feature differentiates OpenBio.eu from other Workflow Management Systems:
+
+**In OpenBio.eu steps are called from other steps. Or else in OpenBio.eu you do not define step order, instead you define step logic.**
 
 Suppose that we want to add the tool [plink](http://zzz.bwh.harvard.edu/plink/) in the platform. If you are not familiar with plink or with what plink does, do not worry! What you need to know is that plink is one of the millions open source 
-
-
-
-
 
 
 ## Workflows 
