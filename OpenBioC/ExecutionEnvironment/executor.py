@@ -445,9 +445,9 @@ class Workflow:
         '''
 
         ret = '\n'
-        ret += 'echo "Workflow name: {}"\n'.format(self.root_workflow['name'])
-        ret += 'echo "Workflow edit: {}"\n'.format(self.root_workflow['edit'])
-        ret += f'echo "Workflow report: {self.nice_id}"\n'
+        ret += 'echo "OBC: Workflow name: {}"\n'.format(self.root_workflow['name'])
+        ret += 'echo "OBC: Workflow edit: {}"\n'.format(self.root_workflow['edit'])
+        ret += f'echo "OBC: Workflow report: {self.nice_id}"\n'
         ret += '\n'
         return ret
 
@@ -585,9 +585,9 @@ class Workflow:
 
     def get_output_bash_commands(self,):
         ret = '### PRINT OUTPUT PARAMETERS\n'
-        ret += 'echo "Output Variables:"\n'
+        ret += 'echo "OBC: Output Variables:"\n'
         for output_parameter in self.output_parameters:
-            ret += 'echo "{} = ${{{}}}"\n'.format(output_parameter['id'], output_parameter['id'])
+            ret += 'echo "OBC: {} = ${{{}}}"\n'.format(output_parameter['id'], output_parameter['id'])
         ret += '### END OF PRINTINT OUTPUT PARAMETERS\n'
 
         return ret
