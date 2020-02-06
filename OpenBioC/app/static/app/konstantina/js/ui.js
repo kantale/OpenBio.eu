@@ -1160,6 +1160,10 @@ window.onload = function () {
 
             var splitted = no_comments.split('\n');
 
+            var root_wf_data = window.OBCUI.cy_get_root_workflow_data(); //The cytoscape data of the root workflow node
+            var root_wf_label = root_wf_data.label;
+            //console.log('Root Workflow label:', root_wf_label);
+
             splitted.forEach(function (line) {
                 //console.log("line : ");
                 //console.log(line);
@@ -1180,14 +1184,41 @@ window.onload = function () {
                         //console.log('PROCESSING THE FOLLOOWING CALL: -->' + result + '<--');
 
                         var step_id = result.match(window.OBCUI.call_re_id)[0];
+                        var step_id_to_add = null;
                         //console.log("matched step id : ");
                         //console.log(step_id);
+
                         //Is there a node with type step and id step_id ?
                         if (cy.$("node[type='step'][id='" + step_id + "']").length) {
+                            step_id_to_add = step_id
                             //Add it only if it is not already there
-                            if (!steps.includes(step_id)) {
-                                steps.push(step_id);
+                            //console.log('FOUND CYTOSCAPE NODE ID:', step_id);
+                        }
+                        else {
+                            // This is a special case:
+                            // Assume: (1) There is a call: step__s2__wf__1 , (2) wf/1 is the root wf, (3) we are editing or forking wf/1
+                            // Since we are editing/forking we have called window.forkWorkflow(). This function changes the ids of all steps in the root workflow 
+                            // The called step node id is: step__s2__root__null. Yet we are calling step__s2__wf__1
+                            // So we need to check if this call has an id compatible to a step belonging to the root workflow
+
+                            var step_data = window.OBCUI.get_data_from_step_id(step_id);
+                            //console.log('STEP DATA:', step_data);
+
+                            //Does this step belong to the root workflow?
+                            if (step_data.belongto.name + '/' + step_data.belongto.edit === root_wf_label) {
+                                var new_step_id = window.create_step_id(step_data, {'name': 'root', edit: null});
+                                //console.log('new step id:', new_step_id);
+                                if (cy.$("node[type='step'][id='" + new_step_id + "']").length) {
+                                    step_id_to_add = new_step_id
+                                }
                             }
+                        }
+
+                        if (step_id_to_add) {
+                             //Add it only if it is not already there
+                             if (!steps.includes(step_id_to_add)) {
+                                steps.push(step_id_to_add);
+                             }
                         }
 
                     });
@@ -1341,11 +1372,10 @@ window.onload = function () {
         };
 
         /*
-        * Get the edit of this wotkflow id
+        * Get the edit of this workflow id
         */
         function get_edit_from_workflow_id(workflow_id) {
             return workflow_id.split(window.OBCUI.sep)[1];
-            //return workflow_id.split(window.OBCUI.sep)[1];
         }
 
         /*
@@ -1362,6 +1392,15 @@ window.onload = function () {
             return 'step' + window.OBCUI.sep + step.name + window.OBCUI.sep + window.OBCUI.create_workflow_id(workflow);
         }
         window.create_step_id = create_step_id; // Ugliness. FIXME! We need to make these functions visible everywhere without polluting the namespace . D05DFC7004FE
+
+        /*
+        * Parse a step_id
+        * step__s2__test__1 --> {name: 's2', 'belongto': {name: test, edit: 1}}
+        */
+        window.OBCUI.get_data_from_step_id = function(step_id) {
+            var s = step_id.split(window.OBCUI.sep);
+            return {'name': s[1], 'belongto': {'name': s[2], 'edit': s[3]}};
+        };
 
         /*
         * Create a unique input/output variable ID. This contains the input/output name, name workflow and edit of worfkflow
@@ -1407,6 +1446,14 @@ window.onload = function () {
         };
 
         /*
+        * Get the root workflow of the graph from cytoscape
+        */
+        window.OBCUI.cy_get_root_workflow_data = function() {
+            //The root workflow node belongto field is null
+            return cy.$('node[type="workflow"][!belongto]').data()
+        };
+
+        /*
         * Get the source_id from the edge id
         */
         function get_source_id_from_edge_id(edge_id) {
@@ -1445,7 +1492,7 @@ window.onload = function () {
         }
 
         /*
-        * Check if this SIO id. Belongs to a root workflow
+        * Check if this SIO id belongs to a root workflow
         */
         function is_workflow_root_from_SIO_id(sio_id) {
             return is_workflow_root_from_workflow_id(get_workflow_id_from_SIO_id(sio_id));
