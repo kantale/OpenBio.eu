@@ -3349,6 +3349,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         var steps = window.OBCUI.get_steps_from_bash_script(bash_commands); //STEPS
         var tools = window.OBCUI.get_tools_from_bash_script(bash_commands); //TOOLS
         var input_output = window.OBCUI.get_input_outputs_from_bash_script(bash_commands); // INPUT/OUTPUTS
+
         //console.log('STEPS:');
         //console.log(steps);
 
