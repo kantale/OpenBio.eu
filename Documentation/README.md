@@ -1,7 +1,8 @@
 # Introduction
 This is an incomplete documentation of the platform.
 
-[OpenBio.eu](https://www.openbio.eu) is an environment for open and collaborative science. On OpenBio you can search, create, store, use, share and comment Tools and Workflows that take part in open scientific experiments. This is the documentation of OpenBio but it is written like a tutorial. Maybe in the future we will offer both in two separate documents.  Most of this tutorial and examples assume that you have created an account and that you have verified your email.
+[OpenBio.eu](https://www.openbio.eu) is an environment for open and collaborative science. On OpenBio you can search, create, store, use, share and comment Tools and Workflows that take part in open scientific experiments. This is the documentation of OpenBio but it is written like a tutorial. Maybe in the future we will offer both in two separate documents. Most of this tutorial and examples assume that you have created an account and that you have verified your email.
+
 
 ## Before we start
 
@@ -318,6 +319,7 @@ Notice that unlike before, when we run a Tool/Data object, it shows the Workflow
 
 The output ```Hello from my_workflow``` is the output from the command ```echo "Hello from my_workflow"``` that you entered in the main_step earlier. 
 
+### Creating and Calling Steps
 Let's add a new step at the Workflow. First click the "EDIT" button on the ```my_workflow/1``` workflow. Click in the "Step" section, add the name "new_step" and add the following Bash commands:
 
 ```bash
@@ -362,9 +364,62 @@ Hello from new_step
 OBC: Output Variables:
 ```
 
-Notice that the first step called is the ```main_step``` that prints ```Hello from my_workflow```. Then this step calls ```new_step``` that prints ```Hello from new_step```. Now it is time to discuss on one of the main features of OpenBio.eu and how this feature differentiates OpenBio.eu from other Workflow Management Systems:
+Notice that the first step called is the ```main_step``` that prints ```Hello from my_workflow```. Then this step calls ```new_step``` that prints ```Hello from new_step```. Now it is time to discuss one of the main features of OpenBio.eu and why OpenBio is **not** a typical Workflow Management System:
 
-**In OpenBio.eu steps are called from other steps. Or else in OpenBio.eu you do not define step order, instead you define step logic.**
+**In OpenBio.eu steps are called from other steps. Or else in OpenBio.eu you do not define step order, instead you define step logic.** In most Workflow Management Systems like [Galaxy](https://galaxyproject.org/), [Nextflow](https://www.nextflow.io/) and [Taverna](http://www.taverna.org.uk/download/workbench/2-5/bioinformatics/) a user has to define two things: The first is steps and the second is Workflows. Steps (or *Processes* in Nextflow, *Tools* in Galaxy, *Services* in Taverna, ...) are independent execution components that can take part in one or many analyses. A workflow is a combination of Steps. A workflow usually defines the order in which the steps have to be executed. This abstraction is fine and has been used for decades in scientific computing. This abstraction is good because it serves a useful isolation between the execution (steps) and the execution flow (Workflow). 
+
+There is though a fundamental difference between this abstraction and the typical abstraction used in computer programming. In programming, "steps call other steps" as in "functions call other functions". In programming, you do not use different language syntax to differentiate between the things that can be called (steps) and the things that call them (workflows). In contrast, everything you do in programming "sits" inside a function. This function can call or be called by other functions. Yet in typical Workflow Management Systems, you cannot "call" a step from another step (unless you do something hack-ish like run the workflow execution engine from inside the step). Even worse, in WMS it is difficult (if not possible) to use  fundamental programming constructs like conditional executions (if.. else..) and iterations (for.. while..). 
+
+In OpenBio.eu, steps belong to workflows. **BUT** you do not "call" workflows. You call steps. Then.. how did we run ```my_workflow``` which is a workflow? Every workflow has one (and only one) *main* step. When you download a workflow and you execute it, what you actually execute is the main step of this workflow. This is like the main function in [c/c++](https://en.cppreference.com/w/cpp/language/main_function), [java](https://docs.oracle.com/en/java/javase/13/docs/api/jdk.compiler/com/sun/tools/javac/Main.html) or the ```if __name__ == '__main__':``` [logic in python](https://stackoverflow.com/questions/419163/what-does-if-name-main-do). So, OpenBio.eu **does not** have any algorithm to determine the execution order of steps. It simply calls the main step of the workflow and lets.. Bash take it from there. From a step you can call other steps that belong to any workflow. You can even call.. yourself. Also, you can use any Bash construct (if, while, for, ...) to control flow, so conditional execution and iteration is natively supported. Main steps have a red border color on the graph. Also, there is a "main" checkbox in the step editing panel, so that you can change which step is main. If more than one steps have been defined as main, or none, an error will appear upon trying to save the workflow.
+
+The whole point of OpenBio.eu project is to offer a Workflow Management System that has the flexibility of a programming language, does not require installation in your computer to run it, and does not forcing you a new DSL (Domain Specific Language). The following chapter will illuminate more this philosophy. 
+
+### Workflows in Workflows
+Create a new workflow and name it "another_workflow". Click the node with the main_step and edit the Bash commands. Add:
+
+```bash
+echo "hello from another_workflow"
+```
+
+Click "Update" on this step and save this workflow. Now enter ```my_workflow``` on the search input on the left panel and select the workflow that you created before. Then click the Edit button. Here, we want to include the ```another_workflow``` into ```my_workflow```. To do that enter ```another_workflow``` on the search input of the left panel and locate the ```another_workflow/1``` object that you created before. Drag and Drop this workflow on the graph of ```my_workflow```:
+
+![img](screenshots/screen_18.png)
+
+The result should be:
+
+![img](screenshots/screen_19.png)
+
+Let's explore a bit the semantics of this graph. Octagons represent Workflows. Red Octagon means that this workflow is in draft stage. The "root" workflow sits on the top of the graph and its name is ```my_workflow/1```. There are three items that belong to this workflow: (1) the step ```new_step```, (2) the step ```main_step``` and (3) the workflow ```another_workflow/1```. This is why there are tree dotted edges from the ```my_workflow/1``` node. Dotted edges mean "contain". From these steps, step ```main_step``` calls ```new_step```. This is why there is a normal edge from ```main_step``` to ```new_step```. Also ```main_step``` that belongs to ```my_workflow/1``` has a red border, meaning that this is the main_step of *this* workflow (the one that you are editing right now). Workflow ```another_workflow/1``` has one item. This is the step ```main_step``` node on the bottom of the graph. This node has a black border meaning that this is the main step of the workflow that it belongs to. Remember that a workflow can have one and only one main step. When you are importing a workflow into another workflow, the main step of the imported workflow stops from being main. Nevertheless, it is shown on the graph (the black border) that it "used to be the main step". This is to help you identify which step calls the rest on this workflow.
+
+So although we have imported ```another_workflow/1``` we do not call any of its steps. Let's edit new_step and call the main_step of ```another_workflow/1```. Click the node "new_step" and on the Bash editor write: "step". The following auto-completion menu appears:
+
+![img](screenshots/screen_20.png)
+
+This menu helps you to choose a step. Available options are: step ```new_step``` of the root workflow, step ```main_step``` of the root workflow and step ```main_step``` of the ```another_workflow/1``` workflow. Select the last (```step/main_step/another_workflow/1```). Then click "UPDATE". Now the workflow becomes:
+
+![img](screenshots/screen_21.png)
+
+Save the workflow. We can Download (Button DOWNLOAD-->Bash Exutable) and run (```bash bash.sh```) this workflow. The output of this execution appears:
+
+```
+OBC: Workflow name: my_workflow
+OBC: Workflow edit: 1
+OBC: Workflow report: None
+OBC: CALLING STEP: step__main_step__my_workflow__1    CALLER: main
+Hello from my_workflow
+OBC: CALLING STEP: step__new_step__my_workflow__1    CALLER: main_step__my_workflow__1
+Hello from new_step
+OBC: CALLING STEP: step__main_step__another_workflow__1    CALLER: new_step__my_workflow__1
+hello from another_workflow
+OBC: Output Variables:
+```
+
+Here you see that the execution order is defined from the order of which each step is calling other steps. 
+
+
+
+```y_workflow has two steps: "main_step" 
+
 
 Suppose that we want to add the tool [plink](http://zzz.bwh.harvard.edu/plink/) in the platform. If you are not familiar with plink or with what plink does, do not worry! What you need to know is that plink is one of the millions open source 
 
