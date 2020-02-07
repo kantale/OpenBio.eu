@@ -1136,7 +1136,10 @@ ENDOFFILE
             bash = step['bash']
             if not bash.strip():
                 return
-            bash_to_parse = '{\n' + bash + '\n}'
+
+            # https://stackoverflow.com/questions/12404661/what-is-the-use-case-of-noop-in-bash
+            # bashlex Cannot parse empty strings!
+            bash_to_parse = '{\n:\n' + bash + '\n}'  
             calling_steps = step['steps']
 
             # Get the input variables of this step.

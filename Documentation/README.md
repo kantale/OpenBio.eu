@@ -459,4 +459,10 @@ A workflow should contain one (and only one) "main" step. When the Workflow gets
 ```bash
 curl -H 'Accept: application/json; indent=4'  http://0.0.0.0:8200/platform/rest/tools/
 ```
+### Airflow DAG 
+```
+curl "http://0.0.0.0:8200/platform/rest/workflows/my_workflow/1/?dag=true" 
+```
+
+
 
