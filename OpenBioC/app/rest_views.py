@@ -94,9 +94,16 @@ class WorkflowSerializerDAG(serializers.BaseSerializer):
 
         returned_object = run_workflow(self.request, **args)
         deserialized_content =  simplejson.loads(returned_object.content)
+        if not 'output_object' in deserialized_content:
+            return {
+                'success': False,
+                'error': deserialized_content['error_message'],
+            }
+
         output_object = urllib.parse.unquote(deserialized_content['output_object'])
 
         return {
+            'success': True,
             'name': instance.name,
             'edit': instance.edit,
             'dag': output_object, # returned_object['output_object'], # Do we need to return all output_object info?

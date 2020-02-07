@@ -3304,7 +3304,6 @@ def run_workflow(request, **kwargs):
     except OBC_Executor_Exception as e:
         return fail(str(e))
 
-
     ret['report_created'] = report_created
     ret['nice_id'] = nice_id
 
