@@ -188,7 +188,7 @@ Ta see what has happened we can add some dummy Installation and Validation Comma
 ```bash
 echo "Installing another_tool"
 echo "The value of tool var_1 from my_tool/1/1 is:"
-echo "${my_tool__1__1__var_1}
+echo "${my_tool__1__1__var_1}"
 ```
 
 And the following in the Validation Commands:
