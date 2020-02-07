@@ -416,9 +416,28 @@ OBC: Output Variables:
 
 Here you see that the execution order is defined from the order of which each step is calling other steps. 
 
+### Input/Output Parameters of Workflows
+So far you might be wondering: How do I pass input values to a workflow and how do I get the output? You can define input/output variables through the user interface. For example, edit ```my_workflow/1``` and unfold the Inputs/Outputs panel. Then, add an input variable with the name ```threshold``` and an output variable with the name ```result```. Also add any description you like. It should look like this:
+
+![img](screenshots/screen_22.png)
+
+Input and Output variables are visible also in the workflow graph:
+
+![img](screenshots/screen_23.png)
+
+The input and output variables behave similar to tool variables. They are Bash variables that can be accessed in any part of the workflow. For example let's read the value of the threshold and print it. This can be done by any step of the workflow. We can do that from main_step of ```my_workflow/1```. Click this node and edit the Bash commands. On any part you can type "input". An autocomplete menu appears that shows all the input nodes:
+
+![img](screenshots/screen_24.png)
+
+The only option is: ```input/threshold/root``` or else the input node named ```threshold``` that belongs to the root workflow. Choose this and this node is entered in the Bash editor as a Bash variable. Change the Bash commands so that it reads like:
+
+```bash
+echo "Hello from my_workflow"
+echo "Input Threshold is: ${input__threshold__root__null}"
+step__new_step__my_workflow__1
+```
 
 
-```y_workflow has two steps: "main_step" 
 
 
 Suppose that we want to add the tool [plink](http://zzz.bwh.harvard.edu/plink/) in the platform. If you are not familiar with plink or with what plink does, do not worry! What you need to know is that plink is one of the millions open source 
