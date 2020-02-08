@@ -3284,8 +3284,6 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             return;
         }
 
-
-
         // Check that ONLY ONE step is declared as "main" on THAT workflow (nested workflow can have other main steps)
         // If we setting this value to true and there is already a main step, throw an error
         if ($scope.workflows_step_main) {
@@ -3322,6 +3320,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         }
 
         var step_belong_to = null; //By default 
+        var edges_connected_to_me = []; //The edges that are connected to this step.
 
         //Is this an UPDATE or an ADD?
         if ($scope.workflow_step_add_update_label == 'Update') {
@@ -3330,6 +3329,17 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             //Keep the belong to info of the step before deleting it
             step_belong_to = cy.$('node[id="' +  $scope.workflow_step_previous_step.id + '"]').data().belongto;
 
+            //Keep the edges of the steps that call me
+            cy.$('node[id="' + $scope.workflow_step_previous_step.id + '"]').incomers('node[type="step"]').forEach(function(ele, i, eles){
+                edges_connected_to_me.push({group:'edges', data: window.OBCUI.create_step_calls_step_edge(ele.id(), $scope.workflow_step_previous_step.id).data}); 
+            });
+
+            //Keep the edges of the input variable that we read
+            cy.$('node[id="' + $scope.workflow_step_previous_step.id + '"]').incomers('node[type="input"]').forEach(function(ele, i, eles){
+                edges_connected_to_me.push({group:'edges', data: window.OBCUI.create_step_read_input_edge($scope.workflow_step_previous_step.id, ele.id()).data});
+            });
+
+            //Delete the node
             cy.$('node[id="' +  $scope.workflow_step_previous_step.id + '"]').remove();
         }
         else if ($scope.workflow_step_add_update_label == 'Add') {
@@ -3374,6 +3384,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         //window.buildTree(step_node, {name: $scope.workflow_info_name, edit: null});
         //window.buildTree(step_node, {name: 'root', edit: null});
         window.buildTree(step_node, step_belong_to);
+
+        //If we deleted the step node we need to restore the edges that were previously connected to this step. 
+        cy.add(edges_connected_to_me);            
+
         $scope.workflow_update_tab_completion_info_to_step();
 
         //Empty STEP fields. Perhaps call the $scope.workflow_info_add_step_clicked() function??
