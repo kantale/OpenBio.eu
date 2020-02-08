@@ -451,11 +451,11 @@ Note the new edge from the input node ```threshold``` to step node ```main_step`
 OBC: Workflow name: my_workflow
 OBC: Workflow edit: 1
 OBC: Workflow report: None
-OBC: The following input commands have not been set by any step. Please define input values:
-OBC: Input parameter: input__threshold__my_workflow__1 (Input threshold value) has not been set. Enter value: 
+OBC: Input parameter: input__threshold__my_workflow__1 (Input threshold value) has not been set by any step. Enter value: 
+input__threshold__my_workflow__1=
 ```
 
-Enter a value (i.e. ```4.5```) and press Enter. Now the output is:
+Or else: "I couldn't get a value for the input parameter named ```threshold``` that belongs to ```my_workflow/1```". To continue, enter a value (i.e. ```4.5```) and press Enter. Now the output is:
 
 ```
 OBC: Workflow name: my_workflow
@@ -474,7 +474,25 @@ OBC: Output Variables:
 OBC: output__result__my_workflow__1 = 
 ```
 
-What's new here is that the workflow has a an input parameter. Openio.eu checks first to see if this parameter has been set by any step. Since we haven't set a value to this parameter from any step (we are only reading this value), it prompts the user for a value.   
+What's new here is that the workflow has a an input parameter. OpenBio.eu checks first to see if this parameter has been set by any step. Since we haven't set a value to this parameter from any step (we are only reading this value), it prompts the user for a value. Halting script execution to prompt for an input value is perhaps an inconvenient way to get parameter inputs. You can also set the value of this parameter from the command line. Run:
+
+```bash
+bash bash.sh --input__threshold__my_workflow__1=4.5
+```
+
+The script now doesn't halt to get a value for ```input__threshold__my_workflow__1```. 
+
+What about *output* variables? You may have noticed that the output variable named ```results``` that we defined before did not get any value from any step. This is why we see the line: ```OBC: output__result__my_workflow__1 = ``` on the output of ```bash.sh```. Let's change that. Edit again the workflow ```my_workflow/1``` (press the EDIT button), click the ```new_step``` and on the BASH editor type: ```output```. You will see the following autocomplete menu:
+
+![img](screenshots/screen_26.png)
+
+The only output variable is the one named "results" and belongs to the root workflow. 
+
+```bash
+echo "Hello from new_step"
+step__main_step__another_workflow__1
+output__result__root__null=120
+```
 
 Suppose that we want to add the tool [plink](http://zzz.bwh.harvard.edu/plink/) in the platform. If you are not familiar with plink or with what plink does, do not worry! What you need to know is that plink is one of the millions open source 
 
