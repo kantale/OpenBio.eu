@@ -486,13 +486,45 @@ What about *output* variables? You may have noticed that the output variable nam
 
 ![img](screenshots/screen_26.png)
 
-The only output variable is the one named "results" and belongs to the root workflow. 
+The only output variable is the one named "results" and belongs to the root workflow. Edit the Bash commands of this step so that it looks like this.
 
 ```bash
 echo "Hello from new_step"
 step__main_step__another_workflow__1
 output__result__root__null=120
 ```
+
+Press "UPDATE" on this step. The workflow graph now looks like this:
+
+![img](screenshots/screen_27.png)
+
+Notice that a new edge has been created connecting step ```new_step``` with the output node ```results```. If we save, download and run the workflow with:
+
+```bash
+bash bash.sh --input__threshold__my_workflow__1=4.5
+```
+
+The output will be:
+
+```
+OBC: Workflow name: my_workflow
+OBC: Workflow edit: 1
+OBC: Workflow report: None
+OBC: CALLING STEP: step__main_step__my_workflow__1    CALLER: main
+Hello from my_workflow
+Input Threshold is: 4.5
+OBC: CALLING STEP: step__new_step__my_workflow__1    CALLER: main_step__my_workflow__1
+Hello from new_step
+OBC: CALLING STEP: step__main_step__another_workflow__1    CALLER: new_step__my_workflow__1
+hello from another_workflow
+OBC: Output Variables:
+OBC: output__result__my_workflow__1 = 120
+```
+
+### Reading Input/Output variable between workflows
+
+
+### Adding Tools/Data in workflows
 
 Suppose that we want to add the tool [plink](http://zzz.bwh.harvard.edu/plink/) in the platform. If you are not familiar with plink or with what plink does, do not worry! What you need to know is that plink is one of the millions open source 
 
