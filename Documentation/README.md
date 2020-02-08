@@ -389,6 +389,8 @@ The result should be:
 
 ![img](screenshots/screen_19.png)
 
+**Note: The rendering of the graph might be different on your browser. You might have to move around the ```another_workflow/1``` node so that the graph in your broswer looks exactly like the one in this example.**
+
 Let's explore a bit the semantics of this graph. Octagons represent Workflows. Red Octagon means that this workflow is in draft stage. The "root" workflow sits on the top of the graph and its name is ```my_workflow/1```. There are three items that belong to this workflow: (1) the step ```new_step```, (2) the step ```main_step``` and (3) the workflow ```another_workflow/1```. This is why there are tree dotted edges from the ```my_workflow/1``` node. Dotted edges mean "contain". From these steps, step ```main_step``` calls ```new_step```. This is why there is a normal edge from ```main_step``` to ```new_step```. Also ```main_step``` that belongs to ```my_workflow/1``` has a red border, meaning that this is the main_step of *this* workflow (the one that you are editing right now). Workflow ```another_workflow/1``` has one item. This is the step ```main_step``` node on the bottom of the graph. This node has a black border meaning that this is the main step of the workflow that it belongs to. Remember that a workflow can have one and only one main step. When you are importing a workflow into another workflow, the main step of the imported workflow stops from being main. Nevertheless, it is shown on the graph (the black border) that it "used to be the main step". This is to help you identify which step calls the rest on this workflow.
 
 So although we have imported ```another_workflow/1``` we do not call any of its steps. Let's edit new_step and call the main_step of ```another_workflow/1```. Click the node "new_step" and on the Bash editor write: "step". The following auto-completion menu appears:
@@ -425,11 +427,13 @@ Input and Output variables are visible also in the workflow graph:
 
 ![img](screenshots/screen_23.png)
 
-The input and output variables behave similar to tool variables. They are Bash variables that can be accessed in any part of the workflow. For example let's read the value of the threshold and print it. This can be done by any step of the workflow. We can do that from main_step of ```my_workflow/1```. Click this node and edit the Bash commands. On any part you can type "input". An autocomplete menu appears that shows all the input nodes:
+Input variables are rectangles with round corners and green border. Output variables are rectanges with round corners and red border.
+
+Input and output variables behave similar to tool variables. They are Bash variables that can be accessed in any part of the workflow. For example let's read the value of the threshold and print it. This can be done by any step of the workflow. We can do that from ```main_step``` of ```my_workflow/1```. Click this node and edit the Bash commands. On any part you can type "input". An autocomplete menu appears that shows all the input nodes:
 
 ![img](screenshots/screen_24.png)
 
-The only option is: ```input/threshold/root``` or else the input node named ```threshold``` that belongs to the root workflow. Choose this and this node is entered in the Bash editor as a Bash variable. Change the Bash commands so that it reads like:
+The only option is: ```input/threshold/root``` or else the input node named ```threshold``` that belongs to the root workflow. Choose this and this node is entered in the Bash editor as a Bash variable. Here we will make some additional edits on the Bash editor so that the script prints the value of ```input/threshold/root```. Change the Bash commands so that it reads like:
 
 ```bash
 echo "Hello from my_workflow"
@@ -437,8 +441,40 @@ echo "Input Threshold is: ${input__threshold__root__null}"
 step__new_step__my_workflow__1
 ```
 
+Press "UPDATE" on the step editor. The graph now has become something like this:
 
+![img](screenshots/screen_25.png) 
 
+Note the new edge from the input node ```threshold``` to step node ```main_step```. Save the workflow (pres the save icon), download (DOWNLOAD-->Bash Executable) and run the workflow (```bash bash.sh```). You will notice that the execution stops and prompts for a value for the input parameter ```threshold```:
+
+```
+OBC: Workflow name: my_workflow
+OBC: Workflow edit: 1
+OBC: Workflow report: None
+OBC: The following input commands have not been set by any step. Please define input values:
+OBC: Input parameter: input__threshold__my_workflow__1 (Input threshold value) has not been set. Enter value: 
+```
+
+Enter a value (i.e. ```4.5```) and press Enter. Now the output is:
+
+```
+OBC: Workflow name: my_workflow
+OBC: Workflow edit: 1
+OBC: Workflow report: None
+OBC: The following input commands have not been set by any step. Please define input values:
+OBC: Input parameter: input__threshold__my_workflow__1 (Input threshold value) has not been set. Enter value: 4.5
+OBC: CALLING STEP: step__main_step__my_workflow__1    CALLER: main
+Hello from my_workflow
+Input Threshold is: 4.5
+OBC: CALLING STEP: step__new_step__my_workflow__1    CALLER: main_step__my_workflow__1
+Hello from new_step
+OBC: CALLING STEP: step__main_step__another_workflow__1    CALLER: new_step__my_workflow__1
+hello from another_workflow
+OBC: Output Variables:
+OBC: output__result__my_workflow__1 = 
+```
+
+What's new here is that the workflow has a an input parameter. Openio.eu checks first to see if this parameter has been set by any step. Since we haven't set a value to this parameter from any step (we are only reading this value), it prompts the user for a value.   
 
 Suppose that we want to add the tool [plink](http://zzz.bwh.harvard.edu/plink/) in the platform. If you are not familiar with plink or with what plink does, do not worry! What you need to know is that plink is one of the millions open source 
 

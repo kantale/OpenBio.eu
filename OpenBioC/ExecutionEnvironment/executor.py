@@ -268,7 +268,7 @@ class Workflow:
             if not var_set:
                 #message = 'Input parameter: {} has not been set!'.format(root_input_node['id'])
                 #raise OBC_Executor_Exception(message)
-                user_message = 'Input parameter: {} ({}) has not been set. Enter value: '.format(root_input_node['id'], root_input_node['description'])
+                user_message = 'OBC: Input parameter: {} ({}) has not been set. Enter value: '.format(root_input_node['id'], root_input_node['description'])
                 if self.askinput == 'JSON':
                     local_input_parameter = input(user_message)
                     self.input_parameter_values[root_input_node['id']] = {'value': local_input_parameter, 'description': root_input_node['description']}
@@ -458,7 +458,7 @@ class Workflow:
 
         ret = '\n'
         if self.input_parameters_read_bash_commands:
-            ret += 'echo "The following input commands have not been set by any step. Please define input values:"\n'
+            ret += 'echo "OBC: The following input commands have not been set by any step. Please define input values:"\n'
             for input_parameters_read_bash_command in self.input_parameters_read_bash_commands:
                 ret += input_parameters_read_bash_command
             ret += '\n'
