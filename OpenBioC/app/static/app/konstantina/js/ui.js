@@ -1446,6 +1446,30 @@ window.onload = function () {
         };
 
         /*
+        * Create a cytoscape edge that represents a step calling another step.
+        * caller_id: the id of the step that calls
+        * callee_id: The id of the step that gets called
+        * The edge is caller_id --> callee_id
+        */
+        window.OBCUI.create_step_calls_step_edge = function(caller_id, callee_id) {
+            return { 
+                data: { 'id': window.OBCUI.create_workflow_edge_id(caller_id, callee_id), 'weight': 1, 'source': caller_id, 'target': callee_id } 
+            };
+        };
+
+        /*
+        * Create a cytoscape edge that represents a step reading from an input variable
+        * step_id: The id of the step that reads the input
+        * input_id: The id of the input node
+        * The edge is input_id --> step_id
+        */ 
+        window.OBCUI.create_step_read_input_edge = function(step_id, input_id) {
+            return { 
+                data: { 'id': window.OBCUI.create_workflow_edge_id(input_id, step_id), 'weight': 1, 'source': input_id, 'target': step_id }
+            };
+        };
+
+        /*
         * Get the root workflow of the graph from cytoscape
         */
         window.OBCUI.cy_get_root_workflow_data = function() {
@@ -1670,18 +1694,17 @@ window.onload = function () {
 
                     if (typeof d.steps !== "undefined") {
                         d.steps.forEach(function (element) {
-
-                            var myEdge = { data: { 'id': window.OBCUI.create_workflow_edge_id(this_step_id, element), 'weight': 1, 'source': this_step_id, 'target': element } };
-                            myEdges.push(myEdge);
-
+                            //var myEdge = { data: { 'id': window.OBCUI.create_workflow_edge_id(this_step_id, element), 'weight': 1, 'source': this_step_id, 'target': element } };
+                            myEdges.push(window.OBCUI.create_step_calls_step_edge(this_step_id, element));
                         });
                     }
 
 
                     if (typeof d.inputs !== "undefined") {
                         d.inputs.forEach(function (element) {
-                            var myEdge = { data: { 'id': window.OBCUI.create_workflow_edge_id(element, this_step_id), 'weight': 1, 'source': element, 'target': this_step_id } };
-                            myEdges.push(myEdge);
+                            myEdges.push(window.OBCUI.create_step_read_input_edge(this_step_id, element));
+                            //var myEdge = { data: { 'id': window.OBCUI.create_workflow_edge_id(element, this_step_id), 'weight': 1, 'source': element, 'target': this_step_id } };
+                            //myEdges.push(myEdge);
 
                         });
                     }
