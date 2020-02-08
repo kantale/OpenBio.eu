@@ -253,7 +253,7 @@ class Workflow:
 
         # Check that all root input are set
         self.input_parameter_values = {}
-        self.input_parameters_read_bash_commands = []
+        self.input_unset_variables = [] # IDs of variables that have not be set by any step
         log_info('Checking for input values:')
         for root_input_node in self.root_inputs_outputs['inputs']:
             var_set = False
@@ -266,16 +266,14 @@ class Workflow:
                     var_set = True
                     break
             if not var_set:
-                #message = 'Input parameter: {} has not been set!'.format(root_input_node['id'])
-                #raise OBC_Executor_Exception(message)
-                user_message = 'OBC: Input parameter: {} ({}) has not been set. Enter value: '.format(root_input_node['id'], root_input_node['description'])
+                self.input_unset_variables.append(root_input_node);
+                user_message = Workflow.create_input_parameter_message(root_input_node['id'], root_input_node['description'])
                 if self.askinput == 'JSON':
                     local_input_parameter = input(user_message)
                     self.input_parameter_values[root_input_node['id']] = {'value': local_input_parameter, 'description': root_input_node['description']}
 
                 elif self.askinput == 'BASH':
-                    bash_command = 'read -p "{}" {}\n'.format(user_message, root_input_node['id'])
-                    self.input_parameters_read_bash_commands.append(bash_command)
+                    pass # Do nothing 
 
                 elif self.askinput == 'NO':
                     log_info('Warning: Input Parameter {} ({}) has not been set by any step.'.format(root_input_node['id'], root_input_node['description']))
@@ -457,17 +455,32 @@ class Workflow:
         '''
 
         ret = '\n'
-        if self.input_parameters_read_bash_commands:
-            ret += 'echo "OBC: The following input commands have not been set by any step. Please define input values:"\n'
-            for input_parameters_read_bash_command in self.input_parameters_read_bash_commands:
-                ret += input_parameters_read_bash_command
-            ret += '\n'
+        if self.input_unset_variables:
+
+            # Read unset variables from the command line
+            # https://github.com/kantale/OpenBioC/issues/154 
+            ret += Workflow.read_arguments_from_commandline([x['id'] for x in self.input_unset_variables])
+
+            # Check if the variable has been read from command line. If not halt execution and prompt for a value
+            for unset_variable in self.input_unset_variables:
+                ret += 'if [ -z ${{{}+x}} ]; then\n'.format(unset_variable['id']) # https://stackoverflow.com/questions/3601515/how-to-check-if-a-variable-is-set-in-bash
+                ret += '   echo "{}"\n'.format(Workflow.create_input_parameter_message(unset_variable['id'], unset_variable['description']))
+                ret += '   read -p "{}=" {}\n'.format(unset_variable['id'], unset_variable['id'])
+                ret += 'fi\n'
 
         return ret
 
     @staticmethod
+    def create_input_parameter_message(variable_id, variable_description):
+        '''
+        Message to display when input variable has not been set.
+        '''
+        return 'OBC: Input parameter: {} ({}) has not been set by any step. Enter value: '.format(variable_id, variable_description)
+
+    @staticmethod
     def read_arguments_from_commandline(arguments):
         '''
+        Help from: https://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash 
         '''
 
         ret = ''
