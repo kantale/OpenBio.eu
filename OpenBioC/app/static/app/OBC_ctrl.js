@@ -4238,6 +4238,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             if (editable) {
                 warning_message += '<li>Runs of unsaved workflows will not generate reports</li>';
             }
+            else if ($scope.workflows_info_draft) {
+                warning_message += '<li>This is a DRAFT workflow. Although this workflow can be executed, the execution will not generate a report.</li>';
+            }
             else if (!data['report_created']) {
                 warning_message += '<li>You are not a registered user or your email is not validated. Although this workflow can be executed, the execution will not generate a report.</li>';
             }
