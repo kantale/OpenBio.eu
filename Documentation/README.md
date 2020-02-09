@@ -372,7 +372,7 @@ There is though a fundamental difference between this abstraction and the typica
 
 In OpenBio.eu, steps belong to workflows. **BUT** you do not "call" workflows. You call steps. Then.. how did we run ```my_workflow``` which is a workflow? Every workflow has one (and only one) *main* step. When you download a workflow and you execute it, what you actually execute is the main step of this workflow. This is like the main function in [c/c++](https://en.cppreference.com/w/cpp/language/main_function), [java](https://docs.oracle.com/en/java/javase/13/docs/api/jdk.compiler/com/sun/tools/javac/Main.html) or the ```if __name__ == '__main__':``` [logic in python](https://stackoverflow.com/questions/419163/what-does-if-name-main-do). So, OpenBio.eu **does not** have any algorithm to determine the execution order of steps. It simply calls the main step of the workflow and lets.. Bash take it from there. From a step you can call other steps that belong to any workflow. You can even call.. yourself. Also, you can use any Bash construct (if, while, for, ...) to control flow, so conditional execution and iteration is natively supported. Main steps have a red border color on the graph. Also, there is a "main" checkbox in the step editing panel, so that you can change which step is main. If more than one steps have been defined as main, or none, an error will appear upon trying to save the workflow.
 
-The whole point of OpenBio.eu project is to offer a Workflow Management System that has the flexibility of a programming language, does not require installation in your computer to run it, and does not forcing you a new DSL (Domain Specific Language). The following chapter will illuminate more this philosophy. 
+The whole point of OpenBio.eu project is to offer a Workflow Management System that has the flexibility of a programming language, does not require installation in your computer to run it, and does not forcing you a new DSL (Domain Specific Language). The following chapters will illuminate more this philosophy. 
 
 ### Workflows in Workflows
 Create a new workflow and name it "another_workflow". Click the node with the main_step and edit the Bash commands. Add:
@@ -521,7 +521,108 @@ OBC: Output Variables:
 OBC: output__result__my_workflow__1 = 120
 ```
 
-### Reading Input/Output variable between workflows
+The difference here is that the values of the output variables are printed at the end.
+
+### Reading/Writing Input/Output variable between workflows
+The input/output variables in OpenBio.eu have a different meaning than that of typical Workflow Management Systems. Let's break it down a bit. Assume a workflow that has the following steps:
+
+``` 
+- Step A has input input K and output M
+- Step B has input M and output L
+- Step C has input L and output N
+```
+
+With this information it is easy to figure out that the workflow structure should be: A --> B --> C. Actually most WMS do exactly this. The execution order of steps is determined by matching the output of step S<sup>1</sup> to the input of step S<sup>2</sup>. If they match then the step S<sup>1</sup> should run before S<sup>2</sup> and this is usually shown in Workflow graphs as S<sup>1</sup> --> S<sup>2</sup>. 
+
+As we mentioned before, OpenBio.eu takes a different stance in determining step order. The step creator mentions explicitly which step to call. Therefore the step order is not determined *implicitly* by input/output variables but *explicitly* by call statements. Therefore in OpenBio.eu the same workflow should be written (in pseudocode, this is not Bash) as:
+
+```
+M = Step_A(K)
+L = Step_B(M)
+N = Step_C(L)
+```
+
+Notice how this form is more intuitive, especially if you have basic programming knowledge in any language. To summarise:
+
+**In typical WMS, input/outputs are used to determine execution order. In OpenBio.eu input/output variables behave like function arguments (inputs) and return statements (outputs). Execution order is defined explicitly by the user.** 
+
+Of course every approach has its own merits. What is best is up to you to decide, but let's experiment a bit with this idea. Remember that ```my_workflow/1``` has an input called ```threshold```. Imagine that we want to build a workflow that will contain the workflow ```my_workflow/1``` and will always use the value 5.5 on the ```threshold``` input variable. Or else we want to *call* ```my_workflow/1``` with ```threshold=5.5``` from another workflow. Create the workflow ```constant_threshold``` and add on the graph the workflow ```my_workflow/1```. To do that, search ```my_workflow/1``` on the left panel, locate this workflow object and drag and drop it on the graph of the right panel. 
+
+
+
+Create a workflow with the name ```A```, that has an input ```K``` and output ```M```. 
+
+In Bash syntax imagine that there are three functions:
+
+```bash
+function step_a() {
+	M=$(expr ${K} + 3) # M = K + 3
+}
+
+function step_b() {
+	L=$(expr ${M} \* 5) # L = M * 5 
+}
+
+function step_c() {
+	N=$(expr ${L} - 2) # N = L - 2
+}
+
+K=2
+step_a
+step_b
+step_c
+echo ${N}
+```
+
+If you run this, it will print 23 (23=((2+3)\*5)-2)
+
+Take for example [this workflow from Common Workflow Language tutorial](https://www.commonwl.org/user_guide/21-1st-workflow/index.html):
+
+```
+#!/usr/bin/env cwl-runner
+
+cwlVersion: v1.0
+class: Workflow
+inputs:
+  tarball: File
+  name_of_file_to_extract: string
+
+outputs:
+  compiled_class:
+    type: File
+    outputSource: compile/classfile
+
+steps:
+  untar:
+    run: tar-param.cwl
+    in:
+      tarfile: tarball
+      extractfile: name_of_file_to_extract
+    out: [extracted_file]
+
+  compile:
+    run: arguments.cwl
+    in:
+      src: untar/extracted_file
+    out: [classfile]
+```
+
+What is described here is a workflow that has two inputs (```tarball```, ```name_of_file_to_extract```) and one output ```compile/classfile```. The workflow has two steps: 
+* Step ```untar``` has inputs ```tarball```, ```name_of_file_to_extract``` and output ```extracted_file```.
+* Step ```compile``` has input ```extracted_file``` and output ```compile/classfile```.
+
+Notice that nowhere in this description is mentioned which step will run first and which second. Of course it is trivial to deduce that step ```untar``` will run first and step ```compile``` second by checking the input/output variables of each step. OpenBio.eu takes the stance that complex 
+
+From this It is obvious that step ```untar``` should ran before step ```compile```, 
+
+
+
+it is not difficult out the figur e
+Or else if the output of a work
+just by figuring out which steps share 
+
+
+[variables in Galaxy](https://galaxyproject.org/learn/advanced-workflow/variables/)
 
 
 ### Adding Tools/Data in workflows

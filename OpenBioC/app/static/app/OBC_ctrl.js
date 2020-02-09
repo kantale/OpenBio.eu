@@ -4061,6 +4061,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     /*
     * Called from ui.js, when a user drags a worklfow in current workflow
     * workflow = {'name': ... , 'edit': '...'}
+    * drag and drop workflow 
     */
     $scope.workflow_add_workflow = function(workflow) {
         //console.log('WORKFLOW TO BE ADDED:');
