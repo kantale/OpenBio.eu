@@ -868,7 +868,7 @@ This information contains the name (i.e. ```myworkflow```), edit (i.e. ```1```) 
 # API
 The API is currently under heavy development. 
 
-## Airlfow DAG (Directed Acyclic Graph
+## Airlfow DAG (Directed Acyclic Graph)
 
 So far you can access the airflow DAG with:
 
