@@ -3265,7 +3265,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
     /*
     * workflows --> Step --> Button: Add/Update --> Clicked
-    * We either ADD the step or UPDATE the step. add step add update step update
+    * We either ADD the step or UPDATE the step. add step add update step update edit step edit. 
     */
     $scope.workflow_step_add = function() {
 
@@ -3335,9 +3335,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             });
 
             //Keep the edges of the input variable that we read
-            cy.$('node[id="' + $scope.workflow_step_previous_step.id + '"]').incomers('node[type="input"]').forEach(function(ele, i, eles){
-                edges_connected_to_me.push({group:'edges', data: window.OBCUI.create_step_read_input_edge($scope.workflow_step_previous_step.id, ele.id()).data});
-            });
+            //cy.$('node[id="' + $scope.workflow_step_previous_step.id + '"]').incomers('node[type="input"]').forEach(function(ele, i, eles){
+            //    edges_connected_to_me.push({group:'edges', data: window.OBCUI.create_step_read_input_edge($scope.workflow_step_previous_step.id, ele.id()).data});
+            //});
 
             //Delete the node
             cy.$('node[id="' +  $scope.workflow_step_previous_step.id + '"]').remove();
@@ -3386,7 +3386,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         window.buildTree(step_node, step_belong_to);
 
         //If we deleted the step node we need to restore the edges that were previously connected to this step. 
-        cy.add(edges_connected_to_me);            
+        cy.add(edges_connected_to_me);
 
         $scope.workflow_update_tab_completion_info_to_step();
 
