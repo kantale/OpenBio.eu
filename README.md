@@ -1,6 +1,9 @@
 # OpenBioC
 [OpenBioC](https://www.openbio.eu) is an open collaborative workflow management system. It is focused (but not limited!) to the bioinformatics community.
 
+## Documentation
+[Here is an incomplete documentation](Documentation/README.md)
+
 ## Features
 Main features include:
 * No DSL (Domain Specific Language) required. Do you have a bash script that installs a tool (or dataset)? Just copy paste it!

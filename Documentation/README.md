@@ -1,3 +1,5 @@
+**SECURITY WARNING: Always execute the downloaded scripts in a sandboxed environment! There is absolutely no guarantee regarding the security and safety of these scripts. Openbio.eu does not take any responsibility on damages caused by the execution of scripts provided by the platform.**
+
 # Introduction
 This is an incomplete documentation of the platform.
 
@@ -833,14 +835,45 @@ Here we list the different types of nodes on the workflow graph:
 * Grey Round Rectangle with green border: A workflow input
 * Grey Round Rectangle with red border: A workflow output
 
+# Executing Workflows
+Upon pressing the "Download" button on a workflow or on a tool/data, you can choose to download a BASH script or a JSON representation of the workflow.
 
-## API
+## BASH script
+The BASH script is a directly executable file. Assuming the BASH script filename is bash_7Lt2o.sh and you are in a BASH shell you can type:
 ```bash
-curl -H 'Accept: application/json; indent=4'  http://0.0.0.0:8200/platform/rest/tools/
+bash script_7Lt2o.sh
 ```
-### Airflow DAG 
+
+## JSON
+This method will download a file workflow.json that contains all the information required to execute the workflow in a local environment. In order to execute it, you need to convert this file into an executable BASH script. To do this, you need to download the file [executor.py](https://github.com/kantale/OpenBioC/blob/master/OpenBioC/ExecutionEnvironment/executor.py). This file requires [python 3](https://www.python.org/downloads/) and has no other dependencies. After you have downloaded this file, you can run the command:
+
+```bash
+python executor.py -W workflow.json
 ```
-curl "http://0.0.0.0:8200/platform/rest/workflows/my_workflow/1/?dag=true" 
+
+This will generate the file: ```script.sh``` that you can execute as described above. Both methods will print some information regarding the attempted execution: 
+
+```
+Workflow Name: myworkflow
+Edit: 1
+Report: 7Lt2o
+```
+
+This information contains the name (i.e. ```myworkflow```), edit (i.e. ```1```) and the id of the generated Report (i.e. ```7Lt2o```). During the execution, the script attempts to inform the server (by default: openbio.eu) on the execution status. To access this information simply search for the Report id (i.e. ```7Lt2o```) on the main search. Then you can click the relevant report that appears.
+
+**Important:** If you have downloaded as an unregistered user, or it is a Tool/Data, or the Workflow is in draft stage, then the execution will not generate a report.
+
+**Troubleshooting:** In environments where curl cannot validate the SSL certificate of openbio.eu, you can pass the option ```--insecure``` to ```executor.py```
+
+# API
+The API is currently under heavy development. 
+
+## Airlfow DAG (Directed Acyclic Graph
+
+So far you can access the airflow DAG with:
+
+```bash
+curl  -H 'Accept: application/json; indent=4' "http://0.0.0.0:8200/platform/rest/workflows/my_workflow/1/?dag=true" 
 ```
 
 
