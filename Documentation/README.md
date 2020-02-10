@@ -682,21 +682,157 @@ Notice that nowhere in this description is mentioned which step will run first a
 
 
 ### Adding Tools/Data in workflows
+Adding Tools/Data in workflows is easy as adding other Workflows. For example let's locate the workflow ```my_workflow/1``` that we have created in the previous steps on the left panel. Select it and then press "EDIT". Now on the left panel, locate the tool ```another_tool/1```. Drag and drop ```another_tool/1``` to the graph of ```my_workflow/1```. The graph should look like this:
 
-Suppose that we want to add the tool [plink](http://zzz.bwh.harvard.edu/plink/) in the platform. If you are not familiar with plink or with what plink does, do not worry! What you need to know is that plink is one of the millions open source 
+![img](screenshots/screen_30.png)
+
+Notice that the graph has two additional nodes: ```another_tool/1/1``` and ```my_tool/1/1```. Both are red rectangles with round edges. Round rectagles are nodes that represent tools/data. Red means that these tools/data are in draft stage. Notice also that there is edge from ```another_tool/1/1``` to ```my_tool/1/1```. This means that ```another_tool/1/1``` depends from ```my_tool/1/1```. Save the workflow, download it and run it with:
+
+```bash
+bash bash.sh --input__threshold__my_workflow__1=4.5
+```
+
+The output is:
+
+```
+OBC: Workflow name: my_workflow
+OBC: Workflow edit: 1
+OBC: Workflow report: None
+OBC: INSTALLING TOOL: my_tool/1/1
+installing tool my_tool
+OBC: INSTALLATION OF TOOL: my_tool/1/1 . COMPLETED
+OBC: VALIDATING THE INSTALLATION OF THE TOOL: my_tool/1/1
+OBC: VALIDATION FOR TOOL: my_tool/1/1 SUCCEEDED
+OBC: SET my_tool__1__1__var_1="hello world"   <-- my first variable 
+OBC: INSTALLING TOOL: another_tool/1/1
+Installing another_tool
+The value of tool var_1 from my_tool/1/1 is:
+hello world
+The installation path is: /another_tool
+OBC: INSTALLATION OF TOOL: another_tool/1/1 . COMPLETED
+OBC: VALIDATING THE INSTALLATION OF THE TOOL: another_tool/1/1
+validating another_tool
+OBC: VALIDATION FOR TOOL: another_tool/1/1 SUCCEEDED
+OBC: SET another_tool__1__1__var_2="hello from another tool"   <-- my second var 
+OBC: SET another_tool__1__1__INSTALLATION_PATH="/another_tool"   <-- installation path 
+OBC: CALLING STEP: step__main_step__my_workflow__1    CALLER: main
+Hello from my_workflow
+Input Threshold is: 4.5
+OBC: CALLING STEP: step__new_step__my_workflow__1    CALLER: main_step__my_workflow__1
+Hello from new_step
+OBC: CALLING STEP: step__main_step__another_workflow__1    CALLER: new_step__my_workflow__1
+hello from another_workflow
+OBC: Output Variables:
+OBC: output__result__my_workflow__1 = 120
+```
+
+The important thing to notice here is that the installation and validation Bash commands of the tools/data that take part in a workflow are execute *before* the Bash commands of any step. Or else, first we install tools/data and then we execute the rest parts of a workflow. Remember also that the tool ```another_tool/1/1``` has a variable named ```INSTALLATION_PATH```. We can access this variable at any step of the worfklow. For example, edit the workflow ```my_workflow/1```, click on the step node ```main_step``` of this workflow and at the Bash editor, at any part type: "input" the following autocomplete menu appears:
+
+![img](screenshots/screen_31.png)
+
+This is to help you locate the variable of a Tool/Data that you want to use. Select the ```INSTALLATION_PATH``` variable and print it. The Bash commands should look like this:
+
+```bash
+echo "Hello from my_workflow"
+echo "Input Threshold is: ${input__threshold__my_workflow__1}"
+step__new_step__my_workflow__1
+
+echo "The value of INSTALLATION_PATH variable of another_tool/1/1 is:"
+echo ${another_tool__1__1__INSTALLATION_PATH}
+```
+
+Press UPDATE and then save the workflow. The workflow now looks like this:
+
+![img](screenshots/screen_32.png)
+
+Notice the new edge from the ```main_step``` of ```my_workflow/1``` to the tool ```another_tool/1/1```. Or else, this step is using the tool ```another_tool/1/1```. Save the workflow, download it and run it with:
+
+```bash
+export OBC_TOOL_PATH=my/favorite/path
+bash bash.sh --input__threshold__my_workflow__1=4.5
+```
+
+The output is:
+```
+OBC: Workflow name: my_workflow
+OBC: Workflow edit: 1
+OBC: Workflow report: None
+OBC: INSTALLING TOOL: my_tool/1/1
+installing tool my_tool
+OBC: INSTALLATION OF TOOL: my_tool/1/1 . COMPLETED
+OBC: VALIDATING THE INSTALLATION OF THE TOOL: my_tool/1/1
+OBC: VALIDATION FOR TOOL: my_tool/1/1 SUCCEEDED
+OBC: SET my_tool__1__1__var_1="hello world"   <-- my first variable 
+OBC: INSTALLING TOOL: another_tool/1/1
+Installing another_tool
+The value of tool var_1 from my_tool/1/1 is:
+hello world
+The installation path is: my/favorite/path/another_tool
+OBC: INSTALLATION OF TOOL: another_tool/1/1 . COMPLETED
+OBC: VALIDATING THE INSTALLATION OF THE TOOL: another_tool/1/1
+validating another_tool
+OBC: VALIDATION FOR TOOL: another_tool/1/1 SUCCEEDED
+OBC: SET another_tool__1__1__var_2="hello from another tool"   <-- my second var 
+OBC: SET another_tool__1__1__INSTALLATION_PATH="my/favorite/path/another_tool"   <-- installation path 
+OBC: CALLING STEP: step__main_step__my_workflow__1    CALLER: main
+Hello from my_workflow
+Input Threshold is: 4.5
+OBC: CALLING STEP: step__new_step__my_workflow__1    CALLER: main_step__my_workflow__1
+Hello from new_step
+OBC: CALLING STEP: step__main_step__another_workflow__1    CALLER: new_step__my_workflow__1
+hello from another_workflow
+The value of INSTALLATION_PATH variable of another_tool/1/1 is:
+my/favorite/path/another_tool
+OBC: Output Variables:
+OBC: output__result__my_workflow__1 = 120
+```
+
+Notice the output:
+```
+The value of INSTALLATION_PATH variable of another_tool/1/1 is:
+my/favorite/path/another_tool
+```
+
+This is printed from the ```main_step``` of ```my_workflow/1```. You might wonder why it is printed under the line ```hello from another_workflow```. Remember that the lines:
+
+```bash
+echo "The value of INSTALLATION_PATH variable of another_tool/1/1 is:"
+echo ${another_tool__1__1__INSTALLATION_PATH}
+```
+
+are *after* the line:
+
+```bash
+step__new_step__my_workflow__1
+```
+
+so OpenBio.eu first calls ```new_step``` from ```my_workflow/1``` and then prints the value of the ```INSTALLATION_PATH``` variable.
+
+Also open the workflow ```constant_threshold/1```. You will notice that the graph has changed!
+
+![img](screenshots/screen_33.png)
+
+Both ```another_tool/1/1``` and ```my_tool/1/1``` have been entered in the graph. But if we didn't edit ```constant_threshold/1```, how the graph was chaged? Workflow ```constant_threshold/1``` contains workflow ```my_workflow/1``` and we changed ```my_workflow/1``` by adding these two tools. Hence, ```constant_threshold/1``` also has changed. Remember that only draft workflows and tools/data can be changed. So if your pipeline contains only finalized entities, it is guaranteed that it will not change in the future. 
+
+### The OBC_WORK_PATH variable 
+Similar to variables ```OBC_TOOL_PATH``` and ```OBC_DATA_PATH```, you can use the ```OBC_WORK_PATH```. OpenBio.eu expects that this Bash variable has been set externally in you environment. You are encouraged to use this variable to refer on the path that is used during the analysis. For example to store you temporary data or your final results. 
 
 
-## Workflows 
-A workflow should contain one (and only one) "main" step. When the Workflow gets executed this is the step that gets called. All other steps should (directly or in-directly) get called from this step. This is similar to the "main" function in C/C++/Java.
+### Finalizing a workflow 
+If you try to finalize the ```constant_threshold/1``` workflow you will receive an error: ```This workflow cannot be finalized. It contains 2 draft workflow(s). For example: another_workflow/1```. A finalized workflow cannot be changed, so it cannot contain a draft workflow or a draft tool/data. So first finalize the draft components of a workflow and then finalize the workflow. 
 
-### Nodes
-* Octagon: a Workflow
+### Worfklow graph, node semantics
+Here we list the different types of nodes on the workflow graph:
+* Red Octagon: a fraft Workflow
+* Grey Octagon: A finalized workflow
 * Green Circle: Step
 * Green Circle with RED Border: A main step
 * Green Circle with BLACK Border: A step that it is main in a sub-workflow 
-* Round Rectangle: A tool
-* Round Rectangle with green border: An input node
-* Round Rectangle with red border: An output node
+* Red Round Rectangle: A draft tool
+* Frey Round Rectangle: A finalized tool
+* Grey Round Rectangle with green border: A workflow input
+* Grey Round Rectangle with red border: A workflow output
+
 
 ## API
 ```bash
