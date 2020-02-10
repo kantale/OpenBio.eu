@@ -1,6 +1,6 @@
 # Contributors
 
-**Main Contributor: alexandros Kanterakis <kantale@ics.forth.gr>, <alexandros.kanterakis@gmail.com>**
+**Main Contributor: Alexandros Kanterakis <kantale@ics.forth.gr>, <alexandros.kanterakis@gmail.com>**
 
 The following individuals have also contributed to the development of OpenBio-C
 
