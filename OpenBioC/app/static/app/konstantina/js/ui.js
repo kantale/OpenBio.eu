@@ -1195,7 +1195,7 @@ window.onload = function () {
                             //console.log('FOUND CYTOSCAPE NODE ID:', step_id);
                         }
                         else {
-                            // This is a special case:
+                            // This is a special case: 8E1FC1AD5F68
                             // Assume: (1) There is a call: step__s2__wf__1 , (2) wf/1 is the root wf, (3) we are editing or forking wf/1
                             // Since we are editing/forking we have called window.forkWorkflow(). This function changes the ids of all steps in the root workflow 
                             // The called step node id is: step__s2__root__null. Yet we are calling step__s2__wf__1
@@ -1240,11 +1240,14 @@ window.onload = function () {
             var outputs = [];
 
             var splitted = no_comments.split('\n');
+            var root_wf_data = window.OBCUI.cy_get_root_workflow_data(); //The cytoscape data of the root workflow node
+            var root_wf_label = root_wf_data.label;
+
             splitted.forEach(function (line) {
                 var results = line.match(window.OBCUI.io_re);
                 if (results) {
                     results.forEach(function (result) {
-                        var splitted = result.match(window.OBCUI.io_re_id); // AAAAAAA
+                        var splitted = result.match(window.OBCUI.io_re_id); 
                         //console.log('splitted:');
                         //console.log(splitted);
 
@@ -1265,6 +1268,27 @@ window.onload = function () {
                             else if (input_output == "output") {
                                 if (!outputs.includes(variable_id)) {
                                     outputs.push(variable_id);
+                                }
+                            }
+                        }
+                        else {
+                            // See comment 8E1FC1AD5F68 
+                            var input_output_data = window.OBCUI.get_data_from_input_output_id(variable_id);
+                            if (input_output_data.belongto.name + '/' + input_output_data.belongto.edit === root_wf_label) {    
+
+                                var new_input_output_id = window.OBCUI.create_input_output_id(input_output_data, {'name': 'root', edit: null});
+                                if (cy.$("node[type='" + input_output_data.type + "'][id='" + new_input_output_id + "']").length) {
+                                    // DUPLICATE CODE WITH ABOVE. 
+                                    if (input_output_data.type == "input") {
+                                        if (!inputs.includes(new_input_output_id)) {
+                                            inputs.push(new_input_output_id);
+                                        }
+                                    }
+                                    else if (input_output_data.type == "output") {
+                                        if (!outputs.includes(new_input_output_id)) {
+                                            outputs.push(new_input_output_id);
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -1403,12 +1427,22 @@ window.onload = function () {
         };
 
         /*
+        * Parse an input/output id
+        * input__inp__test__1 --> {'name': 'inp', 'type': 'input', 'belongto': {'name': 'test', edit: 1}}
+        */
+        window.OBCUI.get_data_from_input_output_id = function(input_output_id) {
+            var s = input_output_id.split(window.OBCUI.sep);
+            return {'name': s[1], 'type': s[0], 'belongto': {'name': s[2], 'edit': s[3]}};
+        };
+
+        /*
         * Create a unique input/output variable ID. This contains the input/output name, name workflow and edit of worfkflow
         */
         function create_input_output_id(input_output, workflow) {
             return input_output.type + window.OBCUI.sep + input_output.name + window.OBCUI.sep + window.OBCUI.create_workflow_id(workflow);
         }
         window.create_input_output_id = create_input_output_id; // FIXME See D05DFC7004FE 
+        window.OBCUI.create_input_output_id = create_input_output_id;
 
         /*
         * Helper for Step Input Output (SIO)
