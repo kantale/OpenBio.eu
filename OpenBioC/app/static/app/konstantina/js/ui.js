@@ -1810,10 +1810,31 @@ window.onload = function () {
                     content: function () {
                         var div = document.createElement('div');
 						var belongto = " - ";
-							if(node._private.data.belongto !== null) belongto = node._private.data.belongto.name;
+                        var type = node._private.data.type;
+
+                        var innerHTML = 'type: ' + type;
+
+                        
+
+                        if (type == 'workflow') {
+                            innerHTML += '<br>name: ' + node._private.data.name;
+                            innerHTML += '<br>edit: ' + node._private.data.edit;
+                        }
+
+                        else if (type == 'tool') {
+                            innerHTML += '<br>name: ' + node._private.data.name;
+                            innerHTML += '<br>edit: ' + node._private.data.edit;
+                            innerHTML += '<br>version: ' + node._private.data.version;
+                        }
+                        else {
+                            innerHTML += '<br>name: ' + node._private.data.label;
+                        }
+
+                        if (node._private.data.belongto !== null) {
+                            innerHTML += '<br>belongs to: ' + node._private.data.belongto.name + '/' + node._private.data.belongto.edit;
+                        }
 						
-						text='name : '+node._private.data.label +'<br>'+ 'version : '+node._private.data.version +'<br>'+ 'edit : '+node._private.data.edit +'<br>'+ 'type : '+node._private.data.type+'<br>'+'variables : '+node._private.data.variables +'<br>'+'belongs to : '+ belongto +'<br>';
-                        div.innerHTML = text; 
+                        div.innerHTML = innerHTML; 
 						div.style.zIndex = "-1000000000000000000000000";	
                         return div;
                     },
