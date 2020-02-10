@@ -546,37 +546,104 @@ Notice how this form is more intuitive, especially if you have basic programming
 
 **In typical WMS, input/outputs are used to determine execution order. In OpenBio.eu input/output variables behave like function arguments (inputs) and return statements (outputs). Execution order is defined explicitly by the user.** 
 
-Of course every approach has its own merits. What is best is up to you to decide, but let's experiment a bit with this idea. Remember that ```my_workflow/1``` has an input called ```threshold```. Imagine that we want to build a workflow that will contain the workflow ```my_workflow/1``` and will always use the value 5.5 on the ```threshold``` input variable. Or else we want to *call* ```my_workflow/1``` with ```threshold=5.5``` from another workflow. Create the workflow ```constant_threshold``` and add on the graph the workflow ```my_workflow/1```. To do that, search ```my_workflow/1``` on the left panel, locate this workflow object and drag and drop it on the graph of the right panel. 
-
-
-
-Create a workflow with the name ```A```, that has an input ```K``` and output ```M```. 
-
-In Bash syntax imagine that there are three functions:
+Of course every approach has its own merits. What is best is up to you to decide, but let's experiment a bit with this idea. Remember that ```my_workflow/1``` has an input called ```threshold```. Suppose that we want to build a workflow that will contain the workflow ```my_workflow/1``` and will always use the value 5.5 on the ```threshold``` input variable. Or else we want to *call* ```my_workflow/1``` with ```threshold=5.5``` from another workflow. Create the workflow ```constant_threshold``` and add on the graph the workflow ```my_workflow/1```. To do that, search ```my_workflow/1``` on the left panel, locate this workflow object and drag and drop it on the graph of the right panel. Click the ```main_step``` node that belongs to the ```constant_workflow/1``` and add the following Bash commands:
 
 ```bash
-function step_a() {
-	M=$(expr ${K} + 3) # M = K + 3
-}
-
-function step_b() {
-	L=$(expr ${M} \* 5) # L = M * 5 
-}
-
-function step_c() {
-	N=$(expr ${L} - 2) # N = L - 2
-}
-
-K=2
-step_a
-step_b
-step_c
-echo ${N}
+input__threshold__my_workflow__1=5.5 # Setting the input value 
+step__main_step__my_workflow__1 # Calling the step main_step of the workflow my_workflow/1
 ```
 
-If you run this, it will print 23 (23=((2+3)\*5)-2)
+Practically here we set the input value of the workflow ```my_workflow/1``` to 5.5 and then we call it. Press UPDATE, the workflow now looks like this:
 
-Take for example [this workflow from Common Workflow Language tutorial](https://www.commonwl.org/user_guide/21-1st-workflow/index.html):
+![img](screenshots/screen_28.png) 
+
+If we save, download and run the workflow, the output is:
+
+```
+OBC: Workflow name: constant_threshold
+OBC: Workflow edit: 1
+OBC: Workflow report: None
+OBC: CALLING STEP: step__main_step__constant_threshold__1    CALLER: main
+OBC: CALLING STEP: step__main_step__my_workflow__1    CALLER: main_step__constant_threshold__1
+Hello from my_workflow
+Input Threshold is: 5.5
+OBC: CALLING STEP: step__new_step__my_workflow__1    CALLER: main_step__my_workflow__1
+Hello from new_step
+OBC: CALLING STEP: step__main_step__another_workflow__1    CALLER: new_step__my_workflow__1
+hello from another_workflow
+OBC: Output Variables:
+```
+
+Notice that, when executing the ```bash.sh``` script, we don't have to provide a value of the input variable ```threshold``` of the ```my_workflow/1``` workflow. This input is set from the step ```main_step``` of the ```constant_threshold/1``` workflow. Practically we *called* a workflow after setting its input value. 
+
+
+Let's see another example. Create a workflow with the name ```A```, that has an input ```K``` and an output ```M```. Add the following Bash command on the ```main_step```:
+
+```bash
+output__M__A__1=$(expr ${input__K__A__1} + 3) # M = K + 3
+```
+
+Create another workflow with the name ```B```, that has an input ```M``` and an output ```L```. Add the following commands on the ```main_step```:
+
+```bash
+output__L__B__1=$(expr ${input__M__B__1} \* 5) # # L = M * 5 
+```
+
+Create another workflow with the name ```C```, that has an input ```L``` and an output ```N```. Add the following commands on the ```main_step```:
+
+```bash
+output__N__C__1=$(expr ${input__L__C__1} - 2) # N = L - 2
+```
+
+These three workflows, each contains a single step. The step performs a simple mathematical operation on the input variable and saves the output on the output variable. Now we can combine these three workflows in a forth workflow. Create a workflow with the name ```combine```. For each of one of the workflows ```A```, ```B```, ```C```, locate them via search on the left panel and drag and drop them on the graph of the ```combine``` workflow. On the ```combine``` workflow add a input variable ```K``` and an output variable ```N```. Finally, On the main_step of the ```combine``` workflow add the following Bash commands:
+
+```bash
+input__K__A__1=${input__K__combine__1} # Set the input of the A workflow as the input of the root workflow
+step__main_step__A__1 # Call main_step of the A workflow
+input__M__B__1=${output__M__A__1} # Set the input of the B workflow as the output of the A workflow
+step__main_step__B__1 # Call main_step of the B workflow
+input__L__C__1=${output__L__B__1} # Set the input of the C workflow as the output of the B workflow
+step__main_step__C__1 # Call main_step of the C workflow
+output__N__combine__1=${output__N__C__1} # Set the output of the root workflow as the output of the C workflow
+```
+
+The workflow looks like this:
+
+![img](screenshots/screen_29.png)
+
+Actually here we have "chained" three workflows. In pseudocode, what we have done is:
+
+```
+K : input
+
+M = step_a(K) # Calls M = K + 3
+L = step_b(M) # Calls L = M * 5 
+N = step_c(L) # Calls N = L - 2
+
+N: output
+```
+
+If we save, download and run this workflow with:
+
+```bash
+bash bash.sh  --input__K__combine__1=2
+```
+
+the output will be:
+
+```bash 
+OBC: Workflow name: combine
+OBC: Workflow edit: 1
+OBC: Workflow report: None
+OBC: CALLING STEP: step__main_step__combine__1    CALLER: main
+OBC: CALLING STEP: step__main_step__A__1    CALLER: main_step__combine__1
+OBC: CALLING STEP: step__main_step__B__1    CALLER: main_step__combine__1
+OBC: CALLING STEP: step__main_step__C__1    CALLER: main_step__combine__1
+OBC: Output Variables:
+OBC: output__N__combine__1 = 23
+```
+
+The output is 23 since the input is 2 and we applied the pseudocode presented above. To recap, in OpenBio.eu the user has to explicitly set (1) the input/output of each step and (2) define which steps call which. To illiustrate how this is different from other Workflow Management Systems let's take a look from [this workflow from Common Workflow Language tutorial](https://www.commonwl.org/user_guide/21-1st-workflow/index.html):
 
 ```
 #!/usr/bin/env cwl-runner
@@ -611,18 +678,7 @@ What is described here is a workflow that has two inputs (```tarball```, ```name
 * Step ```untar``` has inputs ```tarball```, ```name_of_file_to_extract``` and output ```extracted_file```.
 * Step ```compile``` has input ```extracted_file``` and output ```compile/classfile```.
 
-Notice that nowhere in this description is mentioned which step will run first and which second. Of course it is trivial to deduce that step ```untar``` will run first and step ```compile``` second by checking the input/output variables of each step. OpenBio.eu takes the stance that complex 
-
-From this It is obvious that step ```untar``` should ran before step ```compile```, 
-
-
-
-it is not difficult out the figur e
-Or else if the output of a work
-just by figuring out which steps share 
-
-
-[variables in Galaxy](https://galaxyproject.org/learn/advanced-workflow/variables/)
+Notice that nowhere in this description is mentioned which step will run first and which second. This is implied from input/output variables. Here it is trivial to deduce that step ```untar``` will run first and step ```compile``` will run second. Yet in complex workflows the resolution of execution order requires special algorithms. Also sometimes this complexity makes workflow editing and maintaining a difficult and error-prone procedure. In Computer Science terminology, OpenBio.eu is an effort to bring workflows closer to the [structured programming](https://en.wikipedia.org/wiki/Structured_programming) paradigm as opposed to the [flow-based programming](https://en.wikipedia.org/wiki/Flow-based_programming) paradigm that are mostly modeled today.
 
 
 ### Adding Tools/Data in workflows
