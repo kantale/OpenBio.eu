@@ -1522,6 +1522,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             $scope.disassociate_workflow_tool($scope.node, true);
             return;
         }
+        else if (action == 'DELETENODE') {
+            $scope.workflow_cytoscape_delete_node($scope.node_id, true);
+            return;
+        }
     };
 
     /*
@@ -2779,6 +2783,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     /*
     * Dissasociate a tool or a workflow
     * node is cytoscape node 
+    * Called from ui.js right click in cy node --> Disconnect
     */
     $scope.disassociate_workflow_tool = function(node, confirm) {
 
@@ -3493,7 +3498,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * Called from UI.js . Right Click a node in cytoscape --> delete
     * Check https://github.com/kantale/OpenBioC/issues/119#issuecomment-530693822 for details on how to do delete a node.
     */
-    $scope.workflow_cytoscape_delete_node = function(node_id) {
+    $scope.workflow_cytoscape_delete_node = function(node_id, confirm) {
 
         //Cannot edit a saved worfklow
         if (!$scope.workflows_info_editable) {
@@ -3504,6 +3509,16 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         var node = cy.$('node[id="' + node_id + '"]');
         var data = node.data();
         var node_label = data.label;
+
+        //Raise modal to check if sure
+        if (!confirm) {
+            $scope.node_id = node_id;
+            $scope.warning_modal_message = 'You are about to delete ' + data.type + ' ' + data.label + '. Are you sure?';
+            $scope.warning_modal_action = 'DELETENODE';
+            $('#deleteModal').modal('open');
+            return;
+        }
+
 
         if (data.type == 'step') {
             // Check if this step is called by another step or calls another step. If yes throw an error message.
