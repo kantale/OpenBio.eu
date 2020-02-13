@@ -2093,7 +2093,7 @@ window.onload = function () {
 							//Ideally the deletion logic should be placed here.
 							//Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
 							angular.element($('#angular_div')).scope().$apply(function () {
-								angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id());
+								angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id(), false);
 							});
 
 							
@@ -2129,7 +2129,7 @@ window.onload = function () {
     						//Ideally the deletion logic should be placed here.
     						//Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
     						angular.element($('#angular_div')).scope().$apply(function () {
-    								angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id());
+    								angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id(), false);
     						});
 
     					}
@@ -2164,7 +2164,7 @@ window.onload = function () {
                             //Ideally the deletion logic should be placed here.
                             //Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
                             angular.element($('#angular_div')).scope().$apply(function () {
-                                    angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id());
+                                    angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id(), false);
                             });
 
                         }
