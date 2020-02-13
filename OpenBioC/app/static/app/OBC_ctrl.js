@@ -1937,8 +1937,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     /*
     * Get the dependencies of this tool
     * This is called from ui.js
-    * what_to_do == 1: DRAG FROM SEARCH TREE TO DEPENDENCY TREE
-    * what_to_do == 2: DRAG FROM SEARCH TREE TO CYTOSCAPE CYWORKFLOW DIV
+    * what_to_do == 1: drag and drop FROM SEARCH TREE TO DEPENDENCY TREE
+    * what_to_do == 2: dran and drop FROM SEARCH TREE TO CYTOSCAPE CYWORKFLOW DIV
     */
     $scope.tool_get_dependencies = function(tool, what_to_do) {
 
@@ -1952,7 +1952,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             {
                 'tool_name': tool.name,
                 'tool_version': tool.version,
-                'tool_edit': tool.edit
+                'tool_edit': tool.edit,
+                'what_to_do': what_to_do // We are passing also what_to_do. If what_to_do==2 then also fetch installation instructions
             },
             function(data) {
 
@@ -1988,7 +1989,6 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                         }
                     }
 
-
                     //We suppose there is no error
                     $scope.tools_info_error_message = '';
 
@@ -2002,7 +2002,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                         $scope.tools_var_jstree_model.push(data['variables_jstree'][i]);
                     }
                 }
-                else if (what_to_do == 2) { //DRAG FROM TOOLS SEARCH TREE TO CYTOSCAPE WORKFLOW DIV
+                else if (what_to_do == 2) { //drag and drop FROM TOOLS SEARCH TREE TO CYTOSCAPE WORKFLOW DIV
                     //console.log('UPDATE THE GRAPH WITH: dependencies_jstree');
                     //console.log(data['dependencies_jstree']);
                     //console.log('variables_jstree:');
@@ -2012,7 +2012,6 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                         $scope.toast('You cannot edit this workflow. You can fork it, or create a new one.', 'error');
                         return;
                     }
-
 
                     //Add the variable information to the tool nodes. 
                     //By doing that we make sure that tool nodes have variable information
@@ -2028,14 +2027,15 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                                     else {
                                         data['dependencies_jstree'][i].variables = [variables_jstree_item.data];
                                     }
-
                                 }
                             }
                         }
                     });
 
-                    //Make sure that all dependencies_jstree nodes have a variables field
-                    //Also make sure that all dependencies_jstree nodes have a belongto fields
+                    //Make sure that all dependencies_jstree nodes have:
+                    // a variables field
+                    // a belongto fields
+                    // a disconnencted field
                     for (var i=0; i<data['dependencies_jstree'].length; i++) {
                         if (typeof data['dependencies_jstree'][i].variables !== 'undefined') {
                         }
@@ -2043,7 +2043,11 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                             data['dependencies_jstree'][i].variables = [];
                         }
                         data['dependencies_jstree'][i].belongto = null;
+                        data['dependencies_jstree'][i].disconnected = false;
                     }
+
+                    //console.log('dependencies_jstree:');
+                    //console.log(data['dependencies_jstree']);
 
                     //window.buildTree(data['dependencies_jstree'], {name: $scope.workflow_info_name, edit: null}); //FIXME SEE A46016A6E393
                     window.buildTree(data['dependencies_jstree'], {name: 'root', edit: null}); //FIXME SEE A46016A6E393 
@@ -2823,13 +2827,27 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             return;
         }
 
-        // Get all successor workflows and tag them as disconnected
-        node.successors('node[type="workflow"]').forEach(function(succesor_node){
-            succesor_node.data('disconnected', true);
-            succesor_node.data('draft', false); // disconnected workflows are not draft
-        });
-        node.data('disconnected', true);
-        node.data('draft', false);
+        if (node_data.type == 'workflow') {
+            //disconnect a workflow
+
+            // Get all successor workflows AND TOOLS and tag them as disconnected
+            node.successors('node[type="workflow"] , node[type="tool"]').forEach(function(succesor_node){
+                succesor_node.data('disconnected', true);
+                succesor_node.data('draft', false); // disconnected workflows are not draft
+            });
+            node.data('disconnected', true);
+            node.data('draft', false);
+        }
+        else if (node_data.type == 'tool') {
+            //disconnect a tool
+            // Get all successor tools and tag them as disconnected
+            node.successors('node[type="tool"]').forEach(function(succesor_node){
+                succesor_node.data('disconnected', true);
+                succesor_node.data('draft', false); // disconnected workflows are not draft
+            });
+            node.data('disconnected', true);
+            node.data('draft', false);
+        }
 
     };
 
@@ -4189,6 +4207,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                         //If we are adding a workflow, buildTree function, expects the label of the node to exist in the cy_label field
                         //cy_label is the label used in the jstree search tree
                         node.data.cy_label = node.data.label;
+
+                        //By default all tools are not disconnected
+                        node.data.disconnected = false;
                     }
                     else if (node.data.type == 'workflow') {
                         //By default the root node of the the workflow that we imported is in connected stage
