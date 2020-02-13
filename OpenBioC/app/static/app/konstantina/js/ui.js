@@ -1695,7 +1695,7 @@ window.onload = function () {
                     //TODO add root feature (different than tools): wfroot:yes
                     var this_workflow_id = window.OBCUI.create_workflow_id(d);
 
-                    var myNode = { data: { id: this_workflow_id, name: d.name, edit: d.edit, label: create_workflow_label(d), type: 'workflow', draft: d.draft, belongto: this_node_wf_belong_to } };
+                    var myNode = { data: { id: this_workflow_id, name: d.name, edit: d.edit, label: create_workflow_label(d), type: 'workflow', draft: d.draft, disconnected: d.disconnected, belongto: this_node_wf_belong_to } };
                     myNodes.push(myNode);
                     myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_workflow_id, id: window.OBCUI.create_workflow_edge_id(this_node_wf_belong_to_id, this_workflow_id), edgebelongto: 'true' } });
 					
@@ -1819,12 +1819,14 @@ window.onload = function () {
                         if (type == 'workflow') {
                             innerHTML += '<br>name: ' + node._private.data.name;
                             innerHTML += '<br>edit: ' + node._private.data.edit;
+                            innerHTML += '<br>status: ' + (node._private.data.disconnected ? 'disconnected' : (node._private.data.draft ? 'draft' : 'normal'));
                         }
 
                         else if (type == 'tool') {
                             innerHTML += '<br>name: ' + node._private.data.name;
                             innerHTML += '<br>edit: ' + node._private.data.edit;
                             innerHTML += '<br>version: ' + node._private.data.version;
+                            innerHTML += '<br>status: ' + (node._private.data.draft ? 'draft' : 'normal');
                         }
                         else {
                             innerHTML += '<br>name: ' + node._private.data.label;
@@ -2057,115 +2059,136 @@ window.onload = function () {
 
             /* hide tooltip before cxtmenu opens, otherwise they overlap */
             cy.on('mouseout', 'node', function (event) {
-					// destroy all instances
-					mytippys.forEach(function (mytippy) {
-						mytippy.destroy(mytippy.popper);
-					});
+    			// destroy all instances
+    			mytippys.forEach(function (mytippy) {
+    				mytippy.destroy(mytippy.popper);
+    			});
             });
 
 			 // Right-click menu for input nodes 
 			 window.input_menu = cy.cxtmenu({
-								menuRadius: 85, 	
-								//selector: 'node',
-								selector: 'node[type="input"]',
-								//zIndex: 199999999, 
-								openMenuEvents: 'cxttapstart', 
-								commands: [
-									{
-										content: 'Set',
-										select: function (ele) {
-																
-											editNode= cy.$('node[id="' + ele.id() + '"]');
-											if(editNode[0]._private.data.type==="input"){  //check if node is input type
-											
-												editTippy = makeEditTippy(editNode[0], ele.id());  //add edit tooltip
-												editTippy.show();								   //show edit tooltip	
-											}
-											//input_menu.destroy();
-										}
-									},
-									{
-										content: 'Delete',
-										select: function (ele) {
-
-											//Ideally the deletion logic should be placed here.
-											//Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
-											angular.element($('#angular_div')).scope().$apply(function () {
-												angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id());
-											});
-
-											//                           var j = cy.$('#' + ele.id());
-											//                           
-											//							/* remove node successors*/
-											//							j.successors().targets().forEach(function (element) {
-											//									cy.remove(element);
-											//								
-											//							})
-											//							/*remove node*/
-											//							cy.remove(j);
-											//input_menu.destroy();
-											
-										}
-									},
-									 {
-										content: 'Cancel',
-										select: function (ele) {
-											//console.log("CANCEL OPTION");
-											cy.cxtmenu().destroy();
-											//input_menu.destroy();
-										}
-									}
-								]
-
-							});
-			
-			// Right-click menu for all except input nodes
-		    window.menu = cy.cxtmenu({
-									menuRadius: 85, 
-									//selector: 'node',
-									selector: 'node[type!="input"]',
-									openMenuEvents: 'cxttapstart', 
-									commands: [
-										{
-											content: 'Edit',
-												select: function (ele) {
-												//menu.destroy();	
-											}
-										},
-										{
-											content: 'Delete',
-											select: function (ele) {
-
-												//Ideally the deletion logic should be placed here.
-												//Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
-												angular.element($('#angular_div')).scope().$apply(function () {
-														angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id());
-												});
-
-												//                           var j = cy.$('#' + ele.id());
-												//                           
-												//							/* remove node successors*/
-												//							j.successors().targets().forEach(function (element) {
-												//									cy.remove(element);
-												//								
-												//							})
-												//							/*remove node*/
-												//							cy.remove(j);
+				menuRadius: 85, 	
+				//selector: 'node',
+				selector: 'node[type="input"]',
+				//zIndex: 199999999, 
+				openMenuEvents: 'cxttapstart', 
+				commands: [
+					{
+						content: 'Set',
+						select: function (ele) {
 												
-												//menu.destroy();
-											}
-										},
-										 {
-											content: 'Cancel',
-											select: function (ele) {
-												//console.log("CANCEL 2 OPTION");
-												cy.cxtmenu().destroy();
-												//menu.destroy();
-											}
-										}
-									]
+							editNode= cy.$('node[id="' + ele.id() + '"]');
+							if(editNode[0]._private.data.type==="input"){  //check if node is input type
+							
+								editTippy = makeEditTippy(editNode[0], ele.id());  //add edit tooltip
+								editTippy.show();								   //show edit tooltip	
+							}
+							//input_menu.destroy();
+						}
+					},
+					{
+						content: 'Delete',
+						select: function (ele) {
 
-								});
+							//Ideally the deletion logic should be placed here.
+							//Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
+							angular.element($('#angular_div')).scope().$apply(function () {
+								angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id());
+							});
+
+							
+						}
+					},
+					 {
+						content: 'Cancel',
+						select: function (ele) {
+							//console.log("CANCEL OPTION");
+							cy.cxtmenu().destroy();
+							//input_menu.destroy();
+						}
+					}
+				]
+
+			});
+			
+			// Right-click menu for output, step nodes
+		    window.output_step_menu = cy.cxtmenu({
+    			menuRadius: 85, 
+    			//selector: 'node',
+    			selector: 'node[type="output"], node[type="step"]',
+    			openMenuEvents: 'cxttapstart', 
+    			commands: [
+    				//{
+    				//	content: 'Edit',
+    				//		select: function (ele) {}
+    				//},
+    				{
+    					content: 'Delete',
+    					select: function (ele) {
+
+    						//Ideally the deletion logic should be placed here.
+    						//Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
+    						angular.element($('#angular_div')).scope().$apply(function () {
+    								angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id());
+    						});
+
+    					}
+    				},
+    				 {
+    					content: 'Cancel',
+    					select: function (ele) {
+    						//console.log("CANCEL 2 OPTION");
+    						cy.cxtmenu().destroy();
+    						//menu.destroy();
+    					}
+    				}
+    			]
+
+    		});
+
+            // Right-click menu for workflows tools
+            window.worfklow_tool_menu = cy.cxtmenu({
+                menuRadius: 85, 
+                //selector: 'node',
+                selector: 'node[type="workflow"], node[type="tool"]',
+                openMenuEvents: 'cxttapstart', 
+                commands: [
+                    //{
+                    //  content: 'Edit',
+                    //      select: function (ele) {}
+                    //},
+                    {
+                        content: 'Delete',
+                        select: function (ele) {
+
+                            //Ideally the deletion logic should be placed here.
+                            //Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
+                            angular.element($('#angular_div')).scope().$apply(function () {
+                                    angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id());
+                            });
+
+                        }
+                    },
+                    {
+                        content: 'Disconnect',
+                        select: function (ele) {
+                            angular.element($('#angular_div')).scope().$apply(function () {
+                                    angular.element($('#angular_div')).scope().disassociate_workflow_tool(ele, false);
+                            });
+                        }
+                    },
+                    {
+                        content: 'Cancel',
+                        select: function (ele) {
+                            //console.log("CANCEL 2 OPTION");
+                            cy.cxtmenu().destroy();
+                            //menu.destroy();
+                        }
+                    }
+                ]
+
+            });
+
 	
         }
 
@@ -2210,8 +2233,7 @@ window.onload = function () {
                             "shape": "round-rectangle",
                             'background-color': '#5A5A5A' // grey
                         }
-
-                    },
+                    },    
                     {
                         selector: 'node[type="step"][!sub_main][?main]', // http://js.cytoscape.org/#selectors/data 
                         "style": {
@@ -2264,7 +2286,7 @@ window.onload = function () {
                         "style": {
                             'shape': 'round-rectangle',
                             'border-width': '3',
-                            'border-color': '#E53935',
+                            'border-color': '#E53935', // red
                             'background-color': '#5A5A5A'
                             //"height": 15,
                             //"width": 15
@@ -2290,6 +2312,17 @@ window.onload = function () {
                             //'border-color': '#5A5A5A',
                             'background-color': '#E53935',
                             //"height": 15,
+                            //"width": 15
+                        }
+                    },
+                    {
+                        selector: 'node[type="workflow"][?disconnected]', // This is a disconnected workflow
+                        "style": {
+                            'shape': 'octagon',
+                            //'border-width': '3',
+                            //'border-color': '#5A5A5A',
+                            'background-color': '#4c35e5', // blue
+                            //"height": 15,x
                             //"width": 15
                         }
                     },
