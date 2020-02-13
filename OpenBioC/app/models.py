@@ -263,7 +263,7 @@ class Workflow(models.Model):
     obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
     forked_from = models.ForeignKey(to="Workflow", null=True, on_delete=models.CASCADE, related_name='forked_from_related') #Is this forked from another tool?
     tools = models.ManyToManyField(to='Tool', related_name='workflows_using_me')
-    workflows = models.ManyToManyField(to='Workflow', related_name='workflows_using_me')
+    workflows = models.ManyToManyField(to='Workflow', related_name='workflows_using_me') # The fact that the related_name with tools is the same is not a bug!
 
     changes = models.TextField(null=True) # What changes have been made from forked tool?
 

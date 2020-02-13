@@ -1510,6 +1510,21 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     };
 
     /*
+    * We have a "Yes" response from the "are you sure" modal. 
+    * Diseminate on the action.
+    */
+    $scope.are_you_sure_modal_post_action = function(action) {
+        if (action == 'DELETE' || action == 'FINALIZE') {
+            $scope.ro_finalize_delete_pressed($scope.warning_modal_ro, $scope.warning_modal_action, true);
+            return;
+        }
+        else if (action == 'DISCONNECT') {
+            $scope.disassociate_workflow_tool($scope.node, true);
+            return;
+        }
+    };
+
+    /*
     * Tool/Workflow in draft mode --> FINALIZE button --> pressed 
     * tool finalize tool
     * workflow finalize workflow  
@@ -2760,6 +2775,58 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     //JSTREE END
 
     // WORKFLOWS 
+
+    /*
+    * Dissasociate a tool or a workflow
+    * node is cytoscape node 
+    */
+    $scope.disassociate_workflow_tool = function(node, confirm) {
+
+        if (!$scope.workflows_info_editable) {
+            $scope.toast('This workflow is not in an edit stage.', 'error');
+            return;
+        }
+
+        var node_data = node.data();
+        if (!node_data.draft) {
+            $scope.toast('You can disconnect only DRAFT tools or workflows', 'error');
+            return;
+        }
+
+        if (!node_data.belongto) {
+            $scope.toast('You cannot disconnect the root workflow', 'error');
+            return;
+        }
+
+        if (!node_data.type == 'workflow') {
+            $scope.toast('Error 5718', 'error'); //Sanity check
+            return;
+        }
+
+        if (node_data.disconnected) {
+            $scope.toast('This workflow is already disconnected', 'error');
+            return;
+        }
+
+        //Now we can perform the disconnection. Confirm it
+        if (!confirm) {
+            var data = node.data();
+            $scope.warning_modal_message = 'You are about to disconnect ' + data.type + ' ' + data.label + ' from this workflow. Changes on ' + data.label + ' will not further affect this workflow. You cannot undo this operation. Are your sure?';
+            $scope.warning_modal_action = 'DISCONNECT';
+            $scope.node = node; // Pass the parameter
+            $('#deleteModal').modal('open');
+            return;
+        }
+
+        // Get all successor workflows and tag them as disconnected
+        node.successors('node[type="workflow"]').forEach(function(succesor_node){
+            succesor_node.data('disconnected', true);
+            succesor_node.data('draft', false); // disconnected workflows are not draft
+        });
+        node.data('disconnected', true);
+        node.data('draft', false);
+
+    };
 
     //JSTREE workflows_search
     $scope.workflows_search_jstree_config = {
@@ -4107,6 +4174,12 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                         //If we are adding a workflow, buildTree function, expects the label of the node to exist in the cy_label field
                         //cy_label is the label used in the jstree search tree
                         node.data.cy_label = node.data.label;
+                    }
+                    else if (node.data.type == 'workflow') {
+                        //By default the root node of the the workflow that we imported is in connected stage
+                        if ((node.data.name == workflow.name) && (node.data.edit == workflow.edit)) {
+                            node.data.disconnected = false;
+                        }
                     }
 
                     //Add All Nodes 

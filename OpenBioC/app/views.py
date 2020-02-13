@@ -2840,8 +2840,12 @@ def workflows_add(request, **kwargs):
 
     # Get all workflows that are used in this workflow
     workflow_nodes = [x for x in workflow['elements']['nodes'] if x['data']['type'] == 'workflow']
-    # Remove self workflow
-    workflow_nodes = [{'name': x['data']['name'], 'edit': x['data']['edit']} for x in workflow_nodes if not (x['data']['name'] == workflow_info_name and x['data']['edit'] == next_edit) ]
+    # Remove self workflow and workflows that are disconnected
+    workflow_nodes = [
+        {'name': x['data']['name'], 'edit': x['data']['edit']} 
+        for x in workflow_nodes if 
+            (not (x['data']['name'] == workflow_info_name and x['data']['edit'] == next_edit)) and (not x['data']['disconnected'])  
+        ]
     # Get workflow database objects
     workflows = [Workflow.objects.get(**x) for x in workflow_nodes]
     if workflows:

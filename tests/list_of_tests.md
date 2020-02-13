@@ -44,5 +44,8 @@
 26. Create WF test/1. Add step step2. Call step2 from main_step. Save WF. Edit WF. Click main_step. Press UPDATE. Edge main_step --> step2 should remain. 🆗 
 27. Create WF test/1. Add step step2. Call main_step from from step2. Save WF. Edit WF. Click main_step. Press Update. Edge step-->main_step should remain. 🆗 
 
+28. (Disconnect). Create workflow test/1. Create WF test/2 and add WF test/1 and save. Create WF test/3 and add WF test/2. Edit WF test/2 and disconnect test/1 save. Edit WF test/1 and add a new step s2. Check WF test/2 it should NOT contain the new step. Check WF test/3 in SHOULD contain the new step. 🆗
+
+
 
 
