@@ -725,16 +725,20 @@ def tool_get_dependencies_internal(tool, include_as_root=False):
 
     return ret
 
-def tool_build_dependencies_jstree(tool_dependencies, add_variables=False):
+def tool_build_dependencies_jstree(tool_dependencies, add_variables=False, add_installation_commands=False):
     '''
     Build JS TREE from tool_dependencies
+
+    add_variables:  Also add tool/data variables
+    add_installation_commands: All installation_commands + validation_commands + os_choices 
+
     ATTENTION: THIS IS NOT GENERIC!!! 
     IT uses g['DEPENDENCY_TOOL_TREE_ID']. 
     '''
 
     tool_dependencies_jstree = []
     for tool_dependency in tool_dependencies:
-        tool_dependencies_jstree.append({
+        to_append = {
 
             'data': {
 #                    'name': tool_dependency['dependency'].name,
@@ -755,7 +759,14 @@ def tool_build_dependencies_jstree(tool_dependencies, add_variables=False):
             'edit': tool_dependency['dependency'].edit,
             'draft': tool_dependency['dependency'].draft,
 
-        })
+        }
+        if add_installation_commands:
+            to_append['installation_commands'] = tool_dependency['dependency'].installation_commands
+            to_append['validation_commands'] = tool_dependency['dependency'].validation_commands
+            to_append['os_choices'] = [choice.os_choices for choice in tool_dependency['dependency'].os_choices.all()]
+            to_append['dependencies'] = [str(t) for t in tool_dependency['dependency'].dependencies.all()]
+
+        tool_dependencies_jstree.append(to_append)
 
         # Add the variables of this tool
         if add_variables:
@@ -1657,17 +1668,30 @@ def tool_get_dependencies(request, **kwargs):
     '''
     Get the dependencies of this tool
     Called when a stop event (from dnd) happens from search JSTREE to the dependencies JSTREE
+    OR from a stop event from search jstree to cytoscape graph
+
+    what_to_do == 1: drag and drop FROM SEARCH TREE TO DEPENDENCY TREE
+    what_to_do == 2: dran and drop FROM SEARCH TREE TO CYTOSCAPE CYWORKFLOW DIV
     '''
 
     tool_name = kwargs.get('tool_name', '')
     tool_version = kwargs.get('tool_version', '')
     tool_edit = int(kwargs.get('tool_edit', -1))
+    what_to_do = kwargs.get('what_to_do', None) 
+
+    if not what_to_do:
+        return fail('Error 9122')
+
+    try:
+        what_to_do = int(what_to_do)
+    except ValueError as e:
+        return fail('Error 9123')
 
     tool = Tool.objects.get(name=tool_name, version=tool_version, edit=tool_edit)
 
     #Get the dependencies of this tool
     tool_dependencies = tool_get_dependencies_internal(tool, include_as_root=True)
-    tool_dependencies_jstree = tool_build_dependencies_jstree(tool_dependencies)
+    tool_dependencies_jstree = tool_build_dependencies_jstree(tool_dependencies, add_installation_commands=what_to_do==2)
 
     #Get the dependencies + variables of this tool
     tool_variables_jstree = tool_build_dependencies_jstree(tool_dependencies, add_variables=True)
@@ -1678,6 +1702,7 @@ def tool_get_dependencies(request, **kwargs):
     #print ('LOGGG DEPENDENCIES + VARIABLES')
     #print (simplejson.dumps(tool_variables_jstree, indent=4))
 
+    # There is $scope.tools_dep_jstree_model and $scope.tools_var_jstree_model
     ret = {
         'dependencies_jstree': tool_dependencies_jstree,
         'variables_jstree': tool_variables_jstree,
@@ -2831,8 +2856,8 @@ def workflows_add(request, **kwargs):
         new_workflow.created_at = workflow_created_at
         new_workflow.save()
 
-    # Get all tools that are used in this workflow
-    tool_nodes = [x for x in workflow['elements']['nodes'] if x['data']['type'] == 'tool']
+    # Get all tools that are used in this workflow except the ones that are disconnected 
+    tool_nodes = [x for x in workflow['elements']['nodes'] if (x['data']['type'] == 'tool') and (not x['data']['disconnected'])]
     tools = [Tool.objects.get(name=x['data']['name'], version=x['data']['version'], edit=x['data']['edit']) for x in tool_nodes]
     if tools:
         new_workflow.tools.add(*tools)
@@ -3007,6 +3032,10 @@ def tool_node_cytoscape(tool, tool_depending_from_me=None):
                 'text': tool_label_cytoscape(tool),
                 'type': 'tool',
                 'variables': [{'description': variable.description, 'name': variable.name, 'type': 'variable', 'value': variable.value} for variable in tool.variables.all()],
+                'installation_commands': tool.installation_commands,
+                'validation_commands': tool.validation_commands,
+                'os_choices': [choice.os_choices for choice in tool.os_choices.all()],
+                'dependencies': [str(t) for t in tool.dependencies.all()],
                 'version': tool.version,
                 'draft': tool.draft,
             }
@@ -3026,6 +3055,10 @@ def tool_node_cytoscape(tool, tool_depending_from_me=None):
                 'variables': [{'description': variable['description'], 'name': variable['name'], 'type': 'variable', 'value': variable['value']} for variable in tool['variables']],
                 'version': tool['version'],
                 'draft': tool['draft'],
+                'installation_commands': tool['installation_commands'],
+                'validation_commands': tool['validation_commands'],
+                'os_choices': tool['os_choices'],
+                'dependencies': tool['dependencies'],
             }
         }
 
@@ -3206,35 +3239,6 @@ def run_workflow(request, **kwargs):
         workflow = None
         workflow_cy = kwargs['workflow_cy']
     #print (workflow_cy)
-
-    # Get the tools of this workflow
-    workflow_tools = [tool for tool in workflow_cy['elements']['nodes'] if tool['data']['type']=='tool']
-    # Add bash information that does not exist in cytoscape graph
-    for workflow_tool in workflow_tools:
-
-#        print ('name:', workflow_tool['data']['name'])
-#        print ('version:', workflow_tool['data']['version'])
-#        print ('edit:', workflow_tool['data']['edit'])
-
-        try:
-            workflow_tool_obj = Tool.objects.get(
-                name=workflow_tool['data']['name'], 
-                version=workflow_tool['data']['version'], 
-                edit=workflow_tool['data']['edit'])
-        except ObjectDoesNotExist as e:
-            workflow_tool_obj = None # If it does not exist, it will break later..
-
-        # Add installation commands etc for each tool.
-        # It might be the chance that this information already exists, if it has been created by an artificial cytoscape object
-        # like in function: run_tool
-        if not 'installation_commands' in  workflow_tool['data']:
-            workflow_tool['data']['installation_commands'] = workflow_tool_obj.installation_commands
-        if not 'validation_commands' in  workflow_tool['data']:
-            workflow_tool['data']['validation_commands'] = workflow_tool_obj.validation_commands
-        if not 'os_choices' in workflow_tool['data']:
-            workflow_tool['data']['os_choices'] = [choice.os_choices for choice in workflow_tool_obj.os_choices.all()]
-        if not 'dependencies' in workflow_tool['data']:
-            workflow_tool['data']['dependencies'] = [str(tool) for tool in workflow_tool_obj.dependencies.all()]
 
     # Create a new Report object 
     if (not user_is_validated(request)) or (not workflow) or (workflow.draft):
