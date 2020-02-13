@@ -517,8 +517,8 @@ def send_validation_email_inner(request, email):
     uuid_token = create_uuid_token()
 
     if settings.DEBUG:
-        print ('VALIDATION EMAIL TOKEN:', uuid_token)
-        print ('URL: http://0.0.0.0:{}/platform/?validation_token={}'.format(request.META['SERVER_PORT'], uuid_token)) 
+        #print ('VALIDATION EMAIL TOKEN:', uuid_token)
+        #print ('URL: http://0.0.0.0:{}/platform/?validation_token={}'.format(request.META['SERVER_PORT'], uuid_token)) 
         return True, '', uuid_token
 
     try:
@@ -2094,8 +2094,8 @@ class WorkflowJSON:
         '''
 
         ret = set()
-        print ('tool_node:', tool_node)
-        print ('Edge set:', edges)
+        #print ('tool_node:', tool_node)
+        #print ('Edge set:', edges)
 
         def recurse(rec_tool_node):
             tool_id = rec_tool_node['data']['id']
@@ -2111,7 +2111,7 @@ class WorkflowJSON:
                     ret.add(target_id)
                     recurse(target_node)
 
-        print ('set 2:', ret)
+        #print ('set 2:', ret)
 
         recurse(tool_node)
         ret.add(tool_node['data']['id'])
@@ -2245,22 +2245,22 @@ class WorkflowJSON:
         # Update also the workflows that are using me
         for workflow_using_me in self.workflows_using_me:
 
-            print ('workflow using me:', workflow_using_me)
+            #print ('workflow using me:', workflow_using_me)
 
             graph = simplejson.loads(workflow_using_me.workflow)
             belongto, workflow_nodes = self.__build_workflow_belongto(graph)
 
             # Get the workflow that the workflow that we want to update belongs to 
             belongto_root = belongto[self.key]
-            print ('   belongto_root: ', belongto_root)
+            #print ('   belongto_root: ', belongto_root)
 
             # Get the workflow node that we want to update
             workflow_node_root = workflow_nodes[self.key]
-            print ('   Workflow root node:', workflow_node_root)
+            #print ('   Workflow root node:', workflow_node_root)
 
             # This is a set of all the nodes that this sub-workflow has
             workflow_nodes_set = self.__nodes_belonging_to_a_workflow(graph, workflow_node_root, belongto)
-            print ('  workflow nodes set:', workflow_nodes_set)
+            #print ('  workflow nodes set:', workflow_nodes_set)
 
             # Remove these nodes (and edges connected to them) from the graph
             self.__remove_nodes_edges(graph, workflow_nodes_set, self.all_ids)
@@ -2297,27 +2297,27 @@ class WorkflowJSON:
         # Update all the workflows who are using this tool
         for workflow_using_me in self.workflows_using_me:
 
-            print ('The graph of this tool:')
-            print (simplejson.dumps(self.graph, indent=4))
+            #print ('The graph of this tool:')
+            #print (simplejson.dumps(self.graph, indent=4))
 
-            print ('Workflow using me:', workflow_using_me.name, workflow_using_me.edit)
+            #print ('Workflow using me:', workflow_using_me.name, workflow_using_me.edit)
 
             graph = simplejson.loads(workflow_using_me.workflow)
 
-            print ('   The workflow graph:')
-            print (simplejson.dumps(graph, indent=4))
+            #print ('   The workflow graph:')
+            #print (simplejson.dumps(graph, indent=4))
 
             all_nodes = {node['data']['id']:node for node in graph['elements']['nodes']}
             belongto = {node['data']['id']: node['data']['belongto'] for node in graph['elements']['nodes']}
             edges = self.__build_edges_dict(graph)
 
-            print ('   All nodes:')
-            print (simplejson.dumps(all_nodes, indent=4))
+            #print ('   All nodes:')
+            #print (simplejson.dumps(all_nodes, indent=4))
 
-            print ('   Belongto:')
-            print (simplejson.dumps(belongto, indent=4))
+            #print ('   Belongto:')
+            #print (simplejson.dumps(belongto, indent=4))
 
-            print ('   self.key:', self.key)
+            #print ('   self.key:', self.key)
 
             tool_node = all_nodes[self.key]
             tool_node_belongto = belongto[self.key]
@@ -2328,18 +2328,18 @@ class WorkflowJSON:
             # Get a set of the node ids that depend from this tool
             tool_dependencies = self.__tool_dependencies(tool_node, all_nodes, edges)
 
-            print ('   Nodes to delete:')
-            print (tool_dependencies)
+            #print ('   Nodes to delete:')
+            #print (tool_dependencies)
 
             # Remove these nodes (and edges connected to them) from the graph
             self.__remove_nodes_edges(graph, tool_dependencies, self.all_ids)
 
-            print ('   Graph After Deletion of nodes and edges:')
-            print (simplejson.dumps(graph, indent=4))
+            #print ('   Graph After Deletion of nodes and edges:')
+            #print (simplejson.dumps(graph, indent=4))
 
             # Add the edges of the graph
-            print ('   Edges to add:')
-            print (simplejson.dumps(self.graph['elements']['edges'], indent=4))
+            #print ('   Edges to add:')
+            #print (simplejson.dumps(self.graph['elements']['edges'], indent=4))
             graph['elements']['edges'].extend(self.graph['elements']['edges'])
 
             # Add the nodes of this graph
@@ -2348,13 +2348,13 @@ class WorkflowJSON:
             for node_to_add in nodes_to_add:
                 node_to_add['data']['belongto'] = tool_node_belongto
 
-            print ('   Nodes to add:')
-            print (simplejson.dumps(nodes_to_add, indent=4))
+            #print ('   Nodes to add:')
+            #print (simplejson.dumps(nodes_to_add, indent=4))
 
             graph['elements']['nodes'].extend(nodes_to_add)
 
-            print ('  Graph after adding new tool dependencies')
-            print (simplejson.dumps(graph, indent=4))
+            #print ('  Graph after adding new tool dependencies')
+            #print (simplejson.dumps(graph, indent=4))
 
             # Save the graph
             workflow_using_me.workflow = simplejson.dumps(graph)
@@ -4162,7 +4162,7 @@ def get_pk_from_root_comment(request, **kwargs):
         return fail('Could not find tool or workflow database object')
 
     ret = {
-        'pk': pk
+        'pk': pk,
     }
     return success(ret)
 
