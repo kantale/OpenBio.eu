@@ -816,22 +816,33 @@ Also open the workflow ```constant_threshold/1```. You will notice that the grap
 
 Both ```another_tool/1/1``` and ```my_tool/1/1``` have been entered in the graph. But if we didn't edit ```constant_threshold/1```, how the graph was chaged? Workflow ```constant_threshold/1``` contains workflow ```my_workflow/1``` and we changed ```my_workflow/1``` by adding these two tools. Hence, ```constant_threshold/1``` also has changed. Remember that only draft workflows and tools/data can be changed. So if your pipeline contains only finalized entities, it is guaranteed that it will not change in the future. 
 
-### The OBC_WORK_PATH variable 
+### The ${OBC_WORK_PATH} variable 
 Similar to variables ```OBC_TOOL_PATH``` and ```OBC_DATA_PATH```, you can use the ```OBC_WORK_PATH```. OpenBio.eu expects that this Bash variable has been set externally in you environment. You are encouraged to use this variable to refer on the path that is used during the analysis. For example to store you temporary data or your final results. 
 
 
 ### Finalizing a workflow 
-If you try to finalize the ```constant_threshold/1``` workflow you will receive an error: ```This workflow cannot be finalized. It contains 2 draft workflow(s). For example: another_workflow/1```. A finalized workflow cannot be changed, so it cannot contain a draft workflow or a draft tool/data. So first finalize the draft components of a workflow and then finalize the workflow. 
+If you try to finalize the ```constant_threshold/1``` workflow you will receive an error: ```This workflow cannot be finalized. It contains 2 draft workflow(s). For example: another_workflow/1```. A finalized workflow cannot be changed, so it cannot contain a draft workflow or a draft tool/data. So first finalize the draft components of a workflow and then finalize the workflow. To finalize a workflow click the "FINALIZE" button on the top of the page.
+
+### Disconnecting a Tool/Data or a Workflow
+You might have noticed that workflows in OpenBio.eu are dynamicly edited. Multiple users can take part on editing different parts of a workflow. For example let's say that you are creating a workflow. In this workflow you have imported a Tools/Data or Workflows created by other users and these imported elements are in draft stage. Every change that happens on these imported elements are automatically applied on your workflow. Importing draft elements from other users means that changes on these elements are also affecting your workflow. Sometimes this behaviour is desired but sometimes it isn't. For example when you are co-editing workflows with a peer of users that you trust, this behaviour is desired. On the other hand you might have created a workflow with elements from other users, you have tested this workflow and you are happy with how it behaves. Yet, you cannot use this workflow for reproducible science since the elements of this workflow can change anytime from other users, thus its behaviour might change in the future. On that case you can edit your workflow and *disconnect* an imported Tool/Data or Workflow. By disconnecting a Tool/Data or a Workflow, you are simply stating that you do not desire any changes that happen on these elements to affect your workflow any more. A disconnected Tool/Data or Workflow is a persistent and immutable object and exists only in your workflow. No other user can change them. To perform this action right click a Tool/Data or Workflow from a workflow graph and from the menu that appears choose "Disconnect". A modal appears that asks you if you are sure since you cannot undo this action. If you press "Yes", then the disconnected elements (Tool/Data or Workflows) are turned blue. If you disconnect a Workflow, then all other Workflows, Tool/Data that belong to this workflow are also disconnected. If you disconnect a Tool/Data all other Tool/Data that are dependencies of this Tool/Data are also disconnected. 
+
+For example here:
+
+![img](screenshots/screen_34.png)
+
+We have disconnected the workflow ```my_workflow/1``` from the workflow ```constant_threshold/1```. All Tool/Data and Workflow elements that belong to ```my_workflow/1``` have turned to blue. 
 
 ### Worfklow graph, node semantics
 Here we list the different types of nodes on the workflow graph:
 * Red Octagon: a fraft Workflow
+* Blue Octagon: a disconnected Workflow
 * Grey Octagon: A finalized workflow
 * Green Circle: Step
 * Green Circle with RED Border: A main step
 * Green Circle with BLACK Border: A step that it is main in a sub-workflow 
 * Red Round Rectangle: A draft tool
-* Frey Round Rectangle: A finalized tool
+* Blue Round Rectangle: A disconnected tool
+* Grey Round Rectangle: A finalized tool
 * Grey Round Rectangle with green border: A workflow input
 * Grey Round Rectangle with red border: A workflow output
 
