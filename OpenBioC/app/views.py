@@ -3139,15 +3139,15 @@ def run_tool(request, **kwargs):
         'edit': kwargs['tools_search_edit'] if kwargs['tools_search_edit'] else 0, # If this is editable, then the edit is 0
         'variables': [variable for variable in kwargs['tool_variables'] if variable['name'] and variable['value'] and variable['description']],
         'draft': kwargs['tool_draft'],
+        'installation_commands': kwargs['tool_installation_commands'],
+        'validation_commands': kwargs['tool_validation_commands'],
+        'os_choices': kwargs['tool_os_choices'],
+        'dependencies': all_dependencies_str,
     }
 
     this_tool_cytoscape_node = tool_node_cytoscape(tool)
-    this_tool_cytoscape_node['data']['installation_commands'] = kwargs['tool_installation_commands']
-    this_tool_cytoscape_node['data']['validation_commands'] = kwargs['tool_validation_commands']
-    this_tool_cytoscape_node['data']['os_choices'] = kwargs['tool_os_choices']
-    this_tool_cytoscape_node['data']['dependencies'] = all_dependencies_str
     #print (this_tool_cytoscape_node)
-    #a=1/0
+
     workflow['elements']['nodes'].append(this_tool_cytoscape_node)
 
     # Add an edge between the root workflow and this tool

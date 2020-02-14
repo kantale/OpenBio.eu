@@ -335,7 +335,7 @@ class Workflow:
         # Create a dictionary. Keys are input ids. Values are input objects
         self.input_ids = {inp['id']:inp for inp in self.inputs_iterator()}
 
-        # Create a dictionay. Keys a output ids. Values are output objects
+        # Create a dictionary. Keys a output ids. Values are output objects
         self.output_ids = {outp['id']:outp for outp in self.outputs_iterator()}
 
         self.set_step_reads_sets()
@@ -1027,11 +1027,11 @@ class Workflow:
             new_tool_id = convert_tool_id(tool_id)
             for dependent_variable, dependent_tool in self.tool_variables[new_tool_id]:
                 input_name = Workflow.get_tool_bash_variable(dependent_tool, dependent_variable['name'])
-
+                dependent_tool_id = convert_tool_id(dependent_tool['id'])
 
                 input_variables_to_final.append({
-                    'input_name': input_name,
-                    'input_source': new_tool_id,
+                    'input_name': input_name, # The name of the variable 
+                    'input_source': dependent_tool_id, # The name of the tool
                 })
 
 
@@ -1097,9 +1097,11 @@ class Workflow:
                 ret += '. ${{{}}}\n'.format(read_from)
 
             if enable_save_variables_to_sh:
-                return Workflow.declare_decorate_bash(bash, save_to)
+                ret += Workflow.declare_decorate_bash(bash, save_to)
             else:
-                return bash
+                ret += bash
+
+            return ret
 
 
         def create_json(bash, step, step_breaked_id, is_last, output_variables):
@@ -1767,6 +1769,7 @@ steps:
 
         # 1. Variables of Tools used in this step:
         step_tool_variables = self.workflow.step_tool_variables(self.workflow.step_ids[step_breaked['id'].replace('.', '_')])
+
         input_variables_to_final.extend(step_tool_variables)
         input_variables.extend([variable['input_name'] for variable in step_tool_variables])
 
@@ -2056,7 +2059,7 @@ dag = DAG(
 
     def build(self, output, output_format='airflow'):
         '''
-        output: Name of output file. If None thjen the function returns a string
+        output: Name of output file. If None then the function returns a string
         output_format: it is not currently used 
         '''
 
