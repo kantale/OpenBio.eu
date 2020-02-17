@@ -8,6 +8,7 @@
    * [Cannot get DAG from empty workflow #153](https://github.com/kantale/OpenBioC/issues/153)
 * Features:
    * [Draft Tools/Data and Workflows #141](https://github.com/kantale/OpenBioC/issues/145)
+   * [Offer the ability to disconnect workflows and tools from workflows #155](https://github.com/kantale/OpenBioC/issues/155)
    * [Add execution environment option in profile #142](https://github.com/kantale/OpenBioC/issues/142)
    * [Upvote / Downvote Tools and Workflows #128](https://github.com/kantale/OpenBioC/issues/128)
    * [Preview markdown #135](https://github.com/kantale/OpenBioC/issues/135)

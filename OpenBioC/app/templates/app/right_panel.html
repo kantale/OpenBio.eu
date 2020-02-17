@@ -314,11 +314,11 @@
                                     <tbody>
                                         <tr ng-repeat="x in tool_variables">
                                             <td><input type="text" placeholder="name" ng-model="x.name"
-                                                    ng-disabled="!tools_info_editable"></td>
+                                                    ng-readonly="!tools_info_editable"></td>
                                             <td><input type="text" placeholder="value" ng-model="x.value"
-                                                    ng-disabled="!tools_info_editable"></td>
+                                                    ng-readonly="!tools_info_editable"></td>
                                             <td><input type="text" placeholder="description" ng-model="x.description"
-                                                    ng-disabled="!tools_info_editable">
+                                                    ng-readonly="!tools_info_editable">
                                             </td>
                                             <td>
                                                 <a class="waves-effect waves-light btn-small tooltipped green darken-1"
