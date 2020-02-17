@@ -180,7 +180,7 @@ sudo a2ensite obc-prod-ssl.conf
 sudo service apache2 reload
 ```
 
-# Deployment notes on OSx/Windows/Linux with conda.
+# Deployment notes on OSX/Windows/Linux with conda.
 
 Create a conda environment
 ```
