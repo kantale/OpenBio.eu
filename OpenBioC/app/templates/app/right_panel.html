@@ -686,9 +686,9 @@
                                         {% verbatim %}
                                         <tr ng-repeat="x in workflow_input_outputs track by $index">
                                             <td><input type="text" placeholder="Name" ng-model="x.name"
-                                                    ng-disabled="(!$last) || (!workflows_info_editable)"></td>
+                                                    ng-readonly="(!$last) || (!workflows_info_editable)"></td>
                                             <td><input type="text" placeholder="Description" ng-model="x.description"
-                                                    ng-disabled="(!$last) || (!workflows_info_editable)">
+                                                    ng-readonly="(!$last) || (!workflows_info_editable)">
                                             </td>
 
                                             <!-- Old switch 
