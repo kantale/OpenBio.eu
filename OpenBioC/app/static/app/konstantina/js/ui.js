@@ -1278,7 +1278,7 @@ window.onload = function () {
 
                                 var new_input_output_id = window.OBCUI.create_input_output_id(input_output_data, {'name': 'root', edit: null});
                                 if (cy.$("node[type='" + input_output_data.type + "'][id='" + new_input_output_id + "']").length) {
-                                    // DUPLICATE CODE WITH ABOVE. 
+                                    // DUPLICATE CODE FROM ABOVE. 
                                     if (input_output_data.type == "input") {
                                         if (!inputs.includes(new_input_output_id)) {
                                             inputs.push(new_input_output_id);
