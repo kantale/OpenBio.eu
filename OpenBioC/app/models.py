@@ -74,6 +74,7 @@ class OS_types(models.Model):
     debian_jessie = 'debian:8'
     debian_stretch = 'debian:9'
     denian_buster = 'debian:10'
+    osx_1 = 'osx:1'
 
 
     OS_CHOICES = (
@@ -83,12 +84,14 @@ class OS_types(models.Model):
         (debian_jessie,'Debian 8 (Jessie)'),
         (debian_stretch,'Debian 9 (Stretch)'),
         (denian_buster,'Debian 10 (Buster)'),
+        (osx_1, 'Mac OSX Intel'),
      )
 
     groups = {
         'Generic': [posix],
         'Ubuntu': [ubuntu_14_04, ubuntu_16_04],
         'Debian': [debian_jessie, debian_stretch, denian_buster],
+        'OSX': [osx_1],
 
     }
 
