@@ -1,7 +1,9 @@
 
 # Version changes and updates
 
-### 0.1.5 (Not yet released)
+### 0.1.6 (Not yet released)
+
+### 0.1.5 (18 February 2020)
 * Bugs Fixed
    * [Provide the ability to not require static site #136](https://github.com/kantale/OpenBioC/issues/136)
    * [Downloaded bash.sh should not halt execution when input parameters are missing](https://github.com/kantale/OpenBioC/issues/154)
