@@ -3149,7 +3149,7 @@ window.onload = function () {
             cy.json({
                 elements: {
                     nodes: [
-                        { data: { id: window.OBCUI.create_workflow_id({ name: name, edit: null }), label: name, name: name, edit: null, type: "workflow", draft: true, belongto: null } },
+                        { data: { id: window.OBCUI.create_workflow_id({ name: name, edit: null }), label: name, name: name, edit: null, type: "workflow", draft: true, disconnected: false, belongto: null } },
                     ]
                 }
             });
