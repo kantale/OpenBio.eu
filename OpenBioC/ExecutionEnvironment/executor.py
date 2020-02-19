@@ -311,6 +311,7 @@ class Workflow:
             else:
                 main_counter = sum(step['sub_main'] for step in self.get_steps_from_workflow(workflow))
                 main_str = 'SUB'
+
             if main_counter == 0:
                 message = '{} Workflow {} has 0 main steps'.format(main_str, workflow['id'])
                 raise OBC_Executor_Exception(message)

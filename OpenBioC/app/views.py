@@ -66,7 +66,7 @@ import requests # Used in DOI resolution
 import mistune
 
 
-__version__ = '0.1.6rc'
+__version__ = '0.1.6'
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -1968,7 +1968,7 @@ def tools_add(request, **kwargs):
             workflow_using_this_tool.tools.add(new_tool)
             workflow_using_this_tool.save()
 
-        # Update the json graph
+        # Update the json graph of the workflows using this tool
         WJ = WorkflowJSON()
         WJ.update_tool(new_tool)
 
@@ -2156,12 +2156,12 @@ class WorkflowJSON:
         return workflow
 
 
-    def __node_belongs_to_a_workflow(self, node, workflow, belongto):
+    def __node_belongs_to_a_workflow(self, node, workflow, workflow_nodes):
         '''
         Recursive
         '''
 
-        if not node: # We are running this for ALL workflow nodes. Including the root workflow that its belong to is None
+        if not node: # We are running this for ALL workflow nodes. Including the root workflow that its belongto to is None
             return False
 
         # We reached the root
@@ -2170,21 +2170,23 @@ class WorkflowJSON:
 
         workflow_key = workflow['data']['id']
         node_belongto_key = workflow_id_cytoscape(node['data']['belongto'], None, None)
+        #print ('Checking: {} == {}'.format(workflow_key, node_belongto_key))
         if workflow_key == node_belongto_key:
             return True
 
-        # This node does not belong to this workflow. Perhaps the node.belongto workflow belongs to this workflow
-        return self.__node_belongs_to_a_workflow(belongto[node_belongto_key], workflow, belongto)
+        # This node does not belong to this workflow. Perhaps the node-->belongto workflow belongs to this workflow
+        return self.__node_belongs_to_a_workflow(workflow_nodes[node_belongto_key], workflow, workflow_nodes)
 
 
-    def __nodes_belonging_to_a_workflow(self, graph, workflow_node, belongto):
+    def __nodes_belonging_to_a_workflow(self, graph, workflow_node, workflow_nodes):
         '''
         Returns a set
         '''
 
         ret = {element['data']['id'] for element in graph['elements']['nodes'] 
-            if self.__node_belongs_to_a_workflow(element, workflow_node, belongto)}
-        ret.add(workflow_node['data']['id']) # As the workflow node as well
+            if self.__node_belongs_to_a_workflow(element, workflow_node, workflow_nodes)}
+        ret.add(workflow_node['data']['id']) # Add the workflow node as well
+
         return ret
 
     def __remove_nodes_edges(self, graph, node_ids_to_remove, node_ids_to_add):
@@ -2256,14 +2258,17 @@ class WorkflowJSON:
 
             # Get the workflow node that we want to update
             workflow_node_root = workflow_nodes[self.key]
-            #print ('   Workflow root node:', workflow_node_root)
+            #print ('   Workflow node root:', workflow_node_root)
 
             # This is a set of all the nodes that this sub-workflow has
-            workflow_nodes_set = self.__nodes_belonging_to_a_workflow(graph, workflow_node_root, belongto)
+            workflow_nodes_set = self.__nodes_belonging_to_a_workflow(graph, workflow_node_root, workflow_nodes)
             #print ('  workflow nodes set:', workflow_nodes_set)
 
             # Remove these nodes (and edges connected to them) from the graph
             self.__remove_nodes_edges(graph, workflow_nodes_set, self.all_ids)
+
+            #print ('The graph after removing of nodes edges:')
+            #print (simplejson.dumps(graph, indent=4))
 
             # Add the edges of this graph
             graph['elements']['edges'].extend(self.graph['elements']['edges'])
@@ -2322,7 +2327,7 @@ class WorkflowJSON:
             tool_node = all_nodes[self.key]
             tool_node_belongto = belongto[self.key]
 
-            # Use run_tool() does the same task. The problem is that it works directly with the UI. 
+            # Use download_tool() does the same task. The problem is that it works directly with the UI. 
             # We want to construct a cytoscape graph from the database object
 
             # Get a set of the node ids that depend from this tool
@@ -2670,6 +2675,7 @@ def check_workflow_step_main(cy, root_workflow):
 def workflows_add(request, **kwargs):
     '''
     add workflow, workflow add, save workflow, workflow save, save wf
+    edit workflow edit update workflow
     '''
 
     if request.user.is_anonymous: # Server should always check..
@@ -2788,6 +2794,9 @@ def workflows_add(request, **kwargs):
     workflow_description_html = markdown(workflow_description)
 
     workflow = kwargs.get('workflow_json', '')
+    #print ('Workflow from angular:')
+    #print (simplejson.dumps(workflow, indent=4))
+
     if not workflow:
         return fail ('workflows json object is empty') # This should never happen!
 
@@ -2814,12 +2823,10 @@ def workflows_add(request, **kwargs):
             max_edit = workflow_all.aggregate(Max('edit'))
             next_edit = max_edit['edit__max'] + 1
 
-#    print ('BEFORE')
-#    print (simplejson.dumps(workflow, indent=4))
-#    print ('=====')
+
     #Change the edit value in the cytoscape json object
     set_edit_to_cytoscape_json(workflow, next_edit, workflow_info_name)
-#    print ('AFTER')
+#    print ('Workflow from set_edit:')
 #    print (simplejson.dumps(workflow, indent=4))
 
     #print (simplejson.dumps(workflow, indent=4))
@@ -2865,6 +2872,9 @@ def workflows_add(request, **kwargs):
 
     # Get all workflows that are used in this workflow
     workflow_nodes = [x for x in workflow['elements']['nodes'] if x['data']['type'] == 'workflow']
+
+    # print (simplejson.dumps(workflow_nodes, indent=4))
+
     # Remove self workflow and workflows that are disconnected
     workflow_nodes = [
         {'name': x['data']['name'], 'edit': x['data']['edit']} 
@@ -2897,12 +2907,15 @@ def workflows_add(request, **kwargs):
 
         # Add to the workflows that were using this workflow, the new workflow
         for workflow_using_this_workflow in workflows_using_this_workflow:
+
+            #print ('Workflow using this workflow:', str(workflow_using_this_workflow))
+
             workflow_using_this_workflow.workflows.add(new_workflow)
             workflow_using_this_workflow.save()
 
-            # Update the json graph
-            WJ = WorkflowJSON()
-            WJ.update_workflow(new_workflow)
+        # Update the json graph to the workflows that are using me
+        WJ = WorkflowJSON()
+        WJ.update_workflow(new_workflow)
 
     else:
         # Add an empty comment. This will be the root comment for the QA thread
@@ -2919,6 +2932,9 @@ def workflows_add(request, **kwargs):
 
     new_workflow.comment = comment
     new_workflow.save()
+
+    #print ('AFTER SAVE:')
+    #print (simplejson.dumps(simplejson.loads(new_workflow.workflow), indent=4))
 
 
     ret = {
@@ -3007,6 +3023,8 @@ def workflow_node_cytoscape(workflow, name='root', edit=0):
             'label': workflow_label_cytoscape(workflow, name, edit),
             'name': name,
             'type': 'workflow',
+            'draft': False, # For consistency. It does not realy makes any difference
+            'disconnected': False, # For consistency as well.
         }
     }
 
@@ -3110,11 +3128,11 @@ def edge_cytoscape(source, target):
     }
 
 @has_data
-def run_tool(request, **kwargs):
+def download_tool(request, **kwargs):
     '''
     Create a cytoscape workflow that installs a given tool.
     Kind of a "fake" workflow that the only thing that it does is install a tool (and its dependencies)
-    It is called by run_workflow when the user selects to "download" a tool instead of a workflow
+    It is called by download_workflow when the user selects to "download" a tool instead of a workflow
     '''
     workflow = {
         'elements': {
@@ -3182,7 +3200,7 @@ def run_tool(request, **kwargs):
     workflow['elements']['edges'].append(edge_cytoscape(workflow_node, step_node))
 
 
-    return run_workflow(request, **{
+    return download_workflow(request, **{
         'workflow_options': {},
         'workflow': None,
         'download_type': kwargs.get('download_type', 'BASH'),
@@ -3191,10 +3209,10 @@ def run_tool(request, **kwargs):
         })
 
 @has_data
-def run_workflow(request, **kwargs):
+def download_workflow(request, **kwargs):
     '''
     Defined in urls.py:
-    path('run_workflow/', views.run_workflow), # Acceps a workflow_options and workflow object. Runs a workflow
+    path('download_workflow/', views.download_workflow), # Acceps a workflow_options and workflow object. Runs a workflow
 
     https://docs.djangoproject.com/en/2.2/ref/request-response/#telling-the-browser-to-treat-the-response-as-a-file-attachment
 
@@ -3317,6 +3335,66 @@ def run_workflow(request, **kwargs):
 
     return success(ret)
 
+@has_data
+def run_workflow(request, **kwargs):
+    '''
+    path('run_workflow/', view.run_workflow)
+
+    curl -H "Content-Type: application/json" --request POST --data '{"type":"workflow","name":"test", "edit": "2"}' "http://139.91.81.103:5000/3ee5ccfb744983968fb3e9735e4bb85d/run_workflow"
+    '''
+
+    if request.user.is_anonymous: # Server should always check..
+        return fail('Error 3291. User is anonymous')
+
+    if not user_is_validated(request):
+        return fail('Error 3292. User is not validated ' + validate_toast_button());
+
+    obc_user = OBC_user.objects.get(user=request.user)
+
+    profile_name = kwargs.get('profile_name', '')
+    if not str(profile_name):
+        return fail('Error 3288. Invalid profile name')
+
+    name = kwargs.get('name', '')
+    if not str(name):
+        return fail('Error 3289. Invalid workflow name')
+
+    edit = kwargs.get('edit', '')
+    try:
+        edit = int(edit)
+    except ValueError as e:
+        return fail('Error 3290. Invalid workflow edit')
+
+    # Get the client
+    try:
+        client = obc_user.clients.get(name=profile_name)
+    except ObjectDoesNotExist as e:
+        return fail('Error 3293. Could not get execution client.')
+
+    url = client.client
+
+    run_url = urllib.parse.urljoin(url, 'run') # https://stackoverflow.com/questions/8223939/how-to-join-absolute-and-relative-urls
+
+    data_to_submit = {
+        'type': 'workflow',
+        'name': name,
+        'edit': edit,
+    }
+
+    headers={ "Content-Type" : "application/json", "Accept" : "application/json"}
+
+    if False:
+        r = requests.post(run_url, headers=headers, data=data_to_submit)
+
+        if not r.ok:
+            #r.raise_for_status()
+            return fail('Could not send to URL: {} . Error code: {}'.format(run_url, r.status_code))
+  
+    ret = {
+        'url': url,
+    }
+
+    return success(ret)
 
 @csrf_exempt
 @has_data
@@ -4053,7 +4131,7 @@ def qa_add_1(request, **kwargs):
         return fail('Please login to post a new question')
     user = request.user
 
-    # We csannot have the same comment title more than once
+    # We cannot have the same comment title more than once
     if Comment.objects.filter(title__iexact=qa_title).exists():
         return fail('A comment with this title already exists!')
 

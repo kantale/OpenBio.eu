@@ -4267,17 +4267,17 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
     /*
     * tool --> info (right panel) --> button "Run" --> Pressed
-    * See also: workflow_info_run_pressed
+    * See also: workflow_info_download_pressed
     * download_type = "JSON" or "BASH"
     */
-    $scope.tool_info_run_pressed = function(download_type) {
+    $scope.tool_info_download_pressed = function(download_type) {
         //Gather all information required for running this tool
 
         //Get the dependencies of the current tool
         var tool_dependencies = $scope.get_tool_dependencies();
 
         $scope.ajax(
-            'run_tool/',
+            'download_tool/',
             {
                 'tools_search_name': $scope.tools_info_name,
                 'tools_search_version': $scope.tools_info_version,
@@ -4308,7 +4308,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     /*
     * Download a file
     * download_type can be 'BASH' or 'JSON'
-    * callend by workflow_info_run_pressed and tool_info_run_pressed
+    * callend by workflow_info_download_pressed and tool_info_download_pressed
     * caller = 'tool', 'workflow'
     * editable: True/False. Is the [tool/wf] editable?
     */
@@ -4379,10 +4379,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     };
 
     /*
-    * worfklows --> info (right panel) --> button "Run" --> Pressed
+    * worfklows --> info (right panel) --> button "Download" --> Pressed
     * download_type = "JSON" or "BASH"
     */
-    $scope.workflow_info_run_pressed = function(download_type) {
+    $scope.workflow_info_download_pressed = function(download_type) {
         var workflow_options = window.OBCUI.get_workflow_options();
 
         // Check for uncheck options
@@ -4401,7 +4401,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         }
 
         $scope.ajax(
-            'run_workflow/',
+            'download_workflow/',
             {
                 'workflow_options': workflow_options,
                 'workflow': {
@@ -4425,6 +4425,30 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             }
         );
 		
+    };
+
+    /*
+    * Pressed "RUN" in workflows after selecting a profile_client name
+    */
+    $scope.workflow_info_run_pressed = function(profile_name) {
+        $scope.ajax(
+            'run_workflow/',
+            {
+                'profile_name': profile_name,
+                'name': $scope.workflow_info_name,
+                'edit': $scope.workflow_info_edit
+            },
+            function (data) {
+                //alert(data['url']);
+                $scope.toast('Not yet implemented..', 'error');
+            },
+            function (data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function (statusText) {
+                $scope.toast('Error: 3812 ' + statusText, 'error');
+            }
+        );
     };
 
     // WORKFLOWS END 
