@@ -90,6 +90,7 @@ class WorkflowSerializerDAG(serializers.BaseSerializer):
             'workflow_info_editable': False, # This workflow is saved 
             'download_type': 'AIRFLOW',
             'workflow_options': {}, # Workflow options . An interesting idea is to get them from the REST API
+            'source': 'rest', 
         }
 
         returned_object = run_workflow(self.request, **args)
