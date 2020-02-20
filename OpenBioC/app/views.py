@@ -66,7 +66,7 @@ import requests # Used in DOI resolution
 import mistune
 
 
-__version__ = '0.1.6'
+__version__ = '0.1.7rc'
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -3336,18 +3336,26 @@ def download_workflow(request, **kwargs):
     return success(ret)
 
 @has_data
-def run_workflow(request, **kwargs):
+def run_workflow(request, source='frontend', **kwargs):
     '''
     path('run_workflow/', view.run_workflow)
 
     curl -H "Content-Type: application/json" --request POST --data '{"type":"workflow","name":"test", "edit": "2"}' "http://139.91.81.103:5000/3ee5ccfb744983968fb3e9735e4bb85d/run_workflow"
+
+    source: Where the request came from. If it from rest then source='frontend'
     '''
 
-    if request.user.is_anonymous: # Server should always check..
-        return fail('Error 3291. User is anonymous')
 
-    if not user_is_validated(request):
-        return fail('Error 3292. User is not validated ' + validate_toast_button());
+    if source == 'frontend':
+
+        if request.user.is_anonymous: # Server should always check..
+            return fail('Error 3291. User is anonymous')
+
+        if not user_is_validated(request):
+            return fail('Error 3292. User is not validated ' + validate_toast_button());
+
+    elif source != 'rest':
+        return fail('Error 3297 . Unknown source parameter')
 
     obc_user = OBC_user.objects.get(user=request.user)
 
