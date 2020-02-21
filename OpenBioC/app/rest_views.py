@@ -11,7 +11,7 @@ from rest_framework.decorators import api_view
 
 from django.core.exceptions import ObjectDoesNotExist
 
-from .views import run_workflow # Import from main views
+from .views import download_workflow # Import from main views
 
 import simplejson
 import urllib.parse
@@ -90,10 +90,9 @@ class WorkflowSerializerDAG(serializers.BaseSerializer):
             'workflow_info_editable': False, # This workflow is saved 
             'download_type': 'AIRFLOW',
             'workflow_options': {}, # Workflow options . An interesting idea is to get them from the REST API
-            'source': 'rest', 
         }
 
-        returned_object = run_workflow(self.request, **args)
+        returned_object = download_workflow(self.request, **args)
         deserialized_content =  simplejson.loads(returned_object.content)
         if not 'output_object' in deserialized_content:
             return {

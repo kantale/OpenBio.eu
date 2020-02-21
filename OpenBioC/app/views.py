@@ -3219,6 +3219,8 @@ def download_workflow(request, **kwargs):
     kwargs['workflow'] = {'name': <workflow_name>, 'edit': <workflow_edit>}
 
     kwargs['workflow_cy'] is the cytoscape workflow
+
+    Note: Everyne can download a workflow!
     '''
 
     workflow_arg = kwargs['workflow']
@@ -3336,7 +3338,7 @@ def download_workflow(request, **kwargs):
     return success(ret)
 
 @has_data
-def run_workflow(request, source='frontend', **kwargs):
+def run_workflow(request, **kwargs):
     '''
     path('run_workflow/', view.run_workflow)
 
@@ -3346,16 +3348,12 @@ def run_workflow(request, source='frontend', **kwargs):
     '''
 
 
-    if source == 'frontend':
 
-        if request.user.is_anonymous: # Server should always check..
-            return fail('Error 3291. User is anonymous')
+    if request.user.is_anonymous: # Server should always check..
+        return fail('Error 3291. User is anonymous')
 
-        if not user_is_validated(request):
-            return fail('Error 3292. User is not validated ' + validate_toast_button());
-
-    elif source != 'rest':
-        return fail('Error 3297 . Unknown source parameter')
+    if not user_is_validated(request):
+        return fail('Error 3292. User is not validated ' + validate_toast_button());
 
     obc_user = OBC_user.objects.get(user=request.user)
 
