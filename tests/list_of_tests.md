@@ -46,6 +46,6 @@
 
 28. (Disconnect). Create workflow test/1. Create WF test/2 and add WF test/1 and save. Create WF test/3 and add WF test/2. Edit WF test/2 and disconnect test/1 save. Edit WF test/1 and add a new step s2. Check WF test/2 it should NOT contain the new step. Check WF test/3 in SHOULD contain the new step. 🆗
 
-
+29. Create Tool test/1. Create WF test/1 and add tool test/1. Save Create WF test/2 and add WF test/1. Save Edit WF test/1 and delete tool test/1. Save. Try to delete tool test/1. It should be ok. 🆗
 
 
