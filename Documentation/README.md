@@ -884,8 +884,13 @@ The API is currently under heavy development.
 So far you can access the airflow DAG with:
 
 ```bash
-curl  -H 'Accept: application/json; indent=4' "http://0.0.0.0:8200/platform/rest/workflows/my_workflow/1/?dag=true" 
+curl  -H 'Accept: application/json; indent=4' "http://0.0.0.0:8200/platform/rest/workflows/my_workflow/1/?dag=true&workflow_id=xyz" 
 ```
+
+Arguments:
+* ```dag=true```. Obligatory
+* ```workflow_id=<string>``` This is optional. If you don't set this, then the workflow id in the DAG will be: ```<workflow_name>__<workflow_edit>```
+
 
 
 

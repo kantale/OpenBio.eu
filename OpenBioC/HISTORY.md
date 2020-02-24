@@ -4,6 +4,7 @@
 ### 0.1.7 (Not yet released)
 * Bugs Fixed
    * [When deleting a tool from a WF parent WFs continue having it #156](https://github.com/kantale/OpenBioC/issues/156)
+   * [Cannot logout from interlink #157](https://github.com/kantale/OpenBioC/issues/157)
 
 ### 0.1.5 (18 February 2020)
 * Bugs Fixed
