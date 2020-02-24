@@ -2227,6 +2227,61 @@ class WorkflowJSON:
         # Remove nodes
         graph['elements']['nodes'] = [node for node in graph['elements']['nodes'] if not node['data']['id'] in node_ids_to_remove]
 
+    def __consistency_check_graph_model(self, graph, workflow):
+        '''
+        Whenever we update the graph of a workflow, we have to make sure that all tools/workflows that this graph has, do exist in the model
+        We also need to check the opposite: All tools/workflows that exist in the model also exist in the graph
+        '''
+
+        workflow_using_me_tools = workflow.tools.all()
+        tools_found = {str(t): [False, t] for t in workflow_using_me_tools}
+
+        workflow_using_me_workflow = workflow.workflows.all()
+        workflows_found = {str(w): [False, w] for w in workflow_using_me_workflow}
+
+        for node in graph['elements']['nodes']:
+            if node['data']['type'] == 'tool':
+                if node['data']['disconnected']:
+                    continue
+
+                # This is a tool does it exist in the model?
+                this_tool = Tool.objects.get(name=node['data']['name'], version=node['data']['version'], edit=node['data']['edit'])
+                if not workflow_using_me_tools.filter(pk=this_tool.pk).exists():
+                    # This tools does not exist in the model but exists on the graph. Add it!
+                    workflow.tools.add(this_tool)
+                else:
+                    tools_found[str(this_tool)][0] = True
+
+            if node['data']['type'] == 'workflow':
+                if node['data']['disconnected']:
+                    continue
+
+                if not node['data']['belongto']:
+                    continue # Do not connect the root workflow 
+
+                this_workflow = Workflow.objects.get(name=node['data']['name'], edit=node['data']['edit'])
+                if not workflow_using_me_workflow.filter(pk=this_workflow.pk).exists():
+                    # This workflow does not exist in the model but exists on the graph. Add it!
+                    workflow.workflows.add(this_workflow)
+                else:
+                    workflows_found[str(this_workflow)][0] = True
+
+        workflow.save()
+
+        # Is there any tool that exist on the model, but it does not exist on the graph?
+        for tool_id, (exists, this_tool) in tools_found.items():
+            if not exists:
+                # This tool exists on the model but not in the graph. REMOVE IT!
+                workflow.tools.remove(this_tool)
+
+        # Is there any workflow that exists on the model, but it does not exist on the graph?
+        for workflow_id, (exists, this_workflow) in workflows_found.items():
+            if not exists:
+                # Remove this workflow from the model
+                workflow.workflows.remove(this_workflow)
+
+        workflow.save()
+
 
     def __update_workflow_node(self, workflow_node, workflow_object):
         '''
@@ -2294,6 +2349,9 @@ class WorkflowJSON:
             # Save the graph
             workflow_using_me.workflow = simplejson.dumps(graph)
             workflow_using_me.save()
+
+            # Check graph <--> model consistency
+            self.__consistency_check_graph_model(graph, workflow_using_me)
 
     def __update_tool(self,):
         '''
@@ -2364,6 +2422,9 @@ class WorkflowJSON:
             # Save the graph
             workflow_using_me.workflow = simplejson.dumps(graph)
             workflow_using_me.save()
+
+            # Check graph <--> model consistency
+            self.__consistency_check_graph_model(graph, workflow_using_me)
 
 
 @has_data

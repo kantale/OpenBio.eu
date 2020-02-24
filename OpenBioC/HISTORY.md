@@ -1,7 +1,9 @@
 
 # Version changes and updates
 
-### 0.1.6 (Not yet released)
+### 0.1.7 (Not yet released)
+* Bugs Fixed
+   * [When deleting a tool from a WF parent WFs continue having it #156](https://github.com/kantale/OpenBioC/issues/156)
 
 ### 0.1.5 (18 February 2020)
 * Bugs Fixed
