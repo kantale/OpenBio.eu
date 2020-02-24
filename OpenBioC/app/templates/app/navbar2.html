@@ -48,7 +48,7 @@
                 <li ng-show="false"><a href="#!" class="dropdownStyle"><i class="material-icons dropdownIcon">notifications</i>Notifications</a></li>
                 <li ng-show="false"><a href="#!" class="dropdownStyle"><i class="material-icons dropdownIcon">settings</i>Settings</a></li>
                 <li class="divider"></li>
-                <li><a href="logout/" class="dropdownStyle"><i class="material-icons dropdownIcon">exit_to_app</i>Logout</a></li>
+                <li><a href="{{request.scheme}}://{{request.META.HTTP_HOST}}/platform/logout/" class="dropdownStyle"><i class="material-icons dropdownIcon">exit_to_app</i>Logout</a></li>
             </ul>
             <!-- Sidenav Content -->
             <ul class="sidenav" id="mobile-nav">
