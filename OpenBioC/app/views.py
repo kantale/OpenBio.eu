@@ -3288,6 +3288,7 @@ def download_workflow(request, **kwargs):
     workflow_options_arg = kwargs['workflow_options']
     download_type = kwargs['download_type'] # For a full list of types see below . if download_type == ...
     workflow_info_editable = kwargs['workflow_info_editable'] # IS this workflow saved or not ? . TRUE: NOT SAVED 
+    workflow_id = kwargs.get('workflow_id')
 
     #print ('Name:', workflow_arg['name'])
     #print ('Edit:', workflow_arg['edit'])
@@ -3388,7 +3389,7 @@ def download_workflow(request, **kwargs):
             output_object = urllib.parse.quote(create_bash_script(output_object, server_url, 'cwlzip'))
             ret['output_object'] = output_object
         elif download_type == 'AIRFLOW':
-            output_object = urllib.parse.quote(create_bash_script(output_object, server_url, 'airflow'))
+            output_object = urllib.parse.quote(create_bash_script(output_object, server_url, 'airflow', workflow_id=workflow_id))
             ret['output_object'] = output_object
     except OBC_Executor_Exception as e:
         return fail(str(e))
@@ -3397,6 +3398,12 @@ def download_workflow(request, **kwargs):
     ret['nice_id'] = nice_id
 
     return success(ret)
+
+def callback_url(request):
+    '''
+    Buld callbacl url
+    '''
+    return f'{request.scheme}://{request.META.HTTP_HOST}/platform/'
 
 @has_data
 def run_workflow(request, **kwargs):
@@ -3446,6 +3453,7 @@ def run_workflow(request, **kwargs):
         'type': 'workflow',
         'name': name,
         'edit': edit,
+        'callback': callback_url(),
     }
 
     headers={ "Content-Type" : "application/json", "Accept" : "application/json"}

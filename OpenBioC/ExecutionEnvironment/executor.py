@@ -2058,10 +2058,11 @@ dag = DAG(
     dag=dag)
 '''
 
-    def build(self, output, output_format='airflow'):
+    def build(self, output, output_format='airflow', workflow_id=None):
         '''
         output: Name of output file. If None then the function returns a string
         output_format: it is not currently used 
+        workflow_id : The id to use in DAG. If None it will use "workflow_name__workflow_edit"
         '''
 
         d = {env:g[env] for env in ['OBC_DATA_PATH', 'OBC_TOOL_PATH', 'OBC_WORK_PATH'] if env in g}
@@ -2141,7 +2142,7 @@ dag = DAG(
             step_bash_operators.append(airflow_bash)
 
         airflow_python = self.pattern.format(
-            WORKFLOW_ID = self.workflow.root_workflow_id,
+            WORKFLOW_ID = (workflow_id if workflow_id else self.workflow.root_workflow_id),
             BASH_OPERATORS = '\n'.join(tool_bash_operators + step_bash_operators),
             ORDER = ' >> '.join(tool_ids + step_ids)
         )
@@ -2168,10 +2169,11 @@ class AmazonExecutor(BaseExecutor):
     '''
     pass
 
-def create_bash_script(workflow_object, server, output_format):
+def create_bash_script(workflow_object, server, output_format, workflow_id=None):
     '''
     convenient function called by server
     server: the server to report to
+    workflow_id: The ID of the workflow. Used in airflow
     '''
 
     args = type('A', (), {
@@ -2195,7 +2197,7 @@ def create_bash_script(workflow_object, server, output_format):
     elif output_format in ['airflow']:
         w = Workflow(workflow_object = workflow_object, askinput='NO')
         e = AirflowExecutor(w)
-        return e.build(output=None, output_format='airflow')
+        return e.build(output=None, output_format='airflow', workflow_id=workflow_id)
     else:
         raise OBC_Executor_Exception('Erro: 6912: Unknown output format: {}'.format(str(output_format)))
 

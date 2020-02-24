@@ -79,6 +79,9 @@ class WorkflowSerializerDAG(serializers.BaseSerializer):
     def set_request(self, request):
         self.request = request
 
+    def set_workflow_id(self, workflow_id):
+        self.workflow_id = workflow_id
+
     def to_representation(self, instance):
         '''
         Call run_workflow to get a dag representation of the workflow
@@ -89,6 +92,7 @@ class WorkflowSerializerDAG(serializers.BaseSerializer):
             'workflow': {'name': instance.name, 'edit': instance.edit},
             'workflow_info_editable': False, # This workflow is saved 
             'download_type': 'AIRFLOW',
+            'workflow_id': self.workflow_id,
             'workflow_options': {}, # Workflow options . An interesting idea is to get them from the REST API
         }
 
@@ -120,11 +124,19 @@ def workflow_name(request, workflow_name):
 
 @api_view(['GET'])
 def workflow_complete(request, workflow_name, workflow_edit):
+    '''
+    Called from urls.py 
+    '''
+
     if request.method == 'GET':
 
         # /?dag=true
         dag = request.query_params.get('dag')
         dag = dag == 'true'
+
+        # /?workflow_id=xyz
+        workflow_id = request.query_params.get('workflow_id')
+
 
         try:
             workflow = Workflow.objects.get(name=workflow_name, edit=int(workflow_edit))
@@ -134,6 +146,7 @@ def workflow_complete(request, workflow_name, workflow_edit):
         if dag:
             serializer = WorkflowSerializerDAG(workflow, many=False)
             serializer.set_request(request)
+            serializer.set_workflow_id(workflow_id)
         else:
             serializer = WorkflowSerializer(workflow, many=False)
 
