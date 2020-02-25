@@ -3281,7 +3281,7 @@ def download_workflow(request, **kwargs):
 
     kwargs['workflow_cy'] is the cytoscape workflow
 
-    Note: Everyne can download a workflow!
+    Note: Everyone can download a workflow!
     '''
 
     workflow_arg = kwargs['workflow']
@@ -3289,6 +3289,7 @@ def download_workflow(request, **kwargs):
     download_type = kwargs['download_type'] # For a full list of types see below . if download_type == ...
     workflow_info_editable = kwargs['workflow_info_editable'] # IS this workflow saved or not ? . TRUE: NOT SAVED 
     workflow_id = kwargs.get('workflow_id')
+    workflow_obc_client = kwargs.get('obc_client', False)
 
     #print ('Name:', workflow_arg['name'])
     #print ('Edit:', workflow_arg['edit'])
@@ -3389,7 +3390,7 @@ def download_workflow(request, **kwargs):
             output_object = urllib.parse.quote(create_bash_script(output_object, server_url, 'cwlzip'))
             ret['output_object'] = output_object
         elif download_type == 'AIRFLOW':
-            output_object = urllib.parse.quote(create_bash_script(output_object, server_url, 'airflow', workflow_id=workflow_id))
+            output_object = urllib.parse.quote(create_bash_script(output_object, server_url, 'airflow', workflow_id=workflow_id, obc_client=workflow_obc_client))
             ret['output_object'] = output_object
     except OBC_Executor_Exception as e:
         return fail(str(e))
