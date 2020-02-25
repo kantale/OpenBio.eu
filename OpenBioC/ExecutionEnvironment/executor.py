@@ -107,6 +107,9 @@ bash_patterns['get_json_value'] = '{variable}=$(obc_parse_json "${json_variable}
 # Global parameters
 g = {
     'silent': False,
+    'CLIENT_OBC_DATA_PATH': '/usr/local/airflow/DATA',
+    'CLIENT_OBC_TOOL_PATH': '/usr/local/airflow/TOOL',
+    'CLIENT_OBC_WORK_PATH': '/usr/local/airflow/WORK',
 }
 
 def log_info(message):
@@ -2058,14 +2061,24 @@ dag = DAG(
     dag=dag)
 '''
 
-    def build(self, output, output_format='airflow', workflow_id=None):
+    def build(self, output, output_format='airflow', workflow_id=None, obc_client=False):
         '''
         output: Name of output file. If None then the function returns a string
         output_format: it is not currently used 
         workflow_id : The id to use in DAG. If None it will use "workflow_name__workflow_edit"
+        obc_client : IF True, generate airflow for OBC client. This just sets the proper OBC_* directories
         '''
 
-        d = {env:g[env] for env in ['OBC_DATA_PATH', 'OBC_TOOL_PATH', 'OBC_WORK_PATH'] if env in g}
+        if obc_client:
+            d = {
+                'OBC_DATA_PATH': g['CLIENT_OBC_DATA_PATH'],
+                'OBC_TOOL_PATH': g['CLIENT_OBC_TOOL_PATH'],
+                'OBC_WORK_PATH': g['CLIENT_OBC_WORK_PATH'],
+            }
+        else:
+            d = {env:g[env] for env in ['OBC_DATA_PATH', 'OBC_TOOL_PATH', 'OBC_WORK_PATH'] if env in g}
+
+
         if d:
             envs = 'env={},'.format(str(d))
         else:
@@ -2169,11 +2182,12 @@ class AmazonExecutor(BaseExecutor):
     '''
     pass
 
-def create_bash_script(workflow_object, server, output_format, workflow_id=None):
+def create_bash_script(workflow_object, server, output_format, workflow_id=None, obc_client=False):
     '''
     convenient function called by server
     server: the server to report to
     workflow_id: The ID of the workflow. Used in airflow
+    obc_client: Do we have to generate a script for the obc client?
     '''
 
     args = type('A', (), {
@@ -2197,9 +2211,9 @@ def create_bash_script(workflow_object, server, output_format, workflow_id=None)
     elif output_format in ['airflow']:
         w = Workflow(workflow_object = workflow_object, askinput='NO')
         e = AirflowExecutor(w)
-        return e.build(output=None, output_format='airflow', workflow_id=workflow_id)
+        return e.build(output=None, output_format='airflow', workflow_id=workflow_id, obc_client=obc_client)
     else:
-        raise OBC_Executor_Exception('Erro: 6912: Unknown output format: {}'.format(str(output_format)))
+        raise OBC_Executor_Exception('Error: 6912: Unknown output format: {}'.format(str(output_format)))
 
 
 

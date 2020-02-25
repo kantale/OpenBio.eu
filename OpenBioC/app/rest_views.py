@@ -93,6 +93,7 @@ class WorkflowSerializerDAG(serializers.BaseSerializer):
             'workflow_info_editable': False, # This workflow is saved 
             'download_type': 'AIRFLOW',
             'workflow_id': self.workflow_id,
+            'obc_client': True, # Declare that we need an airflow DAG explicitly for the OBC client
             'workflow_options': {}, # Workflow options . An interesting idea is to get them from the REST API
         }
 
