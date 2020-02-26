@@ -3387,7 +3387,7 @@ def download_workflow(request, **kwargs):
             output_object = urllib.parse.quote(create_bash_script(output_object, server_url, 'cwltargz'))
             ret['output_object'] = output_object
         elif download_type == 'CWLZIP':
-            output_object = urllib.parse.quote(create_bash_script(output_object, server_url, 'cwlzip'))
+            output_object = urllib.parse.quote(create_bash_script(output_object, server_url, 'cwlzip',))
             ret['output_object'] = output_object
         elif download_type == 'AIRFLOW':
             output_object = urllib.parse.quote(create_bash_script(output_object, server_url, 'airflow', workflow_id=workflow_id, obc_client=workflow_obc_client))
