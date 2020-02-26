@@ -5,6 +5,8 @@ import re
 import copy
 import json
 import base64
+import random
+import string
 import logging
 import bashlex
 import tarfile
@@ -99,6 +101,59 @@ function obc_validate() {
     local command="$(obc_base64_decode $1)"
     eval $command
 }
+''',
+'init_report': r'''
+
+if [ -n "${OBC_WORK_PATH}" ] ; then
+    export OBC_REPORT_PATH=${OBC_WORK_PATH}/${OBC_NICE_ID}.html
+    export OBC_REPORT_DIR=${OBC_WORK_PATH}/${OBC_NICE_ID}
+    mkdir -p ${OBC_REPORT_DIR}
+    echo "OBC: Report filename: ${OBC_REPORT_PATH}"
+
+cat > ${OBC_REPORT_PATH} << OBCENDOFFILE
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+   </head>
+   <body>
+   <p>
+   OpenBio Server: <a href="{{OBC_SERVER}}">{{OBC_SERVER}}</a> <br>
+   Workflow: <a href="{{OBC_SERVER}}/w/{{OBC_WORKFLOW_NAME}}/{{OBC_WORKFLOW_EDIT}}">{{OBC_WORKFLOW_NAME}}/{{OBC_WORKFLOW_EDIT}}</a> <br>
+
+   <p>
+   <h3>Output Variables:</h3>
+   <ul>
+      <!-- {{OUTPUT_VARIABLE}} -->
+   </ul>
+
+   </body>
+</html>
+OBCENDOFFILE
+fi
+
+function REPORT() {
+    if [ -n "${OBC_WORK_PATH}" ] ; then
+        local VAR=$1
+
+        local FILEKIND=$(file "${2}")
+        if [[ $FILEKIND == *"PNG image data"* ]]; then
+           local NEWFILENAME=${OBC_REPORT_DIR}/$(basename ${2})
+           cp ${2} ${NEWFILENAME}
+           local HTML="<li>${VAR}: <br><img src=\"${NEWFILENAME}\"></li>\\\\n      <!-- {{OUTPUT_VARIABLE}} -->\\\\n"
+        else
+           local VALUE=$(echo "${2}" | sed 's/&/\\\&amp;/g; s/</\\\&lt;/g; s/>/\\\&gt;/g; s/"/\\\&quot;/g; s/'"'"'/\\\&#39;/g')
+           local HTML="<li>${VAR}=${VALUE}</li>\\\\n      <!-- {{OUTPUT_VARIABLE}} -->\\\\n"
+        fi
+
+        sed -i -e "s|<\!-- {{OUTPUT_VARIABLE}} -->|${HTML}|" ${OBC_REPORT_PATH}
+        sed 's/\\n/\
+/g' ${OBC_REPORT_PATH} > ${OBC_REPORT_PATH}.tmp
+        mv ${OBC_REPORT_PATH}.tmp ${OBC_REPORT_PATH}
+    fi
+}
+
+
 '''
 }
 
@@ -110,6 +165,7 @@ g = {
     'CLIENT_OBC_DATA_PATH': '/usr/local/airflow/DATA',
     'CLIENT_OBC_TOOL_PATH': '/usr/local/airflow/TOOL',
     'CLIENT_OBC_WORK_PATH': '/usr/local/airflow/WORK',
+    'possible_letters_nice_id': tuple(string.ascii_letters + string.digits),
 }
 
 def log_info(message):
@@ -122,7 +178,7 @@ def log_info(message):
 
 def setup_bash_patterns(args):
     '''
-    Change some values of te bash patterns according to arg arguments
+    Change some values of the bash patterns according to arg arguments
     '''
     bash_patterns['update_server_status'] = bash_patterns['update_server_status'].replace('{server}', args.server) # .format does not work since it contains "{"
     bash_patterns['update_server_status'] = bash_patterns['update_server_status'].replace('{insecure}', '-k ' if args.insecure else '')
@@ -153,7 +209,7 @@ class Workflow:
     ]
 
 
-    def __init__(self, workflow_filename=None, workflow_object=None, askinput='JSON'):
+    def __init__(self, workflow_filename=None, workflow_object=None, askinput='JSON', obc_server=None):
         '''
         workflow_filename: the JSON filename of the workflow
         workflow_object: The representation of the workflow
@@ -161,6 +217,8 @@ class Workflow:
             JSON: Ask for input during convertion to BASH
             BASH: Ask for input in BASH
         One of these should not be None
+
+        obc_server the server for which we are generating the script (if any)
         '''
 
         if workflow_filename:
@@ -173,12 +231,21 @@ class Workflow:
         self.workflow_filename = workflow_filename
         self.workflow_object = workflow_object
         self.askinput = askinput
+        self.obc_server = obc_server
         self.parse_workflow_filename()
 
     def __str__(self,):
         '''
         '''
         return json.dumps(self.workflow, indent=4)
+
+    @staticmethod
+    def create_nice_id(length=5):
+        '''
+        Create a nice id
+        '''
+
+        return ''.join(random.sample(g['possible_letters_nice_id'], length))
 
     def tool_bash_script_generator(self,):
         '''
@@ -227,9 +294,10 @@ class Workflow:
         self.root_step = self.get_root_step()
         self.root_inputs_outputs = self.get_input_output_from_workflow(self.root_workflow)
         self.output_parameters = self.root_inputs_outputs['outputs']
-        self.nice_id = self.workflow['nice_id']
+        self.nice_id = self.workflow['nice_id'] # The nice ID from the server 
+        self.nice_id_local = Workflow.create_nice_id() # A local nice ID
+        self.nice_id_global = self.nice_id if self.nice_id else self.nice_id_local # self.nice_id can be None
         self.current_token = self.workflow['token']
-
 
         log_info('Workflow Name: {}   Edit: {}   Report: {}'.format(
             self.root_workflow['name'], self.root_workflow['edit'], self.nice_id,
@@ -447,9 +515,14 @@ class Workflow:
         '''
 
         ret = '\n'
-        ret += 'echo "OBC: Workflow name: {}"\n'.format(self.root_workflow['name'])
-        ret += 'echo "OBC: Workflow edit: {}"\n'.format(self.root_workflow['edit'])
+        ret += 'OBC_WORKFLOW_NAME="{}"\n'.format(self.root_workflow['name'])
+        ret += 'OBC_WORKFLOW_EDIT={}\n'.format(self.root_workflow['edit'])
+        ret += 'OBC_NICE_ID="{}"\n'.format(self.nice_id_global)
+        ret += 'OBC_SERVER="{}"\n'.format(self.obc_server)
+        ret += 'echo "OBC: Workflow name: ${OBC_WORKFLOW_NAME}"\n'
+        ret += 'echo "OBC: Workflow edit: ${OBC_WORKFLOW_EDIT}"\n'
         ret += f'echo "OBC: Workflow report: {self.nice_id}"\n'
+        ret += f'echo "OBC: Server URL: {self.obc_server}"\n'
         ret += '\n'
         return ret
 
@@ -605,6 +678,7 @@ class Workflow:
         ret += 'echo "OBC: Output Variables:"\n'
         for output_parameter in self.output_parameters:
             ret += 'echo "OBC: {} = ${{{}}}"\n'.format(output_parameter['id'], output_parameter['id'])
+            ret += 'REPORT {} ${{{}}}\n'.format(output_parameter['id'], output_parameter['id'])
         ret += '### END OF PRINTINT OUTPUT PARAMETERS\n'
 
         return ret
@@ -1297,6 +1371,8 @@ ENDOFFILE
 
         return break_down_step_recursive(self.root_step)
 
+##################### END OF CLASS WORKFLOW #####################################
+
 
 class BaseExecutor():
     '''
@@ -1348,6 +1424,14 @@ class LocalExecutor(BaseExecutor):
             f.write(bash_patterns['update_server_status'])
             f.write(bash_patterns['base64_decode'])
             f.write(bash_patterns['validate'])
+            f.write(bash_patterns['init_report'] 
+                .replace('{{OBC_SERVER}}', str(self.workflow.obc_server)) 
+                .replace('{{OBC_WORKFLOW_NAME}}', self.workflow.root_workflow['name']) 
+                .replace('{{OBC_WORKFLOW_EDIT}}', str(self.workflow.root_workflow['edit'])) 
+            )
+
+            # Set the OBC_REPORT_PATH parameter 
+
 
             f.write(Workflow.bash_workflow_starts(self.workflow.root_workflow))
 
@@ -2065,7 +2149,7 @@ dag = DAG(
         '''
         output: Name of output file. If None then the function returns a string
         output_format: it is not currently used 
-        workflow_id : The id to use in DAG. If None it will use "workflow_name__workflow_edit"
+        workflow_id : The id to use in DAG. If None it will use "<workflow_name>__<workflow_edit>"
         obc_client : IF True, generate airflow for OBC client. This just sets the proper OBC_* directories
         '''
 
@@ -2078,6 +2162,9 @@ dag = DAG(
         else:
             d = {env:g[env] for env in ['OBC_DATA_PATH', 'OBC_TOOL_PATH', 'OBC_WORK_PATH'] if env in g}
 
+        if obc_client and workflow_id:
+            d['OBC_REPORT_PATH'] = os.path.join(d['OBC_WORK_PATH'], workflow_id + '.html')
+
 
         if d:
             envs = 'env={},'.format(str(d))
@@ -2089,7 +2176,7 @@ dag = DAG(
         tool_ids = []
         for tool_index, tool in enumerate(self.workflow.tool_bash_script_generator()):
 
-            tool_vars_filename = os.path.join('${OBC_WORK_PATH}',Workflow.get_tool_vars_filename(tool))
+            tool_vars_filename = os.path.join('${OBC_WORK_PATH}', Workflow.get_tool_vars_filename(tool))
             tool_id = self.workflow.get_tool_dash_id(tool, no_dots=True)
             
             bash = self.workflow.get_tool_bash_commands(
@@ -2187,7 +2274,7 @@ def create_bash_script(workflow_object, server, output_format, workflow_id=None,
     convenient function called by server
     server: the server to report to
     workflow_id: The ID of the workflow. Used in airflow
-    obc_client: Do we have to generate a script for the obc client?
+    obc_client: True/False. Do we have to generate a script for the obc client?
     '''
 
     args = type('A', (), {
@@ -2201,15 +2288,15 @@ def create_bash_script(workflow_object, server, output_format, workflow_id=None,
     g['silent'] = True
 
     if output_format == 'sh':
-        w = Workflow(workflow_object = workflow_object, askinput='BASH')
+        w = Workflow(workflow_object = workflow_object, askinput='BASH', obc_server=server)
         e = LocalExecutor(w)
         return e.build(output=None)
     elif output_format in ['cwltargz', 'cwlzip']:
-        w = Workflow(workflow_object = workflow_object, askinput='NO')
+        w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server)
         e = CWLExecutor(w)
         return e.build(output=None, output_format=output_format)
     elif output_format in ['airflow']:
-        w = Workflow(workflow_object = workflow_object, askinput='NO')
+        w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server)
         e = AirflowExecutor(w)
         return e.build(output=None, output_format='airflow', workflow_id=workflow_id, obc_client=obc_client)
     else:
