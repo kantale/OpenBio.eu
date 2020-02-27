@@ -132,6 +132,12 @@ cat > ${OBC_REPORT_PATH} << OBCENDOFFILE
 OBCENDOFFILE
 fi
 
+''',
+'function_REPORT': r'''
+
+export OBC_REPORT_PATH=${OBC_WORK_PATH}/${OBC_NICE_ID}.html
+export OBC_REPORT_DIR=${OBC_WORK_PATH}/${OBC_NICE_ID}
+
 function REPORT() {
     if [ -n "${OBC_WORK_PATH}" ] ; then
         local VAR=$1
@@ -139,8 +145,9 @@ function REPORT() {
         local FILEKIND=$(file "${2}")
         if [[ $FILEKIND == *"PNG image data"* ]]; then
            local NEWFILENAME=${OBC_REPORT_DIR}/$(basename ${2})
+           local LOCALFILENAME=${OBC_NICE_ID}/$(basename ${2})
            cp ${2} ${NEWFILENAME}
-           local HTML="<li>${VAR}: <br><img src=\"${NEWFILENAME}\"></li>\\\\n      <!-- {{OUTPUT_VARIABLE}} -->\\\\n"
+           local HTML="<li>${VAR}: <br><img src=\"${LOCALFILENAME}\"></li>\\\\n      <!-- {{OUTPUT_VARIABLE}} -->\\\\n"
         else
            local VALUE=$(echo "${2}" | sed 's/&/\\\&amp;/g; s/</\\\&lt;/g; s/>/\\\&gt;/g; s/"/\\\&quot;/g; s/'"'"'/\\\&#39;/g')
            local HTML="<li>${VAR}=${VALUE}</li>\\\\n      <!-- {{OUTPUT_VARIABLE}} -->\\\\n"
@@ -152,7 +159,6 @@ function REPORT() {
         mv ${OBC_REPORT_PATH}.tmp ${OBC_REPORT_PATH}
     fi
 }
-
 
 '''
 }
@@ -1424,7 +1430,7 @@ class LocalExecutor(BaseExecutor):
             f.write(bash_patterns['update_server_status'])
             f.write(bash_patterns['base64_decode'])
             f.write(bash_patterns['validate'])
-            f.write(bash_patterns['init_report'] 
+            f.write((bash_patterns['init_report'] + bash_patterns['function_REPORT']) 
                 .replace('{{OBC_SERVER}}', str(self.workflow.obc_server)) 
                 .replace('{{OBC_WORKFLOW_NAME}}', self.workflow.root_workflow['name']) 
                 .replace('{{OBC_WORKFLOW_EDIT}}', str(self.workflow.root_workflow['edit'])) 
@@ -2163,14 +2169,43 @@ dag = DAG(
             d = {env:g[env] for env in ['OBC_DATA_PATH', 'OBC_TOOL_PATH', 'OBC_WORK_PATH'] if env in g}
 
         if obc_client and workflow_id:
-            d['OBC_REPORT_PATH'] = os.path.join(d['OBC_WORK_PATH'], workflow_id + '.html')
-
+            #d['OBC_REPORT_PATH'] = os.path.join(d['OBC_WORK_PATH'], workflow_id + '.html') # This is set from BASH
+            d['OBC_SERVER'] = self.workflow.obc_server
+            d['OBC_WORKFLOW_NAME'] = self.workflow.root_workflow['name']
+            d['OBC_WORKFLOW_EDIT'] = str(self.workflow.root_workflow['edit']) 
+            d['OBC_NICE_ID'] = self.workflow.nice_id_global
 
         if d:
             envs = 'env={},'.format(str(d))
         else:
             envs = ''
 
+        # Create init step for report
+        bash = r'''
+
+{{init_report}}
+
+cat > ${OBC_WORK_PATH}/obc_functions.sh << OBCENDOFFILE
+
+{{function_REPORT}}
+
+OBCENDOFFILE
+
+'''
+
+        bash = bash.replace(r'{{init_report}}', bash_patterns['init_report'])
+        bash = bash.replace(r'{{function_REPORT}}', bash_patterns['function_REPORT'])
+        load_obc_functions_bash = r'. ${OBC_WORK_PATH}/obc_functions.sh' + '\n'
+
+        airflow_bash = self.bash_operator_pattern.format(
+            ID='OBC_AIRFLOW_INIT',
+            BASH=bash,
+            ENVS=envs,
+        )
+
+        init_operators = [airflow_bash]
+
+        # CREATE TOOL OPERATORS
         previous_tools = []
         tool_bash_operators = []
         tool_ids = []
@@ -2186,7 +2221,7 @@ dag = DAG(
                 read_variables_from_command_line=False,
                 variables_json_filename=None,
                 variables_sh_filename_read = previous_tools,
-                variables_sh_filename_write=tool_vars_filename,
+                variables_sh_filename_write = tool_vars_filename,
             )
             airflow_bash = self.bash_operator_pattern.format(
                 ID=tool_id,
@@ -2199,7 +2234,7 @@ dag = DAG(
 
             previous_tools.append(tool_vars_filename)
 
-
+        # CREATE STEP OPERATORS
         previous_steps_vars = []
         step_ids = []
         step_bash_operators = []
@@ -2224,13 +2259,12 @@ dag = DAG(
             for tool_filename in previous_tools:
                 load_tool_vars += '. {}\n'.format(tool_filename)
             
-
             # Load all variables from previous steps
             load_step_vars = ''
             for step_filename in previous_steps_vars:
                 load_step_vars += '. {}\n'.format(step_filename)
             
-            bash = load_tool_vars + load_step_vars + bash
+            bash = load_tool_vars + load_step_vars + load_obc_functions_bash + bash
 
             previous_steps_vars.append(step_vars_filename)
 
@@ -2241,10 +2275,36 @@ dag = DAG(
             )
             step_bash_operators.append(airflow_bash)
 
+        # CREATE FINAL OPERATOR
+        # Add all variables from previous tools
+        load_tool_vars = ''
+        for tool_filename in previous_tools:
+            load_tool_vars += '. {}\n'.format(tool_filename)
+
+        # Load all variables from previous steps
+        load_step_vars = ''
+        for step_filename in previous_steps_vars:
+            load_step_vars += '. {}\n'.format(step_filename)
+
+        bash = load_tool_vars + load_step_vars + load_obc_functions_bash
+
+        for output_parameter in self.workflow.output_parameters:
+            bash += 'REPORT {} ${{{}}}\n'.format(output_parameter['id'], output_parameter['id'])
+
+        airflow_bash = self.bash_operator_pattern.format(
+            ID='OBC_AIRFLOW_FINAL',
+            BASH=bash,
+            ENVS=envs,
+        )
+
+        final_operators = [airflow_bash]
+        # END OF FINAL OPERATORS
+
+
         airflow_python = self.pattern.format(
             WORKFLOW_ID = (workflow_id if workflow_id else self.workflow.root_workflow_id),
-            BASH_OPERATORS = '\n'.join(tool_bash_operators + step_bash_operators),
-            ORDER = ' >> '.join(tool_ids + step_ids)
+            BASH_OPERATORS = '\n'.join(init_operators + tool_bash_operators + step_bash_operators + final_operators),
+            ORDER = ' >> '.join(['OBC_AIRFLOW_INIT'] + tool_ids + step_ids + ['OBC_AIRFLOW_FINAL']),
         )
 
         # Save output / Return
