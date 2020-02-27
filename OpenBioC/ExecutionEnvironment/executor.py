@@ -168,9 +168,9 @@ bash_patterns['get_json_value'] = '{variable}=$(obc_parse_json "${json_variable}
 # Global parameters
 g = {
     'silent': False,
-    'CLIENT_OBC_DATA_PATH': '/usr/local/airflow/DATA',
-    'CLIENT_OBC_TOOL_PATH': '/usr/local/airflow/TOOL',
-    'CLIENT_OBC_WORK_PATH': '/usr/local/airflow/WORK',
+    'CLIENT_OBC_DATA_PATH': '/usr/local/airflow/REPORTS/DATA',
+    'CLIENT_OBC_TOOL_PATH': '/usr/local/airflow/REPORTS/TOOL',
+    'CLIENT_OBC_WORK_PATH': '/usr/local/airflow/REPORTS/WORK',
     'possible_letters_nice_id': tuple(string.ascii_letters + string.digits),
 }
 
