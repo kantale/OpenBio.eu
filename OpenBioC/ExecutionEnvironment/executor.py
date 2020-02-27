@@ -2185,7 +2185,7 @@ dag = DAG(
 
 {{init_report}}
 
-cat > ${OBC_WORK_PATH}/obc_functions.sh << OBCENDOFFILE
+cat > ${OBC_WORK_PATH}/obc_functions.sh << 'OBCENDOFFILE'
 
 {{function_REPORT}}
 
