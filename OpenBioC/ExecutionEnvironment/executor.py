@@ -1089,7 +1089,7 @@ class Workflow:
         ret += 'OBC_START=$(eval "declare")\n'
         ret += bash + '\n'
         ret += 'OBC_CURRENT=$(eval "declare")\n'
-        ret += 'comm -3 <(echo "$OBC_START" | grep -v "_=") <(echo "$OBC_CURRENT" | grep -v OBC_START | grep -v PIPESTATUS | grep -v "_=") > {}\n'.format(save_to)
+        ret += 'comm -3 <(echo "$OBC_START" | grep -v "_=" | sort) <(echo "$OBC_CURRENT" | grep -v OBC_START | grep -v PIPESTATUS | grep -v "_=" | sort) > {}\n'.format(save_to)
 
         return ret
 
