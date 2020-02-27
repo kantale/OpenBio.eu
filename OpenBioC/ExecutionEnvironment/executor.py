@@ -118,8 +118,8 @@ cat > ${OBC_REPORT_PATH} << OBCENDOFFILE
    </head>
    <body>
    <p>
-   OpenBio Server: <a href="{{OBC_SERVER}}">{{OBC_SERVER}}</a> <br>
-   Workflow: <a href="{{OBC_SERVER}}/w/{{OBC_WORKFLOW_NAME}}/{{OBC_WORKFLOW_EDIT}}">{{OBC_WORKFLOW_NAME}}/{{OBC_WORKFLOW_EDIT}}</a> <br>
+   OpenBio Server: <a href="${OBC_SERVER}">${OBC_SERVER}</a> <br>
+   Workflow: <a href="${OBC_SERVER}/w/${OBC_WORKFLOW_NAME}/${OBC_WORKFLOW_EDIT}">${OBC_WORKFLOW_NAME}/${OBC_WORKFLOW_EDIT}</a> <br>
 
    <p>
    <h3>Output Variables:</h3>
