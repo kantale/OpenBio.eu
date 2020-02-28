@@ -42,6 +42,7 @@ import io
 import os
 import re
 import six
+import time # for time.sleep
 import uuid
 import hashlib
 #import datetime # Use timezone.now()
@@ -3404,7 +3405,7 @@ def callback_url(request):
     '''
     Buld callbacl url
     '''
-    return f'{request.scheme}://{request.META.HTTP_HOST}/platform/'
+    return f'{request.scheme}://{request.META["HTTP_HOST"]}/platform/'
 
 @has_data
 def run_workflow(request, **kwargs):
@@ -3447,24 +3448,102 @@ def run_workflow(request, **kwargs):
         return fail('Error 3293. Could not get execution client.')
 
     url = client.client
+    print ('URL FROM DATABASE:', url)
 
-    run_url = urllib.parse.urljoin(url, 'run') # https://stackoverflow.com/questions/8223939/how-to-join-absolute-and-relative-urls
+    run_url = urllib.parse.urljoin(url + '/', 'run') # https://stackoverflow.com/questions/8223939/how-to-join-absolute-and-relative-urls
+    workflow_id = 'mitsos6'
 
     data_to_submit = {
         'type': 'workflow',
         'name': name,
         'edit': edit,
-        'callback': callback_url(),
+        'callback': callback_url(request),
+        'workflow_id': workflow_id,
     }
 
     headers={ "Content-Type" : "application/json", "Accept" : "application/json"}
 
-    if False:
-        r = requests.post(run_url, headers=headers, data=data_to_submit)
+    print ('run_url:', run_url)
+    print ('callback:', data_to_submit['callback'])
+
+    '''
+    
+
+    '''
+
+    '''
+curl --header "Content-Type: application/json" \
+  --request GET \
+  http://139.91.190.239:5000/cfa52d9df5a24345d9f740395e4e69e4/check/id/test   
+
+
+
+[{"dag_id": "mitsos", "dag_run_url": "/admin/airflow/graph?dag_id=mitsos&execution_date=2020-02-28+13%3A16%3A42%2B00%3A00", "execution_date": "2020-02-28T13:16:42+00:00", "id": 2, "run_id": "manual__2020-02-28T13:16:42+00:00", "start_date": "2020-02-28T13:16:42.710933+00:00", "state": "success"}, {"dag_id": "mitsos", "dag_run_url": "/admin/airflow/graph?dag_id=mitsos&execution_date=2020-02-28+13%3A20%3A44%2B00%3A00", "execution_date": "2020-02-28T13:20:44+00:00", "id": 3, "run_id": "manual__2020-02-28T13:20:44+00:00", "start_date": "2020-02-28T13:20:44.423814+00:00", "state": "success"}, {"dag_id": "mitsos", "dag_run_url": "/admin/airflow/graph?dag_id=mitsos&execution_date=2020-02-28+13%3A24%3A02%2B00%3A00", "execution_date": "2020-02-28T13:24:02+00:00", "id": 4, "run_id": "manual__2020-02-28T13:24:02+00:00", "start_date": "2020-02-28T13:24:02.486982+00:00", "state": "success"}]
+
+    '''
+
+
+    if True:
+        r = requests.post(run_url, headers=headers, data=simplejson.dumps(data_to_submit))
 
         if not r.ok:
             #r.raise_for_status()
             return fail('Could not send to URL: {} . Error code: {}'.format(run_url, r.status_code))
+        data_from_client = r.json()
+        print ('RUN_URL:')
+        print (data_from_client)
+        '''
+        {'status': {'execution_date': '2020-02-28T13:16:42+00:00', 'message': 'Created <DagRun mitsos @ 2020-02-28 13:16:42+00:00: manual__2020-02-28T13:16:42+00:00, externally triggered: True>'}}
+        '''
+        # Check if runs
+        check_url = urllib.parse.urljoin(url + '/check/id/', workflow_id)
+        while True:
+            time.sleep(1)
+            r = requests.get(check_url)
+            print ('CHECK_URL:')
+            print (check_url)
+
+            if not r.ok:
+                return fail('Could not send to URL: {} . Error code: {}'.format(check_url, r.status_code))
+            data_from_client = r.json()
+            print ('Data from client:')
+            print (data_from_client)
+            # {"error": "Dag id poutsos not found"}
+            if type(data_from_client) is dict:
+                if 'error' in data_from_client:
+                    if 'not found' in data_from_client['error']:
+                        continue
+                    else:
+                        return fail('1111')
+                else:
+                    return fail('1112')
+            if not type(data_from_client) is list:
+                return fail('1113')
+
+            if len(data_from_client) != 1:
+                return fail('1114')
+
+            if not type(data_from_client[0]) is dict:
+                return fail('1115')
+
+            if not 'state' in data_from_client[0]:
+                return fail('1116')
+
+            if data_from_client[0]['state'] == 'running':
+                continue
+
+            elif data_from_client[0]['state'] == 'failed':
+                return fail('FAILED!')
+
+            elif data_from_client[0]['state'] == 'success':
+                break
+
+            else:
+                return fail('Unknown status:', data_from_client[0]['state'])
+
+
+
+
   
     ret = {
         'url': url,
