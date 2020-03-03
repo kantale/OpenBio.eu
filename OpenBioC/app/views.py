@@ -1266,7 +1266,9 @@ def register(request, **kwargs):
     user = User.objects.create_user(signup_username, signup_email, signup_password, last_login=now()) # https://stackoverflow.com/questions/33683619/null-value-in-column-last-login-violates-not-null-constraint/42502311
 
     #Create OBC_user
-    obc_user = OBC_user(user=user, email_validated=False, email_validation_token=uuid_token)
+    #If we are running in DEBUG, then new users are validated. If we set this to False then we need a send mail service to testing platform
+    #In production new users are not validated by default
+    obc_user = OBC_user(user=user, email_validated=bool(settings.DEBUG), email_validation_token=uuid_token)
     obc_user.save()
 
 
