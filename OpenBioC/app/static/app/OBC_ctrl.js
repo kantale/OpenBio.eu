@@ -4439,8 +4439,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 'edit': $scope.workflow_info_edit
             },
             function (data) {
-                //alert(data['url']);
-                $scope.toast('Not yet implemented..', 'error');
+                $scope.toast('Workflow submitted for execution with a Report id: ' + data['nice_id'], 'success');
             },
             function (data) {
                 $scope.toast(data['error_message'], 'error');
