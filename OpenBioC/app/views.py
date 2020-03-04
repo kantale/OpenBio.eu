@@ -3493,99 +3493,40 @@ curl --header "Content-Type: application/json" \
     '''
 
     # !!!HIGLY EXPERIMENTAL!!!
-    if True:
-        r = requests.post(run_url, headers=headers, data=simplejson.dumps(data_to_submit))
+    r = requests.post(run_url, headers=headers, data=simplejson.dumps(data_to_submit))
 
-        if not r.ok:
-            #r.raise_for_status()
-            return fail('Could not send to URL: {} . Error code: {}'.format(run_url, r.status_code))
-        try: 
-            data_from_client = r.json()
-        except Exception as e: # Ideally we should do here: except json.decoder.JSONDecodeError as e: but we would have to import json with simp[lejson..]
-            return fail('Could not parse JSON data from Execution Client.')
+    if not r.ok:
+        #r.raise_for_status()
+        return fail('Could not send to URL: {} . Error code: {}'.format(run_url, r.status_code))
+    try: 
+        data_from_client = r.json()
+    except Exception as e: # Ideally we should do here: except json.decoder.JSONDecodeError as e: but we would have to import json with simp[lejson..]
+        return fail('Could not parse JSON data from Execution Client.')
 
-        print ('RUN_URL:')
-        print (data_from_client)
+    print ('RUN_URL:')
+    print (data_from_client)
 
-        # Check data_from_client. We expect to find an externally triggered True in data_from_client['status']['message']
-        if not 'status' in data_from_client:
-            return fail('Client does not containe status info')
+    # Check data_from_client. We expect to find an externally triggered True in data_from_client['status']['message']
+    if not 'status' in data_from_client:
+        return fail('Client does not containe status info')
 
-        if not 'message' in data_from_client['status']:
-            return fail("Client's status does not contain any message")
+    if not 'message' in data_from_client['status']:
+        return fail("Client's status does not contain any message")
 
-        if not 'externally triggered: True' in data_from_client['status']['message']:
-            return fail("Client failed to trigger DAG: {}".format(data_from_client['status']['message']))
+    if not 'externally triggered: True' in data_from_client['status']['message']:
+        return fail("Client failed to trigger DAG: {}".format(data_from_client['status']['message']))
 
-        # All seem to be ok. Create a report
-        report = Report(obc_user=obc_user, workflow = workflow, nice_id = nice_id, client=client, client_status='submitted')
-        report.save()
+    # All seem to be ok. Create a report
+    report = Report(obc_user=obc_user, workflow = workflow, nice_id = nice_id, client=client, client_status='submitted')
+    report.save()
 
-        # Let's not create a reporttoken for now.
-        ret = {
-            'nice_id': nice_id,
-        }
-
-        return success(ret)
-
-        '''
-        {'status': {'execution_date': '2020-02-28T13:16:42+00:00', 'message': 'Created <DagRun mitsos @ 2020-02-28 13:16:42+00:00: manual__2020-02-28T13:16:42+00:00, externally triggered: True>'}}
-        '''
-        # Check if runs
-        check_url = urllib.parse.urljoin(url + '/check/id/', workflow_id)
-        while True:
-            time.sleep(1)
-            r = requests.get(check_url)
-            print ('CHECK_URL:')
-            print (check_url)
-
-            if not r.ok:
-                return fail('Could not send to URL: {} . Error code: {}'.format(check_url, r.status_code))
-            data_from_client = r.json()
-            print ('Data from client:')
-            print (data_from_client)
-            # {"error": "Dag id mitsos not found"}
-            if type(data_from_client) is dict:
-                if 'error' in data_from_client:
-                    if 'not found' in data_from_client['error']:
-                        continue
-                    else:
-                        return fail('1111')
-                else:
-                    return fail('1112')
-            if not type(data_from_client) is list:
-                return fail('1113')
-
-            if len(data_from_client) != 1:
-                return fail('1114')
-
-            if not type(data_from_client[0]) is dict:
-                return fail('1115')
-
-            if not 'state' in data_from_client[0]:
-                return fail('1116')
-
-            if data_from_client[0]['state'] == 'running':
-                continue
-
-            elif data_from_client[0]['state'] == 'failed':
-                return fail('FAILED!')
-
-            elif data_from_client[0]['state'] == 'success':
-                break
-
-            else:
-                return fail('Unknown status:', data_from_client[0]['state'])
-
-
-
-
-  
+    # Let's not create a reporttoken for now.
     ret = {
-        'url': url,
+        'nice_id': nice_id,
     }
 
     return success(ret)
+
 
 @csrf_exempt
 @has_data
@@ -3867,6 +3808,80 @@ def reports_search_3(request, **kwargs):
         'report_url': report.url, # The url with the results
         'report_client_status': report.client_status,
         'workflow' : simplejson.loads(workflow.workflow),
+    }
+
+    return success(ret)
+
+@has_data
+def report_refresh(request, **kwargs):
+    '''
+    path: report_refresh/
+    Get an update for a report
+    '''
+
+    report_workflow_name = kwargs['report_workflow_name']
+    report_workflow_edit = int(kwargs['report_workflow_edit'])
+    nice_id = kwargs['report_workflow_run']
+
+    # Get the report
+    report = Report.objects.get(nice_id=nice_id)
+
+    # Get the url of the client
+    client_url = report.client.client
+
+    # Get the url to check status
+    check_url = urllib.parse.urljoin(client_url + '/check/id/', nice_id)
+
+    r = requests.get(check_url)
+    print ('CHECK_URL:')
+    print (check_url)
+
+    if not r.ok:
+        return fail('Could not send to URL: {} . Error code: {}'.format(check_url, r.status_code))
+    
+    data_from_client = r.json()
+    print ('Data from client:')
+    print (data_from_client)
+    # {"error": "Dag id mitsos not found"}
+    if type(data_from_client) is dict:
+        if 'error' in data_from_client:
+            if 'not found' in data_from_client['error']:
+                status = 'NOT FOUND'
+            else:
+                return fail('Error: 1111')
+        else:
+            return fail('Error: 1112')
+    if not type(data_from_client) is list:
+        return fail('Error: 1113')
+
+    if len(data_from_client) != 1:
+        return fail('Error: 1114')
+
+    if not type(data_from_client[0]) is dict:
+        return fail('Error: 1115')
+
+    if not 'state' in data_from_client[0]:
+        return fail('Error: 1116')
+
+    if data_from_client[0]['state'] == 'running':
+        status = 'RUNNING'
+
+    elif data_from_client[0]['state'] == 'failed':
+        status = 'FAILED'
+
+    elif data_from_client[0]['state'] == 'success':
+        status = 'SUCCESS'
+
+    else:
+        return fail('Unknown status:', data_from_client[0]['state'])
+
+    # Update report object
+    report.client_status = status
+    report.save()
+
+    ret = {
+        'report_url': None,
+        'report_client_status': status,
     }
 
     return success(ret)

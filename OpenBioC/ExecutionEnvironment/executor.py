@@ -2173,7 +2173,7 @@ dag = DAG(
             d['OBC_SERVER'] = self.workflow.obc_server
             d['OBC_WORKFLOW_NAME'] = self.workflow.root_workflow['name']
             d['OBC_WORKFLOW_EDIT'] = str(self.workflow.root_workflow['edit']) 
-            d['OBC_NICE_ID'] = self.workflow.nice_id_global
+            d['OBC_NICE_ID'] = workflow_id if workflow_id else self.workflow.root_workflow_id # self.workflow.nice_id_global
 
         if d:
             envs = 'env={},'.format(str(d))
