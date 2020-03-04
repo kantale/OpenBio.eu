@@ -3879,6 +3879,14 @@ def reports_refresh(request, **kwargs):
     report.client_status = status
     report.save()
 
+    # If we finished, then create the URL that contains the report
+    if status == 'SUCCESS':
+        report_url = urllib.parse.urljoin(client_url + '/', 'download/{NICE_ID}/{NICE_ID}'.format(NICE_ID=nice_id))
+        report.report_url = report_url
+        report.save()
+    else:
+        report_url = None
+
     ret = {
         'report_url': None,
         'report_client_status': status,
