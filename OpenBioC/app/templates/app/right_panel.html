@@ -839,13 +839,15 @@
                 <small class="form-text text-muted">
                     <a ng-click="interlink({type: 'u', username: report_username})">u/<span ng-bind="report_username"></span></a>, created at: <span ng-bind="report_created_at"></span>
                     {% verbatim %}
-                    <a href="/platform/report/{{report_workflow_run}}">link</a>
+                    <a ng-href="/platform/report/{{report_workflow_run}}">link</a>
                     {% endverbatim %}
                 </small>
             </div>
             <div class="left-align" style="margin-top: 5px; margin-bottom: 5px;" ng-show="report_client">
                 <div ng-show="report_url">
-                    <strong>Final Report: </strong><a ng-href="report_url" ><span ng-bind="report_url"></span></a>
+                    {% verbatim %}
+                    <strong>Final Report: </strong><a ng-href="{{report_url}}" ><span ng-bind="report_url"></span></a>
+                    {% endverbatim %}
                 </div>
                 <div ng-show="!report_url">
                     <strong>Current status: </strong><span ng-bind="report_client_status"></span><button ng-click="report_refresh()">Refresh</button>
