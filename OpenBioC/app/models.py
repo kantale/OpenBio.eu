@@ -368,6 +368,9 @@ class Report(models.Model):
     obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
     workflow = models.ForeignKey(Workflow, null=False, on_delete=models.CASCADE) # The workflow that it run
     nice_id = models.CharField(max_length=10, unique=True, default=create_nice_id, editable=False)
+    client = models.ForeignKey(to='ExecutionClient', null=True, on_delete=models.CASCADE) # Which client creates this report? 
+    url = models.URLField(max_length=256, null=True) # The url of the report (containing the results)
+    client_status = models.CharField(max_length=25, null=True) # The status of the client
     tokens = models.ManyToManyField(ReportToken, related_name='report_related')
     created_at = models.DateTimeField(auto_now_add=True)
 
