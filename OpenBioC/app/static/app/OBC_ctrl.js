@@ -2430,6 +2430,31 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         return ret;
     };
 
+    /*
+    * Reports --> Refresh --> button click
+    * In cases when a workflow is executed from the OBC client. Update the status
+    */
+    $scope.report_refresh = function() {
+        $scope.ajax(
+            'reports_refresh/',
+            {
+                report_workflow_name: $scope.report_workflow_name,
+                report_workflow_edit: $scope.report_workflow_edit,
+                report_workflow_run:  $scope.report_workflow_run
+            },
+            function(data) {
+                $scope.report_url = data['report_url'];
+                $scope.report_client_status = data['report_client_status'];
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+
+        );
+    };
 
     /*
     * Called from reports_search_jstree_select_node
