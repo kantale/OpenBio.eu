@@ -3518,7 +3518,7 @@ curl --header "Content-Type: application/json" \
             return fail("Client failed to trigger DAG: {}".format(data_from_client['status']['message']))
 
         # All seem to be ok. Create a report
-        report = Report(obc_user=obc_user, workflow = workflow, nice_id = nice_id,)
+        report = Report(obc_user=obc_user, workflow = workflow, nice_id = nice_id, client=client, client_status='submitted')
         report.save()
 
         # Let's not create a reporttoken for now.
@@ -3544,7 +3544,7 @@ curl --header "Content-Type: application/json" \
             data_from_client = r.json()
             print ('Data from client:')
             print (data_from_client)
-            # {"error": "Dag id poutsos not found"}
+            # {"error": "Dag id mitsos not found"}
             if type(data_from_client) is dict:
                 if 'error' in data_from_client:
                     if 'not found' in data_from_client['error']:
@@ -3863,6 +3863,9 @@ def reports_search_3(request, **kwargs):
         'report_username': report.obc_user.user.username,
         'report_created_at': datetime_to_str(report.created_at),
         'report_tokens': tokens,
+        'report_client': bool(report.client),
+        'report_url': report.url, # The url with the results
+        'report_client_status': report.client_status,
         'workflow' : simplejson.loads(workflow.workflow),
     }
 

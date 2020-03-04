@@ -825,7 +825,7 @@
             <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
                 <div class="row left-align">
                     <div class="col s2">
-                        <h5>Workflow:</h5>
+                        <h5>Workflow: </h5>
                     </div>
                     <div class="col s6">
                         <h5>
@@ -833,7 +833,7 @@
                         </h5>
                     </div>
                     <div class="col s4">
-                        <h5>Run:<span ng-bind="report_workflow_run"></span></h5>
+                        <h5>Run: <span ng-bind="report_workflow_run"></span></h5>
                     </div>
                 </div>
                 <small class="form-text text-muted">
@@ -843,6 +843,15 @@
                     {% endverbatim %}
                 </small>
             </div>
+            <div class="left-align" style="margin-top: 5px; margin-bottom: 5px;" ng-show="report_client">
+                <div ng-show="report_url">
+                    <strong>Final Report: </strong><a ng-href="report_url" ><span ng-bind="report_url"></span></a>
+                </div>
+                <div ng-show="!report_url">
+                    <strong>Current status: </strong><span ng-bind="report_client_status"></span><button>Refresh</button>
+                </div>
+            </div>
+
             <ul id="reportsRightPanelAccordion" class="collapsible expandable popout faster">
                 <!-- --------------------------------------------------------------------------------------- -->
                 <!-- ------------------------------------ General ------------------------------------------ -->
