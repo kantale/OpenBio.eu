@@ -3813,7 +3813,7 @@ def reports_search_3(request, **kwargs):
     return success(ret)
 
 @has_data
-def report_refresh(request, **kwargs):
+def reports_refresh(request, **kwargs):
     '''
     path: report_refresh/
     Get an update for a report
