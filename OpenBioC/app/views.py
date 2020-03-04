@@ -30,6 +30,8 @@ from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations, \
     OS_types, Keyword, Report, ReportToken, Reference, ReferenceField, Comment, \
     UpDownCommentVote, UpDownToolVote, UpDownWorkflowVote, ExecutionClient
 
+from app.models import create_nice_id
+
 #Import executor
 from ExecutionEnvironment.executor import create_bash_script, OBC_Executor_Exception
 
@@ -3449,18 +3451,24 @@ def run_workflow(request, **kwargs):
     except ObjectDoesNotExist as e:
         return fail('Error 3293. Could not get execution client.')
 
+    # Get the workflow
+    try:
+        workflow = Workflow.objects.get(name=name, edit=edit)
+    except ObjectDoesNotExist as e:
+        return fail('Error 3294. Could not get Workflow object.')
+
     url = client.client
     print ('URL FROM DATABASE:', url)
 
     run_url = urllib.parse.urljoin(url + '/', 'run') # https://stackoverflow.com/questions/8223939/how-to-join-absolute-and-relative-urls
-    workflow_id = 'mitsos6'
+    nice_id = create_nice_id()
 
     data_to_submit = {
         'type': 'workflow',
         'name': name,
         'edit': edit,
         'callback': callback_url(request),
-        'workflow_id': workflow_id,
+        'workflow_id': nice_id,
     }
 
     headers={ "Content-Type" : "application/json", "Accept" : "application/json"}
@@ -3484,16 +3492,42 @@ curl --header "Content-Type: application/json" \
 
     '''
 
-
+    # !!!HIGLY EXPERIMENTAL!!!
     if True:
         r = requests.post(run_url, headers=headers, data=simplejson.dumps(data_to_submit))
 
         if not r.ok:
             #r.raise_for_status()
             return fail('Could not send to URL: {} . Error code: {}'.format(run_url, r.status_code))
-        data_from_client = r.json()
+        try: 
+            data_from_client = r.json()
+        except Exception as e: # Ideally we should do here: except json.decoder.JSONDecodeError as e: but we would have to import json with simp[lejson..]
+            return fail('Could not parse JSON data from Execution Client.')
+
         print ('RUN_URL:')
         print (data_from_client)
+
+        # Check data_from_client. We expect to find an externally triggered True in data_from_client['status']['message']
+        if not 'status' in data_from_client:
+            return fail('Client does not containe status info')
+
+        if not 'message' in data_from_client['status']:
+            return fail("Client's status does not contain any message")
+
+        if not 'externally triggered: True' in data_from_client['status']['message']:
+            return fail("Client failed to trigger DAG: {}".format(data_from_client['status']['message']))
+
+        # All seem to be ok. Create a report
+        report = Report(obc_user=obc_user, workflow = workflow, nice_id = nice_id,)
+        report.save()
+
+        # Let's not create a reporttoken for now.
+        ret = {
+            'nice_id': nice_id,
+        }
+
+        return success(ret)
+
         '''
         {'status': {'execution_date': '2020-02-28T13:16:42+00:00', 'message': 'Created <DagRun mitsos @ 2020-02-28 13:16:42+00:00: manual__2020-02-28T13:16:42+00:00, externally triggered: True>'}}
         '''
@@ -3588,14 +3622,14 @@ def report(request, **kwargs):
     if not old_report_token.active:
         return fail('This token has expired')
 
-    #Deactivate it
+    # Deactivate it
     old_report_token.active = False
     old_report_token.save()
 
     # Get the report
     report_obj = old_report_token.report_related.first()
 
-    #Save the new status and return a new token 
+    # Save the new status and return a new token 
     new_report_token = ReportToken(status=status_received, active=True) # Duplicate code
     new_report_token.save()
     report_obj.tokens.add(new_report_token)
