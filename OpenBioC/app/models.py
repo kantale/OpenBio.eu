@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 import re
 import uuid
 import random
+import string
 
 '''
 After making changes here run:
@@ -355,9 +356,8 @@ def create_nice_id(length=5):
 
     '''
 
-    possible_letters = list(range(ord('a'), ord('z')+1)) + list(range(ord('A'), ord('Z')+1)) + list(range(ord('0'), ord('9')+1))
-    return ''.join([chr(random.choice(possible_letters)) for _ in range(length)])
-
+    possible_letters = tuple(string.ascii_letters + string.digits)
+    return ''.join(random.sample(possible_letters, length))
 
 class Report(models.Model):
     '''
@@ -365,9 +365,8 @@ class Report(models.Model):
     A Report is an executed workflow
     '''
 
-
     obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
-    workflow = models.ForeignKey(Workflow, on_delete=models.CASCADE) # The workflow that it run
+    workflow = models.ForeignKey(Workflow, null=False, on_delete=models.CASCADE) # The workflow that it run
     nice_id = models.CharField(max_length=10, unique=True, default=create_nice_id, editable=False)
     tokens = models.ManyToManyField(ReportToken, related_name='report_related')
     created_at = models.DateTimeField(auto_now_add=True)
