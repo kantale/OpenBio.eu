@@ -3496,7 +3496,10 @@ curl --header "Content-Type: application/json" \
     '''
 
     # !!!HIGLY EXPERIMENTAL!!!
-    r = requests.post(run_url, headers=headers, data=simplejson.dumps(data_to_submit))
+    try:
+        r = requests.post(run_url, headers=headers, data=simplejson.dumps(data_to_submit))
+    except requests.exceptions.ConnectionError as e:
+        return fail('Could not establish a connection with client')
 
     if not r.ok:
         #r.raise_for_status()
@@ -3836,7 +3839,11 @@ def reports_refresh(request, **kwargs):
     # Get the url to check status
     check_url = urllib.parse.urljoin(client_url + '/check/id/', nice_id)
 
-    r = requests.get(check_url)
+    try:
+        r = requests.get(check_url)
+    except requests.exceptions.ConnectionError as e:
+        return fail('Could not establish a connection with client')
+
     print ('CHECK_URL:')
     print (check_url)
 
