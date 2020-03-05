@@ -846,7 +846,8 @@
             <div class="left-align" style="margin-top: 5px; margin-bottom: 5px;" ng-show="report_client">
                 <div ng-show="report_url">
                     {% verbatim %}
-                    <strong>Final Report: </strong><a ng-href="{{report_url}}" ><span ng-bind="report_url"></span></a>
+                    <strong>Report: </strong><a ng-href="{{report_url}}"><span ng-bind="report_url"></span></a><br>
+                    <strong>Logs: </strong><a ng-href="{{report_log_url}}"><span ng-bind="report_log_url"></span></a>
                     {% endverbatim %}
                 </div>
                 <div ng-show="!report_url">

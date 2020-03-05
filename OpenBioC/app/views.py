@@ -128,6 +128,7 @@ g = {
     'client_max': 10, # Max number of execution clients
     # Create the URL for the report generated in the OBC client
     'create_client_download_report_url': lambda client_url, nice_id : urllib.parse.urljoin(client_url + '/', 'download/{NICE_ID}'.format(NICE_ID=nice_id)),
+    'create_client_download_log_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'logs/{NICE_ID}'.format(NICE_ID=nice_id)),
 }
 
 ### HELPING FUNCTIONS AND DECORATORS #####
@@ -3808,6 +3809,7 @@ def reports_search_3(request, **kwargs):
         'report_tokens': tokens,
         'report_client': bool(report.client),
         'report_url': report.url, # The url with the results
+        'report_log_url': report.log_url, # The url with the logs
         'report_client_status': report.client_status,
         'workflow' : simplejson.loads(workflow.workflow),
     }
@@ -3884,13 +3886,17 @@ def reports_refresh(request, **kwargs):
     # If we finished, then create the URL that contains the report
     if status == 'SUCCESS':
         report_url = g['create_client_download_report_url'](client_url, nice_id)
+        log_url = g['create_client_download_log_url'](client_url, nice_id)
         report.url = report_url
+        report.log_url = log_url
         report.save()
     else:
         report_url = None
+        log_url = None
 
     ret = {
         'report_url': report_url,
+        'log_url': log_url,
         'report_client_status': status,
     }
 
