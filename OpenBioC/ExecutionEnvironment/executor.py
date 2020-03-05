@@ -143,6 +143,7 @@ function REPORT() {
         local VAR=$1
 
         local FILEKIND=$(file "${2}")
+        echo "OBC: FILE RESULT ${FILEKIND}"
         if [[ $FILEKIND == *"PNG image data"* ]]; then
            local NEWFILENAME=${OBC_REPORT_DIR}/$(basename ${2})
            local LOCALFILENAME=${OBC_NICE_ID}/$(basename ${2})
