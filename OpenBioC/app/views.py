@@ -3883,7 +3883,7 @@ def reports_refresh(request, **kwargs):
 
     # If we finished, then create the URL that contains the report
     if status == 'SUCCESS':
-        report_url = g['create_client_download_report_url'](client_url, nice_id),
+        report_url = g['create_client_download_report_url'](client_url, nice_id)
         report.url = report_url
         report.save()
     else:
