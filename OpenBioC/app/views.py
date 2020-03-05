@@ -3523,7 +3523,7 @@ curl --header "Content-Type: application/json" \
         return fail("Client failed to trigger DAG: {}".format(data_from_client['status']['message']))
 
     # All seem to be ok. Create a report
-    report = Report(obc_user=obc_user, workflow = workflow, nice_id = nice_id, client=client, client_status='submitted')
+    report = Report(obc_user=obc_user, workflow = workflow, nice_id = nice_id, client=client, client_status='SUBMITTED')
     report.save()
 
     # Let's not create a reporttoken for now.

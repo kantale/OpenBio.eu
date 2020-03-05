@@ -122,6 +122,12 @@ cat > ${OBC_REPORT_PATH} << OBCENDOFFILE
    Workflow: <a href="${OBC_SERVER}/w/${OBC_WORKFLOW_NAME}/${OBC_WORKFLOW_EDIT}">${OBC_WORKFLOW_NAME}/${OBC_WORKFLOW_EDIT}</a> <br>
 
    <p>
+   <h3>Intermediate Variables:</h3>
+   <ul>
+      <!-- {{INTERMEDIATE_VARIABLE}} -->
+   </ul>
+
+   <p>
    <h3>Output Variables:</h3>
    <ul>
       <!-- {{OUTPUT_VARIABLE}} -->
@@ -141,20 +147,34 @@ export OBC_REPORT_DIR=${OBC_WORK_PATH}/${OBC_NICE_ID}
 function REPORT() {
     if [ -n "${OBC_WORK_PATH}" ] ; then
         local VAR=$1
+        local TIMENOW=$(date)
+        local WHOCALLEDME=$(caller 0 | awk '{print $2}')
+
+        if [ -z $3 ] ; then
+            local TAG=INTERMEDIATE_VARIABLE
+        else
+            local TAG=$3
+        fi
+
+        if [ ${TAG} == "INTERMEDIATE_VARIABLE" ] ; then
+            local EXTRA="${TIMENOW}. Called from: {WHOCALLEDME}"
+        else
+            local EXTRA=""
+        fi
 
         local FILEKIND=$(file "${2}")
-        echo "OBC: FILE RESULT ${FILEKIND}"
+        # echo "OBC: FILE RESULT ${FILEKIND}"
         if [[ $FILEKIND == *"PNG image data"* ]]; then
            local NEWFILENAME=${OBC_REPORT_DIR}/$(basename ${2})
            local LOCALFILENAME=${OBC_NICE_ID}/$(basename ${2})
            cp ${2} ${NEWFILENAME}
-           local HTML="<li>${VAR}: <br><img src=\"${LOCALFILENAME}\"></li>\\\\n      <!-- {{OUTPUT_VARIABLE}} -->\\\\n"
+           local HTML="<li>${EXTRA} ${VAR}: <br><img src=\"${LOCALFILENAME}\"></li>\\\\n      <!-- {{${TAG}}} -->\\\\n"
         else
            local VALUE=$(echo "${2}" | sed 's/&/\\\&amp;/g; s/</\\\&lt;/g; s/>/\\\&gt;/g; s/"/\\\&quot;/g; s/'"'"'/\\\&#39;/g')
-           local HTML="<li>${VAR}=${VALUE}</li>\\\\n      <!-- {{OUTPUT_VARIABLE}} -->\\\\n"
+           local HTML="<li>${EXTRA} ${VAR}=${VALUE}</li>\\\\n      <!-- {{${TAG}}} -->\\\\n"
         fi
 
-        sed -i -e "s|<\!-- {{OUTPUT_VARIABLE}} -->|${HTML}|" ${OBC_REPORT_PATH}
+        sed -i -e "s|<\!-- {{${TAG}}} -->|${HTML}|" ${OBC_REPORT_PATH}
         sed 's/\\n/\
 /g' ${OBC_REPORT_PATH} > ${OBC_REPORT_PATH}.tmp
         mv ${OBC_REPORT_PATH}.tmp ${OBC_REPORT_PATH}
@@ -692,7 +712,7 @@ class Workflow:
         ret += 'echo "OBC: Output Variables:"\n'
         for output_parameter in self.output_parameters:
             ret += 'echo "OBC: {} = ${{{}}}"\n'.format(output_parameter['id'], output_parameter['id'])
-            ret += 'REPORT {} ${{{}}}\n'.format(output_parameter['id'], output_parameter['id'])
+            ret += 'REPORT {} ${{{}}} OUTPUT_VARIABLE \n'.format(output_parameter['id'], output_parameter['id'])
         ret += '### END OF PRINTINT OUTPUT PARAMETERS\n'
 
         return ret
@@ -2298,7 +2318,7 @@ OBCENDOFFILE
 
         # Add output varables
         for output_parameter in self.workflow.output_parameters:
-            bash += 'REPORT {} ${{{}}}\n'.format(output_parameter['id'], output_parameter['id'])
+            bash += 'REPORT {} ${{{}}} OUTPUT_VARIABLE \n'.format(output_parameter['id'], output_parameter['id'])
 
         # Create tar.gz 
         bash += bash_patterns['final_report']
