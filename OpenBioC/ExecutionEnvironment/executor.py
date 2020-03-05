@@ -160,7 +160,14 @@ function REPORT() {
     fi
 }
 
-'''
+''',
+'final_report': r'''
+
+OBC_REPORT_TGZ=${OBC_WORK_PATH}/${OBC_NICE_ID}.tgz
+
+tar zcvf ${OBC_REPORT_TGZ} ${OBC_REPORT_PATH} ${OBC_REPORT_DIR}/
+
+''',
 }
 
 bash_patterns['get_json_value'] = '{variable}=$(obc_parse_json "${json_variable}" "{json_key}")'
@@ -2288,8 +2295,12 @@ OBCENDOFFILE
 
         bash = load_tool_vars + load_step_vars + load_obc_functions_bash
 
+        # Add output varables
         for output_parameter in self.workflow.output_parameters:
             bash += 'REPORT {} ${{{}}}\n'.format(output_parameter['id'], output_parameter['id'])
+
+        # Create tar.gz 
+        bash += bash_patterns['final_report']
 
         airflow_bash = self.bash_operator_pattern.format(
             ID='OBC_AIRFLOW_FINAL',

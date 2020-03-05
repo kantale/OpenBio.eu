@@ -126,6 +126,8 @@ g = {
     'url_validator': URLValidator(), # Can be customized: URLValidator(schemes=('http', 'https', 'ftp', 'ftps', 'rtsp', 'rtmp'))
     'client_name_regex': r'^[\w]+$', # The regular expression to validate the name of exutation client
     'client_max': 10, # Max number of execution clients
+    # Create the URL for the report generated in the OBC client
+    'create_client_download_report_url': lambda client_url, nice_id : urllib.parse.urljoin(client_url + '/', 'download/{NICE_ID}'.format(NICE_ID=nice_id)),
 }
 
 ### HELPING FUNCTIONS AND DECORATORS #####
@@ -3881,7 +3883,7 @@ def reports_refresh(request, **kwargs):
 
     # If we finished, then create the URL that contains the report
     if status == 'SUCCESS':
-        report_url = urllib.parse.urljoin(client_url + '/', 'download/{NICE_ID}/{NICE_ID}'.format(NICE_ID=nice_id))
+        report_url = g['create_client_download_report_url'](client_url, nice_id),
         report.url = report_url
         report.save()
     else:
