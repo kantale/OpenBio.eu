@@ -2179,6 +2179,9 @@ dag = DAG(
     dag=dag)
 '''
 
+    def raw_jinja2(bash):
+        return '{% raw %}\n' + bash + '\n{% endraw %}\n'
+
     def build(self, output, output_format='airflow', workflow_id=None, obc_client=False):
         '''
         output: Name of output file. If None then the function returns a string
@@ -2225,6 +2228,8 @@ OBCENDOFFILE
         bash = bash.replace(r'{{function_REPORT}}', bash_patterns['function_REPORT'])
         load_obc_functions_bash = r'. ${OBC_WORK_PATH}/obc_functions.sh' + '\n'
 
+        bash = raw_jinja2(bash)
+
         airflow_bash = self.bash_operator_pattern.format(
             ID='OBC_AIRFLOW_INIT',
             BASH=bash,
@@ -2251,6 +2256,7 @@ OBCENDOFFILE
                 variables_sh_filename_read = previous_tools,
                 variables_sh_filename_write = tool_vars_filename,
             )
+            bash = raw_jinja2(bash)
             airflow_bash = self.bash_operator_pattern.format(
                 ID=tool_id,
                 BASH=bash,
@@ -2296,6 +2302,7 @@ OBCENDOFFILE
 
             previous_steps_vars.append(step_vars_filename)
 
+            bash = raw_jinja2(bash)
             airflow_bash = self.bash_operator_pattern.format(
                 ID = step_id,
                 BASH = bash,
@@ -2324,7 +2331,7 @@ OBCENDOFFILE
         bash += bash_patterns['final_report']
 
         # Wrap in jinja2 verbatim . https://stackoverflow.com/questions/25359898/escape-jinja2-syntax-in-a-jinja2-template 
-        bash = r'{% raw %}\n' + bash + r'\n{% endraw %}\n'
+        bash = raw_jinja2(bash)
 
         airflow_bash = self.bash_operator_pattern.format(
             ID='OBC_AIRFLOW_FINAL',
