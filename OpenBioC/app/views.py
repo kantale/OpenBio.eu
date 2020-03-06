@@ -3905,7 +3905,7 @@ def reports_refresh(request, **kwargs):
 
     ret = {
         'report_url': report_url,
-        'log_url': log_url,
+        'report_log_url': log_url,
         'report_client_status': status,
     }
 
