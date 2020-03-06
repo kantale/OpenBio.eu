@@ -157,7 +157,7 @@ function REPORT() {
         fi
 
         if [ ${TAG} == "INTERMEDIATE_VARIABLE" ] ; then
-            local EXTRA="${TIMENOW}. Called from: {WHOCALLEDME}"
+            local EXTRA="${TIMENOW}. Called from: ${WHOCALLEDME}"
         else
             local EXTRA=""
         fi
