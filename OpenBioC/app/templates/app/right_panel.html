@@ -844,10 +844,11 @@
                 </small>
             </div>
             <div class="left-align" style="margin-top: 5px; margin-bottom: 5px;" ng-show="report_client">
-                <div ng-show="report_url">
+                <div ng-show="report_client_status == 'SUCCESS' || report_client_status == 'FAILED'">
                     {% verbatim %}
-                    <strong>Report: </strong><a ng-href="{{report_url}}"><span ng-bind="report_url"></span></a><br>
-                    <strong>Logs: </strong><a ng-href="{{report_log_url}}"><span ng-bind="report_log_url"></span></a>
+                    <strong>Final Status: </strong><span ng-bind="report_client_status"></span><br>
+                    <div ng-show="report_url"><strong>Report: </strong><a ng-href="{{report_url}}"><span ng-bind="report_url"></span></a></div><br>
+                    <div ng-show="report_log_url"><strong>Logs: </strong><a ng-href="{{report_log_url}}"><span ng-bind="report_log_url"></span></a></div>
                     {% endverbatim %}
                 </div>
                 <div ng-show="!report_url">
