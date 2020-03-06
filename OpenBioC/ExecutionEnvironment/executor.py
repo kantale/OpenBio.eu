@@ -2323,6 +2323,9 @@ OBCENDOFFILE
         # Create tar.gz 
         bash += bash_patterns['final_report']
 
+        # Wrap in jinja2 verbatim . https://stackoverflow.com/questions/25359898/escape-jinja2-syntax-in-a-jinja2-template 
+        bash = r'{% raw %}\n' + bash + r'\n{% endraw %}\n'
+
         airflow_bash = self.bash_operator_pattern.format(
             ID='OBC_AIRFLOW_FINAL',
             BASH=bash,
