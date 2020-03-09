@@ -3900,7 +3900,7 @@ def reports_refresh(request, **kwargs):
         elif data_from_client[0]['state'] == 'success':
             status = 'SUCCESS'
 
-        elif data_from_client[0]['status'] == 'paused':
+        elif data_from_client[0]['state'] == 'paused':
             status = 'PAUSED'
 
         else:
