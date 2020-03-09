@@ -3828,7 +3828,7 @@ def reports_refresh(request, **kwargs):
     '''
     path: report_refresh/
     Get an update for a report
-    report_workflow_action : 1 = refresh
+    report_workflow_action : 1 = refresh , 2 = pause , 3 = resume
     '''
 
     report_workflow_name = kwargs['report_workflow_name']
@@ -3854,6 +3854,11 @@ def reports_refresh(request, **kwargs):
         url = g['create_client_pause_url'](client_url, nice_id)
         print ('PAUSE URL:')
         print (url)
+    elif report_workflow_action == 3:
+        # Resume 
+        url = g['create_client_resume_url'](client, nice_id)
+        print ('RESUME URL:')
+        print (url)
     else:
         return fail('Error 5821: {}'.format(str(report_workflow_action)))
 
@@ -3870,7 +3875,7 @@ def reports_refresh(request, **kwargs):
     print (data_from_client)
     # {"error": "Dag id mitsos not found"}
 
-    if report_workflow_action == 1:
+    if report_workflow_action == 1: # refresh
         if type(data_from_client) is dict:
             if 'error' in data_from_client:
                 if 'not found' in data_from_client['error']:
@@ -3905,7 +3910,7 @@ def reports_refresh(request, **kwargs):
 
         else:
             return fail('Unknown status:', data_from_client[0]['state'])
-    elif report_workflow_action == 2:
+    elif report_workflow_action in [2, 3]: # 2 = pause , 3 = resume
         if not type(data_from_client) is dict:
             return fail('Error: 1119')
 
@@ -3915,7 +3920,13 @@ def reports_refresh(request, **kwargs):
         if data_from_client['response'] != 'ok':
             return fail('Error 1121')
 
-        status = 'PAUSE_SUBMITTED'
+        if report_workflow_action == 2:
+            status = 'PAUSE_SUBMITTED'
+        elif report_workflow_action == 3:
+            status = 'RESUME_SUBMITTED'
+        else:
+            return fail('Error 1122')
+
 
     # Update report object
     report.client_status = status

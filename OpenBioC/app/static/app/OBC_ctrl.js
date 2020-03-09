@@ -2436,6 +2436,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * action: 
     * 1 --> refresh
     * 2 --> pause
+    * 3 --> resume
     */
     $scope.report_refresh = function(action) {
         $scope.ajax(
