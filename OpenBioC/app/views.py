@@ -3909,7 +3909,7 @@ def reports_refresh(request, **kwargs):
         if not type(data_from_client) is dict:
             return fail('Error: 1119')
 
-        if not 'reponse' in data_from_client:
+        if not 'response' in data_from_client:
             return fail('Error: 1120')
 
         if data_from_client['response'] != 'ok':
