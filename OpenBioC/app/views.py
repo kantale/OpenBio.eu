@@ -129,6 +129,10 @@ g = {
     # Create the URL for the report generated in the OBC client
     'create_client_download_report_url': lambda client_url, nice_id : urllib.parse.urljoin(client_url + '/', 'download/{NICE_ID}'.format(NICE_ID=nice_id)),
     'create_client_download_log_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'logs/{NICE_ID}'.format(NICE_ID=nice_id)),
+    'create_client_check_status_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'check/id/{NICE_ID}'.format(NICE_ID=nice_id)),
+    'create_client_pause_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'workflow/{NICE_ID}/paused/true'.format(NICE_ID=nice_id)), 
+    'create_client_resume_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'workflow/{NICE_ID}/paused/false'.format(NICE_ID=nice_id)), 
+
 }
 
 ### HELPING FUNCTIONS AND DECORATORS #####
@@ -3824,28 +3828,39 @@ def reports_refresh(request, **kwargs):
     '''
     path: report_refresh/
     Get an update for a report
+    report_workflow_action : 1 = refresh
     '''
 
     report_workflow_name = kwargs['report_workflow_name']
     report_workflow_edit = int(kwargs['report_workflow_edit'])
     nice_id = kwargs['report_workflow_run']
+    report_workflow_action = kwargs['report_workflow_action']
 
     # Get the report
     report = Report.objects.get(nice_id=nice_id)
+    previous_status = report.client_status
 
     # Get the url of the client
     client_url = report.client.client
 
-    # Get the url to check status
-    check_url = urllib.parse.urljoin(client_url + '/check/id/', nice_id)
+    if report_workflow_action == 1:
+        # Refresh
+        # Get the url to check status
+        url = g['create_client_check_status_url'](client_url, nice_id)
+        print ('CHECK STATUS URL:')
+        print (url)
+    elif report_workflow_action == 2:
+        # Pause
+        url = g['create_client_pause_url'](client_url, nice_id)
+        print ('PAUSE URL:')
+        print (url)
+    else:
+        return fail('Error 5821: {}'.format(str(report_workflow_action)))
 
     try:
-        r = requests.get(check_url)
+        r = requests.get(url)
     except requests.exceptions.ConnectionError as e:
         return fail('Could not establish a connection with client')
-
-    print ('CHECK_URL:')
-    print (check_url)
 
     if not r.ok:
         return fail('Could not send to URL: {} . Error code: {}'.format(check_url, r.status_code))
@@ -3854,37 +3869,53 @@ def reports_refresh(request, **kwargs):
     print ('Data from client:')
     print (data_from_client)
     # {"error": "Dag id mitsos not found"}
-    if type(data_from_client) is dict:
-        if 'error' in data_from_client:
-            if 'not found' in data_from_client['error']:
-                status = 'NOT FOUND'
+
+    if report_workflow_action == 1:
+        if type(data_from_client) is dict:
+            if 'error' in data_from_client:
+                if 'not found' in data_from_client['error']:
+                    status = 'NOT FOUND'
+                else:
+                    return fail('Error: 1111')
             else:
-                return fail('Error: 1111')
+                return fail('Error: 1112')
+        if not type(data_from_client) is list:
+            return fail('Error: 1113')
+
+        if len(data_from_client) != 1:
+            return fail('Error: 1114')
+
+        if not type(data_from_client[0]) is dict:
+            return fail('Error: 1115')
+
+        if not 'state' in data_from_client[0]:
+            return fail('Error: 1116')
+
+        if data_from_client[0]['state'] == 'running':
+            status = 'RUNNING'
+
+        elif data_from_client[0]['state'] == 'failed':
+            status = 'FAILED'
+
+        elif data_from_client[0]['state'] == 'success':
+            status = 'SUCCESS'
+
+        elif data_from_client[0]['status'] == 'paused':
+            status = 'PAUSED'
+
         else:
-            return fail('Error: 1112')
-    if not type(data_from_client) is list:
-        return fail('Error: 1113')
+            return fail('Unknown status:', data_from_client[0]['state'])
+    elif report_workflow_action == 2:
+        if not type(data_from_client) is dict:
+            return fail('Error: 1119')
 
-    if len(data_from_client) != 1:
-        return fail('Error: 1114')
+        if not 'reponse' in data_from_client:
+            return fail('Error: 1120')
 
-    if not type(data_from_client[0]) is dict:
-        return fail('Error: 1115')
+        if data_from_client['response'] != 'ok':
+            return fail('Error 1121')
 
-    if not 'state' in data_from_client[0]:
-        return fail('Error: 1116')
-
-    if data_from_client[0]['state'] == 'running':
-        status = 'RUNNING'
-
-    elif data_from_client[0]['state'] == 'failed':
-        status = 'FAILED'
-
-    elif data_from_client[0]['state'] == 'success':
-        status = 'SUCCESS'
-
-    else:
-        return fail('Unknown status:', data_from_client[0]['state'])
+        status = 'PAUSE_SUBMITTED'
 
     # Update report object
     report.client_status = status
