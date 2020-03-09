@@ -1526,6 +1526,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             $scope.workflow_cytoscape_delete_node($scope.node_id, true);
             return;
         }
+        else if (action == 'DELETEREPORT') {
+            $scope.report_refresh($scope.report_refresh_action, true);
+            return;
+        }
     };
 
     /*
@@ -2437,8 +2441,30 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * 1 --> refresh
     * 2 --> pause
     * 3 --> resume
+    * 4 --> Delete
     */
-    $scope.report_refresh = function(action) {
+    $scope.report_refresh = function(action, confirm) {
+
+        if (action == 4) {
+            // Delete
+            if ($scope.report_client) { // Is there a client trying to run it?
+                if ($scope.report_client_status == 'RUNNING') { // Is it in running stage?
+                    $scope.toast('The report is in RUNNING stage. Pause it first before deleting it', 'error');
+                    return ;
+                }
+            }
+
+            //Show modal 
+            if (!confirm) {
+                $scope.warning_modal_message = 'You are about to delete this report. Are your sure?';
+                $scope.warning_modal_action = 'DELETEREPORT';
+                $scope.report_refresh_action = action; // Pass the parameter
+                $('#deleteModal').modal('open');
+                return;
+            }
+
+        }
+
         $scope.ajax(
             'reports_refresh/',
             {
@@ -2448,6 +2474,14 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 report_workflow_run:  $scope.report_workflow_run
             },
             function(data) {
+
+                if (action == 4) { // Delete
+                    $scope.toast('Report is deleted!', 'success');
+                    $scope.hide_all_right_accordions('');
+                    $scope.all_search_2(); // Update search results
+                    return;
+                }
+
                 $scope.report_url = data['report_url'];
                 $scope.report_log_url = data['report_log_url'];
                 $scope.report_client_status = data['report_client_status'];

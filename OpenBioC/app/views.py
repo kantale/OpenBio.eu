@@ -132,6 +132,7 @@ g = {
     'create_client_check_status_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'check/id/{NICE_ID}'.format(NICE_ID=nice_id)),
     'create_client_pause_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'workflow/{NICE_ID}/paused/true'.format(NICE_ID=nice_id)), 
     'create_client_resume_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'workflow/{NICE_ID}/paused/false'.format(NICE_ID=nice_id)), 
+    'create_client_abort_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'workflow/delete/{NICE_ID}'.format(NICE_ID=nice_id)), 
 
 }
 
@@ -3840,8 +3841,24 @@ def reports_refresh(request, **kwargs):
     report = Report.objects.get(nice_id=nice_id)
     previous_status = report.client_status
 
+    if request.user.is_anonymous:
+        return fail('Please log in to update the status of a Report')
+
+    # Get this user
+    obc_user = OBC_user.objects.get(user=request.user)
+    if obc_user != report.obc_user:
+        return fail('Cannot edit a report of another user.')
+
+    if not report.client:
+        if report_workflow_action == 4:
+            # Deleting a report that has not been associated with any client.
+            # Just delete it..
+            report.delete()
+            return success()
+
     # Get the url of the client
     client_url = report.client.client
+
 
     if report_workflow_action == 1:
         # Refresh
@@ -3858,6 +3875,11 @@ def reports_refresh(request, **kwargs):
         # Resume 
         url = g['create_client_resume_url'](client_url, nice_id)
         print ('RESUME URL:')
+        print (url)
+    elif report_workflow_action == 4:
+        # Delete
+        url = g['create_client_abort_url'](client_url, nice_id)
+        print ('ABORT URL:')
         print (url)
     else:
         return fail('Error 5821: {}'.format(str(report_workflow_action)))
@@ -3926,6 +3948,18 @@ def reports_refresh(request, **kwargs):
             status = 'RESUME_SUBMITTED'
         else:
             return fail('Error 1122')
+    elif report_workflow_action == 4:
+        if not type(data_from_client) is dict:
+            return fail('Error: 1123')
+        if not 'status' in data_from_client:
+            return fail('Error 1124')
+        if data_from_client['status'] != 'success':
+            return fail('Client responded with an error message: {}'.format(data_from_client['status']))
+
+        # Delete it..
+        report.delete()
+        return success()
+
 
 
     # Update report object
