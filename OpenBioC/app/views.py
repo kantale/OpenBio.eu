@@ -3856,7 +3856,7 @@ def reports_refresh(request, **kwargs):
         print (url)
     elif report_workflow_action == 3:
         # Resume 
-        url = g['create_client_resume_url'](client, nice_id)
+        url = g['create_client_resume_url'](client_url, nice_id)
         print ('RESUME URL:')
         print (url)
     else:
