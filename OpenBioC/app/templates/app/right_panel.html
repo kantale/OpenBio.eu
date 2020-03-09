@@ -854,10 +854,10 @@
                 <div ng-show="report_client_status == 'SUBMITTED' || report_client_status == 'PAUSE_SUBMITTED' || report_client_status == 'RESUME_SUBMITTED'">
                     <strong>Current status: </strong><span ng-bind="report_client_status"></span><button ng-click="report_refresh(1)">Refresh</button>
                 </div>
-                <div ng-show="report_client_status == 'RUNNING">
+                <div ng-show="report_client_status == 'RUNNING'">
                     <strong>Current status: </strong><span ng-bind="report_client_status"></span><button ng-click="report_refresh(1)">Refresh</button><button ng-click="report_refresh(2)">Pause</button>
                 </div>
-                <div ng-show="report_client_status == 'PAUSED">
+                <div ng-show="report_client_status == 'PAUSED'">
                     <strong>Current status: </strong><span ng-bind="report_client_status"></span><button ng-click="report_refresh(3)">Resume</button>
                 </div>
             </div>
