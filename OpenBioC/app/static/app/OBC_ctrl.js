@@ -2433,11 +2433,15 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     /*
     * Reports --> Refresh --> button click
     * In cases when a workflow is executed from the OBC client. Update the status
+    * action: 
+    * 1 --> refresh
+    * 2 --> pause
     */
-    $scope.report_refresh = function() {
+    $scope.report_refresh = function(action) {
         $scope.ajax(
             'reports_refresh/',
             {
+                report_workflow_action: action,
                 report_workflow_name: $scope.report_workflow_name,
                 report_workflow_edit: $scope.report_workflow_edit,
                 report_workflow_run:  $scope.report_workflow_run
@@ -2456,6 +2460,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         );
     };
+
 
     /*
     * Called from reports_search_jstree_select_node
