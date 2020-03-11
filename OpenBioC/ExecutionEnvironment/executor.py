@@ -189,6 +189,50 @@ OBC_REPORT_TGZ=${OBC_WORK_PATH}/${OBC_NICE_ID}.tgz
 tar zcvf ${OBC_REPORT_TGZ} -C ${OBC_WORK_PATH} ${OBC_NICE_ID}.html ${OBC_NICE_ID}/
 
 ''',
+'function_PARALLEL': r'''
+function PARALLEL() {
+    local line_counter=0
+    local PIDS=() # 
+    while IFS= read -r line; do
+
+        if [[ -z "${line// }" ]] ; then
+            continue # Ignore empty lines
+        fi
+        let "line_counter=line_counter+1"
+
+        if [ $line_counter -eq 1 ] ; then
+            IFS=',' read -ra header <<< "$line"
+            local header_length=${#header[@]}
+            let "header_length_0=header_length-1"
+            continue
+        fi
+
+        IFS=',' read -ra line_splitted <<< "$line"
+        local line_length=${#line_splitted[@]}
+
+        if [ $header_length -ne $line_length ] ; then
+            OBC_ERROR="Line:${line_counter} ${line} contains ${line_length} fields whereas the header has ${header_length} fields."
+            return
+        fi
+
+        # Set options
+        for i in $(seq 0 ${header_length_0})
+        do
+            declare "${header[${i}]}=${line_splitted[${i}]}"
+        done
+
+        #echo "Calling step: $1"
+        eval ${1} &
+        P=$!
+        PIDS=("${PIDS[@]}" ${P})
+
+    done <<< "$2"
+
+    wait "${PIDS[@]}"
+
+    OBC_ERROR=""
+}
+''',
 }
 
 bash_patterns['get_json_value'] = '{variable}=$(obc_parse_json "${json_variable}" "{json_key}")'
