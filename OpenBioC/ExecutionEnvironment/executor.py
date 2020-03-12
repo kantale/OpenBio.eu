@@ -2,6 +2,7 @@
 import io
 import os
 import re
+import csv
 import copy
 import json
 import base64
@@ -215,7 +216,7 @@ function PARALLEL() {
             return
         fi
 
-        # Set options
+        # Set parameters
         for i in $(seq 0 ${header_length_0})
         do
             declare "${header[${i}]}=${line_splitted[${i}]}"
@@ -234,6 +235,20 @@ function PARALLEL() {
 }
 ''',
 }
+
+r'''
+A="
+PARAM_1,PARAM_2
+1,2
+3,4
+5,6
+7,8
+9,10
+"
+
+PARALLEL step_example "$A"
+# a = re.findall(r'[\w]+=\"[\w\s,\.]+\"[\s]+PARALLEL[\s]+[\w]+[\s]+\"\$[\w]+\"', text)
+'''
 
 bash_patterns['get_json_value'] = '{variable}=$(obc_parse_json "${json_variable}" "{json_key}")'
 
@@ -1197,17 +1212,19 @@ class Workflow:
         enable_read_arguments_from_commandline = True,
         enable_save_variables_to_json = True,
         enable_save_variables_to_sh = True,
+        enable_parallel = False,
         ):
         '''
         enable_read_arguments_from_commandline: If true, arguments are read from command line
         enable_save_variables_to_json: If true, variables are saved in json format
         enable_save_variables_to_sh: If True, variables are saved to sh format
+        enable_parallel: If True each PARALLEL yields a new step
         '''
 
         # First, check for circles in step calls
         c = self.check_step_calls_for_circles()
         if c:
-            raise OBC_Executor_Exception('Found circle in step calls:\n{}\n. Cannot generate CWL worfklow.'.format(c))
+            raise OBC_Executor_Exception('Found circle in step calls:\n{}\n. Cannot break down workflow.'.format(c))
 
         def get_level(command, steps):
             '''
@@ -1259,6 +1276,77 @@ class Workflow:
 
             return ret
 
+        def parse_parallel_constant(bash, delimiter=','):
+            '''
+            STEPS=
+            A,B
+            1,2
+            3,4
+            5,6
+            7,8
+            9,10
+
+            returns:
+            {
+                'variable': 'STEPS',
+                'content': [[]]
+            }
+            '''
+
+            m = re.match(r'([\w]+)=[\s]*(.+)', bash, flags=re.DOTALL)
+            if not m:
+                return {}
+
+            ret = {
+                'variable': m.group(1),
+                'content': [],
+            }
+
+            CSV_content = m.group(2)
+            CSV_f = io.StringIO(CSV_content)
+            try:
+                CSV_reader = csv.reader(CSV_f, delimiter=delimiter)
+            except csv.Error as e:
+                return {}
+
+            first = True
+            for line in CSV_reader:
+                if not line:
+                    continue
+
+                if first:
+                    ret['header'] = line
+                    first = False
+                    continue
+
+                ret['content'].append(line)
+
+            CSV_f.close() # <-- is there any meaning on this?
+
+            return ret
+
+        def parse_parrallel_call(bash):
+            '''
+            PARALLEL step__new_step__test5__1 ${STEPS}
+
+            Returns:
+            {
+                'step': step__new_step__test5__1,
+                'variable': STEPS
+            }
+            '''
+            m=re.match(r'PARALLEL[\s]+(?P<step_name>step__[\w]+__[\w]+__[\d]+)[\s]+((\$(?P<var_name1>[\w]+))|(\${(?P<var_name2>[\w]+)}))', bash)
+            if m:
+                calling_step = m.group('step_name')
+                calling_variable = m.group('var_name1') or m.group('var_name2')
+                if calling_variable:
+                    return {
+                        'step': calling_step,
+                        'variable': calling_variable
+                    }
+
+            return {}
+
 
         def create_json(bash, step, step_breaked_id, is_last, output_variables):
             '''
@@ -1302,6 +1390,7 @@ ENDOFFILE
 
         def break_down_step_recursive(step):
             '''
+            Use bashlex to break down all steps of a bash script
             '''
 
             bash = step['bash']
@@ -1317,8 +1406,6 @@ ENDOFFILE
             # We need to add them in every breaked step in order to read from the command line 
             input_tool_variables = [variable['input_name'] for variable in self.step_tool_variables(step)]
             
-
-
             try:
                 p = bashlex.parse(bash_to_parse)
             except bashlex.errors.ParsingError as e:
@@ -1356,8 +1443,11 @@ ENDOFFILE
             found_call = False
             start = 2 # Remove '{\n'
             read_from = None
+            last_assignment = None # Used for PARALLEL 
 
             for main_command in main_commands:
+
+                this_is_a_parallel_call = False
 
                 level_tuple = get_level(main_command, calling_steps)
                 if level_tuple:
@@ -1369,24 +1459,42 @@ ENDOFFILE
                 if not main_command.kind == 'command':
                     continue
 
-                # This is a command
-
                 if not hasattr(main_command, 'parts'):
                     continue
 
-                # We are looking for a command with a single part (funtion call)
-                if not len(main_command.parts) == 1:
-                    continue
+                # Check if this is a CommandNode(parts=[AssignmentNode(parts=[] pos=(118, 152) word='STEPS=\nA,B\n1,2\n3,4\n5,6\n7,8\n9,10\n')] pos=(118, 152))
+                if len(main_command.parts) == 1:
+                    if main_command.parts[0].kind == 'assignment':
+                        # This is an assignment
+                        assignment_word = main_command.parts[0].word
+                        last_assignment = parse_parallel_constant(assignment_word)
 
-                # It should be a single word
-                if not main_command.parts[0].kind == 'word':
-                    continue
+                # This is a command
+                # check for PARALLEL step__new_step__test5__1 ${STEPS}
+                if len(main_command.parts) == 3:
+                    line_to_match = ' '.join(x.word for x in main_command.parts)
+                    parallel_call = parse_parrallel_call(line_to_match)
+                    if  parallel_call and \
+                        last_assignment and \
+                        parallel_call['variable'] == last_assignment['variable'] and \
+                        parallel_call['step'] in calling_steps:
+                            print ('THIS IS A VALID PARALLEL CALL')
+                            this_is_a_parallel_call = True
 
-                word = main_command.parts[0].word
+                if not this_is_a_parallel_call:
+                    # We are looking for a command with a single part (function call)
+                    if not len(main_command.parts) == 1:
+                        continue
 
-                #It should be a calling step
-                if not word in calling_steps:
-                    continue
+                    # It should be a single word
+                    if not main_command.parts[0].kind == 'word':
+                        continue
+
+                    word = main_command.parts[0].word
+
+                    #It should be a calling step
+                    if not word in calling_steps:
+                        continue
 
                 #This is a calling step!
                 found_call = True
@@ -2396,6 +2504,12 @@ OBCENDOFFILE
         # Save output / Return
         if output:
             # Saving to a file
+
+            # Checking if the output has a .py extension
+            extension = os.path.splitext(output)[1]
+            if extension.lower() != '.py':
+                output += '.py'
+
             log_info('Saving airflow to {}'.format(output))
             with open(output, 'w') as f:
                 f.write(airflow_python)

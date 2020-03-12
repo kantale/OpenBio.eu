@@ -3519,7 +3519,7 @@ curl --header "Content-Type: application/json" \
 
     # Check data_from_client. We expect to find an externally triggered True in data_from_client['status']['message']
     if not 'status' in data_from_client:
-        return fail('Client does not containe status info')
+        return fail('Client does not contains status info')
 
     if not 'message' in data_from_client['status']:
         return fail("Client's status does not contain any message")
