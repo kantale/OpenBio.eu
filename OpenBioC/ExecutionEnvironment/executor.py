@@ -1388,14 +1388,20 @@ ENDOFFILE
 
         step_counter = defaultdict(int) # How many times this steps has been yielded?
 
-        def break_down_step_recursive(step):
+        def break_down_step_recursive(step, parallel_variables=None):
             '''
             Use bashlex to break down all steps of a bash script
+            parallel_variables: Initialize script these variables. Used for the parallel execution
             '''
 
             bash = step['bash']
             if not bash.strip():
                 return
+
+            # Add variables from parallel
+            if parallel_variables:
+                to_add= '\n'.join([r'{}="{}"'.format(k,v) for k,v in parallel_variables.items()])
+                bash = '\n' + to_add + '\n' + bash
 
             # https://stackoverflow.com/questions/12404661/what-is-the-use-case-of-noop-in-bash
             # bashlex Cannot parse empty strings!
@@ -1406,6 +1412,7 @@ ENDOFFILE
             # We need to add them in every breaked step in order to read from the command line 
             input_tool_variables = [variable['input_name'] for variable in self.step_tool_variables(step)]
             
+
             try:
                 p = bashlex.parse(bash_to_parse)
             except bashlex.errors.ParsingError as e:
@@ -1524,12 +1531,30 @@ ENDOFFILE
                 #read_from = save_to
                 read_from = save_to_nodot
                 
-
-                step_to_call_id = bash_to_parse[pos[0]:pos[1]]
+                if this_is_a_parallel_call:
+                    step_to_call_id = parallel_call['step']
+                else:
+                    step_to_call_id = bash_to_parse[pos[0]:pos[1]]
+                
                 step_to_call = self.step_ids[step_to_call_id]
 
-                for item in break_down_step_recursive(step_to_call):
-                    yield item
+                print ('step_to_call:', step_to_call)
+
+                if this_is_a_parallel_call:
+                    # This is a parallel call. Iterate in all variable assignments in CSV
+                    header = last_assignment['header']
+                    for values in last_assignment['content']:
+                        if len(values) != len(header):
+                            raise OBC_Executor_Exception('Values in Parallel execution: {} are different than header: {}'.format(str(values), str(header)))
+                        parallel_variables = dict(zip(header, values))
+
+                        for item in break_down_step_recursive(step_to_call, parallel_variables=parallel_variables):
+                            yield item
+
+                else:
+                    for item in break_down_step_recursive(step_to_call):
+                        yield item
+                
                 start = pos[1]
 
 
@@ -2325,7 +2350,7 @@ dag = DAG(
 {ID} = BashOperator(
     {ENVS}
     task_id='{ID}',
-    bash_command="""
+    bash_command=r"""
 {BASH}
 """,
     dag=dag)
@@ -2431,10 +2456,10 @@ OBCENDOFFILE
             ):
 
             step_id = step['id']
-            step_ids.append(step_id)
             count = step['count']
             bash = step['bash']
             step_inter_id = '{}__{}'.format(step_id, str(count))
+            step_ids.append(step_inter_id)
             step_vars_filename = os.path.join('${OBC_WORK_PATH}', step_inter_id + '.sh')
 
             # Add declare. This should be first
@@ -2456,7 +2481,7 @@ OBCENDOFFILE
 
             bash = self.raw_jinja2(bash)
             airflow_bash = self.bash_operator_pattern.format(
-                ID = step_id,
+                ID = step_inter_id,
                 BASH = bash,
                 ENVS=envs,
             )
