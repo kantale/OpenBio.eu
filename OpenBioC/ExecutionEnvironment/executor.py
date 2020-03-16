@@ -1339,7 +1339,7 @@ class Workflow:
 
             return ret
 
-        def parse_parrallel_call(bash):
+        def parse_parrallel_call_1(bash):
             '''
             PARALLEL step__new_step__test5__1 ${STEPS}
 
@@ -1360,6 +1360,16 @@ class Workflow:
                     }
 
             return {}
+
+        def parse_parallel_call_2(bash):
+            '''
+            PARALLEL step_1 step_2 , ....
+            '''
+
+            m = re.match(r'PARALLEL(?P<steps>([\s]+[\w]+)+)', bash)
+            if m:
+                return m.group('steps').strip().split()
+            return []
 
 
         def create_json(bash, step, step_breaked_id, is_last, output_variables):
@@ -1473,7 +1483,8 @@ ENDOFFILE
 
             for main_command in main_commands:
 
-                this_is_a_parallel_call = False
+                this_is_a_parallel_call_1 = False
+                this_is_a_parallel_call_2 = False
 
                 level_tuple = get_level(main_command, calling_steps)
                 if level_tuple:
@@ -1499,16 +1510,24 @@ ENDOFFILE
                 # check for PARALLEL step__new_step__test5__1 ${STEPS}
                 if len(main_command.parts) == 3:
                     line_to_match = ' '.join(x.word for x in main_command.parts)
-                    parallel_call = parse_parrallel_call(line_to_match)
+                    parallel_call = parse_parrallel_call_1(line_to_match)
                     if  parallel_call and \
                         last_assignment and \
                         parallel_call['variable'] == last_assignment['variable'] and \
                         parallel_call['step'] in calling_steps:
                             #print ('THIS IS A VALID PARALLEL CALL')
-                            this_is_a_parallel_call = True
+                            this_is_a_parallel_call_1 = True
                             pos = (main_command.parts[0].pos[0], main_command.parts[2].pos[1])
 
-                if not this_is_a_parallel_call:
+                # check for PARALLEL step_step_1, step_step_2, ....
+                if len(main_command.parts) > 1:
+                    line_to_match = ' '.join(x.word for x in main_command.parts)
+                    parallel_call_2 = parse_parallel_call_2(line_to_match)
+                    if parallel_call_2 and all(x in calling_steps for x in parallel_call_2):
+                        this_is_a_parallel_call_2 = True
+                        pos = (main_command.parts[0].pos[0], main_command.parts[-1].pos[1])
+
+                if not (this_is_a_parallel_call_1 or this_is_a_parallel_call_2):
                     # We are looking for a command with a single part (function call)
                     if not len(main_command.parts) == 1:
                         continue
@@ -1560,16 +1579,21 @@ ENDOFFILE
 
                 run_afters.append(step_inter_id)
                 
-                if this_is_a_parallel_call:
+                if this_is_a_parallel_call_1:
                     step_to_call_id = parallel_call['step']
+                elif this_is_a_parallel_call_2:
+                    step_to_call_id = None
                 else:
                     step_to_call_id = bash_to_parse[pos[0]:pos[1]]
                 
-                step_to_call = self.step_ids[step_to_call_id]
+                if step_to_call_id:
+                    step_to_call = self.step_ids[step_to_call_id]
+                else:
+                    step_to_call = None
 
                 #print ('step_to_call:', step_to_call)
 
-                if this_is_a_parallel_call:
+                if this_is_a_parallel_call_1:
                     # This is a parallel call. Iterate in all variable assignments in CSV
                     header = last_assignment['header']
                     for values in last_assignment['content']:
@@ -1579,10 +1603,12 @@ ENDOFFILE
 
                         for item in break_down_step_recursive(step_to_call, parallel_variables=parallel_variables, run_after=run_after + [step_inter_id]):
                             run_afters.append(item['step_inter_id'])
-                            #print ('-->', item['run_after'])
-
                             yield item
-
+                elif this_is_a_parallel_call_2:
+                    for step_to_call in parallel_call_2:
+                        for item in break_down_step_recursive(self.step_ids[step_to_call], run_after=run_after + [step_inter_id]):
+                            run_afters.append(item['step_inter_id'])
+                            yield item
                 else:
                     for item in break_down_step_recursive(step_to_call, run_after=run_after + [step_inter_id]):
                         run_afters.append(item['step_inter_id'])
@@ -2573,7 +2599,6 @@ OBCENDOFFILE
         #Add 'OBC_AIRFLOW_FINAL'
         run_afters['OBC_AIRFLOW_FINAL'] = step_ids + ['OBC_AIRFLOW_INIT']
 
-
         DAG = self.create_DAG(run_afters)
 
         # CREATE FINAL OPERATOR
@@ -2612,7 +2637,7 @@ OBCENDOFFILE
         airflow_python = self.pattern.format(
             WORKFLOW_ID = (workflow_id if workflow_id else self.workflow.root_workflow_id),
             BASH_OPERATORS = '\n'.join(init_operators + tool_bash_operators + step_bash_operators + final_operators),
-            ORDER = DAG # ' >> '.join(['OBC_AIRFLOW_INIT'] + tool_ids + step_ids + ['OBC_AIRFLOW_FINAL']),
+            ORDER = DAG, # ' >> '.join(['OBC_AIRFLOW_INIT'] + tool_ids + step_ids + ['OBC_AIRFLOW_FINAL']),
         )
 
         # Save output / Return
