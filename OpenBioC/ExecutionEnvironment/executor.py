@@ -13,6 +13,8 @@ import bashlex
 import tarfile
 import zipfile
 
+import networkx as nx
+
 try:
     import zlib
     compression = zipfile.ZIP_DEFLATED
@@ -194,40 +196,50 @@ tar zcvf ${OBC_REPORT_TGZ} -C ${OBC_WORK_PATH} ${OBC_NICE_ID}.html ${OBC_NICE_ID
 function PARALLEL() {
     local line_counter=0
     local PIDS=() # 
-    while IFS= read -r line; do
 
-        if [[ -z "${line// }" ]] ; then
-            continue # Ignore empty lines
-        fi
-        let "line_counter=line_counter+1"
+    if [[ $2 == *$'\n'* ]] ; then 
+      while IFS= read -r line; do
 
-        if [ $line_counter -eq 1 ] ; then
-            IFS=',' read -ra header <<< "$line"
-            local header_length=${#header[@]}
-            let "header_length_0=header_length-1"
-            continue
-        fi
+          if [[ -z "${line// }" ]] ; then
+              continue # Ignore empty lines
+          fi
+          let "line_counter=line_counter+1"
 
-        IFS=',' read -ra line_splitted <<< "$line"
-        local line_length=${#line_splitted[@]}
+          if [ $line_counter -eq 1 ] ; then
+              IFS=',' read -ra header <<< "$line"
+              local header_length=${#header[@]}
+              let "header_length_0=header_length-1"
+              continue
+          fi
 
-        if [ $header_length -ne $line_length ] ; then
-            OBC_ERROR="Line:${line_counter} ${line} contains ${line_length} fields whereas the header has ${header_length} fields."
-            return
-        fi
+          IFS=',' read -ra line_splitted <<< "$line"
+          local line_length=${#line_splitted[@]}
 
-        # Set parameters
-        for i in $(seq 0 ${header_length_0})
-        do
-            declare "${header[${i}]}=${line_splitted[${i}]}"
-        done
+          if [ $header_length -ne $line_length ] ; then
+              OBC_ERROR="Line:${line_counter} ${line} contains ${line_length} fields whereas the header has ${header_length} fields."
+              return
+          fi
 
-        #echo "Calling step: $1"
-        eval ${1} &
+          # Set parameters
+          for i in $(seq 0 ${header_length_0})
+          do
+              declare "${header[${i}]}=${line_splitted[${i}]}"
+          done
+
+          #echo "Calling step: $1"
+          eval ${1} &
+          P=$!
+          PIDS=("${PIDS[@]}" ${P})
+
+      done <<< "$2"
+    else
+      for var in "$@" ; do
+        #echo ${var}
+        eval ${var} &
         P=$!
-        PIDS=("${PIDS[@]}" ${P})
-
-    done <<< "$2"
+        IDS=("${PIDS[@]}" ${P})
+      done
+    fi
 
     wait "${PIDS[@]}"
 
@@ -248,6 +260,8 @@ PARAM_1,PARAM_2
 
 PARALLEL step_example "$A"
 # a = re.findall(r'[\w]+=\"[\w\s,\.]+\"[\s]+PARALLEL[\s]+[\w]+[\s]+\"\$[\w]+\"', text)
+
+PARALLEL step_example_1 step_example_2
 '''
 
 bash_patterns['get_json_value'] = '{variable}=$(obc_parse_json "${json_variable}" "{json_key}")'
@@ -418,7 +432,7 @@ class Workflow:
         # Check that all root input are set
         self.input_parameter_values = {}
         self.input_unset_variables = [] # IDs of variables that have not be set by any step
-        log_info('Checking for input values:')
+        log_info('Checking for input values.')
         for root_input_node in self.root_inputs_outputs['inputs']:
             var_set = False
             for arg_input_name, arg_input_value in self.input_parameters.items():
@@ -1388,10 +1402,11 @@ ENDOFFILE
 
         step_counter = defaultdict(int) # How many times this steps has been yielded?
 
-        def break_down_step_recursive(step, parallel_variables=None):
+        def break_down_step_recursive(step, parallel_variables=None, run_after=None):
             '''
             Use bashlex to break down all steps of a bash script
             parallel_variables: Initialize script these variables. Used for the parallel execution
+            run_after: Run this step after "run_after". This is a list 
             '''
 
             bash = step['bash']
@@ -1452,6 +1467,10 @@ ENDOFFILE
             read_from = None
             last_assignment = None # Used for PARALLEL 
 
+            run_afters = [] # List of all the steps that are run in this break down
+            if run_after is None:
+                run_after = []
+
             for main_command in main_commands:
 
                 this_is_a_parallel_call = False
@@ -1485,8 +1504,9 @@ ENDOFFILE
                         last_assignment and \
                         parallel_call['variable'] == last_assignment['variable'] and \
                         parallel_call['step'] in calling_steps:
-                            print ('THIS IS A VALID PARALLEL CALL')
+                            #print ('THIS IS A VALID PARALLEL CALL')
                             this_is_a_parallel_call = True
+                            pos = (main_command.parts[0].pos[0], main_command.parts[2].pos[1])
 
                 if not this_is_a_parallel_call:
                     # We are looking for a command with a single part (function call)
@@ -1503,33 +1523,42 @@ ENDOFFILE
                     if not word in calling_steps:
                         continue
 
+                    pos = main_command.parts[0].pos
+
                 #This is a calling step!
                 found_call = True
-                pos = main_command.parts[0].pos
+                
 
                 part_before_step_call = bash_to_parse[start: pos[0]]
                 step_counter[step['id']] += 1
+                step_inter_id = '{}__{}'.format(step['id'], str(step_counter[step['id']]))
                 save_to = '{}__{}__VARS.sh'.format(step['id'], step_counter[step['id']])
                 save_to_nodot = '{}__{}__VARS_sh'.format(step['id'], step_counter[step['id']])
 
                 input_workflow_variables = [var for var in step['inputs_reads'] + step['outputs_reads'] if var in part_before_step_call]
                 output_workflow_variables = [var for var in step['inputs_sets'] + step['outputs_sets'] if var in part_before_step_call]
 
+                #print ('   --->', run_after)
+
                 yield {
                     'bash': create_json(
-                        save_variables(part_before_step_call, read_from, save_to, input_tool_variables, input_workflow_variables), 
+                        save_variables(part_before_step_call, None, save_to, input_tool_variables, input_workflow_variables), 
                         step, 
                         step_counter[step['id']], 
                         False,
                         output_workflow_variables) ,
                     'id': step['id'],
                     'count': step_counter[step['id']],
+                    'step_inter_id': step_inter_id,
                     'last': False,
                     'input_variables': input_workflow_variables,
                     'output_variables': output_workflow_variables,
+                    'run_after': run_after,
                 }
                 #read_from = save_to
                 read_from = save_to_nodot
+
+                run_afters.append(step_inter_id)
                 
                 if this_is_a_parallel_call:
                     step_to_call_id = parallel_call['step']
@@ -1538,7 +1567,7 @@ ENDOFFILE
                 
                 step_to_call = self.step_ids[step_to_call_id]
 
-                print ('step_to_call:', step_to_call)
+                #print ('step_to_call:', step_to_call)
 
                 if this_is_a_parallel_call:
                     # This is a parallel call. Iterate in all variable assignments in CSV
@@ -1548,11 +1577,15 @@ ENDOFFILE
                             raise OBC_Executor_Exception('Values in Parallel execution: {} are different than header: {}'.format(str(values), str(header)))
                         parallel_variables = dict(zip(header, values))
 
-                        for item in break_down_step_recursive(step_to_call, parallel_variables=parallel_variables):
+                        for item in break_down_step_recursive(step_to_call, parallel_variables=parallel_variables, run_after=run_after + [step_inter_id]):
+                            run_afters.append(item['step_inter_id'])
+                            #print ('-->', item['run_after'])
+
                             yield item
 
                 else:
-                    for item in break_down_step_recursive(step_to_call):
+                    for item in break_down_step_recursive(step_to_call, run_after=run_after + [step_inter_id]):
+                        run_afters.append(item['step_inter_id'])
                         yield item
                 
                 start = pos[1]
@@ -1561,22 +1594,25 @@ ENDOFFILE
             # Yield the rest
             part_after_step_call = bash_to_parse[start:][:-2]
             step_counter[step['id']] += 1
+            step_inter_id = '{}__{}'.format(step['id'], str(step_counter[step['id']]))
             save_to = '{}__{}__VARS.sh'.format(step['id'], step_counter[step['id']])
             save_to_nodot = '{}__{}__VARS_sh'.format(step['id'], step_counter[step['id']])
             input_workflow_variables = [var for var in step['inputs_reads'] + step['outputs_reads'] if var in part_after_step_call]
             output_workflow_variables = [var for var in step['inputs_sets'] + step['outputs_sets'] if var in part_after_step_call]
             yield {
                 'bash' : create_json(
-                    save_variables(part_after_step_call, read_from, save_to, input_tool_variables, input_workflow_variables), 
+                    save_variables(part_after_step_call, None, save_to, input_tool_variables, input_workflow_variables), 
                     step, 
                     step_counter[step['id']], 
                     True,
                     output_workflow_variables),
                 'id': step['id'],
                 'count': step_counter[step['id']],
+                'step_inter_id': step_inter_id,
                 'last': True,
                 'input_variables': input_workflow_variables,
                 'output_variables': output_workflow_variables,
+                'run_after': run_afters + run_after,
 
             }
 
@@ -2357,7 +2393,32 @@ dag = DAG(
 '''
 
     def raw_jinja2(self, bash):
+        '''
+        remove jinja template from airflow
+        '''
         return '{% raw %}\n' + bash + '\n{% endraw %}\n'
+
+    def create_DAG(self, run_afters):
+        '''
+        This is a dictionary.
+        Keys: IDs of broken down steps
+        List: List of broken steps that should be run BEFORE the key
+
+        Return an airflow DAG without redundancies 
+        Applies https://en.wikipedia.org/wiki/Transitive_reduction 
+        Method: https://networkx.github.io/documentation/stable/reference/algorithms/generated/networkx.algorithms.dag.transitive_reduction.html 
+        '''
+        G = nx.DiGraph()
+        edges = [(run_before, run_after) for run_after, run_befores in run_afters.items() for run_before in run_befores]
+        G.add_edges_from(edges)
+        DAG = nx.transitive_reduction(G)
+        #print (DAG.edges)
+        return '\n'.join('{} >> {}'.format(edge[0], edge[1]) for edge in DAG.edges)
+
+    def create_step_vars_filename(self, step_inter_id):
+        '''
+        '''
+        return os.path.join('${OBC_WORK_PATH}', step_inter_id + '.sh')
 
     def build(self, output, output_format='airflow', workflow_id=None, obc_client=False):
         '''
@@ -2376,17 +2437,19 @@ dag = DAG(
         else:
             d = {env:g[env] for env in ['OBC_DATA_PATH', 'OBC_TOOL_PATH', 'OBC_WORK_PATH'] if env in g}
 
-        if obc_client and workflow_id:
+        d['OBC_WORKFLOW_NAME'] = self.workflow.root_workflow['name']
+        d['OBC_WORKFLOW_EDIT'] = str(self.workflow.root_workflow['edit']) 
+        d['OBC_NICE_ID'] = workflow_id if workflow_id else self.workflow.root_workflow_id # self.workflow.nice_id_global
+
+        if obc_client:
             #d['OBC_REPORT_PATH'] = os.path.join(d['OBC_WORK_PATH'], workflow_id + '.html') # This is set from BASH
             d['OBC_SERVER'] = self.workflow.obc_server
-            d['OBC_WORKFLOW_NAME'] = self.workflow.root_workflow['name']
-            d['OBC_WORKFLOW_EDIT'] = str(self.workflow.root_workflow['edit']) 
-            d['OBC_NICE_ID'] = workflow_id if workflow_id else self.workflow.root_workflow_id # self.workflow.nice_id_global
 
         if d:
             envs = 'env={},'.format(str(d))
         else:
             envs = ''
+
 
         # Create init step for report
         bash = r'''
@@ -2449,6 +2512,7 @@ OBCENDOFFILE
         previous_steps_vars = []
         step_ids = []
         step_bash_operators = []
+        run_afters = {}
         for step in self.workflow.break_down_step_generator(
             enable_read_arguments_from_commandline=False,
             enable_save_variables_to_json=False,
@@ -2460,7 +2524,14 @@ OBCENDOFFILE
             bash = step['bash']
             step_inter_id = '{}__{}'.format(step_id, str(count))
             step_ids.append(step_inter_id)
-            step_vars_filename = os.path.join('${OBC_WORK_PATH}', step_inter_id + '.sh')
+            step_vars_filename = self.create_step_vars_filename(step_inter_id) # os.path.join('${OBC_WORK_PATH}', step_inter_id + '.sh')
+
+
+            #print (step['run_after'])
+
+            if step['run_after']:
+                #print ('{} >> {}'.format(str(step['run_after']), step_inter_id))
+                run_afters[step_inter_id] = step['run_after']
 
             # Add declare. This should be first
             bash = self.workflow.declare_decorate_bash(bash, step_vars_filename)
@@ -2472,8 +2543,9 @@ OBCENDOFFILE
             
             # Load all variables from previous steps
             load_step_vars = ''
-            for step_filename in previous_steps_vars:
-                load_step_vars += '. {}\n'.format(step_filename)
+            if step['run_after']:
+                for run_after_step in step['run_after']:
+                    load_step_vars += '. {}\n'.format(self.create_step_vars_filename(run_after_step))
             
             bash = load_tool_vars + load_step_vars + load_obc_functions_bash + bash
 
@@ -2486,6 +2558,23 @@ OBCENDOFFILE
                 ENVS=envs,
             )
             step_bash_operators.append(airflow_bash)
+
+        #print ('=====')
+        #print (run_afters)
+        #print ('=====')
+
+        #Add 'OBC_AIRFLOW_INIT'
+        for step_inter_id in step_ids:
+            if step_inter_id in run_afters:
+                run_afters[step_inter_id].append('OBC_AIRFLOW_INIT')
+            else:
+                run_afters[step_inter_id] = ['OBC_AIRFLOW_INIT']
+
+        #Add 'OBC_AIRFLOW_FINAL'
+        run_afters['OBC_AIRFLOW_FINAL'] = step_ids + ['OBC_AIRFLOW_INIT']
+
+
+        DAG = self.create_DAG(run_afters)
 
         # CREATE FINAL OPERATOR
         # Add all variables from previous tools
@@ -2523,7 +2612,7 @@ OBCENDOFFILE
         airflow_python = self.pattern.format(
             WORKFLOW_ID = (workflow_id if workflow_id else self.workflow.root_workflow_id),
             BASH_OPERATORS = '\n'.join(init_operators + tool_bash_operators + step_bash_operators + final_operators),
-            ORDER = ' >> '.join(['OBC_AIRFLOW_INIT'] + tool_ids + step_ids + ['OBC_AIRFLOW_FINAL']),
+            ORDER = DAG # ' >> '.join(['OBC_AIRFLOW_INIT'] + tool_ids + step_ids + ['OBC_AIRFLOW_FINAL']),
         )
 
         # Save output / Return
@@ -2597,7 +2686,7 @@ if __name__ == '__main__':
 
     runner_options = ['sh', 'cwl', 'cwltargz', 'cwlzip', 'airflow']
 
-    parser = argparse.ArgumentParser(description='OpenBio-C workflow execute-or')
+    parser = argparse.ArgumentParser(description='OpenBio-C workflow executor')
 
     parser.add_argument('-W', '--workflow', dest='workflow_filename', help='JSON filename of the workflow to run', required=True)
     parser.add_argument('-S', '--server', dest='server', help='The Server\'s url. It should contain http or https', default='https://www.openbio.eu/platform')
@@ -2615,9 +2704,9 @@ if __name__ == '__main__':
     parser.add_argument('--askinput', dest='askinput', 
         help="Where to get input parameters from. Available options are: 'JSON', during convert JSON to BASH, 'BASH' ask for input in bash, 'NO' do not ask for input.", 
         default='JSON', choices=['JSON', 'BASH', 'NO'])
-    parser.add_argument('--OBC_DATA_PATH', dest='OBC_DATA_PATH', required=False, help="Set the ${OBC_DATA_PATH} environment variable. This is were the data are stored")
-    parser.add_argument('--OBC_TOOL_PATH', dest='OBC_TOOL_PATH', required=False, help="Set the ${OBC_TOOL_PATH} environment variable. This is were the tools are installed")
-    parser.add_argument('--OBC_WORK_PATH', dest='OBC_WORK_PATH', required=False, help="Set the ${OBC_WORK_PATH} environment variable. This is were the tools are installed")
+    parser.add_argument('--OBC_DATA_PATH', dest='OBC_DATA_PATH', required=False, help="Set the ${OBC_DATA_PATH} environment variable. This is where the data are stored")
+    parser.add_argument('--OBC_TOOL_PATH', dest='OBC_TOOL_PATH', required=False, help="Set the ${OBC_TOOL_PATH} environment variable. This is where the tools are installed")
+    parser.add_argument('--OBC_WORK_PATH', dest='OBC_WORK_PATH', required=False, help="Set the ${OBC_WORK_PATH} environment variable. This is where the tools are installed")
 
     args = parser.parse_args()
 
