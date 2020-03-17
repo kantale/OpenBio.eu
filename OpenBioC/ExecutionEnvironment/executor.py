@@ -1683,8 +1683,9 @@ class BaseExecutor():
 
     def create_step_vars_filename(self, step_inter_id):
         '''
+        This is the file that contains the variables of an intermediate step
         '''
-        return os.path.join('${OBC_WORK_PATH}', step_inter_id + '.sh')
+        return os.path.join('${OBC_WORK_PATH}', step_inter_id + '_VARS.sh')
 
     def transitive_reduction(self, run_afters):
         '''
@@ -1739,8 +1740,13 @@ OBCENDOFFILE
         for output_parameter in self.workflow.output_parameters:
             bash += 'REPORT {} ${{{}}} OUTPUT_VARIABLE \n'.format(output_parameter['id'], output_parameter['id'])
 
-        # Create tar.gz 
+        # Archive the report in tar.gz 
         bash += bash_patterns['final_report']
+
+        # The final step, prints the output variables in json format
+        export_json = '"{' + ', '.join([r'''\"{A}\": \"${{{A}}}\"'''.format(A=x['id']) for x in self.workflow.output_parameters]) + '}"'
+        export_json = "echo " + export_json + '\n'
+        bash = bash + export_json
 
         return bash
 
@@ -2510,11 +2516,14 @@ requirements:
       listing:
          - class: File
            location: "{COMMAND_LINE_SH}"
+   InlineJavascriptRequirement: {{}} 
    EnvVarRequirement:
        envDef:
 {ENVIRONMENT_VARIABLES}
 
 inputs: {INPUTS}
+
+{STDOUT}
 
 outputs: {OUTPUTS}
 
@@ -2527,7 +2536,7 @@ class: Workflow
 
 inputs: []
 
-outputs: []
+outputs: {OUTPUTS}
 
 steps:
 {STEPS}
@@ -2537,11 +2546,42 @@ steps:
     STEP_PATTERN = r'''   {ID}:
       run: {CWL_FILENAME}
       in: {INPUTS}
-      out: [{ID}]
+      out: {OUTPUTS}
 
 '''
 
     ENVIRONMENT_VARIABLE_PATTERN = '         {NAME}: "{VALUE}"'
+
+    OUTPUT_VARIABLES_PATTERN = r'''   {ID}:
+      type: string
+      outputBinding:
+         glob: cwl.output.json
+         loadContents: true
+         outputEval: $(JSON.parse(self[0].contents).{ID})
+'''
+    
+    OUTPUT_VARIABLES_WORKFLOW_PATTERN = r'''
+   {ID}:
+      type: string
+      outputSource: OBC_CWL_FINAL/{ID}
+'''
+
+    def create_final_step_output_cwl(self, ):
+        '''
+        '''
+        if not self.workflow.output_parameters:
+            return '[]'
+
+        return '\n' + '\n'.join(self.OUTPUT_VARIABLES_PATTERN.format(ID=variable['id']) for variable in self.workflow.output_parameters) + '\n'
+
+    def create_final_workflow_output_cwl(self, ):
+        '''
+        '''
+        if not self.workflow.output_parameters:
+            return '[]'
+
+        return '\n'.join(self.OUTPUT_VARIABLES_WORKFLOW_PATTERN.format(ID=variable['id']) for variable in self.workflow.output_parameters) + '\n'
+
 
     def create_main_workflow_step(self, step_inter_id, inputs,):
         '''
@@ -2552,10 +2592,19 @@ steps:
         else:
             INPUTS = '\n' + '\n'.join('         {X}: {X}/{X}'.format(X=x) for x in inputs) + '\n'
 
+        if step_inter_id == 'OBC_CWL_FINAL':
+            if self.workflow.output_parameters:
+                OUTPUTS = '[' + ', '.join(par['id'] for par in self.workflow.output_parameters) + ']'
+            else:
+                OUTPUTS = '[OBC_CWL_FINAL]'
+        else:
+            OUTPUTS = '[' + step_inter_id + ']'
+
         return self.STEP_PATTERN.format(
             ID=step_inter_id,
             CWL_FILENAME = self.create_step_inter_id_cwl_fn(step_inter_id),
             INPUTS=INPUTS,
+            OUTPUTS=OUTPUTS,
         )
 
     def get_environment_variables_string(self, env_variables):
@@ -2615,6 +2664,7 @@ steps:
         previous_tools = []
         tool_ids = []
         files = {}
+        run_afters = {}
 
         # Create init step
         files['OBC_CWL_INIT.sh'] = self.obc_init_step()
@@ -2624,6 +2674,7 @@ steps:
             INPUTS = self.cwl_inputs([]),
             OUTPUTS = self.cwl_output('obc_init_step'),
             ENVIRONMENT_VARIABLES=env_variables_string,
+            STDOUT='',
         )
 
         # Add tools
@@ -2643,14 +2694,17 @@ steps:
                 variables_sh_filename_write = tool_vars_filename,
             )
             files[tool_id_sh_fn] = bash
-                      
+            
+            if tool_ids:
+                run_afters[tool_id] = copy.copy(tool_ids)          
             tool_ids.append(tool_id)
             previous_tools.append(tool_vars_filename)
+            
 
         # Add steps
         previous_steps_vars = []
         step_inter_ids = []
-        run_afters = {}
+        
         for step in self.workflow.break_down_step_generator(
             enable_read_arguments_from_commandline=False,
             enable_save_variables_to_json=False,
@@ -2706,15 +2760,17 @@ steps:
                 SHELL=shell,
                 COMMAND_LINE_SH=self.create_step_inter_id_sh_fn(node),
                 INPUTS=self.cwl_inputs(predecessors),
-                OUTPUTS=self.cwl_output(node),
+                OUTPUTS=self.cwl_output(node) if node != 'OBC_CWL_FINAL' else self.create_final_step_output_cwl(),
                 ENVIRONMENT_VARIABLES=env_variables_string,
+                STDOUT='' if node != 'OBC_CWL_FINAL' else 'stdout: cwl.output.json',
             )
             files[fn] = cwl
 
             steps_cwl.append(self.create_main_workflow_step(node, predecessors))
 
         files['workflow.cwl'] = self.WORKFLOW_CWL_PATTERN.format(
-            STEPS='\n'.join(steps_cwl)
+            STEPS='\n'.join(steps_cwl),
+            OUTPUTS=self.create_final_workflow_output_cwl(),
         )
 
         for filename, content in files.items():
@@ -2827,7 +2883,8 @@ dag = DAG(
 
 
             tool_bash_operators.append(airflow_bash)
-            run_afters[tool_id] = copy.copy(tool_ids)
+            if tool_ids:
+                run_afters[tool_id] = copy.copy(tool_ids)
             tool_ids.append(tool_id)
 
 
