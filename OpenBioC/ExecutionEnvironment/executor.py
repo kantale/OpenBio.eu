@@ -1650,10 +1650,121 @@ ENDOFFILE
 class BaseExecutor():
     '''
     '''
+    load_obc_functions_bash = r'. ${OBC_WORK_PATH}/obc_functions.sh' + '\n'
+
     def __init__(self, workflow):
         if not isinstance(workflow, Workflow):
-            raise OBC_Executor_Exception('workflow Unknown type: {}'.format(type(workflow).__name__))
+            raise OBC_Executor_Exception('workflow unknown type: {}'.format(type(workflow).__name__))
         self.workflow = workflow
+
+
+    def get_environment_variables(self, workflow_id=None, obc_client=None):
+        '''
+        '''
+        if obc_client:
+            d = {
+                'OBC_DATA_PATH': g['CLIENT_OBC_DATA_PATH'],
+                'OBC_TOOL_PATH': g['CLIENT_OBC_TOOL_PATH'],
+                'OBC_WORK_PATH': g['CLIENT_OBC_WORK_PATH'],
+            }
+        else:
+            d = {env:g[env] for env in ['OBC_DATA_PATH', 'OBC_TOOL_PATH', 'OBC_WORK_PATH'] if env in g}
+
+        d['OBC_WORKFLOW_NAME'] = self.workflow.root_workflow['name']
+        d['OBC_WORKFLOW_EDIT'] = str(self.workflow.root_workflow['edit']) 
+        d['OBC_NICE_ID'] = workflow_id if workflow_id else self.workflow.root_workflow_id # self.workflow.nice_id_global
+
+        if obc_client:
+            #d['OBC_REPORT_PATH'] = os.path.join(d['OBC_WORK_PATH'], workflow_id + '.html') # This is set from BASH
+            d['OBC_SERVER'] = self.workflow.obc_server
+
+        return d
+
+
+    def create_step_vars_filename(self, step_inter_id):
+        '''
+        '''
+        return os.path.join('${OBC_WORK_PATH}', step_inter_id + '.sh')
+
+    def transitive_reduction(self, run_afters):
+        '''
+        This is a dictionary.
+        Keys: IDs of broken down steps
+        List: List of broken steps that should be run BEFORE the key
+
+        Return an airflow DAG without redundancies 
+        Applies https://en.wikipedia.org/wiki/Transitive_reduction 
+        Method: https://networkx.github.io/documentation/stable/reference/algorithms/generated/networkx.algorithms.dag.transitive_reduction.html 
+        '''
+        G = nx.DiGraph()
+        edges = [(run_before, run_after) for run_after, run_befores in run_afters.items() for run_before in run_befores]
+        G.add_edges_from(edges)
+        DAG = nx.transitive_reduction(G)
+        return DAG
+
+    def obc_init_step(self,):
+        # Create init step for report
+        bash = r'''
+
+{{init_report}}
+
+cat > ${OBC_WORK_PATH}/obc_functions.sh << 'OBCENDOFFILE'
+
+{{function_REPORT}}
+
+OBCENDOFFILE
+
+'''
+
+        bash = bash.replace(r'{{init_report}}', bash_patterns['init_report'])
+        bash = bash.replace(r'{{function_REPORT}}', bash_patterns['function_REPORT'])
+
+        return bash
+
+    def obc_final_step(self, previous_tools, previous_steps_vars):
+        # CREATE FINAL OPERATOR
+        # Add all variables from previous tools
+        load_tool_vars = ''
+        for tool_filename in previous_tools:
+            load_tool_vars += '. {}\n'.format(tool_filename)
+
+        # Load all variables from previous steps
+        load_step_vars = ''
+        for step_filename in previous_steps_vars:
+            load_step_vars += '. {}\n'.format(step_filename)
+
+        bash = load_tool_vars + load_step_vars + self.load_obc_functions_bash
+
+        # Add output varables
+        for output_parameter in self.workflow.output_parameters:
+            bash += 'REPORT {} ${{{}}} OUTPUT_VARIABLE \n'.format(output_parameter['id'], output_parameter['id'])
+
+        # Create tar.gz 
+        bash += bash_patterns['final_report']
+
+        return bash
+
+    def add_init_and_final_in_graph(self, init_step_name, final_step_name, run_afters, previous_tools, step_inter_ids):
+        #Add 'OBC_AIRFLOW_INIT' BEFORE ALL TOOLS
+        for tool_id in previous_tools:
+            if tool_id in run_afters:
+                run_afters[tool_id].append(init_step_name)
+            else:
+                run_afters[tool_id] = [init_step_name]
+
+        #Add 'OBC_AIRFLOW_INIT' BEFORE ALL STEPS
+        for step_inter_id in step_inter_ids:
+            if step_inter_id in run_afters:
+                run_afters[step_inter_id].append(init_step_name)
+            else:
+                run_afters[step_inter_id] = [init_step_name]
+
+        # Add to the first step, the last tool
+        if previous_tools:
+            run_afters[step_inter_ids[0]].append(previous_tools[-1])
+
+        #Add 'OBC_AIRFLOW_FINAL' AFTER ALL STEPS
+        run_afters[final_step_name] = step_inter_ids + [init_step_name]
 
 
 
@@ -1736,9 +1847,10 @@ class LocalExecutor(BaseExecutor):
 
         return ret
 
-class CWLExecutor(BaseExecutor):
+class CWLExecutor_OLD(BaseExecutor):
     '''
     Common Workflow Language Executor
+    DEPRECATED
     '''
 
     RUNNER = '#!/usr/bin/env cwl-runner'
@@ -2383,6 +2495,236 @@ steps:
             fileIO.flush()
             return fileIO.getvalue()
 
+class CWLExecutor(BaseExecutor):
+    '''
+    '''
+
+    COMMAND_LINE_CWL_PATTERN = r'''
+class: CommandLineTool
+cwlVersion: v1.0
+
+baseCommand: ["{SHELL}", "{COMMAND_LINE_SH}"]
+
+requirements:
+   InitialWorkDirRequirement:
+      listing:
+         - class: File
+           location: "{COMMAND_LINE_SH}"
+   EnvVarRequirement:
+       envDef:
+{ENVIRONMENT_VARIABLES}
+
+inputs: {INPUTS}
+
+outputs: {OUTPUTS}
+
+'''
+
+    WORKFLOW_CWL_PATTERN = r'''#!/usr/bin/env cwl-runner
+
+cwlVersion: v1.0
+class: Workflow
+
+inputs: []
+
+outputs: []
+
+steps:
+{STEPS}
+
+'''
+
+    STEP_PATTERN = r'''   {ID}:
+      run: {CWL_FILENAME}
+      in: {INPUTS}
+      out: [{ID}]
+
+'''
+
+    ENVIRONMENT_VARIABLE_PATTERN = '         {NAME}: "{VALUE}"'
+
+    def create_main_workflow_step(self, step_inter_id, inputs,):
+        '''
+        '''
+
+        if not inputs:
+            INPUTS = '[]'
+        else:
+            INPUTS = '\n' + '\n'.join('         {X}: {X}/{X}'.format(X=x) for x in inputs) + '\n'
+
+        return self.STEP_PATTERN.format(
+            ID=step_inter_id,
+            CWL_FILENAME = self.create_step_inter_id_cwl_fn(step_inter_id),
+            INPUTS=INPUTS,
+        )
+
+    def get_environment_variables_string(self, env_variables):
+
+        return '\n'.join(self.ENVIRONMENT_VARIABLE_PATTERN.format(NAME=name, VALUE=value) for name, value in env_variables.items())
+
+
+    def create_tool_id_sh_fn(self, tool_id):
+        '''
+        '''
+        return '{}.sh'.format(tool_id)
+
+    def create_tool_id_cwl_fn(self, tool_id):
+        '''
+        '''
+        return '{}.cwl'.format(tool_id)
+
+    def create_step_inter_id_sh_fn(self, step_inter_id):
+        '''
+        '''
+        return '{}.sh'.format(step_inter_id)
+
+    def create_step_inter_id_cwl_fn(self, step_inter_id):
+        '''
+        '''
+        return '{}.cwl'.format(step_inter_id)
+
+
+    def cwl_input(self, input_id):
+        '''
+        '''
+        return '   {}:\n      type: File'.format(input_id)
+
+    def cwl_inputs(self, input_ids):
+        '''
+        '''
+
+        if not input_ids:
+            return '[]'
+
+        return '\n' + '\n'.join(map(self.cwl_input, input_ids)) + '\n'
+
+    def cwl_output(self, output_id):
+        '''
+        '''
+        return '\n   {}:\n      type: stdout'.format(output_id)
+
+
+    def build(self, output, shell='bash', output_format='cwltargz'):
+        '''
+        '''
+
+
+        env_variables = self.get_environment_variables()
+        env_variables_string = self.get_environment_variables_string(env_variables)
+
+        previous_tools = []
+        tool_ids = []
+        files = {}
+
+        # Create init step
+        files['OBC_CWL_INIT.sh'] = self.obc_init_step()
+        files['OBC_CWL_INIT.cwl'] = self.COMMAND_LINE_CWL_PATTERN.format(
+            SHELL=shell,
+            COMMAND_LINE_SH='obc_init_step.sh',
+            INPUTS = self.cwl_inputs([]),
+            OUTPUTS = self.cwl_output('obc_init_step'),
+            ENVIRONMENT_VARIABLES=env_variables_string,
+        )
+
+        # Add tools
+        for tool_index, tool in enumerate(self.workflow.tool_bash_script_generator()):
+
+            tool_vars_filename = os.path.join('${OBC_WORK_PATH}', Workflow.get_tool_vars_filename(tool))
+            tool_id = self.workflow.get_tool_dash_id(tool, no_dots=True)
+            tool_id_sh_fn = self.create_tool_id_sh_fn(tool_id)
+            
+            bash = self.workflow.get_tool_bash_commands(
+                tool=tool, 
+                validation=True, 
+                update_server_status=False,
+                read_variables_from_command_line=False,
+                variables_json_filename=None,
+                variables_sh_filename_read = previous_tools,
+                variables_sh_filename_write = tool_vars_filename,
+            )
+            files[tool_id_sh_fn] = bash
+                      
+            tool_ids.append(tool_id)
+            previous_tools.append(tool_vars_filename)
+
+        # Add steps
+        previous_steps_vars = []
+        step_inter_ids = []
+        run_afters = {}
+        for step in self.workflow.break_down_step_generator(
+            enable_read_arguments_from_commandline=False,
+            enable_save_variables_to_json=False,
+            enable_save_variables_to_sh=False,
+            ):
+
+            step_id = step['id']
+            count = step['count']
+            bash = step['bash']
+            step_inter_id = '{}__{}'.format(step_id, str(count))
+            step_inter_ids.append(step_inter_id)
+            step_vars_filename = self.create_step_vars_filename(step_inter_id) # os.path.join('${OBC_WORK_PATH}', step_inter_id + '.sh')
+
+            if step['run_after']:
+                run_afters[step_inter_id] = step['run_after']
+
+            # Add declare. This should be first
+            bash = self.workflow.declare_decorate_bash(bash, step_vars_filename)
+
+            # Add all variables from previous tools
+            load_tool_vars = ''
+            for tool_filename in previous_tools:
+                load_tool_vars += '. {}\n'.format(tool_filename)
+            
+            # Load all variables from previous steps
+            load_step_vars = ''
+            if step['run_after']:
+                for run_after_step in step['run_after']:
+                    load_step_vars += '. {}\n'.format(self.create_step_vars_filename(run_after_step))
+            
+            bash = load_tool_vars + load_step_vars + self.load_obc_functions_bash + bash
+
+            previous_steps_vars.append(step_vars_filename)
+
+            step_inter_id_sh_fn = self.create_step_inter_id_sh_fn(step_inter_id)
+            files[step_inter_id_sh_fn] = bash
+
+        # Create final step
+        files['OBC_CWL_FINAL.sh'] = self.obc_final_step(previous_tools, previous_steps_vars)
+
+        # Add INIT and FINAL in the graph
+        self.add_init_and_final_in_graph('OBC_CWL_INIT', 'OBC_CWL_FINAL', run_afters, tool_ids, step_inter_ids) 
+
+        #Create DAG
+        DAG = self.transitive_reduction(run_afters)
+
+        steps_cwl = []
+        for node in DAG.nodes:
+            #print (node + ' --> ', list(DAG.predecessors(node)))
+            predecessors = list(DAG.predecessors(node))
+            fn = self.create_step_inter_id_cwl_fn(node)
+            cwl = self.COMMAND_LINE_CWL_PATTERN.format(
+                SHELL=shell,
+                COMMAND_LINE_SH=self.create_step_inter_id_sh_fn(node),
+                INPUTS=self.cwl_inputs(predecessors),
+                OUTPUTS=self.cwl_output(node),
+                ENVIRONMENT_VARIABLES=env_variables_string,
+            )
+            files[fn] = cwl
+
+            steps_cwl.append(self.create_main_workflow_step(node, predecessors))
+
+        files['workflow.cwl'] = self.WORKFLOW_CWL_PATTERN.format(
+            STEPS='\n'.join(steps_cwl)
+        )
+
+        for filename, content in files.items():
+            fn2 = os.path.join('del', filename)
+            with open(fn2, 'w') as f:
+                f.write(content)
+
+        print ('FILES SAVED')
+
+
 class AirflowExecutor(BaseExecutor):
     '''
     '''
@@ -2424,27 +2766,11 @@ dag = DAG(
         '''
         return '{% raw %}\n' + bash + '\n{% endraw %}\n'
 
+
     def create_DAG(self, run_afters):
-        '''
-        This is a dictionary.
-        Keys: IDs of broken down steps
-        List: List of broken steps that should be run BEFORE the key
-
-        Return an airflow DAG without redundancies 
-        Applies https://en.wikipedia.org/wiki/Transitive_reduction 
-        Method: https://networkx.github.io/documentation/stable/reference/algorithms/generated/networkx.algorithms.dag.transitive_reduction.html 
-        '''
-        G = nx.DiGraph()
-        edges = [(run_before, run_after) for run_after, run_befores in run_afters.items() for run_before in run_befores]
-        G.add_edges_from(edges)
-        DAG = nx.transitive_reduction(G)
         #print (DAG.edges)
+        DAG = self.transitive_reduction(run_afters)
         return '\n'.join('{} >> {}'.format(edge[0], edge[1]) for edge in DAG.edges)
-
-    def create_step_vars_filename(self, step_inter_id):
-        '''
-        '''
-        return os.path.join('${OBC_WORK_PATH}', step_inter_id + '.sh')
 
     def build(self, output, output_format='airflow', workflow_id=None, obc_client=False):
         '''
@@ -2454,46 +2780,15 @@ dag = DAG(
         obc_client : IF True, generate airflow for OBC client. This just sets the proper OBC_* directories
         '''
 
-        if obc_client:
-            d = {
-                'OBC_DATA_PATH': g['CLIENT_OBC_DATA_PATH'],
-                'OBC_TOOL_PATH': g['CLIENT_OBC_TOOL_PATH'],
-                'OBC_WORK_PATH': g['CLIENT_OBC_WORK_PATH'],
-            }
-        else:
-            d = {env:g[env] for env in ['OBC_DATA_PATH', 'OBC_TOOL_PATH', 'OBC_WORK_PATH'] if env in g}
-
-        d['OBC_WORKFLOW_NAME'] = self.workflow.root_workflow['name']
-        d['OBC_WORKFLOW_EDIT'] = str(self.workflow.root_workflow['edit']) 
-        d['OBC_NICE_ID'] = workflow_id if workflow_id else self.workflow.root_workflow_id # self.workflow.nice_id_global
-
-        if obc_client:
-            #d['OBC_REPORT_PATH'] = os.path.join(d['OBC_WORK_PATH'], workflow_id + '.html') # This is set from BASH
-            d['OBC_SERVER'] = self.workflow.obc_server
+        d = self.get_environment_variables(self, obc_client=obc_client)
 
         if d:
             envs = 'env={},'.format(str(d))
         else:
             envs = ''
 
-
-        # Create init step for report
-        bash = r'''
-
-{{init_report}}
-
-cat > ${OBC_WORK_PATH}/obc_functions.sh << 'OBCENDOFFILE'
-
-{{function_REPORT}}
-
-OBCENDOFFILE
-
-'''
-
-        bash = bash.replace(r'{{init_report}}', bash_patterns['init_report'])
-        bash = bash.replace(r'{{function_REPORT}}', bash_patterns['function_REPORT'])
-        load_obc_functions_bash = r'. ${OBC_WORK_PATH}/obc_functions.sh' + '\n'
-
+        # Create init step
+        bash = self.obc_init_step()
         bash = self.raw_jinja2(bash)
 
         airflow_bash = self.bash_operator_pattern.format(
@@ -2503,6 +2798,7 @@ OBCENDOFFILE
         )
 
         init_operators = [airflow_bash]
+        run_afters = {}
 
         # CREATE TOOL OPERATORS
         previous_tools = []
@@ -2529,16 +2825,18 @@ OBCENDOFFILE
                 ENVS=envs,
             )
 
+
             tool_bash_operators.append(airflow_bash)
+            run_afters[tool_id] = copy.copy(tool_ids)
             tool_ids.append(tool_id)
+
 
             previous_tools.append(tool_vars_filename)
 
         # CREATE STEP OPERATORS
         previous_steps_vars = []
-        step_ids = []
+        step_inter_ids = []
         step_bash_operators = []
-        run_afters = {}
         for step in self.workflow.break_down_step_generator(
             enable_read_arguments_from_commandline=False,
             enable_save_variables_to_json=False,
@@ -2549,7 +2847,7 @@ OBCENDOFFILE
             count = step['count']
             bash = step['bash']
             step_inter_id = '{}__{}'.format(step_id, str(count))
-            step_ids.append(step_inter_id)
+            step_inter_ids.append(step_inter_id)
             step_vars_filename = self.create_step_vars_filename(step_inter_id) # os.path.join('${OBC_WORK_PATH}', step_inter_id + '.sh')
 
 
@@ -2573,7 +2871,7 @@ OBCENDOFFILE
                 for run_after_step in step['run_after']:
                     load_step_vars += '. {}\n'.format(self.create_step_vars_filename(run_after_step))
             
-            bash = load_tool_vars + load_step_vars + load_obc_functions_bash + bash
+            bash = load_tool_vars + load_step_vars + self.load_obc_functions_bash + bash
 
             previous_steps_vars.append(step_vars_filename)
 
@@ -2585,54 +2883,21 @@ OBCENDOFFILE
             )
             step_bash_operators.append(airflow_bash)
 
-        #print ('=====')
-        #print (run_afters)
-        #print ('=====')
-
-        #Add 'OBC_AIRFLOW_INIT'
-        for step_inter_id in step_ids:
-            if step_inter_id in run_afters:
-                run_afters[step_inter_id].append('OBC_AIRFLOW_INIT')
-            else:
-                run_afters[step_inter_id] = ['OBC_AIRFLOW_INIT']
-
-        #Add 'OBC_AIRFLOW_FINAL'
-        run_afters['OBC_AIRFLOW_FINAL'] = step_ids + ['OBC_AIRFLOW_INIT']
-
-        DAG = self.create_DAG(run_afters)
-
-        # CREATE FINAL OPERATOR
-        # Add all variables from previous tools
-        load_tool_vars = ''
-        for tool_filename in previous_tools:
-            load_tool_vars += '. {}\n'.format(tool_filename)
-
-        # Load all variables from previous steps
-        load_step_vars = ''
-        for step_filename in previous_steps_vars:
-            load_step_vars += '. {}\n'.format(step_filename)
-
-        bash = load_tool_vars + load_step_vars + load_obc_functions_bash
-
-        # Add output varables
-        for output_parameter in self.workflow.output_parameters:
-            bash += 'REPORT {} ${{{}}} OUTPUT_VARIABLE \n'.format(output_parameter['id'], output_parameter['id'])
-
-        # Create tar.gz 
-        bash += bash_patterns['final_report']
-
+        # Create final step
+        bash = self.obc_final_step(previous_tools, previous_steps_vars) 
         # Wrap in jinja2 verbatim . https://stackoverflow.com/questions/25359898/escape-jinja2-syntax-in-a-jinja2-template 
         bash = self.raw_jinja2(bash)
-
         airflow_bash = self.bash_operator_pattern.format(
             ID='OBC_AIRFLOW_FINAL',
             BASH=bash,
             ENVS=envs,
         )
-
         final_operators = [airflow_bash]
-        # END OF FINAL OPERATORS
 
+        # Add INIT and FINAL in the graph
+        self.add_init_and_final_in_graph('OBC_AIRFLOW_INIT', 'OBC_AIRFLOW_FINAL', run_afters, previous_tools, step_inter_ids) 
+        # Create dag
+        DAG = self.create_DAG(run_afters)
 
         airflow_python = self.pattern.format(
             WORKFLOW_ID = (workflow_id if workflow_id else self.workflow.root_workflow_id),
@@ -2658,15 +2923,11 @@ OBCENDOFFILE
 
 
 
-class DockerExecutor(BaseExecutor):
+class NextflowExecutor(BaseExecutor):
     '''
     '''
     pass
 
-class AmazonExecutor(BaseExecutor):
-    '''
-    '''
-    pass
 
 def create_bash_script(workflow_object, server, output_format, workflow_id=None, obc_client=False):
     '''
