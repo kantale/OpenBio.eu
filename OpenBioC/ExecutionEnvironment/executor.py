@@ -455,6 +455,8 @@ class Workflow:
 
                 elif self.askinput == 'NO':
                     log_info('Warning: Input Parameter {} ({}) has not been set by any step.'.format(root_input_node['id'], root_input_node['description']))
+                    # Set None values
+                    self.input_parameter_values[root_input_node['id']] = {'value': None, 'description': root_input_node['description']}
 
         # Check that all outpus will be eventually set
         self.output_parameter_step_setters = {}
@@ -1657,6 +1659,15 @@ class BaseExecutor():
             raise OBC_Executor_Exception('workflow unknown type: {}'.format(type(workflow).__name__))
         self.workflow = workflow
 
+        # The file that contain the values of the input parameters
+        self.file_with_input_parameters = '${{OBC_WORK_PATH}}/{ID}_inputs.sh'.format(ID=self.workflow.nice_id_global)
+
+    def load_file_with_input_parameters(self,):
+        '''
+        '''
+        return '. {}'.format(self.file_with_input_parameters) + '\n'
+
+
 
     def get_environment_variables(self, workflow_id=None, obc_client=None):
         '''
@@ -1772,6 +1783,62 @@ OBCENDOFFILE
         #Add 'OBC_AIRFLOW_FINAL' AFTER ALL STEPS
         run_afters[final_step_name] = step_inter_ids + [init_step_name]
 
+    def create_targz(self, output, files):
+        '''
+        Adapted from: https://stackoverflow.com/questions/740820/python-write-string-directly-to-tarfile
+        '''
+
+        if output is None:
+            args = []
+            fileIO = io.BytesIO()
+            kwargs = {'fileobj': fileIO, 'mode': 'w:gz'}
+        else:
+            # Check for file extension
+            if not os.path.splitext(output)[1].lower() in ['.tgz', '.gz']:
+                output = output + '.tgz'
+
+            args = [output, "w:gz"]
+            kwargs = {}
+
+        with tarfile.open(*args, **kwargs) as tar:
+            for filename in files:
+                content = files[filename].encode('utf-8')
+                file = io.BytesIO(content)
+                info = tarfile.TarInfo(name=filename)
+                info.size = len(content)
+                tar.addfile(tarinfo=info, fileobj=file)
+        if output:
+            log_info('Created tar gz file: {}'.format(output))
+
+        if output is None:
+            fileIO.flush()
+            return fileIO.getvalue()
+
+    def create_zip(self, output, files):
+        '''
+        '''
+
+        if output is None:
+            fileIO = io.BytesIO()
+            args = [fileIO, 'w']
+        else:
+            # Check for file extension
+            if os.path.splitext(output)[1].lower() != '.zip':
+                output = output + '.zip'
+
+            args = [output, 'w']
+
+        with zipfile.ZipFile(*args) as zipf:
+            for filename in files:
+                content = files[filename].encode('utf-8')
+                #file = io.BytesIO(content)
+                zipf.writestr(filename, content, compress_type=compression)
+        if output:
+            log_info('Created zip file: {}'.format(output))
+
+        if output is None:
+            fileIO.flush()
+            return fileIO.getvalue()
 
 
 class LocalExecutor(BaseExecutor):
@@ -2534,7 +2601,7 @@ outputs: {OUTPUTS}
 cwlVersion: v1.0
 class: Workflow
 
-inputs: []
+inputs: {INPUTS}
 
 outputs: {OUTPUTS}
 
@@ -2566,6 +2633,22 @@ steps:
       outputSource: OBC_CWL_FINAL/{ID}
 '''
 
+    INPUT_STRING_FROMCOMMANDLINE_PATTERN = r'''
+   {ID}:
+      type: string
+      inputBinding:
+         prefix: --{ID}=
+         separate: false
+'''
+
+    def create_init_step_inputs_cwl(self, arguments):
+        '''
+        '''
+        if not arguments:
+            return '[]'
+
+        return '\n'.join(self.INPUT_STRING_FROMCOMMANDLINE_PATTERN.format(ID=argument) for argument in arguments)
+
     def create_final_step_output_cwl(self, ):
         '''
         '''
@@ -2573,6 +2656,14 @@ steps:
             return '[]'
 
         return '\n' + '\n'.join(self.OUTPUT_VARIABLES_PATTERN.format(ID=variable['id']) for variable in self.workflow.output_parameters) + '\n'
+
+    def create_init_step_inpust_on_final_cwl(self, arguments):
+        '''
+        '''
+        if not arguments:
+            return '[]'
+
+        return '\n' + '\n'.join('         {ID}: {ID}'.format(ID=argument) for argument in arguments) + '\n'
 
     def create_final_workflow_output_cwl(self, ):
         '''
@@ -2582,15 +2673,26 @@ steps:
 
         return '\n'.join(self.OUTPUT_VARIABLES_WORKFLOW_PATTERN.format(ID=variable['id']) for variable in self.workflow.output_parameters) + '\n'
 
-
-    def create_main_workflow_step(self, step_inter_id, inputs,):
+    def create_final_workflow_input_cwl(self, arguments):
         '''
         '''
+        if not arguments:
+            return '[]'
 
-        if not inputs:
-            INPUTS = '[]'
+        return '\n' + '\n'.join('   {ID}: string'.format(ID=argument) for argument in arguments) + '\n'
+
+
+    def create_main_workflow_step(self, step_inter_id, inputs, input_parameters):
+        '''
+        '''
+        if step_inter_id == 'OBC_CWL_INIT':
+            INPUTS = self.create_init_step_inpust_on_final_cwl(input_parameters)
         else:
-            INPUTS = '\n' + '\n'.join('         {X}: {X}/{X}'.format(X=x) for x in inputs) + '\n'
+            if not inputs:
+                INPUTS = '[]'
+            else:
+                INPUTS = '\n' + '\n'.join('         {X}: {X}/{X}'.format(X=x) for x in inputs) + '\n'
+
 
         if step_inter_id == 'OBC_CWL_FINAL':
             if self.workflow.output_parameters:
@@ -2657,7 +2759,6 @@ steps:
         '''
         '''
 
-
         env_variables = self.get_environment_variables()
         env_variables_string = self.get_environment_variables_string(env_variables)
 
@@ -2666,16 +2767,32 @@ steps:
         files = {}
         run_afters = {}
 
+        
         # Create init step
-        files['OBC_CWL_INIT.sh'] = self.obc_init_step()
+        # We read the input parameters of the pipelines from the command line 
+        input_parameters = list(self.workflow.input_parameter_values.keys())
+
+
+        bash = Workflow.read_arguments_from_commandline(input_parameters)
+        for input_parameter in input_parameters:
+            bash += r'echo "{VAR}=\"${{{VAR}}}\"" >> {file_with_input_parameters}'.format(
+                file_with_input_parameters=self.file_with_input_parameters,
+                VAR=input_parameter
+            ) + '\n'
+        bash += self.obc_init_step()
+
+        files['OBC_CWL_INIT.sh'] = bash 
+
         files['OBC_CWL_INIT.cwl'] = self.COMMAND_LINE_CWL_PATTERN.format(
             SHELL=shell,
-            COMMAND_LINE_SH='obc_init_step.sh',
-            INPUTS = self.cwl_inputs([]),
-            OUTPUTS = self.cwl_output('obc_init_step'),
+            COMMAND_LINE_SH='OBC_CWL_INIT.sh',
+            INPUTS = self.create_init_step_inputs_cwl(input_parameters), # self.cwl_inputs([]),
+            OUTPUTS = self.cwl_output('OBC_CWL_INIT'),
             ENVIRONMENT_VARIABLES=env_variables_string,
             STDOUT='',
         )
+        #print (files['OBC_CWL_INIT.cwl'])
+        #   a=1/0
 
         # Add tools
         for tool_index, tool in enumerate(self.workflow.tool_bash_script_generator()):
@@ -2729,13 +2846,13 @@ steps:
             for tool_filename in previous_tools:
                 load_tool_vars += '. {}\n'.format(tool_filename)
             
-            # Load all variables from previous steps
+            # Load all variables from: input_parameters + previous steps
             load_step_vars = ''
             if step['run_after']:
                 for run_after_step in step['run_after']:
                     load_step_vars += '. {}\n'.format(self.create_step_vars_filename(run_after_step))
             
-            bash = load_tool_vars + load_step_vars + self.load_obc_functions_bash + bash
+            bash = load_tool_vars + self.load_file_with_input_parameters() + load_step_vars + self.load_obc_functions_bash + bash
 
             previous_steps_vars.append(step_vars_filename)
 
@@ -2755,30 +2872,64 @@ steps:
         for node in DAG.nodes:
             #print (node + ' --> ', list(DAG.predecessors(node)))
             predecessors = list(DAG.predecessors(node))
-            fn = self.create_step_inter_id_cwl_fn(node)
+            fn = self.create_step_inter_id_cwl_fn(node) # The CWL individual file for each step
+
+            if node == 'OBC_CWL_FINAL':
+                INPUTS = self.cwl_inputs(predecessors)
+                OUTPUTS = self.create_final_step_output_cwl()
+                STDOUT = 'stdout: cwl.output.json'
+            else:
+                INPUTS = self.cwl_inputs(predecessors)
+                OUTPUTS = self.cwl_output(node)
+                STDOUT = ''
+
             cwl = self.COMMAND_LINE_CWL_PATTERN.format(
                 SHELL=shell,
                 COMMAND_LINE_SH=self.create_step_inter_id_sh_fn(node),
-                INPUTS=self.cwl_inputs(predecessors),
-                OUTPUTS=self.cwl_output(node) if node != 'OBC_CWL_FINAL' else self.create_final_step_output_cwl(),
+                INPUTS= INPUTS,
+                OUTPUTS=OUTPUTS,
                 ENVIRONMENT_VARIABLES=env_variables_string,
-                STDOUT='' if node != 'OBC_CWL_FINAL' else 'stdout: cwl.output.json',
+                STDOUT= STDOUT ,
             )
-            files[fn] = cwl
 
-            steps_cwl.append(self.create_main_workflow_step(node, predecessors))
+            # We have already added the INIT
+            if node != 'OBC_CWL_INIT':
+                files[fn] = cwl
 
-        files['workflow.cwl'] = self.WORKFLOW_CWL_PATTERN.format(
+            steps_cwl.append(self.create_main_workflow_step(node, predecessors, input_parameters))
+
+        # Create the filename of the workflow CWL
+        if output:
+            # Check the extension
+            if os.path.splitext(output)[1].lower() == '.cwl':
+                output_wf_fn = output
+            else:
+                output_wf_fn = output + '.cwl'
+        else:
+            output_wf_fn = 'workflow.cwl'
+
+        #print (self.workflow.input_parameter_values)
+        #print (input_parameters)
+        #a=1/0
+
+        files[output_wf_fn] = self.WORKFLOW_CWL_PATTERN.format(
             STEPS='\n'.join(steps_cwl),
+            INPUTS=self.create_final_workflow_input_cwl(input_parameters),
             OUTPUTS=self.create_final_workflow_output_cwl(),
         )
 
-        for filename, content in files.items():
-            fn2 = os.path.join('del', filename)
-            with open(fn2, 'w') as f:
-                f.write(content)
+        if output_format == 'cwltargz':
+            return self.create_targz(output, files)
+        elif output_format == 'cwlzip':
+            return self.create_zip(output, files)
+        elif output_format == 'cwl':
+            for filename, content in files.items():
+                filename = os.path.join('del', filename)
+                with open(filename, 'w') as f:
+                    f.write(content)
+        else:
+            raise OBC_Executor_Exception('Unknown format: {}'.format(str(output_format)))
 
-        print ('FILES SAVED')
 
 
 class AirflowExecutor(BaseExecutor):
@@ -3065,6 +3216,10 @@ if __name__ == '__main__':
     # Setup global variables
     if args.silent:
         g['silent'] = True
+
+    # Do not ask input values if the format is CWL
+    if args.format in ['cwl', 'cwltargz', 'cwlzip']:
+        args.askinput = 'NO'
 
     w = Workflow(args.workflow_filename, askinput=args.askinput)
     #print (w.root_inputs_outputs)
