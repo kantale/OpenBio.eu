@@ -521,13 +521,6 @@ class Workflow:
 
         self.set_step_reads_sets()
 
-        #print ('==INPUT SETTERS==')
-        #print (self.input_setters)
-
-        #print ('==OUTPUT SETTERS==')
-        #print (self.output_setters)
-
-
   
     def set_step_reads_sets(self,):
         '''
@@ -788,7 +781,7 @@ class Workflow:
         for output_parameter in self.output_parameters:
             ret += 'echo "OBC: {} = ${{{}}}"\n'.format(output_parameter['id'], output_parameter['id'])
             ret += 'REPORT {} ${{{}}} OUTPUT_VARIABLE \n'.format(output_parameter['id'], output_parameter['id'])
-        ret += '### END OF PRINTINT OUTPUT PARAMETERS\n'
+        ret += '### END OF PRINTING OUTPUT PARAMETERS\n'
 
         return ret
 
@@ -1517,7 +1510,7 @@ ENDOFFILE
                         last_assignment and \
                         parallel_call['variable'] == last_assignment['variable'] and \
                         parallel_call['step'] in calling_steps:
-                            #print ('THIS IS A VALID PARALLEL CALL')
+                            # THIS IS A VALID PARALLEL CALL
                             this_is_a_parallel_call_1 = True
                             pos = (main_command.parts[0].pos[0], main_command.parts[2].pos[1])
 
@@ -1549,7 +1542,6 @@ ENDOFFILE
                 #This is a calling step!
                 found_call = True
                 
-
                 part_before_step_call = bash_to_parse[start: pos[0]]
                 step_counter[step['id']] += 1
                 step_inter_id = '{}__{}'.format(step['id'], str(step_counter[step['id']]))
@@ -1558,8 +1550,6 @@ ENDOFFILE
 
                 input_workflow_variables = [var for var in step['inputs_reads'] + step['outputs_reads'] if var in part_before_step_call]
                 output_workflow_variables = [var for var in step['inputs_sets'] + step['outputs_sets'] if var in part_before_step_call]
-
-                #print ('   --->', run_after)
 
                 yield {
                     'bash': create_json(
@@ -1592,8 +1582,6 @@ ENDOFFILE
                     step_to_call = self.step_ids[step_to_call_id]
                 else:
                     step_to_call = None
-
-                #print ('step_to_call:', step_to_call)
 
                 if this_is_a_parallel_call_1:
                     # This is a parallel call. Iterate in all variable assignments in CSV
@@ -1667,11 +1655,37 @@ class BaseExecutor():
         '''
         return '. {}'.format(self.file_with_input_parameters) + '\n'
 
+    def save_input_parameters(self, from_variable=False, from_workflow=False):
+        '''
+        from_variable: Read the variable from the variable with the same name: A="${A}". 
+                       Somehow the variable musye be already set
+        from_workflow: Reaf the variable from the workflow. The value of the variable
+                       must exist in the workflow
+        '''
+        bash = ''
+        for name, parameter in self.workflow.input_parameter_values.items():
+
+            assert sum([from_variable, from_workflow]) == 1 # Only one should be true
+            if from_variable:
+                value = '${{{VALUE}}}'.format(VALUE=name)
+            if from_workflow:
+                value = parameter['value'] if not parameter['value'] is None else ''
+
+
+            bash += r'echo "{VAR}=\"{VALUE}\"" >> {file_with_input_parameters}'.format(
+                file_with_input_parameters=self.file_with_input_parameters,
+                VAR=name,
+                VALUE=value,
+            ) + '\n'
+
+        return bash
+
 
 
     def get_environment_variables(self, workflow_id=None, obc_client=None):
         '''
         '''
+
         if obc_client:
             d = {
                 'OBC_DATA_PATH': g['CLIENT_OBC_DATA_PATH'],
@@ -1881,7 +1895,7 @@ class LocalExecutor(BaseExecutor):
             f.write(bash_patterns['update_server_status'])
             f.write(bash_patterns['base64_decode'])
             f.write(bash_patterns['validate'])
-            f.write((bash_patterns['init_report'] + bash_patterns['function_REPORT']) 
+            f.write((bash_patterns['init_report'] + bash_patterns['function_REPORT'] + bash_patterns['function_PARALLEL']) 
                 .replace('{{OBC_SERVER}}', str(self.workflow.obc_server)) 
                 .replace('{{OBC_WORKFLOW_NAME}}', self.workflow.root_workflow['name']) 
                 .replace('{{OBC_WORKFLOW_EDIT}}', str(self.workflow.root_workflow['edit'])) 
@@ -2127,11 +2141,7 @@ steps:
 
 
         bash = Workflow.read_arguments_from_commandline(input_parameters)
-        for input_parameter in input_parameters:
-            bash += r'echo "{VAR}=\"${{{VAR}}}\"" >> {file_with_input_parameters}'.format(
-                file_with_input_parameters=self.file_with_input_parameters,
-                VAR=input_parameter
-            ) + '\n'
+        bash += self.save_input_parameters(from_variable=True)
         bash += self.obc_init_step()
 
         files['OBC_CWL_INIT.sh'] = bash 
@@ -2144,8 +2154,6 @@ steps:
             ENVIRONMENT_VARIABLES=env_variables_string,
             STDOUT='',
         )
-        #print (files['OBC_CWL_INIT.cwl'])
-        #   a=1/0
 
         # Add tools
         for tool_index, tool in enumerate(self.workflow.tool_bash_script_generator()):
@@ -2261,15 +2269,23 @@ steps:
         else:
             output_wf_fn = 'workflow.cwl'
 
-        #print (self.workflow.input_parameter_values)
-        #print (input_parameters)
-        #a=1/0
-
         files[output_wf_fn] = self.WORKFLOW_CWL_PATTERN.format(
             STEPS='\n'.join(steps_cwl),
             INPUTS=self.create_final_workflow_input_cwl(input_parameters),
             OUTPUTS=self.create_final_workflow_output_cwl(),
         )
+
+        # Create a file with input values
+        content = ''
+        for k,v in self.workflow.input_parameter_values.items():
+            if v['value'] is None:
+                line = '\n# Please set this input parameter! \n'
+                line +=  '# {}: "" # {}\n'.format(k, v['description'])
+            else:
+                line = '{}: "{}" # {}\n'.format(k, v['value'], v['description'])
+            content += line
+        files['inputs.yml'] = content
+
 
         if output_format == 'cwltargz':
             return self.create_targz(output, files)
@@ -2340,7 +2356,7 @@ dag = DAG(
         obc_client : IF True, generate airflow for OBC client. This just sets the proper OBC_* directories
         '''
 
-        d = self.get_environment_variables(self, obc_client=obc_client)
+        d = self.get_environment_variables(obc_client=obc_client)
 
         if d:
             envs = 'env={},'.format(str(d))
@@ -2349,6 +2365,7 @@ dag = DAG(
 
         # Create init step
         bash = self.obc_init_step()
+        bash += self.save_input_parameters(from_workflow=True)
         bash = self.raw_jinja2(bash)
 
         airflow_bash = self.bash_operator_pattern.format(
@@ -2391,7 +2408,6 @@ dag = DAG(
                 run_afters[tool_id] = copy.copy(tool_ids)
             tool_ids.append(tool_id)
 
-
             previous_tools.append(tool_vars_filename)
 
         # CREATE STEP OPERATORS
@@ -2411,11 +2427,7 @@ dag = DAG(
             step_inter_ids.append(step_inter_id)
             step_vars_filename = self.create_step_vars_filename(step_inter_id) # os.path.join('${OBC_WORK_PATH}', step_inter_id + '.sh')
 
-
-            #print (step['run_after'])
-
             if step['run_after']:
-                #print ('{} >> {}'.format(str(step['run_after']), step_inter_id))
                 run_afters[step_inter_id] = step['run_after']
 
             # Add declare. This should be first
@@ -2432,7 +2444,7 @@ dag = DAG(
                 for run_after_step in step['run_after']:
                     load_step_vars += '. {}\n'.format(self.create_step_vars_filename(run_after_step))
             
-            bash = load_tool_vars + load_step_vars + self.load_obc_functions_bash + bash
+            bash = load_tool_vars + self.load_file_with_input_parameters() + load_step_vars + self.load_obc_functions_bash + bash
 
             previous_steps_vars.append(step_vars_filename)
 
@@ -2446,8 +2458,7 @@ dag = DAG(
 
         # Create final step
         bash = self.obc_final_step(previous_tools, previous_steps_vars) 
-        # Wrap in jinja2 verbatim . https://stackoverflow.com/questions/25359898/escape-jinja2-syntax-in-a-jinja2-template 
-        bash = self.raw_jinja2(bash)
+        bash = self.raw_jinja2(bash) # Wrap in jinja2 verbatim . https://stackoverflow.com/questions/25359898/escape-jinja2-syntax-in-a-jinja2-template 
         airflow_bash = self.bash_operator_pattern.format(
             ID='OBC_AIRFLOW_FINAL',
             BASH=bash,
@@ -2456,14 +2467,14 @@ dag = DAG(
         final_operators = [airflow_bash]
 
         # Add INIT and FINAL in the graph
-        self.add_init_and_final_in_graph('OBC_AIRFLOW_INIT', 'OBC_AIRFLOW_FINAL', run_afters, previous_tools, step_inter_ids) 
+        self.add_init_and_final_in_graph('OBC_AIRFLOW_INIT', 'OBC_AIRFLOW_FINAL', run_afters, tool_ids, step_inter_ids) 
         # Create dag
         DAG = self.create_DAG(run_afters)
 
         airflow_python = self.pattern.format(
             WORKFLOW_ID = (workflow_id if workflow_id else self.workflow.root_workflow_id),
             BASH_OPERATORS = '\n'.join(init_operators + tool_bash_operators + step_bash_operators + final_operators),
-            ORDER = DAG, # ' >> '.join(['OBC_AIRFLOW_INIT'] + tool_ids + step_ids + ['OBC_AIRFLOW_FINAL']),
+            ORDER = DAG, 
         )
 
         # Save output / Return
@@ -2570,15 +2581,11 @@ if __name__ == '__main__':
     if args.silent:
         g['silent'] = True
 
-    # Do not ask input values if the format is CWL
-    if args.format in ['cwl', 'cwltargz', 'cwlzip']:
+    # Do not ask input values if the format is CWL or airflow 
+    if args.format in ['cwl', 'cwltargz', 'cwlzip', 'airflow']:
         args.askinput = 'NO'
 
     w = Workflow(args.workflow_filename, askinput=args.askinput)
-    #print (w.root_inputs_outputs)
-    #print (w)
-    #w.get_tool_installation_order()
-    #list(w.tool_bash_script_generator())
 
     if args.format == 'sh':
         e = LocalExecutor(w)
