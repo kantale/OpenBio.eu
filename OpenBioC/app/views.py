@@ -133,7 +133,7 @@ g = {
     'create_client_pause_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'workflow/{NICE_ID}/paused/true'.format(NICE_ID=nice_id)), 
     'create_client_resume_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'workflow/{NICE_ID}/paused/false'.format(NICE_ID=nice_id)), 
     'create_client_abort_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'workflow/delete/{NICE_ID}'.format(NICE_ID=nice_id)), 
-    'create_client_airflow_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'admin/airflow/graph?dag_id={NICE_ID}?execution_date='.format(NICE_ID=nice_id)),
+    'create_client_airflow_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'admin/airflow/graph?dag_id={NICE_ID}&execution_date='.format(NICE_ID=nice_id)),
 
 }
 
