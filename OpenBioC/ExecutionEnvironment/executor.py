@@ -189,6 +189,9 @@ function REPORT() {
 
 OBC_REPORT_TGZ=${OBC_WORK_PATH}/${OBC_NICE_ID}.tgz
 
+echo "RUNNING: "
+echo "tar zcvf ${OBC_REPORT_TGZ} -C ${OBC_WORK_PATH} ${OBC_NICE_ID}.html ${OBC_NICE_ID}/"
+
 tar zcvf ${OBC_REPORT_TGZ} -C ${OBC_WORK_PATH} ${OBC_NICE_ID}.html ${OBC_NICE_ID}/
 
 ''',
