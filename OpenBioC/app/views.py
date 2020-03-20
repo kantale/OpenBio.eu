@@ -3528,8 +3528,19 @@ curl --header "Content-Type: application/json" \
     if not 'externally triggered: True' in data_from_client['status']['message']:
         return fail("Client failed to trigger DAG: {}".format(data_from_client['status']['message']))
 
+    if not 'executor_url' in data_from_client['status']:
+        return fail("Could not get workflow monitoring URL..")
+
+    visualization_url = data_from_client['status']['executor_url']
+
     # All seem to be ok. Create a report
-    report = Report(obc_user=obc_user, workflow = workflow, nice_id = nice_id, client=client, client_status='SUBMITTED')
+    report = Report(
+        obc_user=obc_user, 
+        workflow = workflow, 
+        nice_id = nice_id,
+        client=client, 
+        visualization_url=visualization_url,
+        client_status='SUBMITTED')
     report.save()
 
     # Let's not create a reporttoken for now.
@@ -3592,9 +3603,6 @@ def report(request, **kwargs):
     #print ('NEW STATUS:', new_report_token.status)
 
     return success({'token': str(new_report_token.token)})
-
-
-
 
 ### END OF WORKFLOWS ###
 ### START OF VALIDATION CALLBACK ###
@@ -3819,6 +3827,7 @@ def reports_search_3(request, **kwargs):
         'report_client': bool(report.client),
         'report_url': report.url, # The url with the results
         'report_log_url': report.log_url, # The url with the logs
+        'report_visualization_url': report.report_visualization_url, # The url for monitoring of the execution progress (i.e. from airflow)
         'report_client_status': report.client_status,
         'workflow' : simplejson.loads(workflow.workflow),
     }
@@ -3859,6 +3868,13 @@ def reports_refresh(request, **kwargs):
 
     # Get the url of the client
     client_url = report.client.client
+    # The url for monitoring workflow progress
+    if report.visualization_url:
+        visualization_url = g['create_client_airflow_url'](report.visualization_url, nice_id)
+    else:
+        visualization_url = None
+
+    print ('Visualization URL:', visualization_url)
 
 
     if report_workflow_action == 1:
@@ -3961,8 +3977,6 @@ def reports_refresh(request, **kwargs):
         report.delete()
         return success()
 
-
-
     # Update report object
     report.client_status = status
     report.save()
@@ -3976,9 +3990,6 @@ def reports_refresh(request, **kwargs):
     if status in ['SUCCESS', 'FAILED']:
         log_url = g['create_client_download_log_url'](client_url, nice_id)
     
-
-    visualization_url = g['create_client_airflow_url'](client_url, nice_id)
-
     report.url = report_url
     report.log_url = log_url
     report.visualization_url = visualization_url

@@ -2524,6 +2524,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.report_client = data['report_client']; // True/False . True: It is created through an OBC client
                 $scope.report_url = data['report_url'];
                 $scope.report_log_url = data['report_log_url'];
+                $scope.report_visualization_url = data['report_visualization_url'];
                 $scope.report_client_status = data['report_client_status'];
                 $scope.report_username = data['report_username'];
                 $scope.report_created_at = data['report_created_at'];
