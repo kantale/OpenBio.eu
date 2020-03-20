@@ -846,6 +846,170 @@ Here we list the different types of nodes on the workflow graph:
 * Grey Round Rectangle with green border: A workflow input
 * Grey Round Rectangle with red border: A workflow output
 
+# Parallel execution 
+The ```PARALLEL``` command is included in every generated script. With this command you can run steps in parallel. There are two ways to use this command.
+
+## Running multiple steps in parallel 
+So far all the executions that we have describe, run in a sequential order. When a step calls another step, this happens sequentially. For example, assume that there are four steps in a workflow: ```S1```, ```S2```, ```S3```, ```S4```. Each one of these performs a simple echo command for example: ```echo "S1"``` for S1 and on:
+Let's call these steps in order:
+
+```bash
+step__S1__parallel_test__1
+step__S2__parallel_test__1
+step__S3__parallel_test__1
+step__S4__parallel_test__1
+```
+
+The pipeline looks like this:
+
+![img](screenshots/screen_34.png)
+
+If we save, download and execute this pipeline the output will be:
+```
+OBC: CALLING STEP: step__main_step__parallel_test__1    CALLER: main
+OBC: CALLING STEP: step__S1__parallel_test__1    CALLER: step__main_step__parallel_test__1
+S1
+OBC: CALLING STEP: step__S2__parallel_test__1    CALLER: step__main_step__parallel_test__1
+S2
+OBC: CALLING STEP: step__S3__parallel_test__1    CALLER: step__main_step__parallel_test__1
+S3
+OBC: CALLING STEP: step__S4__parallel_test__1    CALLER: step__main_step__parallel_test__1
+S4
+```
+
+The execution workflow can be written as:
+
+```
+   S1
+   |
+   S2
+   |
+   S3
+   |
+   S4
+```
+
+But what if we want to run steps 2 and 3 in parallel? To do that, we can use the ```PARALLEL``` command. The syntax is:
+
+```
+PARALLEL STEP_NAME_1 STEP_NAME_2 ...
+```
+
+The ```PARALLEL``` commands takes as input the names of an arbitrary number of steps and runs them in parallel. For example let's change the BASH commands of the step: ```main_step```:
+
+
+```bash
+step__S1__parallel_test__1
+PARALLEL step__S2__parallel_test__1 step__S3__parallel_test__1
+step__S4__parallel_test__1
+```
+
+Now the order of execution will be: first ```step__S2__parallel_test__1``` runs, then the steps ```step__S2__parallel_test__1``` and ```step__S3__parallel_test__1``` run in parallel. After both these steps finish, the step step__S4__parallel_test__1 starts to run. To validate this, save, download and run this workflow multiple times. In some runs you will notice that the output is:
+
+```bash
+OBC: CALLING STEP: step__main_step__parallel_test__1    CALLER: main
+OBC: CALLING STEP: step__S1__parallel_test__1    CALLER: step__main_step__parallel_test__1
+S1
+OBC: CALLING STEP: step__S3__parallel_test__1    CALLER: step__main_step__parallel_test__1
+S3
+OBC: CALLING STEP: step__S2__parallel_test__1    CALLER: step__main_step__parallel_test__1
+S2
+OBC: CALLING STEP: step__S4__parallel_test__1    CALLER: step__main_step__parallel_test__1
+S4
+``` 
+
+Notice here that the "S3" is printed before the "S2". The execution workflow now is:
+
+```
+   S1
+  /  \ 
+S2    S3
+  \  /
+   S4
+```
+
+## Running the same step in parallel with different variables.
+Let's assume that that we want to run a step multiple times in parallel and for each run we want the step to have a different set of parameters. For this purpose, the ```PARALLEL``` command can be used with the following syntax:
+
+```bash
+VARIABLE_WITH_PARAMETERS="
+VAR_1,VAR_2,VAR_3,...
+VALUE_11,VALUE_12,VALUE_13,...
+VALUE_21,VALUE_22,VALUE_23,...
+VALUE_31,VALUE_32,VALUE_33,...
+VALUE_41,VALUE_42,VALUE_43,...
+VALUE_51,VALUE_52,VALUE_53,...
+...
+"
+
+PARALLEL step_name "${VARIABLE_WITH_PARAMETERS}"
+```
+
+**IMPORTANT: The double quotes (") in "${VARIABLE_WITH_PARAMETERS}" are necessary for this syntax to work**
+
+This command will run the step ```step_name``` as many times as the lines in the CSV data that is defined in the ```VARIABLE_WITH_PARAMETERS``` variable. The CSV data should be comma separated and the data should have a header. The first run will have the parameters:
+
+```
+VAR_1=VALUE_11
+VAR_2=VALUE_12
+VAR_3=VALUE=13
+```
+
+the second run will have the parameters:
+```
+VAR_1=VALUE_21
+VAR_2=VALUE_22
+VAR_3=VALUE=23
+```
+
+the third run:
+```
+VAR_1=VALUE_31
+VAR_2=VALUE_32
+VAR_3=VALUE=33
+```
+
+and so on..
+
+For example let's create the following workflow:
+
+![img](screenshots/screen_35.png)
+
+This pipeline contains a step called ```complex_task``` that contains the commands:
+```bash
+echo "Input values PAR1=${PAR1}   PAR2=${PAR2} started"
+sleep 3
+echo "Input values PAR1=${PAR1}   PAR2=${PAR2} finished"
+```
+
+and the ```main_step``` contains the commands:
+```bash
+VARIABLES="
+PAR1,PAR2
+1,2
+10,20
+100,200
+"
+PARALLEL step__complex_task__PARALLEL_test_2__1 "${VARIABLES}"
+``` 
+
+If we save, download and execute the workflow, the output will be:
+
+```
+OBC: CALLING STEP: step__main_step__PARALLEL_test_2__1    CALLER: main
+OBC: CALLING STEP: step__complex_task__PARALLEL_test_2__1    CALLER: step__main_step__PARALLEL_test_2__1
+Input values PAR1=1   PAR2=2 started
+OBC: CALLING STEP: step__complex_task__PARALLEL_test_2__1    CALLER: step__main_step__PARALLEL_test_2__1
+Input values PAR1=10   PAR2=20 started
+OBC: CALLING STEP: step__complex_task__PARALLEL_test_2__1    CALLER: step__main_step__PARALLEL_test_2__1
+Input values PAR1=100   PAR2=200 started
+Input values PAR1=1   PAR2=2 finished
+Input values PAR1=10   PAR2=20 finished
+Input values PAR1=100   PAR2=200 finished
+```
+
+As you notice the step ```complex_task``` run 3 times in parallel, each with different set of parameters. 
+
 # Executing Workflows
 Upon pressing the "Download" button on a workflow or on a tool/data, you can choose to download a BASH script or a JSON representation of the workflow.
 
