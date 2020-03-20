@@ -115,6 +115,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.worfklows_step_ace_init = '# Insert the BASH commands for this step.\n# You can use the variable ${OBC_WORK_PATH} as your working directory.\n# Also read the Documentation about the REPORT and the PARALLEL commands.\n\n';
         workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1);
         $scope.workflow_step_error_message = '';
+        $scope.workflow_run_disabled = false; // Show the RUN button ?
 
         //The input and output variables of the workflow
         $scope.workflow_input_outputs = [{name: '', description: '', out:true}]; // {name: 'aa', description: 'bb', out:true}, {name: 'cc', description: 'dd', out:false}
@@ -4501,6 +4502,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * Pressed "RUN" in workflows after selecting a profile_client name
     */
     $scope.workflow_info_run_pressed = function(profile_name) {
+
+        $scope.workflow_run_disabled = true;
+        $scope.toast('Please wait while the workflow is submitted for execution..', 'success');
+
         $scope.ajax(
             'run_workflow/',
             {
@@ -4510,12 +4515,15 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             },
             function (data) {
                 $scope.toast('Workflow submitted for execution with a Report id: ' + data['nice_id'], 'success');
+                $scope.workflow_run_disabled = false;
             },
             function (data) {
                 $scope.toast(data['error_message'], 'error');
+                $scope.workflow_run_disabled = false;
             },
             function (statusText) {
                 $scope.toast('Error: 3812 ' + statusText, 'error');
+                $scope.workflow_run_disabled = false;
             }
         );
     };
