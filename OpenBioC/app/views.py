@@ -3827,7 +3827,7 @@ def reports_search_3(request, **kwargs):
         'report_client': bool(report.client),
         'report_url': report.url, # The url with the results
         'report_log_url': report.log_url, # The url with the logs
-        'report_visualization_url': report.report_visualization_url, # The url for monitoring of the execution progress (i.e. from airflow)
+        'report_visualization_url': report.visualization_url, # The url for monitoring of the execution progress (i.e. from airflow)
         'report_client_status': report.client_status,
         'workflow' : simplejson.loads(workflow.workflow),
     }
