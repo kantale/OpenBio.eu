@@ -952,21 +952,21 @@ This command will run the step ```step_name``` as many times as the lines in the
 ```
 VAR_1=VALUE_11
 VAR_2=VALUE_12
-VAR_3=VALUE=13
+VAR_3=VALUE_13
 ```
 
 the second run will have the parameters:
 ```
 VAR_1=VALUE_21
 VAR_2=VALUE_22
-VAR_3=VALUE=23
+VAR_3=VALUE_23
 ```
 
 the third run:
 ```
 VAR_1=VALUE_31
 VAR_2=VALUE_32
-VAR_3=VALUE=33
+VAR_3=VALUE_33
 ```
 
 and so on..
