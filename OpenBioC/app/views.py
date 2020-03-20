@@ -3977,7 +3977,7 @@ def reports_refresh(request, **kwargs):
         log_url = g['create_client_download_log_url'](client_url, nice_id)
     
 
-    visualization_url = g['create_client_abort_url'](client_url, nice_id)
+    visualization_url = g['create_client_airflow_url'](client_url, nice_id)
 
     report.url = report_url
     report.log_url = log_url
