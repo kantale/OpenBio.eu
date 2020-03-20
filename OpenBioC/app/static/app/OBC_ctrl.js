@@ -2485,7 +2485,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
                 $scope.report_url = data['report_url'];
                 $scope.report_log_url = data['report_log_url'];
-                $scope.visualization_url = data['visualization_url'];
+                $scope.visualization_url = data['report_visualization_url'];
                 $scope.report_client_status = data['report_client_status'];
             },
             function(data) {
