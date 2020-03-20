@@ -3528,10 +3528,10 @@ curl --header "Content-Type: application/json" \
     if not 'externally triggered: True' in data_from_client['status']['message']:
         return fail("Client failed to trigger DAG: {}".format(data_from_client['status']['message']))
 
-    if not 'executor_url' in data_from_client['status']:
+    if not 'executor_url' in data_from_client:
         return fail("Could not get workflow monitoring URL..")
 
-    visualization_url = data_from_client['status']['executor_url']
+    visualization_url = data_from_client['executor_url']
 
     # All seem to be ok. Create a report
     report = Report(
