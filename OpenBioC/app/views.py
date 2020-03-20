@@ -3890,7 +3890,7 @@ def reports_refresh(request, **kwargs):
         return fail('Could not establish a connection with client')
 
     if not r.ok:
-        return fail('Could not send to URL: {} . Error code: {}'.format(check_url, r.status_code))
+        return fail('Could not send to URL: {} . Error code: {}'.format(client_url, r.status_code))
     
     data_from_client = r.json()
     print ('Data from client:')
