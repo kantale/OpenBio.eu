@@ -371,6 +371,7 @@ class Report(models.Model):
     client = models.ForeignKey(to='ExecutionClient', null=True, on_delete=models.CASCADE) # Which client creates this report? 
     url = models.URLField(max_length=256, null=True) # The url of the report (containing the results)
     log_url = models.URLField(max_length=256, null=True) # The url of the log (containing the results)
+    visualization_url = models.URLField(max_length=256, null=True) # The url of the visualization environment (i.e. airflow) 
     client_status = models.CharField(max_length=25, null=True) # The status of the client
     tokens = models.ManyToManyField(ReportToken, related_name='report_related')
     created_at = models.DateTimeField(auto_now_add=True)

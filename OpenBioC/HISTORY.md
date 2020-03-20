@@ -7,6 +7,7 @@
    * [Cannot logout from interlink #157](https://github.com/kantale/OpenBioC/issues/157)
 * Features:
    * [PARALLEL execution](https://github.com/kantale/OpenBioC/issues/173)
+   * [RUN WORKFLOWS!!](https://github.com/kantale/OpenBioC/issues/144)
 
 ### 0.1.5 (18 February 2020)
 * Bugs Fixed

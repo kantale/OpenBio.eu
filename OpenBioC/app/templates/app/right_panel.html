@@ -847,6 +847,11 @@
                 <a class="btn tooltipped" data-position="bottom" data-tooltip="Delete" style="margin-bottom:2px" ng-show="username == report_username" ng-click="report_refresh(4, false)">Delete</a>
             </div>
             <div class="left-align" style="margin-top: 5px; margin-bottom: 5px;" ng-show="report_client">
+                <div ng-show="true">
+                    {% verbatim %}
+                    <div ng-show="visualization_url"><strong>Moninor Execution: </strong><a ng-href="{{visualization_url}}"><span ng-bind="visualization_url"></span></a></div><br>
+                    {% endverbatim %}
+                </div>
                 <div ng-show="report_client_status == 'SUCCESS' || report_client_status == 'FAILED'">
                     {% verbatim %}
                     <strong>Final Status: </strong><span ng-bind="report_client_status"></span><br>
