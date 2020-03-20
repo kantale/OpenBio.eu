@@ -416,10 +416,6 @@ class Workflow:
         else:
             self.nice_id_global = self.nice_id_local # The id created  in this class
 
-
-
-        
-        self.nice_id_global = self.nice_id if self.nice_id else self.nice_id_local # self.nice_id can be None
         self.current_token = self.workflow['token']
 
         log_info('Workflow Name: {}   Edit: {}   Report: {}'.format(
