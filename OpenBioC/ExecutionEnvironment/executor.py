@@ -2362,7 +2362,7 @@ dag = DAG(
         obc_client : IF True, generate airflow for OBC client. This just sets the proper OBC_* directories
         '''
 
-        d = self.get_environment_variables(obc_client=obc_client)
+        d = self.get_environment_variables(obc_client=obc_client, workflow_id=workflow_id)
 
         if d:
             envs = 'env={},'.format(str(d))
