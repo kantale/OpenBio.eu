@@ -319,7 +319,7 @@ class Workflow:
     ]
 
 
-    def __init__(self, workflow_filename=None, workflow_object=None, askinput='JSON', obc_server=None):
+    def __init__(self, workflow_filename=None, workflow_object=None, askinput='JSON', obc_server=None, workflow_id=None):
         '''
         workflow_filename: the JSON filename of the workflow
         workflow_object: The representation of the workflow
@@ -329,6 +329,7 @@ class Workflow:
         One of these should not be None
 
         obc_server the server for which we are generating the script (if any)
+        workflow_id: The nice_id of the workflow
         '''
 
         if workflow_filename:
@@ -342,6 +343,7 @@ class Workflow:
         self.workflow_object = workflow_object
         self.askinput = askinput
         self.obc_server = obc_server
+        self.workflow_id = workflow_id
         self.parse_workflow_filename()
 
     def __str__(self,):
@@ -406,6 +408,17 @@ class Workflow:
         self.output_parameters = self.root_inputs_outputs['outputs']
         self.nice_id = self.workflow['nice_id'] # The nice ID from the server 
         self.nice_id_local = Workflow.create_nice_id() # A local nice ID
+
+        if self.nice_id: # The id from the JSON 
+            self.nice_id_global = self.nice_id
+        elif self.workflow_id: # The id from the executor
+            self.nice_id_global = self.workflow_id
+        else:
+            self.nice_id_global = self.nice_id_local # The id created  in this class
+
+
+
+        
         self.nice_id_global = self.nice_id if self.nice_id else self.nice_id_local # self.nice_id can be None
         self.current_token = self.workflow['token']
 
@@ -2534,7 +2547,7 @@ def create_bash_script(workflow_object, server, output_format, workflow_id=None,
         e = CWLExecutor(w)
         return e.build(output=None, output_format=output_format)
     elif output_format in ['airflow']:
-        w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server)
+        w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
         e = AirflowExecutor(w)
         return e.build(output=None, output_format='airflow', workflow_id=workflow_id, obc_client=obc_client)
     else:
