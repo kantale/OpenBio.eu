@@ -112,7 +112,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.workflows_step_name = '';
         $scope.workflows_step_main = false;
         $scope.workflows_step_description = '';
-        $scope.worfklows_step_ace_init = '# Insert the BASH commands for this step.\n# You can use the variable ${OBC_WORK_PATH} as your working directory.\n\n';
+        $scope.worfklows_step_ace_init = '# Insert the BASH commands for this step.\n# You can use the variable ${OBC_WORK_PATH} as your working directory.\n# Also read the Documentation about the REPORT and the PARALLEL commands.\n\n';
         workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1);
         $scope.workflow_step_error_message = '';
 
