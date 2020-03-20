@@ -862,7 +862,7 @@ step__S4__parallel_test__1
 
 The pipeline looks like this:
 
-![img](screenshots/screen_34.png)
+![img](screenshots/screen_35.png)
 
 If we save, download and execute this pipeline the output will be:
 ```
@@ -973,7 +973,7 @@ and so on..
 
 For example let's create the following workflow:
 
-![img](screenshots/screen_35.png)
+![img](screenshots/screen_36.png)
 
 This pipeline contains a step called ```complex_task``` that contains the commands:
 ```bash
