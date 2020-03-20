@@ -1668,7 +1668,7 @@ class BaseExecutor():
         from_workflow: Reaf the variable from the workflow. The value of the variable
                        must exist in the workflow
         '''
-        bash = ''
+        bash = 'touch {}\n'.format(self.file_with_input_parameters)
         for name, parameter in self.workflow.input_parameter_values.items():
 
             assert sum([from_variable, from_workflow]) == 1 # Only one should be true
