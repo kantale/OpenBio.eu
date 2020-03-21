@@ -3530,8 +3530,12 @@ curl --header "Content-Type: application/json" \
 
     if not 'executor_url' in data_from_client:
         return fail("Could not get workflow monitoring URL..")
-
     visualization_url = g['create_client_airflow_url'](data_from_client['executor_url'], nice_id)
+
+    if not 'monitor_url' in data_from_client:
+        return fail('Could not get monitoring URL..')
+    monitor_url = data_from_client['monitor_url']
+
 
     # All seem to be ok. Create a report
     report = Report(
@@ -3540,6 +3544,7 @@ curl --header "Content-Type: application/json" \
         nice_id = nice_id,
         client=client, 
         visualization_url=visualization_url,
+        monitor_url = monitor_url,
         client_status='SUBMITTED')
     report.save()
 
@@ -3828,6 +3833,7 @@ def reports_search_3(request, **kwargs):
         'report_url': report.url, # The url with the results
         'report_log_url': report.log_url, # The url with the logs
         'report_visualization_url': report.visualization_url, # The url for monitoring of the execution progress (i.e. from airflow)
+        'report_monitor_url': report.monitor_url,
         'report_client_status': report.client_status,
         'workflow' : simplejson.loads(workflow.workflow),
     }

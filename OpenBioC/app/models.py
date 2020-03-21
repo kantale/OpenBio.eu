@@ -372,6 +372,7 @@ class Report(models.Model):
     url = models.URLField(max_length=256, null=True) # The url of the report (containing the results)
     log_url = models.URLField(max_length=256, null=True) # The url of the log (containing the results)
     visualization_url = models.URLField(max_length=256, null=True) # The url of the visualization environment (i.e. airflow) 
+    monitor_url = models.URLField(max_length=256, null=True) # The url of the monitoring environment (i.e. netdata) 
     client_status = models.CharField(max_length=25, null=True) # The status of the client
     tokens = models.ManyToManyField(ReportToken, related_name='report_related')
     created_at = models.DateTimeField(auto_now_add=True)
