@@ -819,35 +819,41 @@
         <div class="card blue-grey lighten-4 rightPanelTitleCard">
             <div class="card-content rightPanelTitleContent">
                 <h5 class="rightPanelTitleHeader">Report</h5>
+                <a class="waves-effect btn-flat right" style="margin-top: -30px;">Cancel</a>
             </div>
         </div>
         <div style="margin: 20px;">
-            <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
-                <div class="row left-align">
-                    <div class="col s2">
-                        <h5>Workflow: </h5>
+            <div class="left-align">
+                <div style="overflow: auto; margin-bottom: 5px;">
+                    <div style="float: left;">
+                        <span style="margin: 0px;">
+                            <h5 style="margin: 0px; margin-bottom: 2px;"><span>Workflow: </span><a ng-click="interlink({type: 'w', name: report_workflow_name, edit:report_workflow_edit})">w/<span ng-bind="report_workflow_name"></span>/<span ng-bind="report_workflow_edit"></span></a></h5>
+                            <h5 style="margin: 0px;"><span>Run: </span><span ng-bind="report_workflow_run"></span></h5>                            
+                        </span>
+                        <small class="form-text text-muted">
+                            <a ng-click="interlink({type: 'u', username: report_username})">u/<span ng-bind="report_username"></span></a>, created at: <span ng-bind="report_created_at"></span>
+                            {% verbatim %}
+                            <a ng-href="/platform/report/{{report_workflow_run}}">link</a>
+                            {% endverbatim %}
+                        </small>
                     </div>
-                    <div class="col s6">
-                        <h5>
-                            <a ng-click="interlink({type: 'w', name: report_workflow_name, edit:report_workflow_edit})">w/<span ng-bind="report_workflow_name"></span>/<span ng-bind="report_workflow_edit"></span></a>
-                        </h5>
-                    </div>
-                    <div class="col s4">
-                        <h5>Run: <span ng-bind="report_workflow_run"></span></h5>
-                    </div>
+                    <span class="green lighten-2 draft" ng-show="report_client_status == 'SUCCESS' || report_client_status == 'FAILED'"><span ng-bind="report_client_status"></span></span>
                 </div>
-                <small class="form-text text-muted">
-                    <a ng-click="interlink({type: 'u', username: report_username})">u/<span ng-bind="report_username"></span></a>, created at: <span ng-bind="report_created_at"></span>
-                    {% verbatim %}
-                    <a ng-href="/platform/report/{{report_workflow_run}}">link</a>
-                    {% endverbatim %}
-                </small>
             </div>
-            <div class="row right-align">
+            <div class="row right-align" style="margin-bottom: 0px;">
                 <a class="btn tooltipped" data-position="bottom" data-tooltip="Delete" style="margin-bottom:2px" ng-show="username == report_username" ng-click="report_refresh(4, false)">Delete</a>
             </div>
+            <!-- Links -->
+            <div class="row right-align" ng-show="report_client" style="margin-bottom: 10px;">
+                {% verbatim %}
+                <a class="waves-effect btn-flat right reportUrl btn-small" ng-show="(report_client_status == 'SUCCESS' || report_client_status == 'FAILED') && report_log_url" ng-href="{{report_log_url}}">Logs</a>
+                <a class="waves-effect btn-flat right reportUrl btn-small" ng-show="(report_client_status == 'SUCCESS' || report_client_status == 'FAILED') && report_url" ng-href="{{report_url}}">Report</a>
+                <a class="waves-effect btn-flat right reportUrl btn-small" ng-show="report_monitor_url" ng-href="{{report_monitor_url}}">Monitor Resources</a>
+                <a class="waves-effect btn-flat right reportUrl btn-small" ng-show="report_visualization_url" ng-href="{{report_visualization_url}}">Moninor Execution</a>
+                {% endverbatim %}
+            </div>
             <div class="left-align" style="margin-top: 5px; margin-bottom: 5px;" ng-show="report_client">
-                <div ng-show="true">
+                <!-- <div ng-show="true">
                     {% verbatim %}
                     <div ng-show="report_visualization_url"><strong>Moninor Execution: </strong><a ng-href="{{report_visualization_url}}"><span ng-bind="report_visualization_url"></span></a></div><br>
                     <div ng-show="report_monitor_url"><strong>Monitor Resources: </strong><a ng-href="{{report_monitor_url}}"><span ng-bind="report_monitor_url"></span></a></div><br>                    
@@ -855,11 +861,10 @@
                 </div>
                 <div ng-show="report_client_status == 'SUCCESS' || report_client_status == 'FAILED'">
                     {% verbatim %}
-                    <strong>Final Status: </strong><span ng-bind="report_client_status"></span><br>
                     <div ng-show="report_url"><strong>Report: </strong><a ng-href="{{report_url}}"><span ng-bind="report_url"></span></a></div><br>
                     <div ng-show="report_log_url"><strong>Logs: </strong><a ng-href="{{report_log_url}}"><span ng-bind="report_log_url"></span></a></div>
                     {% endverbatim %}
-                </div>
+                </div> -->
                 <div ng-show="report_client_status == 'SUBMITTED' || report_client_status == 'PAUSE_SUBMITTED' || report_client_status == 'RESUME_SUBMITTED' ">
                     <strong>Current status: </strong><span ng-bind="report_client_status"></span><button ng-click="report_refresh(1, true)">Refresh</button>
                 </div>
@@ -870,8 +875,7 @@
                     <strong>Current status: </strong><span ng-bind="report_client_status"></span><button ng-click="report_refresh(3, true)">Resume</button>
                 </div>
             </div>
-
-            <ul id="reportsRightPanelAccordion" class="collapsible expandable popout faster">
+            <ul id="reportsRightPanelAccordion" class="collapsible expandable faster">
                 <!-- --------------------------------------------------------------------------------------- -->
                 <!-- ------------------------------------ General ------------------------------------------ -->
                 <!-- --------------------------------------------------------------------------------------- -->
