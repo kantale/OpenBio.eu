@@ -131,8 +131,8 @@
                                         </thead>
                                         <tbody>
                                             <tr ng-repeat="client in profile_clients track by $index">
-                                                <td><input type="text" placeholder="Name" ng-model="client.name" ng-disabled="!$last"></td>
-                                                <td><input type="text" placeholder="URL" ng-model="client.client" ng-disabled="!$last"></td>   
+                                                <td><input type="text" placeholder="Name" ng-model="client.name" ng-readonly="!$last"></td>
+                                                <td><input type="text" placeholder="URL" ng-model="client.client" ng-readonly="!$last"></td>   
                                                 <td>
                                                     <a class="waves-effect waves-light btn-small tooltipped green darken-1"
                                                         ng-show="client.name && client.client && $last"

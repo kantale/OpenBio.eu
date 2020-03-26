@@ -30,6 +30,8 @@ from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations, \
     OS_types, Keyword, Report, ReportToken, Reference, ReferenceField, Comment, \
     UpDownCommentVote, UpDownToolVote, UpDownWorkflowVote, ExecutionClient
 
+from app.models import create_nice_id
+
 #Import executor
 from ExecutionEnvironment.executor import create_bash_script, OBC_Executor_Exception
 
@@ -42,6 +44,7 @@ import io
 import os
 import re
 import six
+import time # for time.sleep
 import uuid
 import hashlib
 #import datetime # Use timezone.now()
@@ -66,7 +69,7 @@ import requests # Used in DOI resolution
 import mistune
 
 
-__version__ = '0.1.4'
+__version__ = '0.1.7rc'
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -123,6 +126,15 @@ g = {
     'url_validator': URLValidator(), # Can be customized: URLValidator(schemes=('http', 'https', 'ftp', 'ftps', 'rtsp', 'rtmp'))
     'client_name_regex': r'^[\w]+$', # The regular expression to validate the name of exutation client
     'client_max': 10, # Max number of execution clients
+    # Create the URL for the report generated in the OBC client
+    'create_client_download_report_url': lambda client_url, nice_id : urllib.parse.urljoin(client_url + '/', 'download/{NICE_ID}'.format(NICE_ID=nice_id)),
+    'create_client_download_log_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'logs/{NICE_ID}'.format(NICE_ID=nice_id)),
+    'create_client_check_status_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'check/id/{NICE_ID}'.format(NICE_ID=nice_id)),
+    'create_client_pause_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'workflow/{NICE_ID}/paused/true'.format(NICE_ID=nice_id)), 
+    'create_client_resume_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'workflow/{NICE_ID}/paused/false'.format(NICE_ID=nice_id)), 
+    'create_client_abort_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'workflow/delete/{NICE_ID}'.format(NICE_ID=nice_id)), 
+    'create_client_airflow_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'admin/airflow/graph?dag_id={NICE_ID}&execution_date='.format(NICE_ID=nice_id)),
+
 }
 
 ### HELPING FUNCTIONS AND DECORATORS #####
@@ -294,6 +306,7 @@ def has_data(f):
     '''
     def wrapper(*args, **kwargs):
             request = args[0]
+
             if request.method == 'POST':
                     if len(request.POST):
                             for k in request.POST:
@@ -516,8 +529,8 @@ def send_validation_email_inner(request, email):
     uuid_token = create_uuid_token()
 
     if settings.DEBUG:
-        print ('VALIDATION EMAIL TOKEN:', uuid_token)
-        print ('URL: http://0.0.0.0:{}/platform/?validation_token={}'.format(request.META['SERVER_PORT'], uuid_token)) 
+        #print ('VALIDATION EMAIL TOKEN:', uuid_token)
+        #print ('URL: http://0.0.0.0:{}/platform/?validation_token={}'.format(request.META['SERVER_PORT'], uuid_token)) 
         return True, '', uuid_token
 
     try:
@@ -724,16 +737,20 @@ def tool_get_dependencies_internal(tool, include_as_root=False):
 
     return ret
 
-def tool_build_dependencies_jstree(tool_dependencies, add_variables=False):
+def tool_build_dependencies_jstree(tool_dependencies, add_variables=False, add_installation_commands=False):
     '''
     Build JS TREE from tool_dependencies
+
+    add_variables:  Also add tool/data variables
+    add_installation_commands: All installation_commands + validation_commands + os_choices 
+
     ATTENTION: THIS IS NOT GENERIC!!! 
     IT uses g['DEPENDENCY_TOOL_TREE_ID']. 
     '''
 
     tool_dependencies_jstree = []
     for tool_dependency in tool_dependencies:
-        tool_dependencies_jstree.append({
+        to_append = {
 
             'data': {
 #                    'name': tool_dependency['dependency'].name,
@@ -754,7 +771,14 @@ def tool_build_dependencies_jstree(tool_dependencies, add_variables=False):
             'edit': tool_dependency['dependency'].edit,
             'draft': tool_dependency['dependency'].draft,
 
-        })
+        }
+        if add_installation_commands:
+            to_append['installation_commands'] = tool_dependency['dependency'].installation_commands
+            to_append['validation_commands'] = tool_dependency['dependency'].validation_commands
+            to_append['os_choices'] = [choice.os_choices for choice in tool_dependency['dependency'].os_choices.all()]
+            to_append['dependencies'] = [str(t) for t in tool_dependency['dependency'].dependencies.all()]
+
+        tool_dependencies_jstree.append(to_append)
 
         # Add the variables of this tool
         if add_variables:
@@ -1005,6 +1029,27 @@ def get_server_url(request):
 
     return '{}://{}/platform'.format(get_scheme(request), request.get_host())
 
+def get_execution_clients(request):
+    '''
+    Get all execution clients of the user
+    '''
+
+    if request.user.is_anonymous:
+        return []
+
+    obc_user = OBC_user.objects.get(user=request.user)
+
+    ret = list(obc_user.clients.values('client', 'name'))
+
+    return ret
+
+def get_execution_clients_angular(request):
+    '''
+    Angular excepts an empty entry at the end
+    '''
+
+    return get_execution_clients(request) + [{'name': '', 'client': ''}]; 
+
 ### END OF USERS 
 
 def index(request, **kwargs):
@@ -1157,6 +1202,9 @@ def index(request, **kwargs):
     # Get OS choices
     context['os_choices'] = simplejson.dumps(OS_types.get_angular_model());
 
+    # Get User clients
+    context['profile_clients'] = get_execution_clients_angular(request)
+
     # Add version
     context['version'] = __version__
 
@@ -1229,7 +1277,9 @@ def register(request, **kwargs):
     user = User.objects.create_user(signup_username, signup_email, signup_password, last_login=now()) # https://stackoverflow.com/questions/33683619/null-value-in-column-last-login-violates-not-null-constraint/42502311
 
     #Create OBC_user
-    obc_user = OBC_user(user=user, email_validated=False, email_validation_token=uuid_token)
+    #If we are running in DEBUG, then new users are validated. If we set this to False then we need a send mail service to testing platform
+    #In production new users are not validated by default
+    obc_user = OBC_user(user=user, email_validated=bool(settings.DEBUG), email_validation_token=uuid_token)
     obc_user.save()
 
 
@@ -1377,6 +1427,7 @@ def login(request, **kwargs):
         'username': login_username,
         'csrf_token': get_token(request),
         'user_is_validated': obc_user.email_validated,
+        'profile_clients': get_execution_clients_angular(request),
     }
 
     return success(ret)
@@ -1631,17 +1682,30 @@ def tool_get_dependencies(request, **kwargs):
     '''
     Get the dependencies of this tool
     Called when a stop event (from dnd) happens from search JSTREE to the dependencies JSTREE
+    OR from a stop event from search jstree to cytoscape graph
+
+    what_to_do == 1: drag and drop FROM SEARCH TREE TO DEPENDENCY TREE
+    what_to_do == 2: dran and drop FROM SEARCH TREE TO CYTOSCAPE CYWORKFLOW DIV
     '''
 
     tool_name = kwargs.get('tool_name', '')
     tool_version = kwargs.get('tool_version', '')
     tool_edit = int(kwargs.get('tool_edit', -1))
+    what_to_do = kwargs.get('what_to_do', None) 
+
+    if not what_to_do:
+        return fail('Error 9122')
+
+    try:
+        what_to_do = int(what_to_do)
+    except ValueError as e:
+        return fail('Error 9123')
 
     tool = Tool.objects.get(name=tool_name, version=tool_version, edit=tool_edit)
 
     #Get the dependencies of this tool
     tool_dependencies = tool_get_dependencies_internal(tool, include_as_root=True)
-    tool_dependencies_jstree = tool_build_dependencies_jstree(tool_dependencies)
+    tool_dependencies_jstree = tool_build_dependencies_jstree(tool_dependencies, add_installation_commands=what_to_do==2)
 
     #Get the dependencies + variables of this tool
     tool_variables_jstree = tool_build_dependencies_jstree(tool_dependencies, add_variables=True)
@@ -1652,6 +1716,7 @@ def tool_get_dependencies(request, **kwargs):
     #print ('LOGGG DEPENDENCIES + VARIABLES')
     #print (simplejson.dumps(tool_variables_jstree, indent=4))
 
+    # There is $scope.tools_dep_jstree_model and $scope.tools_var_jstree_model
     ret = {
         'dependencies_jstree': tool_dependencies_jstree,
         'variables_jstree': tool_variables_jstree,
@@ -1765,7 +1830,11 @@ def tools_add(request, **kwargs):
         # Get the tool that this tool is forked from
         tool_forked_from = tool.forked_from
 
-        # Get the created at. It needs to be sorted accorfing to this, otherwise the jstree becomes messy
+        # Get the tools that depend from this tool
+        tools_depending_from_me = tool.dependencies_related.all()
+        tools_depending_from_me_list = list(tools_depending_from_me) # We need to add a reference to these object. Otherwise it will be cleared after we delete tool
+
+        # Get the created at. It needs to be sorted according to this, otherwise the jstree becomes messy
         tool_created_at = tool.created_at
 
         # Get the workflows that use this tool
@@ -1778,6 +1847,7 @@ def tools_add(request, **kwargs):
 
         # Delete it!
         tool.delete()
+
     else:
         upvotes = 0
         downvotes = 0
@@ -1901,12 +1971,18 @@ def tools_add(request, **kwargs):
             tool_fork.forked_from = new_tool
             tool_fork.save()
 
+        # To the tools depending from me, add this tool to dependencies!
+        for tool_depending_from_me in tools_depending_from_me_list:
+            tool_depending_from_me.dependencies.add(new_tool)
+            #print ('Add {} as a dependency to {}'.format(new_tool, tool_depending_from_me))
+            tool_depending_from_me.save()
+
         # Add to the workflows that were using this tool, the new tool
         for workflow_using_this_tool in workflows_using_this_tool:
             workflow_using_this_tool.tools.add(new_tool)
             workflow_using_this_tool.save()
 
-        # Update the json graph
+        # Update the json graph of the workflows using this tool
         WJ = WorkflowJSON()
         WJ.update_tool(new_tool)
 
@@ -2024,16 +2100,19 @@ class WorkflowJSON:
     def __tool_dependencies(self, tool_node, all_nodes, edges):
         '''
         Edge A --> B: Tool A has dependency B . Or else, A depends from B. Or else first install B then A
-        Return a set of all tool ids that belong to the dependencies of tool
+        Return a set of all tool ids that belong to the dependencies of a tool (tool_node)
+
+        tool_node: The tool node in a workflow cy
+        all_nodes: A list of all nodes of a workflow cy
+        edges: The object returned from self.__build_edges_dict
         '''
 
         ret = set()
+        #print ('tool_node:', tool_node)
+        #print ('Edge set:', edges)
 
         def recurse(rec_tool_node):
             tool_id = rec_tool_node['data']['id']
-
-            if not tool_id in edges['s'][tool_id]:
-                return 
 
             for target_id in edges['s'][tool_id]:
                 target_node = all_nodes[target_id]
@@ -2044,7 +2123,9 @@ class WorkflowJSON:
                 # This is a tool. There exist an edge rec_tool_node --> target_node. This means that rec_tool_node dependes from target_node
                 if not target_id in ret:
                     ret.add(target_id)
-                    recurse(targe_node)
+                    recurse(target_node)
+
+        #print ('set 2:', ret)
 
         recurse(tool_node)
         ret.add(tool_node['data']['id'])
@@ -2089,12 +2170,12 @@ class WorkflowJSON:
         return workflow
 
 
-    def __node_belongs_to_a_workflow(self, node, workflow, belongto):
+    def __node_belongs_to_a_workflow(self, node, workflow, workflow_nodes):
         '''
         Recursive
         '''
 
-        if not node: # We are running this for ALL workflow nodes. Including the root workflow that its belong to is None
+        if not node: # We are running this for ALL workflow nodes. Including the root workflow that its belongto to is None
             return False
 
         # We reached the root
@@ -2103,21 +2184,23 @@ class WorkflowJSON:
 
         workflow_key = workflow['data']['id']
         node_belongto_key = workflow_id_cytoscape(node['data']['belongto'], None, None)
+        #print ('Checking: {} == {}'.format(workflow_key, node_belongto_key))
         if workflow_key == node_belongto_key:
             return True
 
-        # This node does not belong to this workflow. Perhaps the node.belongto workflow belongs to this workflow
-        return self.__node_belongs_to_a_workflow(belongto[node_belongto_key], workflow, belongto)
+        # This node does not belong to this workflow. Perhaps the node-->belongto workflow belongs to this workflow
+        return self.__node_belongs_to_a_workflow(workflow_nodes[node_belongto_key], workflow, workflow_nodes)
 
 
-    def __nodes_belonging_to_a_workflow(self, graph, workflow_node, belongto):
+    def __nodes_belonging_to_a_workflow(self, graph, workflow_node, workflow_nodes):
         '''
         Returns a set
         '''
 
         ret = {element['data']['id'] for element in graph['elements']['nodes'] 
-            if self.__node_belongs_to_a_workflow(element, workflow_node, belongto)}
-        ret.add(workflow_node['data']['id']) # As the workflow node as well
+            if self.__node_belongs_to_a_workflow(element, workflow_node, workflow_nodes)}
+        ret.add(workflow_node['data']['id']) # Add the workflow node as well
+
         return ret
 
     def __remove_nodes_edges(self, graph, node_ids_to_remove, node_ids_to_add):
@@ -2158,6 +2241,61 @@ class WorkflowJSON:
         # Remove nodes
         graph['elements']['nodes'] = [node for node in graph['elements']['nodes'] if not node['data']['id'] in node_ids_to_remove]
 
+    def __consistency_check_graph_model(self, graph, workflow):
+        '''
+        Whenever we update the graph of a workflow, we have to make sure that all tools/workflows that this graph has, do exist in the model
+        We also need to check the opposite: All tools/workflows that exist in the model also exist in the graph
+        '''
+
+        workflow_using_me_tools = workflow.tools.all()
+        tools_found = {str(t): [False, t] for t in workflow_using_me_tools}
+
+        workflow_using_me_workflow = workflow.workflows.all()
+        workflows_found = {str(w): [False, w] for w in workflow_using_me_workflow}
+
+        for node in graph['elements']['nodes']:
+            if node['data']['type'] == 'tool':
+                if node['data']['disconnected']:
+                    continue
+
+                # This is a tool does it exist in the model?
+                this_tool = Tool.objects.get(name=node['data']['name'], version=node['data']['version'], edit=node['data']['edit'])
+                if not workflow_using_me_tools.filter(pk=this_tool.pk).exists():
+                    # This tools does not exist in the model but exists on the graph. Add it!
+                    workflow.tools.add(this_tool)
+                else:
+                    tools_found[str(this_tool)][0] = True
+
+            if node['data']['type'] == 'workflow':
+                if node['data']['disconnected']:
+                    continue
+
+                if not node['data']['belongto']:
+                    continue # Do not connect the root workflow 
+
+                this_workflow = Workflow.objects.get(name=node['data']['name'], edit=node['data']['edit'])
+                if not workflow_using_me_workflow.filter(pk=this_workflow.pk).exists():
+                    # This workflow does not exist in the model but exists on the graph. Add it!
+                    workflow.workflows.add(this_workflow)
+                else:
+                    workflows_found[str(this_workflow)][0] = True
+
+        workflow.save()
+
+        # Is there any tool that exist on the model, but it does not exist on the graph?
+        for tool_id, (exists, this_tool) in tools_found.items():
+            if not exists:
+                # This tool exists on the model but not in the graph. REMOVE IT!
+                workflow.tools.remove(this_tool)
+
+        # Is there any workflow that exists on the model, but it does not exist on the graph?
+        for workflow_id, (exists, this_workflow) in workflows_found.items():
+            if not exists:
+                # Remove this workflow from the model
+                workflow.workflows.remove(this_workflow)
+
+        workflow.save()
+
 
     def __update_workflow_node(self, workflow_node, workflow_object):
         '''
@@ -2178,25 +2316,28 @@ class WorkflowJSON:
         # Update also the workflows that are using me
         for workflow_using_me in self.workflows_using_me:
 
-            print ('workflow using me:', workflow_using_me)
+            #print ('workflow using me:', workflow_using_me)
 
             graph = simplejson.loads(workflow_using_me.workflow)
             belongto, workflow_nodes = self.__build_workflow_belongto(graph)
 
             # Get the workflow that the workflow that we want to update belongs to 
             belongto_root = belongto[self.key]
-            print ('   belongto_root: ', belongto_root)
+            #print ('   belongto_root: ', belongto_root)
 
             # Get the workflow node that we want to update
             workflow_node_root = workflow_nodes[self.key]
-            print ('   Workflow root node:', workflow_node_root)
+            #print ('   Workflow node root:', workflow_node_root)
 
             # This is a set of all the nodes that this sub-workflow has
-            workflow_nodes_set = self.__nodes_belonging_to_a_workflow(graph, workflow_node_root, belongto)
-            print ('  workflow nodes set:', workflow_nodes_set)
+            workflow_nodes_set = self.__nodes_belonging_to_a_workflow(graph, workflow_node_root, workflow_nodes)
+            #print ('  workflow nodes set:', workflow_nodes_set)
 
             # Remove these nodes (and edges connected to them) from the graph
             self.__remove_nodes_edges(graph, workflow_nodes_set, self.all_ids)
+
+            #print ('The graph after removing of nodes edges:')
+            #print (simplejson.dumps(graph, indent=4))
 
             # Add the edges of this graph
             graph['elements']['edges'].extend(self.graph['elements']['edges'])
@@ -2223,6 +2364,9 @@ class WorkflowJSON:
             workflow_using_me.workflow = simplejson.dumps(graph)
             workflow_using_me.save()
 
+            # Check graph <--> model consistency
+            self.__consistency_check_graph_model(graph, workflow_using_me)
+
     def __update_tool(self,):
         '''
         '''
@@ -2230,46 +2374,49 @@ class WorkflowJSON:
         # Update all the workflows who are using this tool
         for workflow_using_me in self.workflows_using_me:
 
+            #print ('The graph of this tool:')
+            #print (simplejson.dumps(self.graph, indent=4))
 
-            print ('Workflow using me:', workflow_using_me.name, workflow_using_me.edit)
+            #print ('Workflow using me:', workflow_using_me.name, workflow_using_me.edit)
 
             graph = simplejson.loads(workflow_using_me.workflow)
 
-            print ('   My graph:')
-            print (simplejson.dumps(graph, indent=4))
+            #print ('   The workflow graph:')
+            #print (simplejson.dumps(graph, indent=4))
 
             all_nodes = {node['data']['id']:node for node in graph['elements']['nodes']}
             belongto = {node['data']['id']: node['data']['belongto'] for node in graph['elements']['nodes']}
             edges = self.__build_edges_dict(graph)
 
-            print ('   All nodes:')
-            print (all_nodes)
+            #print ('   All nodes:')
+            #print (simplejson.dumps(all_nodes, indent=4))
 
-            print ('   Belongto:')
-            print (belongto)
+            #print ('   Belongto:')
+            #print (simplejson.dumps(belongto, indent=4))
 
-            print ('   self.key:', self.key)
+            #print ('   self.key:', self.key)
 
             tool_node = all_nodes[self.key]
             tool_node_belongto = belongto[self.key]
 
-            # Use run_tool() does the same task. The problem is that it works directly with the UI. 
+            # Use download_tool() does the same task. The problem is that it works directly with the UI. 
             # We want to construct a cytoscape graph from the database object
 
             # Get a set of the node ids that depend from this tool
             tool_dependencies = self.__tool_dependencies(tool_node, all_nodes, edges)
 
-            print ('   Nodes to delete:')
-            print (tool_dependencies)
+            #print ('   Nodes to delete:')
+            #print (tool_dependencies)
 
             # Remove these nodes (and edges connected to them) from the graph
             self.__remove_nodes_edges(graph, tool_dependencies, self.all_ids)
 
-            print ('   Graph After Deletion:')
-            print (simplejson.dumps(graph, indent=4))
+            #print ('   Graph After Deletion of nodes and edges:')
+            #print (simplejson.dumps(graph, indent=4))
 
-            
             # Add the edges of the graph
+            #print ('   Edges to add:')
+            #print (simplejson.dumps(self.graph['elements']['edges'], indent=4))
             graph['elements']['edges'].extend(self.graph['elements']['edges'])
 
             # Add the nodes of this graph
@@ -2277,14 +2424,21 @@ class WorkflowJSON:
             nodes_to_add = self.graph['elements']['nodes']
             for node_to_add in nodes_to_add:
                 node_to_add['data']['belongto'] = tool_node_belongto
+
+            #print ('   Nodes to add:')
+            #print (simplejson.dumps(nodes_to_add, indent=4))
+
             graph['elements']['nodes'].extend(nodes_to_add)
 
-            print ('  Graph after adding new tool dependencies')
-            print (simplejson.dumps(graph, indent=4))
+            #print ('  Graph after adding new tool dependencies')
+            #print (simplejson.dumps(graph, indent=4))
 
             # Save the graph
             workflow_using_me.workflow = simplejson.dumps(graph)
             workflow_using_me.save()
+
+            # Check graph <--> model consistency
+            self.__consistency_check_graph_model(graph, workflow_using_me)
 
 
 @has_data
@@ -2353,8 +2507,13 @@ def ro_finalize_delete(request, **kwargs):
             draft_dependencies = [t for t in tool_get_dependencies_internal(tool, include_as_root=False) if t['dependency'].draft]
             if draft_dependencies:
                 return fail('This tool cannot be finalized. It depends from {} draft tool(s). For example: {}'.format(len(draft_dependencies), str(draft_dependencies[0]['dependency'])))
+            
             tool.draft = False
             tool.save()
+
+            WJ = WorkflowJSON()
+            WJ.update_tool(tool)
+
         elif action == 'DELETE':
             # Is there any other tool that depends from this tool?
             dependendants = Tool.objects.filter(dependencies__in=[tool])
@@ -2591,6 +2750,7 @@ def check_workflow_step_main(cy, root_workflow):
 def workflows_add(request, **kwargs):
     '''
     add workflow, workflow add, save workflow, workflow save, save wf
+    edit workflow edit update workflow
     '''
 
     if request.user.is_anonymous: # Server should always check..
@@ -2709,6 +2869,9 @@ def workflows_add(request, **kwargs):
     workflow_description_html = markdown(workflow_description)
 
     workflow = kwargs.get('workflow_json', '')
+    #print ('Workflow from angular:')
+    #print (simplejson.dumps(workflow, indent=4))
+
     if not workflow:
         return fail ('workflows json object is empty') # This should never happen!
 
@@ -2735,12 +2898,10 @@ def workflows_add(request, **kwargs):
             max_edit = workflow_all.aggregate(Max('edit'))
             next_edit = max_edit['edit__max'] + 1
 
-#    print ('BEFORE')
-#    print (simplejson.dumps(workflow, indent=4))
-#    print ('=====')
+
     #Change the edit value in the cytoscape json object
     set_edit_to_cytoscape_json(workflow, next_edit, workflow_info_name)
-#    print ('AFTER')
+#    print ('Workflow from set_edit:')
 #    print (simplejson.dumps(workflow, indent=4))
 
     #print (simplejson.dumps(workflow, indent=4))
@@ -2777,8 +2938,8 @@ def workflows_add(request, **kwargs):
         new_workflow.created_at = workflow_created_at
         new_workflow.save()
 
-    # Get all tools that are used in this workflow
-    tool_nodes = [x for x in workflow['elements']['nodes'] if x['data']['type'] == 'tool']
+    # Get all tools that are used in this workflow except the ones that are disconnected 
+    tool_nodes = [x for x in workflow['elements']['nodes'] if (x['data']['type'] == 'tool') and (not x['data']['disconnected'])]
     tools = [Tool.objects.get(name=x['data']['name'], version=x['data']['version'], edit=x['data']['edit']) for x in tool_nodes]
     if tools:
         new_workflow.tools.add(*tools)
@@ -2786,8 +2947,15 @@ def workflows_add(request, **kwargs):
 
     # Get all workflows that are used in this workflow
     workflow_nodes = [x for x in workflow['elements']['nodes'] if x['data']['type'] == 'workflow']
-    # Remove self workflow
-    workflow_nodes = [{'name': x['data']['name'], 'edit': x['data']['edit']} for x in workflow_nodes if not (x['data']['name'] == workflow_info_name and x['data']['edit'] == next_edit) ]
+
+    # print (simplejson.dumps(workflow_nodes, indent=4))
+
+    # Remove self workflow and workflows that are disconnected
+    workflow_nodes = [
+        {'name': x['data']['name'], 'edit': x['data']['edit']} 
+        for x in workflow_nodes if 
+            (not (x['data']['name'] == workflow_info_name and x['data']['edit'] == next_edit)) and (not x['data']['disconnected'])  
+        ]
     # Get workflow database objects
     workflows = [Workflow.objects.get(**x) for x in workflow_nodes]
     if workflows:
@@ -2814,12 +2982,15 @@ def workflows_add(request, **kwargs):
 
         # Add to the workflows that were using this workflow, the new workflow
         for workflow_using_this_workflow in workflows_using_this_workflow:
+
+            #print ('Workflow using this workflow:', str(workflow_using_this_workflow))
+
             workflow_using_this_workflow.workflows.add(new_workflow)
             workflow_using_this_workflow.save()
 
-            # Update the json graph
-            WJ = WorkflowJSON()
-            WJ.update_workflow(new_workflow)
+        # Update the json graph to the workflows that are using me
+        WJ = WorkflowJSON()
+        WJ.update_workflow(new_workflow)
 
     else:
         # Add an empty comment. This will be the root comment for the QA thread
@@ -2836,6 +3007,9 @@ def workflows_add(request, **kwargs):
 
     new_workflow.comment = comment
     new_workflow.save()
+
+    #print ('AFTER SAVE:')
+    #print (simplejson.dumps(simplejson.loads(new_workflow.workflow), indent=4))
 
 
     ret = {
@@ -2924,6 +3098,8 @@ def workflow_node_cytoscape(workflow, name='root', edit=0):
             'label': workflow_label_cytoscape(workflow, name, edit),
             'name': name,
             'type': 'workflow',
+            'draft': False, # For consistency. It does not realy makes any difference
+            'disconnected': False, # For consistency as well.
         }
     }
 
@@ -2949,6 +3125,10 @@ def tool_node_cytoscape(tool, tool_depending_from_me=None):
                 'text': tool_label_cytoscape(tool),
                 'type': 'tool',
                 'variables': [{'description': variable.description, 'name': variable.name, 'type': 'variable', 'value': variable.value} for variable in tool.variables.all()],
+                'installation_commands': tool.installation_commands,
+                'validation_commands': tool.validation_commands,
+                'os_choices': [choice.os_choices for choice in tool.os_choices.all()],
+                'dependencies': [str(t) for t in tool.dependencies.all()],
                 'version': tool.version,
                 'draft': tool.draft,
             }
@@ -2968,6 +3148,10 @@ def tool_node_cytoscape(tool, tool_depending_from_me=None):
                 'variables': [{'description': variable['description'], 'name': variable['name'], 'type': 'variable', 'value': variable['value']} for variable in tool['variables']],
                 'version': tool['version'],
                 'draft': tool['draft'],
+                'installation_commands': tool['installation_commands'],
+                'validation_commands': tool['validation_commands'],
+                'os_choices': tool['os_choices'],
+                'dependencies': tool['dependencies'],
             }
         }
 
@@ -3019,11 +3203,11 @@ def edge_cytoscape(source, target):
     }
 
 @has_data
-def run_tool(request, **kwargs):
+def download_tool(request, **kwargs):
     '''
     Create a cytoscape workflow that installs a given tool.
     Kind of a "fake" workflow that the only thing that it does is install a tool (and its dependencies)
-    It is called by run_workflow when the user selects to "download" a tool instead of a workflow
+    It is called by download_workflow when the user selects to "download" a tool instead of a workflow
     '''
     workflow = {
         'elements': {
@@ -3047,15 +3231,16 @@ def run_tool(request, **kwargs):
         'version': str(kwargs['tools_search_version']) if str(kwargs['tools_search_version']) else '0',
         'edit': kwargs['tools_search_edit'] if kwargs['tools_search_edit'] else 0, # If this is editable, then the edit is 0
         'variables': [variable for variable in kwargs['tool_variables'] if variable['name'] and variable['value'] and variable['description']],
-
+        'draft': kwargs['tool_draft'],
+        'installation_commands': kwargs['tool_installation_commands'],
+        'validation_commands': kwargs['tool_validation_commands'],
+        'os_choices': kwargs['tool_os_choices'],
+        'dependencies': all_dependencies_str,
     }
+
     this_tool_cytoscape_node = tool_node_cytoscape(tool)
-    this_tool_cytoscape_node['data']['installation_commands'] = kwargs['tool_installation_commands']
-    this_tool_cytoscape_node['data']['validation_commands'] = kwargs['tool_validation_commands']
-    this_tool_cytoscape_node['data']['os_choices'] = kwargs['tool_os_choices']
-    this_tool_cytoscape_node['data']['dependencies'] = all_dependencies_str
     #print (this_tool_cytoscape_node)
-    #a=1/0
+
     workflow['elements']['nodes'].append(this_tool_cytoscape_node)
 
     # Add an edge between the root workflow and this tool
@@ -3090,7 +3275,7 @@ def run_tool(request, **kwargs):
     workflow['elements']['edges'].append(edge_cytoscape(workflow_node, step_node))
 
 
-    return run_workflow(request, **{
+    return download_workflow(request, **{
         'workflow_options': {},
         'workflow': None,
         'download_type': kwargs.get('download_type', 'BASH'),
@@ -3099,20 +3284,26 @@ def run_tool(request, **kwargs):
         })
 
 @has_data
-def run_workflow(request, **kwargs):
+def download_workflow(request, **kwargs):
     '''
     Defined in urls.py:
-    path('run_workflow/', views.run_workflow), # Acceps a workflow_options and workflow object. Runs a workflow
+    path('download_workflow/', views.download_workflow), # Acceps a workflow_options and workflow object. Runs a workflow
 
     https://docs.djangoproject.com/en/2.2/ref/request-response/#telling-the-browser-to-treat-the-response-as-a-file-attachment
 
+    kwargs['workflow'] = {'name': <workflow_name>, 'edit': <workflow_edit>}
+
     kwargs['workflow_cy'] is the cytoscape workflow
+
+    Note: Everyone can download a workflow!
     '''
 
     workflow_arg = kwargs['workflow']
     workflow_options_arg = kwargs['workflow_options']
-    download_type = kwargs['download_type'] # download_type can be "BASH" or "JSON"
+    download_type = kwargs['download_type'] # For a full list of types see below . if download_type == ...
     workflow_info_editable = kwargs['workflow_info_editable'] # IS this workflow saved or not ? . TRUE: NOT SAVED 
+    workflow_id = kwargs.get('workflow_id')
+    workflow_obc_client = kwargs.get('obc_client', False)
 
     #print ('Name:', workflow_arg['name'])
     #print ('Edit:', workflow_arg['edit'])
@@ -3146,39 +3337,17 @@ def run_workflow(request, **kwargs):
         workflow_cy = kwargs['workflow_cy']
     #print (workflow_cy)
 
-    # Get the tools of this workflow
-    workflow_tools = [tool for tool in workflow_cy['elements']['nodes'] if tool['data']['type']=='tool']
-    # Add bash information that does not exist in cytoscape graph
-    for workflow_tool in workflow_tools:
-
-#        print ('name:', workflow_tool['data']['name'])
-#        print ('version:', workflow_tool['data']['version'])
-#        print ('edit:', workflow_tool['data']['edit'])
-
-        try:
-            workflow_tool_obj = Tool.objects.get(
-                name=workflow_tool['data']['name'], 
-                version=workflow_tool['data']['version'], 
-                edit=workflow_tool['data']['edit'])
-        except ObjectDoesNotExist as e:
-            workflow_tool_obj = None # If it does not exist, it will break later..
-
-        # Add installation commands etc for each tool.
-        # It might be the chance that this information already exists, if it has been created by an artificial cytoscape object
-        # like in function: run_tool
-        if not 'installation_commands' in  workflow_tool['data']:
-            workflow_tool['data']['installation_commands'] = workflow_tool_obj.installation_commands
-        if not 'validation_commands' in  workflow_tool['data']:
-            workflow_tool['data']['validation_commands'] = workflow_tool_obj.validation_commands
-        if not 'os_choices' in workflow_tool['data']:
-            workflow_tool['data']['os_choices'] = [choice.os_choices for choice in workflow_tool_obj.os_choices.all()]
-        if not 'dependencies' in workflow_tool['data']:
-            workflow_tool['data']['dependencies'] = [str(tool) for tool in workflow_tool_obj.dependencies.all()]
-
     # Create a new Report object 
-    if (not user_is_validated(request)) or (not workflow):
+    if (not user_is_validated(request)) or (not workflow) or (workflow.draft):
         '''
-        If user is anonymous or with non-validated email or not saved workflow or this is a tool run (workflow is None), we do not create a report!
+        If :
+            user is anonymous or 
+            with non-validated email or 
+            not saved workflow or 
+            this is a tool run (workflow is None) or
+            workflow is draft 
+        then:
+            we do not create a report!
         '''
         run_report = None
         nice_id = None
@@ -3219,26 +3388,170 @@ def run_workflow(request, **kwargs):
 
     ret = {}
 
+    server_url = get_server_url(request)
 
     try:
         if download_type == 'JSON':
             output_object = urllib.parse.quote(simplejson.dumps(output_object))
             ret['output_object'] = output_object
         elif download_type == 'BASH':
-            output_object = urllib.parse.quote(create_bash_script(output_object, get_server_url(request), 'sh'))
+            output_object = urllib.parse.quote(create_bash_script(output_object, server_url, 'sh'))
             ret['output_object'] = output_object
         elif download_type == 'CWLTARGZ':
-            output_object = urllib.parse.quote(create_bash_script(output_object, get_server_url(request), 'cwltargz'))
+            output_object = urllib.parse.quote(create_bash_script(output_object, server_url, 'cwltargz'))
             ret['output_object'] = output_object
         elif download_type == 'CWLZIP':
-            output_object = urllib.parse.quote(create_bash_script(output_object, get_server_url(request), 'cwlzip'))
+            output_object = urllib.parse.quote(create_bash_script(output_object, server_url, 'cwlzip',))
+            ret['output_object'] = output_object
+        elif download_type == 'AIRFLOW':
+            output_object = urllib.parse.quote(create_bash_script(output_object, server_url, 'airflow', workflow_id=workflow_id, obc_client=workflow_obc_client))
             ret['output_object'] = output_object
     except OBC_Executor_Exception as e:
         return fail(str(e))
 
-
     ret['report_created'] = report_created
     ret['nice_id'] = nice_id
+
+    return success(ret)
+
+def callback_url(request):
+    '''
+    Buld callbacl url
+    '''
+    return f'{request.scheme}://{request.META["HTTP_HOST"]}/platform/'
+
+@has_data
+def run_workflow(request, **kwargs):
+    '''
+    path('run_workflow/', view.run_workflow)
+
+    curl -H "Content-Type: application/json" --request POST --data '{"type":"workflow","name":"test", "edit": "2"}' "http://139.91.81.103:5000/3ee5ccfb744983968fb3e9735e4bb85d/run_workflow"
+
+    source: Where the request came from. If it from rest then source='frontend'
+    '''
+
+
+
+    if request.user.is_anonymous: # Server should always check..
+        return fail('Error 3291. User is anonymous')
+
+    if not user_is_validated(request):
+        return fail('Error 3292. User is not validated ' + validate_toast_button());
+
+    obc_user = OBC_user.objects.get(user=request.user)
+
+    profile_name = kwargs.get('profile_name', '')
+    if not str(profile_name):
+        return fail('Error 3288. Invalid profile name')
+
+    name = kwargs.get('name', '')
+    if not str(name):
+        return fail('Error 3289. Invalid workflow name')
+
+    edit = kwargs.get('edit', '')
+    try:
+        edit = int(edit)
+    except ValueError as e:
+        return fail('Error 3290. Invalid workflow edit')
+
+    # Get the client
+    try:
+        client = obc_user.clients.get(name=profile_name)
+    except ObjectDoesNotExist as e:
+        return fail('Error 3293. Could not get execution client.')
+
+    # Get the workflow
+    try:
+        workflow = Workflow.objects.get(name=name, edit=edit)
+    except ObjectDoesNotExist as e:
+        return fail('Error 3294. Could not get Workflow object.')
+
+    url = client.client
+    print ('URL FROM DATABASE:', url)
+
+    run_url = urllib.parse.urljoin(url + '/', 'run') # https://stackoverflow.com/questions/8223939/how-to-join-absolute-and-relative-urls
+    nice_id = create_nice_id()
+
+    data_to_submit = {
+        'type': 'workflow',
+        'name': name,
+        'edit': edit,
+        'callback': callback_url(request),
+        'workflow_id': nice_id,
+    }
+
+    headers={ "Content-Type" : "application/json", "Accept" : "application/json"}
+
+    print ('run_url:', run_url)
+    print ('callback:', data_to_submit['callback'])
+
+    '''
+    
+
+    '''
+
+    '''
+curl --header "Content-Type: application/json" \
+  --request GET \
+  http://139.91.190.239:5000/cfa52d9df5a24345d9f740395e4e69e4/check/id/test   
+
+
+
+[{"dag_id": "mitsos", "dag_run_url": "/admin/airflow/graph?dag_id=mitsos&execution_date=2020-02-28+13%3A16%3A42%2B00%3A00", "execution_date": "2020-02-28T13:16:42+00:00", "id": 2, "run_id": "manual__2020-02-28T13:16:42+00:00", "start_date": "2020-02-28T13:16:42.710933+00:00", "state": "success"}, {"dag_id": "mitsos", "dag_run_url": "/admin/airflow/graph?dag_id=mitsos&execution_date=2020-02-28+13%3A20%3A44%2B00%3A00", "execution_date": "2020-02-28T13:20:44+00:00", "id": 3, "run_id": "manual__2020-02-28T13:20:44+00:00", "start_date": "2020-02-28T13:20:44.423814+00:00", "state": "success"}, {"dag_id": "mitsos", "dag_run_url": "/admin/airflow/graph?dag_id=mitsos&execution_date=2020-02-28+13%3A24%3A02%2B00%3A00", "execution_date": "2020-02-28T13:24:02+00:00", "id": 4, "run_id": "manual__2020-02-28T13:24:02+00:00", "start_date": "2020-02-28T13:24:02.486982+00:00", "state": "success"}]
+
+    '''
+
+    # !!!HIGLY EXPERIMENTAL!!!
+    try:
+        r = requests.post(run_url, headers=headers, data=simplejson.dumps(data_to_submit))
+    except requests.exceptions.ConnectionError as e:
+        return fail('Could not establish a connection with client')
+
+    if not r.ok:
+        #r.raise_for_status()
+        return fail('Could not send to URL: {} . Error code: {}'.format(run_url, r.status_code))
+    try: 
+        data_from_client = r.json()
+    except Exception as e: # Ideally we should do here: except json.decoder.JSONDecodeError as e: but we would have to import json with simp[lejson..]
+        return fail('Could not parse JSON data from Execution Client.')
+
+    print ('RUN_URL:')
+    print (data_from_client)
+
+    # Check data_from_client. We expect to find an externally triggered True in data_from_client['status']['message']
+    if not 'status' in data_from_client:
+        return fail('Client does not contains status info')
+
+    if not 'message' in data_from_client['status']:
+        return fail("Client's status does not contain any message")
+
+    if not 'externally triggered: True' in data_from_client['status']['message']:
+        return fail("Client failed to trigger DAG: {}".format(data_from_client['status']['message']))
+
+    if not 'executor_url' in data_from_client:
+        return fail("Could not get workflow monitoring URL..")
+    visualization_url = g['create_client_airflow_url'](data_from_client['executor_url'], nice_id)
+
+    if not 'monitor_url' in data_from_client:
+        return fail('Could not get monitoring URL..')
+    monitor_url = data_from_client['monitor_url']
+
+
+    # All seem to be ok. Create a report
+    report = Report(
+        obc_user=obc_user, 
+        workflow = workflow, 
+        nice_id = nice_id,
+        client=client, 
+        visualization_url=visualization_url,
+        monitor_url = monitor_url,
+        client_status='SUBMITTED')
+    report.save()
+
+    # Let's not create a reporttoken for now.
+    ret = {
+        'nice_id': nice_id,
+    }
 
     return success(ret)
 
@@ -3278,14 +3591,14 @@ def report(request, **kwargs):
     if not old_report_token.active:
         return fail('This token has expired')
 
-    #Deactivate it
+    # Deactivate it
     old_report_token.active = False
     old_report_token.save()
 
     # Get the report
     report_obj = old_report_token.report_related.first()
 
-    #Save the new status and return a new token 
+    # Save the new status and return a new token 
     new_report_token = ReportToken(status=status_received, active=True) # Duplicate code
     new_report_token.save()
     report_obj.tokens.add(new_report_token)
@@ -3295,9 +3608,6 @@ def report(request, **kwargs):
     #print ('NEW STATUS:', new_report_token.status)
 
     return success({'token': str(new_report_token.token)})
-
-
-
 
 ### END OF WORKFLOWS ###
 ### START OF VALIDATION CALLBACK ###
@@ -3519,7 +3829,174 @@ def reports_search_3(request, **kwargs):
         'report_username': report.obc_user.user.username,
         'report_created_at': datetime_to_str(report.created_at),
         'report_tokens': tokens,
+        'report_client': bool(report.client),
+        'report_url': report.url, # The url with the results
+        'report_log_url': report.log_url, # The url with the logs
+        'report_visualization_url': report.visualization_url, # The url for monitoring of the execution progress (i.e. from airflow)
+        'report_monitor_url': report.monitor_url,
+        'report_client_status': report.client_status,
         'workflow' : simplejson.loads(workflow.workflow),
+    }
+
+    return success(ret)
+
+@has_data
+def reports_refresh(request, **kwargs):
+    '''
+    path: report_refresh/
+    Get an update for a report
+    report_workflow_action : 1 = refresh , 2 = pause , 3 = resume
+    '''
+
+    report_workflow_name = kwargs['report_workflow_name']
+    report_workflow_edit = int(kwargs['report_workflow_edit'])
+    nice_id = kwargs['report_workflow_run']
+    report_workflow_action = kwargs['report_workflow_action']
+
+    # Get the report
+    report = Report.objects.get(nice_id=nice_id)
+    previous_status = report.client_status
+
+    if request.user.is_anonymous:
+        return fail('Please log in to update the status of a Report')
+
+    # Get this user
+    obc_user = OBC_user.objects.get(user=request.user)
+    if obc_user != report.obc_user:
+        return fail('Cannot edit a report of another user.')
+
+    if not report.client:
+        if report_workflow_action == 4:
+            # Deleting a report that has not been associated with any client.
+            # Just delete it..
+            report.delete()
+            return success()
+
+    # Get the url of the client
+    client_url = report.client.client
+
+    if report_workflow_action == 1:
+        # Refresh
+        # Get the url to check status
+        url = g['create_client_check_status_url'](client_url, nice_id)
+        print ('CHECK STATUS URL:')
+        print (url)
+    elif report_workflow_action == 2:
+        # Pause
+        url = g['create_client_pause_url'](client_url, nice_id)
+        print ('PAUSE URL:')
+        print (url)
+    elif report_workflow_action == 3:
+        # Resume 
+        url = g['create_client_resume_url'](client_url, nice_id)
+        print ('RESUME URL:')
+        print (url)
+    elif report_workflow_action == 4:
+        # Delete
+        url = g['create_client_abort_url'](client_url, nice_id)
+        print ('ABORT URL:')
+        print (url)
+    else:
+        return fail('Error 5821: {}'.format(str(report_workflow_action)))
+
+    try:
+        r = requests.get(url)
+    except requests.exceptions.ConnectionError as e:
+        return fail('Could not establish a connection with client')
+
+    if not r.ok:
+        return fail('Could not send to URL: {} . Error code: {}'.format(client_url, r.status_code))
+    
+    data_from_client = r.json()
+    print ('Data from client:')
+    print (data_from_client)
+    # {"error": "Dag id mitsos not found"}
+
+    if report_workflow_action == 1: # refresh
+        if type(data_from_client) is dict:
+            if 'error' in data_from_client:
+                if 'not found' in data_from_client['error']:
+                    status = 'NOT FOUND'
+                else:
+                    return fail('Error: 1111')
+            else:
+                return fail('Error: 1112')
+        if not type(data_from_client) is list:
+            return fail('Error: 1113')
+
+        if len(data_from_client) != 1:
+            return fail('Error: 1114')
+
+        if not type(data_from_client[0]) is dict:
+            return fail('Error: 1115')
+
+        if not 'state' in data_from_client[0]:
+            return fail('Error: 1116')
+
+        if data_from_client[0]['state'] == 'running':
+            status = 'RUNNING'
+
+        elif data_from_client[0]['state'] == 'failed':
+            status = 'FAILED'
+
+        elif data_from_client[0]['state'] == 'success':
+            status = 'SUCCESS'
+
+        elif data_from_client[0]['state'] == 'paused':
+            status = 'PAUSED'
+
+        else:
+            return fail('Unknown status:', data_from_client[0]['state'])
+    elif report_workflow_action in [2, 3]: # 2 = pause , 3 = resume
+        if not type(data_from_client) is dict:
+            return fail('Error: 1119')
+
+        if not 'response' in data_from_client:
+            return fail('Error: 1120')
+
+        if data_from_client['response'] != 'ok':
+            return fail('Error 1121')
+
+        if report_workflow_action == 2:
+            status = 'PAUSE_SUBMITTED'
+        elif report_workflow_action == 3:
+            status = 'RESUME_SUBMITTED'
+        else:
+            return fail('Error 1122')
+    elif report_workflow_action == 4:
+        if not type(data_from_client) is dict:
+            return fail('Error: 1123')
+        if not 'status' in data_from_client:
+            return fail('Error 1124')
+        if data_from_client['status'] != 'success':
+            return fail('Client responded with an error message: {}'.format(data_from_client['status']))
+
+        # Delete it..
+        report.delete()
+        return success()
+
+    # Update report object
+    report.client_status = status
+    report.save()
+
+    # If we finished, then create the URL that contains the report
+    report_url = None
+    log_url = None
+
+    if status == 'SUCCESS':
+        report_url = g['create_client_download_report_url'](client_url, nice_id)
+    if status in ['SUCCESS', 'FAILED']:
+        log_url = g['create_client_download_log_url'](client_url, nice_id)
+    
+    report.url = report_url
+    report.log_url = log_url
+
+    report.save()
+
+    ret = {
+        'report_url': report_url,
+        'report_log_url': log_url,
+        'report_client_status': status,
     }
 
     return success(ret)
@@ -3978,7 +4455,7 @@ def qa_add_1(request, **kwargs):
         return fail('Please login to post a new question')
     user = request.user
 
-    # We csannot have the same comment title more than once
+    # We cannot have the same comment title more than once
     if Comment.objects.filter(title__iexact=qa_title).exists():
         return fail('A comment with this title already exists!')
 
@@ -4087,7 +4564,7 @@ def get_pk_from_root_comment(request, **kwargs):
         return fail('Could not find tool or workflow database object')
 
     ret = {
-        'pk': pk
+        'pk': pk,
     }
     return success(ret)
 

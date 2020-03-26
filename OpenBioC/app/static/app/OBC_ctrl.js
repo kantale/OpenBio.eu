@@ -62,6 +62,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.general_alert_message = window.general_alert_message;
         $scope.password_reset_token = window.password_reset_token;
         $scope.user_is_validated = window.user_is_validated;
+        $scope.profile_clients = window.profile_clients; // The execution engines of the user
 
         $scope.main_container_show = true;
         $scope.profile_container_show = false;
@@ -111,9 +112,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.workflows_step_name = '';
         $scope.workflows_step_main = false;
         $scope.workflows_step_description = '';
-        $scope.worfklows_step_ace_init = '# Insert the BASH commands for this step.\n# You can use the variable ${OBC_WORK_PATH} as your working directory.\n\n';
+        $scope.worfklows_step_ace_init = '# Insert the BASH commands for this step.\n# You can use the variable ${OBC_WORK_PATH} as your working directory.\n# Also read the Documentation about the REPORT and the PARALLEL commands.\n\n';
         workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1);
         $scope.workflow_step_error_message = '';
+        $scope.workflow_run_disabled = false; // Show the RUN button ?
 
         //The input and output variables of the workflow
         $scope.workflow_input_outputs = [{name: '', description: '', out:true}]; // {name: 'aa', description: 'bb', out:true}, {name: 'cc', description: 'dd', out:false}
@@ -573,6 +575,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 window.user_is_validated = data['user_is_validated'];
                 $scope.user_is_validated = data['user_is_validated'];
                 $scope.username = data['username'];
+                window.profile_clients = data['profile_clients'];
+                $scope.profile_clients = data['profile_clients'];
+
                 $scope.show_login = false;
 
                 //Close modal sign in 
@@ -958,7 +963,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 //$scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === data['tool_os_choices'][0]})  ; // Take just the first. The model allows for multiple choices
                 $scope.tool_os_choices_tmp = data['tool_os_choices']; 
 
-                console.log($scope.tool_os_choices_tmp);
+                //console.log($scope.tool_os_choices_tmp);
 
                 //The server returns data['tool_os_choices'] which has the structure that ui-select "wants"
                 //Nevertheless $scope.tool_os_choices is the model for the select element.
@@ -1137,6 +1142,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         $scope.set_tools_info_editable(true);
         $scope.tools_info_draft = true;
+        $scope.tools_info_edit_state = false;
 
         if (!is_new) {
             //This is not a new tool. So.. left values unchanged.
@@ -1176,7 +1182,15 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         // Default operating system is ubuntu:16.04 . FIXME!
         // $scope.tool_os_choices = $scope.os_choices.find(function(element){return element.value === 'ubuntu:16.04'});
+
         $scope.tool_os_choices = [];
+        $scope.os_choices.forEach(function (element){
+            if (element.value == 'posix') {
+                $scope.tool_os_choices.push(element);
+            }
+        });
+
+
         //console.log('$scope.os_choices:');
         //console.log($scope.os_choices);
         //console.log('$scope.tool_os_choices:');
@@ -1438,6 +1452,11 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 //Disable chip
                 window.OBCUI.chip_disable('toolChips');
 
+                //Set installation and validation editors to readonle 
+                tool_installation_editor.setReadOnly(true);
+                tool_validation_editor.setReadOnly(true);
+                $scope.tools_var_jstree_id_show = false;  // Hide tool + variables dependency tree
+
                 //Load Chips
                 $scope.tool_keywords = window.OBCUI.get_chip_data('toolChips');
 
@@ -1468,7 +1487,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
     /*
     * Tool in draft mode --> EDIT button --> pressed 
-    * tool edit tool
+    * tool edit tool . edit pressed 
     */
     $scope.tool_edit_pressed = function() {
         $scope.tools_info_editable = true;
@@ -1484,11 +1503,34 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
     /*
     * Workflow in draft mode --> EDIT button --> pressed 
-    * workflow edit workflow
+    * workflow edit workflow . edit pressed 
     */
     $scope.workflow_edit_pressed = function() {
         $scope.workflows_info_edit_state = true;
         $scope.workflows_info_fork_pressed('EDIT');
+    };
+
+    /*
+    * We have a "Yes" response from the "are you sure" modal. 
+    * Diseminate on the action.
+    */
+    $scope.are_you_sure_modal_post_action = function(action) {
+        if (action == 'DELETE' || action == 'FINALIZE') {
+            $scope.ro_finalize_delete_pressed($scope.warning_modal_ro, $scope.warning_modal_action, true);
+            return;
+        }
+        else if (action == 'DISCONNECT') {
+            $scope.disassociate_workflow_tool($scope.node, true);
+            return;
+        }
+        else if (action == 'DELETENODE') {
+            $scope.workflow_cytoscape_delete_node($scope.node_id, true);
+            return;
+        }
+        else if (action == 'DELETEREPORT') {
+            $scope.report_refresh($scope.report_refresh_action, true);
+            return;
+        }
     };
 
     /*
@@ -1645,6 +1687,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         // Enable chip edit
         window.OBCUI.chip_enable('toolChips'); // Enable them
+
+        // Every fork os a draft
+        $scope.tools_info_draft = true;
     };
 
     /*
@@ -1897,8 +1942,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     /*
     * Get the dependencies of this tool
     * This is called from ui.js
-    * what_to_do == 1: DRAG FROM SEARCH TREE TO DEPENDENCY TREE
-    * what_to_do == 2: DRAG FROM SEARCH TREE TO CYTOSCAPE CYWORKFLOW DIV
+    * what_to_do == 1: drag and drop FROM SEARCH TREE TO DEPENDENCY TREE
+    * what_to_do == 2: dran and drop FROM SEARCH TREE TO CYTOSCAPE CYWORKFLOW DIV
     */
     $scope.tool_get_dependencies = function(tool, what_to_do) {
 
@@ -1912,7 +1957,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             {
                 'tool_name': tool.name,
                 'tool_version': tool.version,
-                'tool_edit': tool.edit
+                'tool_edit': tool.edit,
+                'what_to_do': what_to_do // We are passing also what_to_do. If what_to_do==2 then also fetch installation instructions
             },
             function(data) {
 
@@ -1948,7 +1994,6 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                         }
                     }
 
-
                     //We suppose there is no error
                     $scope.tools_info_error_message = '';
 
@@ -1962,7 +2007,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                         $scope.tools_var_jstree_model.push(data['variables_jstree'][i]);
                     }
                 }
-                else if (what_to_do == 2) { //DRAG FROM TOOLS SEARCH TREE TO CYTOSCAPE WORKFLOW DIV
+                else if (what_to_do == 2) { //drag and drop FROM TOOLS SEARCH TREE TO CYTOSCAPE WORKFLOW DIV
                     //console.log('UPDATE THE GRAPH WITH: dependencies_jstree');
                     //console.log(data['dependencies_jstree']);
                     //console.log('variables_jstree:');
@@ -1972,7 +2017,6 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                         $scope.toast('You cannot edit this workflow. You can fork it, or create a new one.', 'error');
                         return;
                     }
-
 
                     //Add the variable information to the tool nodes. 
                     //By doing that we make sure that tool nodes have variable information
@@ -1988,14 +2032,15 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                                     else {
                                         data['dependencies_jstree'][i].variables = [variables_jstree_item.data];
                                     }
-
                                 }
                             }
                         }
                     });
 
-                    //Make sure that all dependencies_jstree nodes have a variables field
-                    //Also make sure that all dependencies_jstree nodes have a belongto fields
+                    //Make sure that all dependencies_jstree nodes have:
+                    // a variables field
+                    // a belongto fields
+                    // a disconnencted field
                     for (var i=0; i<data['dependencies_jstree'].length; i++) {
                         if (typeof data['dependencies_jstree'][i].variables !== 'undefined') {
                         }
@@ -2003,7 +2048,11 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                             data['dependencies_jstree'][i].variables = [];
                         }
                         data['dependencies_jstree'][i].belongto = null;
+                        data['dependencies_jstree'][i].disconnected = false;
                     }
+
+                    //console.log('dependencies_jstree:');
+                    //console.log(data['dependencies_jstree']);
 
                     //window.buildTree(data['dependencies_jstree'], {name: $scope.workflow_info_name, edit: null}); //FIXME SEE A46016A6E393
                     window.buildTree(data['dependencies_jstree'], {name: 'root', edit: null}); //FIXME SEE A46016A6E393 
@@ -2386,6 +2435,68 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         return ret;
     };
 
+    /*
+    * Reports --> Refresh --> button click
+    * In cases when a workflow is executed from the OBC client. Update the status
+    * action: 
+    * 1 --> refresh
+    * 2 --> pause
+    * 3 --> resume
+    * 4 --> Delete
+    */
+    $scope.report_refresh = function(action, confirm) {
+
+        if (action == 4) {
+            // Delete
+            if ($scope.report_client) { // Is there a client trying to run it?
+                if ($scope.report_client_status == 'RUNNING') { // Is it in running stage?
+                    $scope.toast('The report is in RUNNING stage. Pause it first before deleting it', 'error');
+                    return ;
+                }
+            }
+
+            //Show modal 
+            if (!confirm) {
+                $scope.warning_modal_message = 'You are about to delete this report. Are your sure?';
+                $scope.warning_modal_action = 'DELETEREPORT';
+                $scope.report_refresh_action = action; // Pass the parameter
+                $('#deleteModal').modal('open');
+                return;
+            }
+
+        }
+
+        $scope.ajax(
+            'reports_refresh/',
+            {
+                report_workflow_action: action,
+                report_workflow_name: $scope.report_workflow_name,
+                report_workflow_edit: $scope.report_workflow_edit,
+                report_workflow_run:  $scope.report_workflow_run
+            },
+            function(data) {
+
+                if (action == 4) { // Delete
+                    $scope.toast('Report is deleted!', 'success');
+                    $scope.hide_all_right_accordions('');
+                    $scope.all_search_2(); // Update search results
+                    return;
+                }
+
+                $scope.report_url = data['report_url'];
+                $scope.report_log_url = data['report_log_url'];
+                $scope.report_client_status = data['report_client_status'];
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+
+        );
+    };
+
 
     /*
     * Called from reports_search_jstree_select_node
@@ -2409,6 +2520,12 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 //Fill data
                 $scope.report_workflow_name = data['report_workflow_name'];
                 $scope.report_workflow_edit = data['report_workflow_edit'];
+                $scope.report_client = data['report_client']; // True/False . True: It is created through an OBC client
+                $scope.report_url = data['report_url'];
+                $scope.report_log_url = data['report_log_url'];
+                $scope.report_visualization_url = data['report_visualization_url'];
+                $scope.report_monitor_url = data['report_monitor_url'];
+                $scope.report_client_status = data['report_client_status'];
                 $scope.report_username = data['report_username'];
                 $scope.report_created_at = data['report_created_at'];
                 $scope.report_tokens = data['report_tokens'];
@@ -2739,6 +2856,73 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     //JSTREE END
 
     // WORKFLOWS 
+
+    /*
+    * Dissasociate a tool or a workflow
+    * node is cytoscape node 
+    * Called from ui.js right click in cy node --> Disconnect
+    */
+    $scope.disassociate_workflow_tool = function(node, confirm) {
+
+        if (!$scope.workflows_info_editable) {
+            $scope.toast('This workflow is not in an edit stage.', 'error');
+            return;
+        }
+
+        var node_data = node.data();
+        if (!node_data.draft) {
+            $scope.toast('You can disconnect only DRAFT tools or workflows', 'error');
+            return;
+        }
+
+        if (!node_data.belongto) {
+            $scope.toast('You cannot disconnect the root workflow', 'error');
+            return;
+        }
+
+        if (!node_data.type == 'workflow') {
+            $scope.toast('Error 5718', 'error'); //Sanity check
+            return;
+        }
+
+        if (node_data.disconnected) {
+            $scope.toast('This workflow is already disconnected', 'error');
+            return;
+        }
+
+        //Now we can perform the disconnection. Confirm it
+        if (!confirm) {
+            var data = node.data();
+            $scope.warning_modal_message = 'You are about to disconnect ' + data.type + ' ' + data.label + ' from this workflow. Changes on ' + data.label + ' will not further affect this workflow. You cannot undo this operation. Are your sure?';
+            $scope.warning_modal_action = 'DISCONNECT';
+            $scope.node = node; // Pass the parameter
+            $('#deleteModal').modal('open');
+            return;
+        }
+
+        if (node_data.type == 'workflow') {
+            //disconnect a workflow
+
+            // Get all successor workflows AND TOOLS and tag them as disconnected
+            node.successors('node[type="workflow"] , node[type="tool"]').forEach(function(succesor_node){
+                succesor_node.data('disconnected', true);
+                succesor_node.data('draft', false); // disconnected workflows are not draft
+            });
+            node.data('disconnected', true);
+            node.data('draft', false);
+        }
+        else if (node_data.type == 'tool') {
+            //disconnect a tool
+            // Get all successor tools and tag them as disconnected
+            node.successors('node[type="tool"]').forEach(function(succesor_node){
+                succesor_node.data('disconnected', true);
+                succesor_node.data('draft', false); // disconnected workflows are not draft
+            });
+            node.data('disconnected', true);
+            node.data('draft', false);
+        }
+
+    };
 
     //JSTREE workflows_search
     $scope.workflows_search_jstree_config = {
@@ -3096,6 +3280,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
                 $scope.workflow_keywords = data['keywords'];
 
+                // This is a fresh WF. There is no "previous step"
+                $scope.workflow_step_previous_step = false;
+
                 // Update text fields
                 $timeout(function(){M.updateTextFields()}, 10);
 
@@ -3106,6 +3293,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.qa_gen['workflow'].qa_comment_title = data['workflow_comment_title'];
                 $scope.qa_gen['workflow'].qa_comment_created_at = data['workflow_comment_created_at'];
                 $scope.qa_gen['workflow'].qa_comment_username = data['workflow_comment_username'];
+
+                // Run fit cytoscape. If the graph has been edited we need to reposition all nodes. 
+                $timeout(function(){$scope.workflow_info_fit_pressed()}, 10);
+                
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');
@@ -3230,12 +3421,14 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         $scope.workflows_step_name = ''; //Clear STEP name
         $scope.workflows_step_main = false; 
+
+        $scope.workflow_step_previous_step = false;
         workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1); //Add default content
     };
 
     /*
     * workflows --> Step --> Button: Add/Update --> Clicked
-    * We either ADD the step or UPDATE the step. add step add update step update
+    * We either ADD the step or UPDATE the step. add step add update step update edit step edit. 
     */
     $scope.workflow_step_add = function() {
 
@@ -3254,8 +3447,6 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             return;
         }
 
-
-
         // Check that ONLY ONE step is declared as "main" on THAT workflow (nested workflow can have other main steps)
         // If we setting this value to true and there is already a main step, throw an error
         if ($scope.workflows_step_main) {
@@ -3266,7 +3457,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             if ($scope.workflow_step_add_update_label == 'Update') {
                 var step_update_data = cy.$('node[id="' +  $scope.workflow_step_previous_step.id + '"]').data();
                 if (step_update_data.main) {
-                    //This node was a main and now is set to main. No need to chech for multiple mains
+                    //This node was a main and now is set to main. No need to check for multiple mains
                     escape_check = true; 
                 }
                 else {
@@ -3292,6 +3483,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         }
 
         var step_belong_to = null; //By default 
+        var edges_connected_to_me = []; //The edges that are connected to this step.
 
         //Is this an UPDATE or an ADD?
         if ($scope.workflow_step_add_update_label == 'Update') {
@@ -3300,6 +3492,17 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             //Keep the belong to info of the step before deleting it
             step_belong_to = cy.$('node[id="' +  $scope.workflow_step_previous_step.id + '"]').data().belongto;
 
+            //Keep the edges of the steps that call me
+            cy.$('node[id="' + $scope.workflow_step_previous_step.id + '"]').incomers('node[type="step"]').forEach(function(ele, i, eles){
+                edges_connected_to_me.push({group:'edges', data: window.OBCUI.create_step_calls_step_edge(ele.id(), $scope.workflow_step_previous_step.id).data}); 
+            });
+
+            //Keep the edges of the input variable that we read
+            //cy.$('node[id="' + $scope.workflow_step_previous_step.id + '"]').incomers('node[type="input"]').forEach(function(ele, i, eles){
+            //    edges_connected_to_me.push({group:'edges', data: window.OBCUI.create_step_read_input_edge($scope.workflow_step_previous_step.id, ele.id()).data});
+            //});
+
+            //Delete the node
             cy.$('node[id="' +  $scope.workflow_step_previous_step.id + '"]').remove();
         }
         else if ($scope.workflow_step_add_update_label == 'Add') {
@@ -3319,6 +3522,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         var steps = window.OBCUI.get_steps_from_bash_script(bash_commands); //STEPS
         var tools = window.OBCUI.get_tools_from_bash_script(bash_commands); //TOOLS
         var input_output = window.OBCUI.get_input_outputs_from_bash_script(bash_commands); // INPUT/OUTPUTS
+
         //console.log('STEPS:');
         //console.log(steps);
 
@@ -3343,13 +3547,20 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         //window.buildTree(step_node, {name: $scope.workflow_info_name, edit: null});
         //window.buildTree(step_node, {name: 'root', edit: null});
         window.buildTree(step_node, step_belong_to);
+
+        //If we deleted the step node we need to restore the edges that were previously connected to this step. 
+        cy.add(edges_connected_to_me);
+
         $scope.workflow_update_tab_completion_info_to_step();
 
         //Empty STEP fields. Perhaps call the $scope.workflow_info_add_step_clicked() function??
         $scope.workflows_step_name = '';
         $scope.workflows_step_main = false;
         workflow_step_editor.setValue($scope.worfklows_step_ace_init, -1);
-        $scope.workflow_step_add_update_label = 'Add'; 
+        $scope.workflow_step_add_update_label = 'Add';
+
+        //Close STEP accordion
+        M.Collapsible.getInstance($('#editWorkflowAccordion')).close();
 
     };
 
@@ -3378,7 +3589,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * Called from UI.js . Right Click a node in cytoscape --> delete
     * Check https://github.com/kantale/OpenBioC/issues/119#issuecomment-530693822 for details on how to do delete a node.
     */
-    $scope.workflow_cytoscape_delete_node = function(node_id) {
+    $scope.workflow_cytoscape_delete_node = function(node_id, confirm) {
 
         //Cannot edit a saved worfklow
         if (!$scope.workflows_info_editable) {
@@ -3389,6 +3600,16 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         var node = cy.$('node[id="' + node_id + '"]');
         var data = node.data();
         var node_label = data.label;
+
+        //Raise modal to check if sure
+        if (!confirm) {
+            $scope.node_id = node_id;
+            $scope.warning_modal_message = 'You are about to delete ' + data.type + ' ' + data.label + '. Are you sure?';
+            $scope.warning_modal_action = 'DELETENODE';
+            $('#deleteModal').modal('open');
+            return;
+        }
+
 
         if (data.type == 'step') {
             // Check if this step is called by another step or calls another step. If yes throw an error message.
@@ -3947,6 +4168,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
                 //EXPERIMENTAL. UPDATE SEARCH RESULTS
                 $scope.all_search_2();
+
+                //Close STEP accordion
+                M.Collapsible.getInstance($('#editWorkflowAccordion')).close();
             },
             function(data) {
                 $scope.workflows_info_error_message = data['error_message'];
@@ -4002,11 +4226,15 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         //Update Step Editor Tab completion 
         $scope.workflow_update_tab_completion_info_to_step();
+
+        //Every fork is a draft
+        $scope.workflows_info_draft = true;
     };
 
     /*
     * Called from ui.js, when a user drags a worklfow in current workflow
     * workflow = {'name': ... , 'edit': '...'}
+    * drag and drop workflow 
     */
     $scope.workflow_add_workflow = function(workflow) {
         //console.log('WORKFLOW TO BE ADDED:');
@@ -4052,6 +4280,15 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                         //If we are adding a workflow, buildTree function, expects the label of the node to exist in the cy_label field
                         //cy_label is the label used in the jstree search tree
                         node.data.cy_label = node.data.label;
+
+                        //By default all tools are not disconnected
+                        node.data.disconnected = false;
+                    }
+                    else if (node.data.type == 'workflow') {
+                        //By default the root node of the the workflow that we imported is in connected stage
+                        if ((node.data.name == workflow.name) && (node.data.edit == workflow.edit)) {
+                            node.data.disconnected = false;
+                        }
                     }
 
                     //Add All Nodes 
@@ -4103,17 +4340,17 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
     /*
     * tool --> info (right panel) --> button "Run" --> Pressed
-    * See also: workflow_info_run_pressed
+    * See also: workflow_info_download_pressed
     * download_type = "JSON" or "BASH"
     */
-    $scope.tool_info_run_pressed = function(download_type) {
+    $scope.tool_info_download_pressed = function(download_type) {
         //Gather all information required for running this tool
 
         //Get the dependencies of the current tool
         var tool_dependencies = $scope.get_tool_dependencies();
 
         $scope.ajax(
-            'run_tool/',
+            'download_tool/',
             {
                 'tools_search_name': $scope.tools_info_name,
                 'tools_search_version': $scope.tools_info_version,
@@ -4123,6 +4360,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 'tool_os_choices' : $scope.tool_os_choices,
                 'tool_installation_commands': tool_installation_editor.getValue(),
                 'tool_validation_commands': tool_validation_editor.getValue(),
+                'tool_draft': $scope.tools_info_draft, 
                 'download_type': download_type
             },
             function (data) {
@@ -4143,7 +4381,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     /*
     * Download a file
     * download_type can be 'BASH' or 'JSON'
-    * callend by workflow_info_run_pressed and tool_info_run_pressed
+    * callend by workflow_info_download_pressed and tool_info_download_pressed
     * caller = 'tool', 'workflow'
     * editable: True/False. Is the [tool/wf] editable?
     */
@@ -4167,20 +4405,25 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             }).get(0).click();
         }
         else if (download_type == 'CWLTARGZ') {
-            var output_filename = 'workflow.tar.gz'
+            var output_filename = 'workflow.tar.gz';
             $("#hiddena").attr({
                 "download" : output_filename,      
                 "href" : "data:application/gzip," + data['output_object']
             }).get(0).click();
-
         }
         else if (download_type == 'CWLZIP') {
-            var output_filename = 'workflow.zip'
+            var output_filename = 'workflow.zip';
             $("#hiddena").attr({
                 "download" : output_filename,      
                 "href" : "data:application/zip," + data['output_object']
-            }).get(0).click();
-            
+            }).get(0).click();   
+        }
+        else if (download_type == 'AIRFLOW') {
+            var output_filename = 'airflow.py';
+            $("#hiddena").attr({
+                "download" : output_filename,      
+                "href" : "data:," + data['output_object']
+            }).get(0).click();              
         }
 
         else {
@@ -4191,6 +4434,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         if (caller == 'workflow') {
             if (editable) {
                 warning_message += '<li>Runs of unsaved workflows will not generate reports</li>';
+            }
+            else if ($scope.workflows_info_draft) {
+                warning_message += '<li>This is a DRAFT workflow. Although this workflow can be executed, the execution will not generate a report.</li>';
             }
             else if (!data['report_created']) {
                 warning_message += '<li>You are not a registered user or your email is not validated. Although this workflow can be executed, the execution will not generate a report.</li>';
@@ -4206,10 +4452,10 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     };
 
     /*
-    * worfklows --> info (right panel) --> button "Run" --> Pressed
+    * worfklows --> info (right panel) --> button "Download" --> Pressed
     * download_type = "JSON" or "BASH"
     */
-    $scope.workflow_info_run_pressed = function(download_type) {
+    $scope.workflow_info_download_pressed = function(download_type) {
         var workflow_options = window.OBCUI.get_workflow_options();
 
         // Check for uncheck options
@@ -4228,7 +4474,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         }
 
         $scope.ajax(
-            'run_workflow/',
+            'download_workflow/',
             {
                 'workflow_options': workflow_options,
                 'workflow': {
@@ -4252,6 +4498,36 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             }
         );
 		
+    };
+
+    /*
+    * Pressed "RUN" in workflows after selecting a profile_client name
+    */
+    $scope.workflow_info_run_pressed = function(profile_name) {
+
+        $scope.workflow_run_disabled = true;
+        $scope.toast('Please wait while the workflow is submitted for execution..', 'success');
+
+        $scope.ajax(
+            'run_workflow/',
+            {
+                'profile_name': profile_name,
+                'name': $scope.workflow_info_name,
+                'edit': $scope.workflow_info_edit
+            },
+            function (data) {
+                $scope.toast('Workflow submitted for execution with a Report id: ' + data['nice_id'], 'success');
+                $scope.workflow_run_disabled = false;
+            },
+            function (data) {
+                $scope.toast(data['error_message'], 'error');
+                $scope.workflow_run_disabled = false;
+            },
+            function (statusText) {
+                $scope.toast('Error: 3812 ' + statusText, 'error');
+                $scope.workflow_run_disabled = false;
+            }
+        );
     };
 
     // WORKFLOWS END 

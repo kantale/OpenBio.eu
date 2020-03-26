@@ -1160,6 +1160,10 @@ window.onload = function () {
 
             var splitted = no_comments.split('\n');
 
+            var root_wf_data = window.OBCUI.cy_get_root_workflow_data(); //The cytoscape data of the root workflow node
+            var root_wf_label = root_wf_data.label;
+            //console.log('Root Workflow label:', root_wf_label);
+
             splitted.forEach(function (line) {
                 //console.log("line : ");
                 //console.log(line);
@@ -1180,14 +1184,41 @@ window.onload = function () {
                         //console.log('PROCESSING THE FOLLOOWING CALL: -->' + result + '<--');
 
                         var step_id = result.match(window.OBCUI.call_re_id)[0];
+                        var step_id_to_add = null;
                         //console.log("matched step id : ");
                         //console.log(step_id);
+
                         //Is there a node with type step and id step_id ?
                         if (cy.$("node[type='step'][id='" + step_id + "']").length) {
+                            step_id_to_add = step_id
                             //Add it only if it is not already there
-                            if (!steps.includes(step_id)) {
-                                steps.push(step_id);
+                            //console.log('FOUND CYTOSCAPE NODE ID:', step_id);
+                        }
+                        else {
+                            // This is a special case: 8E1FC1AD5F68
+                            // Assume: (1) There is a call: step__s2__wf__1 , (2) wf/1 is the root wf, (3) we are editing or forking wf/1
+                            // Since we are editing/forking we have called window.forkWorkflow(). This function changes the ids of all steps in the root workflow 
+                            // The called step node id is: step__s2__root__null. Yet we are calling step__s2__wf__1
+                            // So we need to check if this call has an id compatible to a step belonging to the root workflow
+
+                            var step_data = window.OBCUI.get_data_from_step_id(step_id);
+                            //console.log('STEP DATA:', step_data);
+
+                            //Does this step belong to the root workflow?
+                            if (step_data.belongto.name + '/' + step_data.belongto.edit === root_wf_label) {
+                                var new_step_id = window.create_step_id(step_data, {'name': 'root', edit: null});
+                                //console.log('new step id:', new_step_id);
+                                if (cy.$("node[type='step'][id='" + new_step_id + "']").length) {
+                                    step_id_to_add = new_step_id
+                                }
                             }
+                        }
+
+                        if (step_id_to_add) {
+                             //Add it only if it is not already there
+                             if (!steps.includes(step_id_to_add)) {
+                                steps.push(step_id_to_add);
+                             }
                         }
 
                     });
@@ -1209,11 +1240,14 @@ window.onload = function () {
             var outputs = [];
 
             var splitted = no_comments.split('\n');
+            var root_wf_data = window.OBCUI.cy_get_root_workflow_data(); //The cytoscape data of the root workflow node
+            var root_wf_label = root_wf_data.label;
+
             splitted.forEach(function (line) {
                 var results = line.match(window.OBCUI.io_re);
                 if (results) {
                     results.forEach(function (result) {
-                        var splitted = result.match(window.OBCUI.io_re_id); // AAAAAAA
+                        var splitted = result.match(window.OBCUI.io_re_id); 
                         //console.log('splitted:');
                         //console.log(splitted);
 
@@ -1234,6 +1268,27 @@ window.onload = function () {
                             else if (input_output == "output") {
                                 if (!outputs.includes(variable_id)) {
                                     outputs.push(variable_id);
+                                }
+                            }
+                        }
+                        else {
+                            // See comment 8E1FC1AD5F68 
+                            var input_output_data = window.OBCUI.get_data_from_input_output_id(variable_id);
+                            if (input_output_data.belongto.name + '/' + input_output_data.belongto.edit === root_wf_label) {    
+
+                                var new_input_output_id = window.OBCUI.create_input_output_id(input_output_data, {'name': 'root', edit: null});
+                                if (cy.$("node[type='" + input_output_data.type + "'][id='" + new_input_output_id + "']").length) {
+                                    // DUPLICATE CODE FROM ABOVE. 
+                                    if (input_output_data.type == "input") {
+                                        if (!inputs.includes(new_input_output_id)) {
+                                            inputs.push(new_input_output_id);
+                                        }
+                                    }
+                                    else if (input_output_data.type == "output") {
+                                        if (!outputs.includes(new_input_output_id)) {
+                                            outputs.push(new_input_output_id);
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -1341,11 +1396,10 @@ window.onload = function () {
         };
 
         /*
-        * Get the edit of this wotkflow id
+        * Get the edit of this workflow id
         */
         function get_edit_from_workflow_id(workflow_id) {
             return workflow_id.split(window.OBCUI.sep)[1];
-            //return workflow_id.split(window.OBCUI.sep)[1];
         }
 
         /*
@@ -1364,12 +1418,31 @@ window.onload = function () {
         window.create_step_id = create_step_id; // Ugliness. FIXME! We need to make these functions visible everywhere without polluting the namespace . D05DFC7004FE
 
         /*
+        * Parse a step_id
+        * step__s2__test__1 --> {name: 's2', 'belongto': {name: test, edit: 1}}
+        */
+        window.OBCUI.get_data_from_step_id = function(step_id) {
+            var s = step_id.split(window.OBCUI.sep);
+            return {'name': s[1], 'belongto': {'name': s[2], 'edit': s[3]}};
+        };
+
+        /*
+        * Parse an input/output id
+        * input__inp__test__1 --> {'name': 'inp', 'type': 'input', 'belongto': {'name': 'test', edit: 1}}
+        */
+        window.OBCUI.get_data_from_input_output_id = function(input_output_id) {
+            var s = input_output_id.split(window.OBCUI.sep);
+            return {'name': s[1], 'type': s[0], 'belongto': {'name': s[2], 'edit': s[3]}};
+        };
+
+        /*
         * Create a unique input/output variable ID. This contains the input/output name, name workflow and edit of worfkflow
         */
         function create_input_output_id(input_output, workflow) {
             return input_output.type + window.OBCUI.sep + input_output.name + window.OBCUI.sep + window.OBCUI.create_workflow_id(workflow);
         }
         window.create_input_output_id = create_input_output_id; // FIXME See D05DFC7004FE 
+        window.OBCUI.create_input_output_id = create_input_output_id;
 
         /*
         * Helper for Step Input Output (SIO)
@@ -1404,6 +1477,38 @@ window.onload = function () {
         */
         window.OBCUI.create_workflow_edge_id = function(source_id, target_id) {
             return source_id + '..' + target_id;
+        };
+
+        /*
+        * Create a cytoscape edge that represents a step calling another step.
+        * caller_id: the id of the step that calls
+        * callee_id: The id of the step that gets called
+        * The edge is caller_id --> callee_id
+        */
+        window.OBCUI.create_step_calls_step_edge = function(caller_id, callee_id) {
+            return { 
+                data: { 'id': window.OBCUI.create_workflow_edge_id(caller_id, callee_id), 'weight': 1, 'source': caller_id, 'target': callee_id } 
+            };
+        };
+
+        /*
+        * Create a cytoscape edge that represents a step reading from an input variable
+        * step_id: The id of the step that reads the input
+        * input_id: The id of the input node
+        * The edge is input_id --> step_id
+        */ 
+        window.OBCUI.create_step_read_input_edge = function(step_id, input_id) {
+            return { 
+                data: { 'id': window.OBCUI.create_workflow_edge_id(input_id, step_id), 'weight': 1, 'source': input_id, 'target': step_id }
+            };
+        };
+
+        /*
+        * Get the root workflow of the graph from cytoscape
+        */
+        window.OBCUI.cy_get_root_workflow_data = function() {
+            //The root workflow node belongto field is null
+            return cy.$('node[type="workflow"][!belongto]').data()
         };
 
         /*
@@ -1445,7 +1550,7 @@ window.onload = function () {
         }
 
         /*
-        * Check if this SIO id. Belongs to a root workflow
+        * Check if this SIO id belongs to a root workflow
         */
         function is_workflow_root_from_SIO_id(sio_id) {
             return is_workflow_root_from_workflow_id(get_workflow_id_from_SIO_id(sio_id));
@@ -1569,7 +1674,25 @@ window.onload = function () {
 							}
 
 							//var myNode = { data: { id: d.id, text:d.text, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'no', variables: d.variables } };
-							var myNode = { data: { id: d.id, text: d.cy_label, label: d.cy_label, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'no', dep_id: d.dep_id, variables: d.variables, draft: d.draft, belongto: this_node_wf_belong_to }};
+							var myNode = { data: { 
+                                id: d.id, 
+                                text: d.cy_label, 
+                                label: d.cy_label, 
+                                name: d.name, 
+                                version: d.version, 
+                                edit: d.edit, 
+                                type: d.type, 
+                                installation_commands: d.installation_commands,
+                                validation_commands: d.validation_commands,
+                                os_choices: d.os_choices,
+                                dependencies: d.dependencies,
+                                root: 'no', 
+                                dep_id: d.dep_id, 
+                                variables: d.variables, 
+                                draft: d.draft, 
+                                disconnected:d.disconnected, 
+                                belongto: this_node_wf_belong_to 
+                            }};
 
 							myNodes.push(myNode);
 							var myEdge = { data: { id: window.OBCUI.create_workflow_edge_id(d.dep_id, d.id), weight: 1, source: d.dep_id, target: d.id } };
@@ -1577,7 +1700,26 @@ window.onload = function () {
 
 						} else {
 							//var myNode = { data: { id: d.id, label: d.text, name: d.data.name, version: d.data.version, edit: d.data.edit, type: d.data.type, root: 'yes', variables: d.variables } };
-							var myNode = { data: { id: d.id, text: d.cy_label, label: d.cy_label, name: d.name, version: d.version, edit: d.edit, type: d.type, root: 'yes', dep_id: d.dep_id, variables: d.variables, draft: d.draft, belongto: this_node_wf_belong_to } };
+							var myNode = { data: { 
+                                id: d.id, 
+                                text: d.cy_label, 
+                                label: d.cy_label, 
+                                name: d.name, 
+                                version: d.version, 
+                                edit: d.edit, 
+                                type: d.type, 
+                                installation_commands: d.installation_commands,
+                                validation_commands: d.validation_commands,
+                                os_choices: d.os_choices, 
+                                dependencies: d.dependencies,                              
+                                root: 'yes', 
+                                dep_id: d.dep_id, 
+                                variables: d.variables, 
+                                draft: d.draft, 
+                                disconnected:d.disconnected, 
+                                belongto: this_node_wf_belong_to 
+                            } };
+
 							myNodes.push(myNode);
 							myEdges.push({ data: { source: this_node_wf_belong_to_id, target: d.id, id: window.OBCUI.create_workflow_edge_id(this_node_wf_belong_to_id, d.id), edgebelongto: 'true' } });
 						}
@@ -1590,7 +1732,7 @@ window.onload = function () {
                     //TODO add root feature (different than tools): wfroot:yes
                     var this_workflow_id = window.OBCUI.create_workflow_id(d);
 
-                    var myNode = { data: { id: this_workflow_id, name: d.name, edit: d.edit, label: create_workflow_label(d), type: 'workflow', draft: d.draft, belongto: this_node_wf_belong_to } };
+                    var myNode = { data: { id: this_workflow_id, name: d.name, edit: d.edit, label: create_workflow_label(d), type: 'workflow', draft: d.draft, disconnected: d.disconnected, belongto: this_node_wf_belong_to } };
                     myNodes.push(myNode);
                     myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_workflow_id, id: window.OBCUI.create_workflow_edge_id(this_node_wf_belong_to_id, this_workflow_id), edgebelongto: 'true' } });
 					
@@ -1623,18 +1765,17 @@ window.onload = function () {
 
                     if (typeof d.steps !== "undefined") {
                         d.steps.forEach(function (element) {
-
-                            var myEdge = { data: { 'id': window.OBCUI.create_workflow_edge_id(this_step_id, element), 'weight': 1, 'source': this_step_id, 'target': element } };
-                            myEdges.push(myEdge);
-
+                            //var myEdge = { data: { 'id': window.OBCUI.create_workflow_edge_id(this_step_id, element), 'weight': 1, 'source': this_step_id, 'target': element } };
+                            myEdges.push(window.OBCUI.create_step_calls_step_edge(this_step_id, element));
                         });
                     }
 
 
                     if (typeof d.inputs !== "undefined") {
                         d.inputs.forEach(function (element) {
-                            var myEdge = { data: { 'id': window.OBCUI.create_workflow_edge_id(element, this_step_id), 'weight': 1, 'source': element, 'target': this_step_id } };
-                            myEdges.push(myEdge);
+                            myEdges.push(window.OBCUI.create_step_read_input_edge(this_step_id, element));
+                            //var myEdge = { data: { 'id': window.OBCUI.create_workflow_edge_id(element, this_step_id), 'weight': 1, 'source': element, 'target': this_step_id } };
+                            //myEdges.push(myEdge);
 
                         });
                     }
@@ -1706,10 +1847,33 @@ window.onload = function () {
                     content: function () {
                         var div = document.createElement('div');
 						var belongto = " - ";
-							if(node._private.data.belongto !== null) belongto = node._private.data.belongto.name;
+                        var type = node._private.data.type;
+
+                        var innerHTML = 'type: ' + type;
+
+                        
+
+                        if (type == 'workflow') {
+                            innerHTML += '<br>name: ' + node._private.data.name;
+                            innerHTML += '<br>edit: ' + node._private.data.edit;
+                            innerHTML += '<br>status: ' + (node._private.data.disconnected ? 'disconnected' : (node._private.data.draft ? 'draft' : 'normal'));
+                        }
+
+                        else if (type == 'tool') {
+                            innerHTML += '<br>name: ' + node._private.data.name;
+                            innerHTML += '<br>edit: ' + node._private.data.edit;
+                            innerHTML += '<br>version: ' + node._private.data.version;
+                            innerHTML += '<br>status: ' + (node._private.data.disconnected ? 'disconnected' : (node._private.data.draft ? 'draft' : 'normal'));
+                        }
+                        else {
+                            innerHTML += '<br>name: ' + node._private.data.label;
+                        }
+
+                        if (node._private.data.belongto !== null) {
+                            innerHTML += '<br>belongs to: ' + node._private.data.belongto.name + '/' + node._private.data.belongto.edit;
+                        }
 						
-						text='name : '+node._private.data.label +'<br>'+ 'version : '+node._private.data.version +'<br>'+ 'edit : '+node._private.data.edit +'<br>'+ 'type : '+node._private.data.type+'<br>'+'variables : '+node._private.data.variables +'<br>'+'belongs to : '+ belongto +'<br>';
-                        div.innerHTML = text; 
+                        div.innerHTML = innerHTML; 
 						div.style.zIndex = "-1000000000000000000000000";	
                         return div;
                     },
@@ -1932,115 +2096,136 @@ window.onload = function () {
 
             /* hide tooltip before cxtmenu opens, otherwise they overlap */
             cy.on('mouseout', 'node', function (event) {
-					// destroy all instances
-					mytippys.forEach(function (mytippy) {
-						mytippy.destroy(mytippy.popper);
-					});
+    			// destroy all instances
+    			mytippys.forEach(function (mytippy) {
+    				mytippy.destroy(mytippy.popper);
+    			});
             });
 
 			 // Right-click menu for input nodes 
 			 window.input_menu = cy.cxtmenu({
-								menuRadius: 85, 	
-								//selector: 'node',
-								selector: 'node[type="input"]',
-								//zIndex: 199999999, 
-								openMenuEvents: 'cxttapstart', 
-								commands: [
-									{
-										content: 'Set',
-										select: function (ele) {
-																
-											editNode= cy.$('node[id="' + ele.id() + '"]');
-											if(editNode[0]._private.data.type==="input"){  //check if node is input type
-											
-												editTippy = makeEditTippy(editNode[0], ele.id());  //add edit tooltip
-												editTippy.show();								   //show edit tooltip	
-											}
-											//input_menu.destroy();
-										}
-									},
-									{
-										content: 'Delete',
-										select: function (ele) {
-
-											//Ideally the deletion logic should be placed here.
-											//Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
-											angular.element($('#angular_div')).scope().$apply(function () {
-												angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id());
-											});
-
-											//                           var j = cy.$('#' + ele.id());
-											//                           
-											//							/* remove node successors*/
-											//							j.successors().targets().forEach(function (element) {
-											//									cy.remove(element);
-											//								
-											//							})
-											//							/*remove node*/
-											//							cy.remove(j);
-											//input_menu.destroy();
-											
-										}
-									},
-									 {
-										content: 'Cancel',
-										select: function (ele) {
-											//console.log("CANCEL OPTION");
-											cy.cxtmenu().destroy();
-											//input_menu.destroy();
-										}
-									}
-								]
-
-							});
-			
-			// Right-click menu for all except input nodes
-		    window.menu = cy.cxtmenu({
-									menuRadius: 85, 
-									//selector: 'node',
-									selector: 'node[type!="input"]',
-									openMenuEvents: 'cxttapstart', 
-									commands: [
-										{
-											content: 'Edit',
-												select: function (ele) {
-												//menu.destroy();	
-											}
-										},
-										{
-											content: 'Delete',
-											select: function (ele) {
-
-												//Ideally the deletion logic should be placed here.
-												//Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
-												angular.element($('#angular_div')).scope().$apply(function () {
-														angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id());
-												});
-
-												//                           var j = cy.$('#' + ele.id());
-												//                           
-												//							/* remove node successors*/
-												//							j.successors().targets().forEach(function (element) {
-												//									cy.remove(element);
-												//								
-												//							})
-												//							/*remove node*/
-												//							cy.remove(j);
+				menuRadius: 85, 	
+				//selector: 'node',
+				selector: 'node[type="input"]',
+				//zIndex: 199999999, 
+				openMenuEvents: 'cxttapstart', 
+				commands: [
+					{
+						content: 'Set',
+						select: function (ele) {
 												
-												//menu.destroy();
-											}
-										},
-										 {
-											content: 'Cancel',
-											select: function (ele) {
-												//console.log("CANCEL 2 OPTION");
-												cy.cxtmenu().destroy();
-												//menu.destroy();
-											}
-										}
-									]
+							editNode= cy.$('node[id="' + ele.id() + '"]');
+							if(editNode[0]._private.data.type==="input"){  //check if node is input type
+							
+								editTippy = makeEditTippy(editNode[0], ele.id());  //add edit tooltip
+								editTippy.show();								   //show edit tooltip	
+							}
+							//input_menu.destroy();
+						}
+					},
+					{
+						content: 'Delete',
+						select: function (ele) {
 
-								});
+							//Ideally the deletion logic should be placed here.
+							//Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
+							angular.element($('#angular_div')).scope().$apply(function () {
+								angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id(), false);
+							});
+
+							
+						}
+					},
+					 {
+						content: 'Cancel',
+						select: function (ele) {
+							//console.log("CANCEL OPTION");
+							cy.cxtmenu().destroy();
+							//input_menu.destroy();
+						}
+					}
+				]
+
+			});
+			
+			// Right-click menu for output, step nodes
+		    window.output_step_menu = cy.cxtmenu({
+    			menuRadius: 85, 
+    			//selector: 'node',
+    			selector: 'node[type="output"], node[type="step"]',
+    			openMenuEvents: 'cxttapstart', 
+    			commands: [
+    				//{
+    				//	content: 'Edit',
+    				//		select: function (ele) {}
+    				//},
+    				{
+    					content: 'Delete',
+    					select: function (ele) {
+
+    						//Ideally the deletion logic should be placed here.
+    						//Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
+    						angular.element($('#angular_div')).scope().$apply(function () {
+    								angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id(), false);
+    						});
+
+    					}
+    				},
+    				 {
+    					content: 'Cancel',
+    					select: function (ele) {
+    						//console.log("CANCEL 2 OPTION");
+    						cy.cxtmenu().destroy();
+    						//menu.destroy();
+    					}
+    				}
+    			]
+
+    		});
+
+            // Right-click menu for workflows tools
+            window.worfklow_tool_menu = cy.cxtmenu({
+                menuRadius: 85, 
+                //selector: 'node',
+                selector: 'node[type="workflow"], node[type="tool"]',
+                openMenuEvents: 'cxttapstart', 
+                commands: [
+                    //{
+                    //  content: 'Edit',
+                    //      select: function (ele) {}
+                    //},
+                    {
+                        content: 'Delete',
+                        select: function (ele) {
+
+                            //Ideally the deletion logic should be placed here.
+                            //Nevertheless upon deletion, we might have to update some angular elements (like inputs/outputs)
+                            angular.element($('#angular_div')).scope().$apply(function () {
+                                    angular.element($('#angular_div')).scope().workflow_cytoscape_delete_node(ele.id(), false);
+                            });
+
+                        }
+                    },
+                    {
+                        content: 'Disconnect',
+                        select: function (ele) {
+                            angular.element($('#angular_div')).scope().$apply(function () {
+                                    angular.element($('#angular_div')).scope().disassociate_workflow_tool(ele, false);
+                            });
+                        }
+                    },
+                    {
+                        content: 'Cancel',
+                        select: function (ele) {
+                            //console.log("CANCEL 2 OPTION");
+                            cy.cxtmenu().destroy();
+                            //menu.destroy();
+                        }
+                    }
+                ]
+
+            });
+
 	
         }
 
@@ -2069,16 +2254,30 @@ window.onload = function () {
                         }
                     },
                     {
-                        selector: 'node[type="tool"][?draft]',
+                        selector: 'node[type="tool"][?draft]', // This is a draft tool
                         "style": {
                             "shape": "round-rectangle",
-                            'background-color': '#E53935', // red
+                            'background-color': '#E53935' // red
                             //"label": "data(id)",
                             //"label": "data(label)",
                             //"height": 15,
                             //"width": 15
                         }
                     },
+                    {
+                        selector: 'node[type="tool"][!draft]', // This is NOT a draft tool
+                        "style": {
+                            "shape": "round-rectangle",
+                            'background-color': '#5A5A5A' // grey
+                        }
+                    },    
+                    {
+                        selector: 'node[type="tool"][?disconnected]', // This is NOT a draft tool
+                        "style": {
+                            "shape": "round-rectangle",
+                            'background-color': '#4c35e5' // blue
+                        }
+                    },    
                     {
                         selector: 'node[type="step"][!sub_main][?main]', // http://js.cytoscape.org/#selectors/data 
                         "style": {
@@ -2131,7 +2330,7 @@ window.onload = function () {
                         "style": {
                             'shape': 'round-rectangle',
                             'border-width': '3',
-                            'border-color': '#E53935',
+                            'border-color': '#E53935', // red
                             'background-color': '#5A5A5A'
                             //"height": 15,
                             //"width": 15
@@ -2157,6 +2356,17 @@ window.onload = function () {
                             //'border-color': '#5A5A5A',
                             'background-color': '#E53935',
                             //"height": 15,
+                            //"width": 15
+                        }
+                    },
+                    {
+                        selector: 'node[type="workflow"][?disconnected]', // This is a disconnected workflow
+                        "style": {
+                            'shape': 'octagon',
+                            //'border-width': '3',
+                            //'border-color': '#5A5A5A',
+                            'background-color': '#4c35e5', // blue
+                            //"height": 15,x
                             //"width": 15
                         }
                     },
@@ -2904,7 +3114,8 @@ window.onload = function () {
         /*
         * Called from angular $scope.workflow_info_run_pressed
         * * Check if input options are unset
-        * * Get the workflow options
+        * * Get the workflow options. 
+        * Returns a dictionary: key: name of option, value: option value
         */
         window.OBCUI.get_workflow_options = function () {
             var workflow_options = {};
@@ -2938,7 +3149,7 @@ window.onload = function () {
             cy.json({
                 elements: {
                     nodes: [
-                        { data: { id: window.OBCUI.create_workflow_id({ name: name, edit: null }), label: name, name: name, edit: null, type: "workflow", draft: true, belongto: null } },
+                        { data: { id: window.OBCUI.create_workflow_id({ name: name, edit: null }), label: name, name: name, edit: null, type: "workflow", draft: true, disconnected: false, belongto: null } },
                     ]
                 }
             });

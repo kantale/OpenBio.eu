@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 import re
 import uuid
 import random
+import string
 
 '''
 After making changes here run:
@@ -74,6 +75,7 @@ class OS_types(models.Model):
     debian_jessie = 'debian:8'
     debian_stretch = 'debian:9'
     denian_buster = 'debian:10'
+    osx_1 = 'osx:1'
 
 
     OS_CHOICES = (
@@ -83,12 +85,14 @@ class OS_types(models.Model):
         (debian_jessie,'Debian 8 (Jessie)'),
         (debian_stretch,'Debian 9 (Stretch)'),
         (denian_buster,'Debian 10 (Buster)'),
+        (osx_1, 'Mac OSX Intel'),
      )
 
     groups = {
         'Generic': [posix],
         'Ubuntu': [ubuntu_14_04, ubuntu_16_04],
         'Debian': [debian_jessie, debian_stretch, denian_buster],
+        'OSX': [osx_1],
 
     }
 
@@ -261,9 +265,14 @@ class Workflow(models.Model):
     workflow = models.TextField(null=False)
 
     obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
-    forked_from = models.ForeignKey(to="Workflow", null=True, on_delete=models.CASCADE, related_name='forked_from_related') #Is this forked from another tool?
-    tools = models.ManyToManyField(to='Tool', related_name='workflows_using_me')
-    workflows = models.ManyToManyField(to='Workflow', related_name='workflows_using_me')
+    forked_from = models.ForeignKey(to='Workflow', null=True, on_delete=models.CASCADE, related_name='forked_from_related') #Is this forked from another tool?
+
+    # All tools used by this workflow
+    tools = models.ManyToManyField(to='Tool', related_name='workflows_using_me') 
+
+    # All workflows used by this workflow
+    # The fact that the related_name with tools is the same is not a bug!
+    workflows = models.ManyToManyField(to='Workflow', related_name='workflows_using_me') 
 
     changes = models.TextField(null=True) # What changes have been made from forked tool?
 
@@ -347,9 +356,8 @@ def create_nice_id(length=5):
 
     '''
 
-    possible_letters = list(range(ord('a'), ord('z')+1)) + list(range(ord('A'), ord('Z')+1)) + list(range(ord('0'), ord('9')+1))
-    return ''.join([chr(random.choice(possible_letters)) for _ in range(length)])
-
+    possible_letters = tuple(string.ascii_letters + string.digits)
+    return ''.join(random.sample(possible_letters, length))
 
 class Report(models.Model):
     '''
@@ -357,10 +365,15 @@ class Report(models.Model):
     A Report is an executed workflow
     '''
 
-
     obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
-    workflow = models.ForeignKey(Workflow, on_delete=models.CASCADE) # The workflow that it run
+    workflow = models.ForeignKey(Workflow, null=False, on_delete=models.CASCADE) # The workflow that it run
     nice_id = models.CharField(max_length=10, unique=True, default=create_nice_id, editable=False)
+    client = models.ForeignKey(to='ExecutionClient', null=True, on_delete=models.CASCADE) # Which client creates this report? 
+    url = models.URLField(max_length=256, null=True) # The url of the report (containing the results)
+    log_url = models.URLField(max_length=256, null=True) # The url of the log (containing the results)
+    visualization_url = models.URLField(max_length=256, null=True) # The url of the visualization environment (i.e. airflow) 
+    monitor_url = models.URLField(max_length=256, null=True) # The url of the monitoring environment (i.e. netdata) 
+    client_status = models.CharField(max_length=25, null=True) # The status of the client
     tokens = models.ManyToManyField(ReportToken, related_name='report_related')
     created_at = models.DateTimeField(auto_now_add=True)
 

@@ -31,7 +31,7 @@ except ImportError:
 try:
 	from .obc_private import ALLOWED_HOSTS
 except ImportError:
-	ALLOWED_HOSTS = ['0.0.0.0', 'localhost', '127.0.0.1']
+	ALLOWED_HOSTS = ['0.0.0.0', 'localhost', '127.0.0.1','139.91.81.103','139.91.190.239','192.168.1.13']
 
 try:
 	from .obc_private import SECRET_KEY

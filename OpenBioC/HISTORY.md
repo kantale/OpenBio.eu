@@ -1,13 +1,26 @@
 
 # Version changes and updates
 
-### 0.1.5 (Not yet released)
+### 0.1.7 (Not yet released)
+* Bugs Fixed
+   * [When deleting a tool from a WF parent WFs continue having it #156](https://github.com/kantale/OpenBioC/issues/156)
+   * [Cannot logout from interlink #157](https://github.com/kantale/OpenBioC/issues/157)
+* Features:
+   * [PARALLEL execution](https://github.com/kantale/OpenBioC/issues/173)
+   * [RUN WORKFLOWS!!](https://github.com/kantale/OpenBioC/issues/144)
+
+### 0.1.5 (18 February 2020)
 * Bugs Fixed
    * [Provide the ability to not require static site #136](https://github.com/kantale/OpenBioC/issues/136)
+   * [Downloaded bash.sh should not halt execution when input parameters are missing](https://github.com/kantale/OpenBioC/issues/154)
+   * [Cannot get DAG from empty workflow #153](https://github.com/kantale/OpenBioC/issues/153)
 * Features:
+   * [Draft Tools/Data and Workflows #141](https://github.com/kantale/OpenBioC/issues/145)
+   * [Offer the ability to disconnect workflows and tools from workflows #155](https://github.com/kantale/OpenBioC/issues/155)
    * [Add execution environment option in profile #142](https://github.com/kantale/OpenBioC/issues/142)
    * [Upvote / Downvote Tools and Workflows #128](https://github.com/kantale/OpenBioC/issues/128)
    * [Preview markdown #135](https://github.com/kantale/OpenBioC/issues/135)
+   * [Add execution environment option in profile #142](https://github.com/kantale/OpenBioC/issues/142)
 
 ### 0.1.4 (21 November 2019)
 * Features:

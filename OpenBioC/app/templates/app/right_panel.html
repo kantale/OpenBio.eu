@@ -27,7 +27,7 @@
                             <span ng-bind="tools_info_name"></span>/<span ng-bind="tools_info_version"></span><span
                                 ng-show="!tools_info_editable">/<span ng-bind="tools_info_edit"></span></span>
                         </h5>
-                        <small class="form-text text-muted" ng-show="(!tools_info_editable) || tools_info_draft">
+                        <small class="form-text text-muted" ng-show="(!tools_info_editable) || tools_info_edit_state">
                             created by <a ng-click="interlink({type: 'u', username: tool_info_username})">u/<span ng-bind="tool_info_username"></span></a>, created at <span
                                 ng-bind="tool_info_created_at"></span>
                             {% verbatim %}
@@ -50,7 +50,7 @@
                     <a class="btn tooltipped" data-position="bottom" data-tooltip="Delete" style="margin-bottom:2px"
                         ng-show="tools_info_draft && tool_info_username==username && !tools_info_editable"
                         ng-click="ro_finalize_delete_pressed('tool', 'DELETE', false)">Delete</a>
-                    <a class="dropdown-trigger btn" data-target='runDropdownTool' style="margin-bottom:2px">Run</a>
+                    <a class="dropdown-trigger btn" data-target='runDropdownTool' style="margin-bottom:2px" ng-disabled="profile_clients.length<=1">Run</a>
                     <a class="dropdown-trigger btn" data-target='downloadDropdownTool' style="margin-bottom:2px">Download</a>
                     <a id="tool_save_button_id" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Save" ng-click="tool_create_save_pressed()" ng-show="tools_info_editable"><i
@@ -61,17 +61,19 @@
 
                     <!-- Run Dropdown -->
                     <ul id='runDropdownTool' class='dropdown-content'>
-                        <li><a>test1</a></li>
-                        <li><a>test2</a></li>
-                        <li><a>test3</a></li>
-                        <li><a>test4</a></li>
+                        <li ng-repeat="profile_client in profile_clients" ng-if="profile_client.name">
+                            <a>
+                                <span ng-bind="profile_client.name"></span>
+                            </a>
+                        </li>
                     </ul>
                     <!-- Download Dropdown -->
                     <ul id='downloadDropdownTool' class='dropdown-content'>
-                        <li><a ng-click="tool_info_run_pressed('BASH')">BASH executable</a></li>
-                        <li><a ng-click="tool_info_run_pressed('JSON')">JSON</a></li>
-                        <li><a ng-click="tool_info_run_pressed('CWLTARGZ')">CWL tar.gz</a></li>
-                        <li><a ng-click="tool_info_run_pressed('CWLZIP')">CWL zip</a></li>
+                        <li><a ng-click="tool_info_download_pressed('BASH')">BASH executable</a></li>
+                        <li><a ng-click="tool_info_download_pressed('JSON')">JSON</a></li>
+                        <li><a ng-click="tool_info_download_pressed('CWLTARGZ')">CWL tar.gz</a></li>
+                        <li><a ng-click="tool_info_download_pressed('CWLZIP')">CWL zip</a></li>
+                        <li><a ng-click="tool_info_download_pressed('AIRFLOW')">Airflow</a></li>
                     </ul>
 
                 </div>
@@ -243,7 +245,8 @@
                             <strong><a href ng-click="tools_var_jstree_id_show_clicked()"><span
                                         ng-show="tools_var_jstree_id_show">Hide</span><span
                                         ng-show="!tools_var_jstree_id_show">Show</span> variables from dependent
-                                    tools</a></strong>
+                                    tools/data</a></strong>
+                            <strong ng-show="tools_var_jstree_id_show"><br>Select a variable from the tree below and drop it on the Bash editors below.</strong>
                             <div class="left-align" id="tools_var_jstree_id" js-tree="tools_var_jstree_config"
                                 should-apply="tools_search_jstree_config_apply()" ng-model="tools_var_jstree_model"
                                 tree="tools_var_jstree" ng-show="tools_var_jstree_id_show"></div>
@@ -311,11 +314,11 @@
                                     <tbody>
                                         <tr ng-repeat="x in tool_variables">
                                             <td><input type="text" placeholder="name" ng-model="x.name"
-                                                    ng-disabled="!tools_info_editable"></td>
+                                                    ng-readonly="!tools_info_editable"></td>
                                             <td><input type="text" placeholder="value" ng-model="x.value"
-                                                    ng-disabled="!tools_info_editable"></td>
+                                                    ng-readonly="!tools_info_editable"></td>
                                             <td><input type="text" placeholder="description" ng-model="x.description"
-                                                    ng-disabled="!tools_info_editable">
+                                                    ng-readonly="!tools_info_editable">
                                             </td>
                                             <td>
                                                 <a class="waves-effect waves-light btn-small tooltipped green darken-1"
@@ -464,7 +467,7 @@
                     <a class="btn tooltipped" data-position="bottom" data-tooltip="Delete" style="margin-bottom:2px"
                         ng-show="workflows_info_draft && workflows_info_username==username && !workflows_info_editable"
                         ng-click="ro_finalize_delete_pressed('workflow', 'DELETE', false)">Delete</a>
-                    <a class="dropdown-trigger btn" data-target='runDropdownWorkflow' style="margin-bottom:2px">Run</a>
+                    <a class="dropdown-trigger btn" data-target='runDropdownWorkflow' style="margin-bottom:2px" ng-disabled="(profile_clients.length<=1) || workflow_run_disabled">Run</a>
                     <a class="dropdown-trigger btn" data-target='downloadDropdownWorkflow' style="margin-bottom:2px">Download</a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fit" ng-click="workflow_info_fit_pressed()">Fit</a>
@@ -479,21 +482,23 @@
                         ng-class="{'disabled': !username}"><i class="material-icons">call_split</i></a>
                     <!-- Run Dropdown -->
                     <ul id='runDropdownWorkflow' class='dropdown-content'>
-                        <li><a>test1</a></li>
-                        <li><a>test2</a></li>
-                        <li><a>test3</a></li>
-                        <li><a>test4</a></li>
+                        <li ng-repeat="profile_client in profile_clients" ng-if="profile_client.name">
+                            <a ng-click="workflow_info_run_pressed(profile_client.name)">
+                                <span ng-bind="profile_client.name"></span>
+                            </a>
+                        </li>
                     </ul>
                     <!-- Download Dropdown -->
                     <ul id='downloadDropdownWorkflow' class='dropdown-content'>
-                        <li><a ng-click="workflow_info_run_pressed('BASH')">BASH executable</a></li>
-                        <li><a ng-click="workflow_info_run_pressed('JSON')">JSON</a></li>
-                        <li><a ng-click="workflow_info_run_pressed('CWLTARGZ')">CWL tar.gz</a></li>
-                        <li><a ng-click="workflow_info_run_pressed('CWLZIP')">CWL zip</a></li>
+                        <li><a ng-click="workflow_info_download_pressed('BASH')">BASH executable</a></li>
+                        <li><a ng-click="workflow_info_download_pressed('JSON')">JSON</a></li>
+                        <li><a ng-click="workflow_info_download_pressed('CWLTARGZ')">CWL tar.gz</a></li>
+                        <li><a ng-click="workflow_info_download_pressed('CWLZIP')">CWL zip</a></li>
+                        <li><a ng-click="workflow_info_download_pressed('AIRFLOW')">Airflow</a></li>
                     </ul>
                 </div>
                 <div class="left-align" style="margin-top: 5px; margin-bottom: 5px;">
-                    See <a ng-click="documenation_navbar_clicked()">Documentation</a> on how to execute a workflow
+                    See <a href="https://github.com/kantale/OpenBioC/tree/master/Documentation" target="_blank">Documentation</a> on how to execute a workflow
                 </div>
             </div>
 
@@ -645,7 +650,7 @@
                                             ng-show="workflows_info_editable"
                                             ng-click="workflow_info_add_step_clicked()">Clear</a>
                                         <a class="waves-effect waves-light btn" style="margin:2px"
-                                            ng-show="workflows_info_editable"
+                                            ng-show="workflows_info_editable && workflow_step_previous_step"
                                             ng-click="workflow_step_delete()">Delete</a>
                                         <a class="waves-effect waves-light btn" style="margin:2px"
                                             ng-click="workflow_step_add()" ng-show="workflows_info_editable"><span
@@ -681,9 +686,9 @@
                                         {% verbatim %}
                                         <tr ng-repeat="x in workflow_input_outputs track by $index">
                                             <td><input type="text" placeholder="Name" ng-model="x.name"
-                                                    ng-disabled="(!$last) || (!workflows_info_editable)"></td>
+                                                    ng-readonly="(!$last) || (!workflows_info_editable)"></td>
                                             <td><input type="text" placeholder="Description" ng-model="x.description"
-                                                    ng-disabled="(!$last) || (!workflows_info_editable)">
+                                                    ng-readonly="(!$last) || (!workflows_info_editable)">
                                             </td>
 
                                             <!-- Old switch 
@@ -820,7 +825,7 @@
             <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
                 <div class="row left-align">
                     <div class="col s2">
-                        <h5>Workflow:</h5>
+                        <h5>Workflow: </h5>
                     </div>
                     <div class="col s6">
                         <h5>
@@ -828,16 +833,44 @@
                         </h5>
                     </div>
                     <div class="col s4">
-                        <h5>Run:<span ng-bind="report_workflow_run"></span></h5>
+                        <h5>Run: <span ng-bind="report_workflow_run"></span></h5>
                     </div>
                 </div>
                 <small class="form-text text-muted">
                     <a ng-click="interlink({type: 'u', username: report_username})">u/<span ng-bind="report_username"></span></a>, created at: <span ng-bind="report_created_at"></span>
                     {% verbatim %}
-                    <a href="/platform/report/{{report_workflow_run}}">link</a>
+                    <a ng-href="/platform/report/{{report_workflow_run}}">link</a>
                     {% endverbatim %}
                 </small>
             </div>
+            <div class="row right-align">
+                <a class="btn tooltipped" data-position="bottom" data-tooltip="Delete" style="margin-bottom:2px" ng-show="username == report_username" ng-click="report_refresh(4, false)">Delete</a>
+            </div>
+            <div class="left-align" style="margin-top: 5px; margin-bottom: 5px;" ng-show="report_client">
+                <div ng-show="true">
+                    {% verbatim %}
+                    <div ng-show="report_visualization_url"><strong>Moninor Execution: </strong><a ng-href="{{report_visualization_url}}"><span ng-bind="report_visualization_url"></span></a></div><br>
+                    <div ng-show="report_monitor_url"><strong>Monitor Resources: </strong><a ng-href="{{report_monitor_url}}"><span ng-bind="report_monitor_url"></span></a></div><br>                    
+                    {% endverbatim %}
+                </div>
+                <div ng-show="report_client_status == 'SUCCESS' || report_client_status == 'FAILED'">
+                    {% verbatim %}
+                    <strong>Final Status: </strong><span ng-bind="report_client_status"></span><br>
+                    <div ng-show="report_url"><strong>Report: </strong><a ng-href="{{report_url}}"><span ng-bind="report_url"></span></a></div><br>
+                    <div ng-show="report_log_url"><strong>Logs: </strong><a ng-href="{{report_log_url}}"><span ng-bind="report_log_url"></span></a></div>
+                    {% endverbatim %}
+                </div>
+                <div ng-show="report_client_status == 'SUBMITTED' || report_client_status == 'PAUSE_SUBMITTED' || report_client_status == 'RESUME_SUBMITTED' ">
+                    <strong>Current status: </strong><span ng-bind="report_client_status"></span><button ng-click="report_refresh(1, true)">Refresh</button>
+                </div>
+                <div ng-show="report_client_status == 'RUNNING'">
+                    <strong>Current status: </strong><span ng-bind="report_client_status"></span><button ng-click="report_refresh(1, true)">Refresh</button><button ng-click="report_refresh(2, true)">Pause</button>
+                </div>
+                <div ng-show="report_client_status == 'PAUSED'">
+                    <strong>Current status: </strong><span ng-bind="report_client_status"></span><button ng-click="report_refresh(3, true)">Resume</button>
+                </div>
+            </div>
+
             <ul id="reportsRightPanelAccordion" class="collapsible expandable popout faster">
                 <!-- --------------------------------------------------------------------------------------- -->
                 <!-- ------------------------------------ General ------------------------------------------ -->
