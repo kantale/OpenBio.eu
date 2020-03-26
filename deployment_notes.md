@@ -1,6 +1,7 @@
 
-# Deployment notes
+# Deployment notes on Ubuntu 
 These are some rough notes on how to deploy openbio.eu on a server. Hopefully we will create a Dockerfile out of this. 
+
 
 Current system info:
 ```
@@ -178,6 +179,50 @@ Create a file in /etc/apache2/sites-available/obc-prod-ssl.conf with the followi
 sudo a2ensite obc-prod-ssl.conf
 sudo service apache2 reload
 ```
+
+# Deployment notes on OSX/Windows/Linux with conda.
+
+Create a conda environment
+```
+conda create -n python_obc python=3.7
+```
+
+Activate it
+```
+source activate python_obc
+```
+
+Install python packages:
+```
+pip install Django==2.1.5 simplejson pybtex mistune requests ansi2html  
+pip install bashlex # https://github.com/idank/bashlex , python bash parser 
+pip install djangorestframework
+```
+
+Clone OpenBioC
+```
+git clone https://github.com/kantale/OpenBioC
+```
+
+Get static files (it requires wget)
+```
+cd OpenBioC/OpenBioC/app/static/app
+python get_bash_commands.py | bash
+```
+
+Build database:
+```
+cd OpenBioC/OpenBioC
+python manage.py makemigrations app
+python manage.py migrate
+```
+
+Start server
+```
+python manage.py runserver 
+```
+
+
 
 
 

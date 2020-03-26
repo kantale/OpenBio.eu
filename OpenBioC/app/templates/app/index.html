@@ -26,6 +26,7 @@
 		window.OBC_PORT = {{ port }};
 		window.OBC_CONTROLLER_URL = "{{controller_url}}";
 		window.OBC_OS_CHOICES = {{ os_choices | safe }};
+		window.profile_clients = {{ profile_clients | safe}};
 		window.menu = null;
 		window.input_menu = null;
 	</script>
@@ -37,7 +38,7 @@
 	-->
 
 
-	<!-- Google Icon Font. REMOVED FROM HERE IN ORDER NOT TO RELY ON EXTERNAL RESOURCES
+	<!-- Google Icon Font. REMOVED FROM HERE SO WOULDN'T RELY ON EXTERNAL RESOURCES
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	-->
 	<link rel="stylesheet" href="/static/app/material-design-icons-3.0.1/iconfont/material-icons.css">

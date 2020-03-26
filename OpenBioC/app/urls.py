@@ -1,16 +1,23 @@
 from django.urls import path, re_path, include
 
-from rest_framework import routers
+#from rest_framework import routers
 
 from . import views
 from . import rest_views
 
-router = routers.DefaultRouter()
-router.register(r'tools', rest_views.ToolViewSet)
+#router = routers.DefaultRouter()
+#router.register(r'tools', rest_views.ToolViewSet)
 
 urlpatterns = [
 	path('', views.index),
-	path('rest/', include(router.urls)),
+	#path('rest/', include(router.urls)),
+	re_path(r'^rest/tools/(?P<tool_name>[\w]+)/$', rest_views.tool_name),
+	re_path(r'^rest/tools/(?P<tool_name>[\w]+)/(?P<tool_version>[\w\.]+)/$', rest_views.tool_name_version),
+	re_path(r'^rest/tools/(?P<tool_name>[\w]+)/(?P<tool_version>[\w\.]+)/(?P<tool_edit>[\d]+)/$', rest_views.tool_complete),
+
+	re_path(r'^rest/workflows/(?P<workflow_name>[\w]+)/$', rest_views.workflow_name),
+	re_path(r'^rest/workflows/(?P<workflow_name>[\w]+)/(?P<workflow_edit>[\d]+)/$', rest_views.workflow_complete),
+
 	re_path(r'^[td]/(?P<tool_name>[\w]+)/(?P<tool_version>[\w\.]+)/(?P<tool_edit>[\d]+)/$', views.index), # tool link
 	re_path(r'^w/(?P<workflow_name>[\w]+)/(?P<workflow_edit>[\d]+)', views.index), # workflow link
 	re_path(r'^r/(?P<reference_name>[\w]+)', views.index), # reference link
@@ -34,8 +41,9 @@ urlpatterns = [
 	path('tool_get_dependencies/', views.tool_get_dependencies), # Get a JSTREE with a dependencies of this tool
 	path('workflows_add/', views.workflows_add), # Add (or Save) a new workflow 
 	path('workflows_search_3/', views.workflows_search_3), # Search (and get the details) for a specific SINGLE workflow. 
-	path('run_workflow/', views.run_workflow), # Accepts a workflow_options and workflow object. Runs a workflow
-	path('run_tool/', views.run_tool), # Accepts the attributes of a tool and tries to install it. See run_workflow
+	path('download_workflow/', views.download_workflow), # Accepts a workflow_options and workflow object. Runs a workflow
+	path('download_tool/', views.download_tool), # Accepts the attributes of a tool and tries to install it. See run_workflow
+	path('run_workflow/', views.run_workflow),  # Accepts an execution client that belongs to the user. Called from workflow_info_run_pressed  
 	path('tool_info_validation_queued/', views.tool_info_validation_queued), # Connect validation task with tool
 	path('callback/', views.callback), # Called from controller in order to update validation status
 	path('tool_validation_status/', views.tool_validation_status), # Query validation status if tool
@@ -43,6 +51,7 @@ urlpatterns = [
 	path('report/', views.report), # Called from executor.py 
 	path('all_search_2/', views.all_search_2), # Called on main search on-change . Construct jstrees. 
 	path('reports_search_3/', views.reports_search_3), # Search (and get the details) for a specific SINGLE Report. 
+	path('reports_refresh/', views.reports_refresh), # The user pressed refresh on a report. Get an update from the update. 
 	path('references_generate/', views.references_generate), # Generate a HTML reference from BIBTEX 
 	path('references_process_doi/', views.references_process_doi), # Generate a BIBTEX entry from DOI
 	path('references_add/', views.references_add), # Add a new reference

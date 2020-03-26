@@ -31,7 +31,8 @@
             <!-- Navbar Content -->
             <ul id="main-nav" class="right hide-on-med-and-down">
                 <!-- <li><a class="black-text" href ng-click="navbar_home_clicked()">Home</a></li> -->
-                <li><a class="black-text" ng-click="documenation_navbar_clicked()">Documentation</a></li>
+                <!-- <li><a class="black-text" ng-click="documenation_navbar_clicked()">Documentation</a></li> -->
+                <li><a class="black-text" href="https://github.com/kantale/OpenBioC/tree/master/Documentation" target="_blank">Documentation</a></li>
                 <li ng-show="!username"><a href="#signModal" id="signInBtn" class="modal-trigger black-text" ng-click="navbar_signup_pressed()">Sign in</a></li> <!-- href="#signModal" -->
                 <li ng-show="username">
                     <a class="dropdown-trigger valign-wrapper black-text" href="#" data-target="profile">
@@ -47,7 +48,7 @@
                 <li ng-show="false"><a href="#!" class="dropdownStyle"><i class="material-icons dropdownIcon">notifications</i>Notifications</a></li>
                 <li ng-show="false"><a href="#!" class="dropdownStyle"><i class="material-icons dropdownIcon">settings</i>Settings</a></li>
                 <li class="divider"></li>
-                <li><a href="logout/" class="dropdownStyle"><i class="material-icons dropdownIcon">exit_to_app</i>Logout</a></li>
+                <li><a href="{{request.scheme}}://{{request.META.HTTP_HOST}}/platform/logout/" class="dropdownStyle"><i class="material-icons dropdownIcon">exit_to_app</i>Logout</a></li>
             </ul>
             <!-- Sidenav Content -->
             <ul class="sidenav" id="mobile-nav">
