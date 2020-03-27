@@ -3815,7 +3815,7 @@ def reports_search_3(request, **kwargs):
     '''
 
     if request.user.is_anonymous or (not user_is_validated(request)):
-        return fail('You are either anonymous or your email is not validated. You do not have access to reports')
+        return fail('You are either anonymous or your email is not validated. You do not have access to reports.')
 
     obc_user = OBC_user.objects.get(user=request.user)
 

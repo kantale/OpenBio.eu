@@ -4518,6 +4518,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             function (data) {
                 $scope.toast('Workflow submitted for execution with a Report id: ' + data['nice_id'], 'success');
                 $scope.workflow_run_disabled = false;
+                $scope.all_search_2(); // Update search results
             },
             function (data) {
                 $scope.toast(data['error_message'], 'error');
