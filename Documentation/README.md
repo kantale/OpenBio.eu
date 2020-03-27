@@ -1010,8 +1010,14 @@ Input values PAR1=100   PAR2=200 finished
 
 As you notice the step ```complex_task``` run 3 times in parallel, each with different set of parameters. 
 
-# Executing Workflows
-Upon pressing the "Download" button on a workflow or on a tool/data, you can choose to download a BASH script or a JSON representation of the workflow.
+# Downloading a Workflow
+We have already seen that on every Tool/Data and on every Workflow there is a "DOWNLOAD" button. We have already used the ```BASH``` option in order to download a Tool/Data/Workflow as a standalone bash script. Here we will explore all the other options.
+
+## Dowload a Workflow in CWL format.
+Let's create a workflow that have an input named ```parameter``` and an output named ```result```. 
+
+
+
 
 ## BASH script
 The BASH script is a directly executable file. Assuming the BASH script filename is bash_7Lt2o.sh and you are in a BASH shell you can type:

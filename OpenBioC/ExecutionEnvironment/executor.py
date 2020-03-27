@@ -189,8 +189,8 @@ function REPORT() {
 
 OBC_REPORT_TGZ=${OBC_WORK_PATH}/${OBC_NICE_ID}.tgz
 
-echo "RUNNING: "
-echo "tar zcvf ${OBC_REPORT_TGZ} -C ${OBC_WORK_PATH} ${OBC_NICE_ID}.html ${OBC_NICE_ID}/"
+#echo "RUNNING: "
+#echo "tar zcvf ${OBC_REPORT_TGZ} -C ${OBC_WORK_PATH} ${OBC_NICE_ID}.html ${OBC_NICE_ID}/"
 
 tar zcvf ${OBC_REPORT_TGZ} -C ${OBC_WORK_PATH} ${OBC_NICE_ID}.html ${OBC_NICE_ID}/
 
@@ -1718,6 +1718,8 @@ class BaseExecutor():
             #d['OBC_REPORT_PATH'] = os.path.join(d['OBC_WORK_PATH'], workflow_id + '.html') # This is set from BASH
             d['OBC_SERVER'] = self.workflow.obc_server
 
+        self.unset_variables = [var for var in ['OBC_TOOL_PATH', 'OBC_DATA_PATH', 'OBC_WORK_PATH'] if not var in d]
+
         return d
 
 
@@ -2000,6 +2002,7 @@ steps:
 '''
 
     ENVIRONMENT_VARIABLE_PATTERN = '         {NAME}: "{VALUE}"'
+    ENVIRONMENT_VARIABLE_PATTERN_INPUTS = '         {NAME}: $(inputs.{NAME})' # Passing environment variables from inputs
 
     OUTPUT_VARIABLES_PATTERN = r'''   {ID}:
       type: string
@@ -2022,6 +2025,7 @@ steps:
          prefix: --{ID}=
          separate: false
 '''
+    INPUT_STRING_PATTERN = '   {ID}: string'
 
     def create_init_step_inputs_cwl(self, arguments):
         '''
@@ -2031,6 +2035,12 @@ steps:
 
         return '\n'.join(self.INPUT_STRING_FROMCOMMANDLINE_PATTERN.format(ID=argument) for argument in arguments)
 
+    def create_argument_input_cwl(self,):
+        '''
+        '''
+        return '\n'.join(self.INPUT_STRING_PATTERN.format(ID=var) for var in self.unset_variables)
+
+
     def create_final_step_output_cwl(self, ):
         '''
         '''
@@ -2039,13 +2049,18 @@ steps:
 
         return '\n' + '\n'.join(self.OUTPUT_VARIABLES_PATTERN.format(ID=variable['id']) for variable in self.workflow.output_parameters) + '\n'
 
-    def create_init_step_inpust_on_final_cwl(self, arguments):
+    def create_init_step_input_on_final_cwl(self, argument):
+        '''
+        '''
+        return '         {ID}: {ID}'.format(ID=argument)
+
+    def create_init_step_inputs_on_final_cwl(self, arguments):
         '''
         '''
         if not arguments:
             return '[]'
 
-        return '\n' + '\n'.join('         {ID}: {ID}'.format(ID=argument) for argument in arguments) + '\n'
+        return '\n' + '\n'.join(self.create_init_step_input_on_final_cwl(argument) for argument in arguments) + '\n'
 
     def create_final_workflow_output_cwl(self, ):
         '''
@@ -2064,16 +2079,21 @@ steps:
         return '\n' + '\n'.join('   {ID}: string'.format(ID=argument) for argument in arguments) + '\n'
 
 
-    def create_main_workflow_step(self, step_inter_id, inputs, input_parameters):
+    def create_main_workflow_step(self, step_inter_id, inputs, input_parameters,):
         '''
         '''
+
+        INPUTS = '\n'.join(self.create_init_step_input_on_final_cwl(var) for var in self.unset_variables)
+        if INPUTS:
+            INPUTS = '\n' + INPUTS + '\n'
+
         if step_inter_id == 'OBC_CWL_INIT':
-            INPUTS = self.create_init_step_inpust_on_final_cwl(input_parameters)
+            INPUTS = INPUTS + self.create_init_step_inputs_on_final_cwl(input_parameters)
         else:
             if not inputs:
                 INPUTS = '[]'
             else:
-                INPUTS = '\n' + '\n'.join('         {X}: {X}/{X}'.format(X=x) for x in inputs) + '\n'
+                INPUTS = INPUTS + '\n'.join('         {X}: {X}/{X}'.format(X=x) for x in inputs) + '\n'
 
 
         if step_inter_id == 'OBC_CWL_FINAL':
@@ -2092,8 +2112,17 @@ steps:
         )
 
     def get_environment_variables_string(self, env_variables):
+        '''
+        '''
 
-        return '\n'.join(self.ENVIRONMENT_VARIABLE_PATTERN.format(NAME=name, VALUE=value) for name, value in env_variables.items())
+        ret = ''
+        ret += '\n'.join(self.ENVIRONMENT_VARIABLE_PATTERN_INPUTS.format(NAME=var_name) for var_name in self.unset_variables)
+        if ret:
+            ret = ret + '\n'
+
+        ret += '\n'.join(self.ENVIRONMENT_VARIABLE_PATTERN.format(NAME=name, VALUE=value) for name, value in env_variables.items())
+
+        return ret
 
 
     def create_tool_id_sh_fn(self, tool_id):
@@ -2143,6 +2172,8 @@ steps:
 
         env_variables = self.get_environment_variables()
         env_variables_string = self.get_environment_variables_string(env_variables)
+        # Get the essential variables that have not been set 
+        # We will set these variable from the input yml file
 
         previous_tools = []
         tool_ids = []
@@ -2164,7 +2195,7 @@ steps:
         files['OBC_CWL_INIT.cwl'] = self.COMMAND_LINE_CWL_PATTERN.format(
             SHELL=shell,
             COMMAND_LINE_SH='OBC_CWL_INIT.sh',
-            INPUTS = self.create_init_step_inputs_cwl(input_parameters), # self.cwl_inputs([]),
+            INPUTS = self.create_init_step_inputs_cwl(input_parameters) + self.create_argument_input_cwl(), # self.cwl_inputs([]),
             OUTPUTS = self.cwl_output('OBC_CWL_INIT'),
             ENVIRONMENT_VARIABLES=env_variables_string,
             STDOUT='',
@@ -2259,13 +2290,15 @@ steps:
                 OUTPUTS = self.cwl_output(node)
                 STDOUT = ''
 
+            INPUTS = INPUTS + self.create_argument_input_cwl()
+
             cwl = self.COMMAND_LINE_CWL_PATTERN.format(
                 SHELL=shell,
                 COMMAND_LINE_SH=self.create_step_inter_id_sh_fn(node),
                 INPUTS= INPUTS,
                 OUTPUTS=OUTPUTS,
                 ENVIRONMENT_VARIABLES=env_variables_string,
-                STDOUT= STDOUT ,
+                STDOUT= STDOUT,
             )
 
             # We have already added the INIT
@@ -2286,12 +2319,14 @@ steps:
 
         files[output_wf_fn] = self.WORKFLOW_CWL_PATTERN.format(
             STEPS='\n'.join(steps_cwl),
-            INPUTS=self.create_final_workflow_input_cwl(input_parameters),
+            INPUTS=self.create_final_workflow_input_cwl(input_parameters) + self.create_argument_input_cwl(),
             OUTPUTS=self.create_final_workflow_output_cwl(),
         )
 
         # Create a file with input values
         content = ''
+        for v in self.unset_variables:
+            content += '# {}: "" # Please set this environment variable\n'.format(v)
         for k,v in self.workflow.input_parameter_values.items():
             if v['value'] is None:
                 line = '\n# Please set this input parameter! \n'

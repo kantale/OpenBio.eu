@@ -8,6 +8,8 @@
 * Features:
    * [PARALLEL execution](https://github.com/kantale/OpenBioC/issues/173)
    * [RUN WORKFLOWS!!](https://github.com/kantale/OpenBioC/issues/144)
+      * Show Report, Logs, Airflow monitor, Netdata monitor 
+   * Redesigned step break down method so that CWL and airflow extraction is more uniform  
 
 ### 0.1.5 (18 February 2020)
 * Bugs Fixed
