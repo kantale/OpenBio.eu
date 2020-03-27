@@ -3467,7 +3467,7 @@ def run_workflow(request, **kwargs):
         return fail('Error 3294. Could not get Workflow object.')
 
     url = client.client
-    print ('URL FROM DATABASE:', url)
+    #print ('URL FROM DATABASE:', url)
 
     run_url = urllib.parse.urljoin(url + '/', 'run') # https://stackoverflow.com/questions/8223939/how-to-join-absolute-and-relative-urls
     nice_id = create_nice_id()
@@ -3482,8 +3482,8 @@ def run_workflow(request, **kwargs):
 
     headers={ "Content-Type" : "application/json", "Accept" : "application/json"}
 
-    print ('run_url:', run_url)
-    print ('callback:', data_to_submit['callback'])
+    #print ('run_url:', run_url)
+    #print ('callback:', data_to_submit['callback'])
 
     '''
     
@@ -3515,8 +3515,8 @@ curl --header "Content-Type: application/json" \
     except Exception as e: # Ideally we should do here: except json.decoder.JSONDecodeError as e: but we would have to import json with simp[lejson..]
         return fail('Could not parse JSON data from Execution Client.')
 
-    print ('RUN_URL:')
-    print (data_from_client)
+    #print ('RUN_URL:')
+    #print (data_from_client)
 
     # Check data_from_client. We expect to find an externally triggered True in data_from_client['status']['message']
     if not 'status' in data_from_client:
@@ -3667,7 +3667,7 @@ def callback(request, **kwargs):
     Funtion called by conntroller.py
     '''
     #print("--------------- REQUEST FROM CONTROLLER ------------------")
-    # print(kwargs)
+    #print(kwargs)
     remote_address = request.META['REMOTE_ADDR']
     #print (f'Callback from: {remote_address}')
 
@@ -3743,21 +3743,32 @@ def tools_show_stdout(request, tools_info_name, tools_info_version, tools_info_e
 
 ### REPORTS
 
-def reports_search_2(
-    main_search,
-    ):
+def reports_search_2(main_search, request):
     '''
-    Collect all reports from main search
+    Collect all reports from main search.
+    In contrary to other *_search_2 , we only allow to show reports that belong to the login user!
     '''
+
+    # Return empty results if user is anonymous or not validated 
+    if request.user.is_anonymous or (not user_is_validated(request)):
+        return {
+            'main_search_reports_number': 0,
+            'reports_search_jstree': [],
+        }
+
+    obc_user = OBC_user.objects.get(user=request.user)
 
     nice_id_Q = Q(nice_id__contains=main_search)
     username_Q = Q(obc_user__user__username__icontains=main_search)
     workflow_Q = Q(workflow__name__icontains=main_search)
     not_unused = Q(tokens__status = ReportToken.UNUSED)
     count_1 = Q(num_tokens = 1)
+    user_Q = Q(obc_user = obc_user)
 
     # We do not want reports that have only one tokens which is "unused"
-    results = Report.objects.annotate(num_tokens=Count('tokens')).filter( (nice_id_Q | workflow_Q | username_Q) & (~(not_unused&count_1)) )
+    results = Report.objects.annotate(num_tokens=Count('tokens')).filter( 
+        user_Q & (nice_id_Q | workflow_Q | username_Q) & (~(not_unused&count_1)) 
+    )
 
     # BUILD TREE
     reports_search_jstree = []
@@ -3879,23 +3890,23 @@ def reports_refresh(request, **kwargs):
         # Refresh
         # Get the url to check status
         url = g['create_client_check_status_url'](client_url, nice_id)
-        print ('CHECK STATUS URL:')
-        print (url)
+        #print ('CHECK STATUS URL:')
+        #print (url)
     elif report_workflow_action == 2:
         # Pause
         url = g['create_client_pause_url'](client_url, nice_id)
-        print ('PAUSE URL:')
-        print (url)
+        #print ('PAUSE URL:')
+        #print (url)
     elif report_workflow_action == 3:
         # Resume 
         url = g['create_client_resume_url'](client_url, nice_id)
-        print ('RESUME URL:')
-        print (url)
+        #print ('RESUME URL:')
+        #print (url)
     elif report_workflow_action == 4:
         # Delete
         url = g['create_client_abort_url'](client_url, nice_id)
-        print ('ABORT URL:')
-        print (url)
+        #print ('ABORT URL:')
+        #print (url)
     else:
         return fail('Error 5821: {}'.format(str(report_workflow_action)))
 
@@ -3908,8 +3919,8 @@ def reports_refresh(request, **kwargs):
         return fail('Could not send to URL: {} . Error code: {}'.format(client_url, r.status_code))
     
     data_from_client = r.json()
-    print ('Data from client:')
-    print (data_from_client)
+    #print ('Data from client:')
+    #print (data_from_client)
     # {"error": "Dag id mitsos not found"}
 
     if report_workflow_action == 1: # refresh
@@ -4415,7 +4426,7 @@ def all_search_2(request, **kwargs):
         ret[key] = value
 
     #Get reports
-    for key, value in reports_search_2(main_search).items():
+    for key, value in reports_search_2(main_search, request).items():
         ret[key] = value
 
     #Get references
