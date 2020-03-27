@@ -1014,10 +1014,143 @@ As you notice the step ```complex_task``` run 3 times in parallel, each with dif
 We have already seen that on every Tool/Data and on every Workflow there is a "DOWNLOAD" button. We have already used the ```BASH``` option in order to download a Tool/Data/Workflow as a standalone bash script. Here we will explore all the other options.
 
 ## Dowload a Workflow in CWL format.
-Let's create a workflow that have an input named ```parameter``` and an output named ```result```. 
+CWL ([Common Workflow Language](https://www.commonwl.org/)) is one of the most known formats for workflow description. OpenBio exports workflows in CWL. To examine this ability, first let's create a workflow named ```parallel/1``` that has an input named ```parameter``` and an output named ```result```. The workflow will have the following steps:
 
+step: ```main_step```:
+```bash
+echo "Input is: ${input__parameter__parallel__1}"
 
+PARAMS="
+A,B
+1,2
+3,4
+5,6
+"
 
+PARALLEL step__complex_task__parallel__1 "${PARAMS}"
+
+output__result__parallel__1=42
+```
+
+step: ```complex_task```:
+```bash
+echo "complex task: A=${A}   B=${B}"
+
+PARALLEL step__subtask_1__parallel__1 step__subtask_2__parallel__1
+
+```
+
+step: ```subtask_1```:
+```bash
+echo "subtask_1: A=${A}"
+```
+
+step: ```subtask_2```
+```bash
+echo "subtask_2: B=${B}"
+```
+
+Notice that this workflow uses both different types of ```PARALLEL``` syntax presented before. The workflow should look like this:
+
+![img](screenshots/screen_37.png)
+
+Now we can download the workflow in CWL format either in zip or in .tar.gz compression. If we download and decompress the workflow we will notice that it contains a lot of files. The ```inputs.yml``` is a file in [YAML format](https://en.wikipedia.org/wiki/YAML) and contains the input parameters of the workflow. The contents are:
+
+```
+# OBC_TOOL_PATH: "" # Please set this environment variable
+# OBC_DATA_PATH: "" # Please set this environment variable
+# OBC_WORK_PATH: "" # Please set this environment variable
+
+# Please set this input parameter! 
+# input__parameter__parallel__1: "" # Input parameter
+```   
+
+The ```OBC_TOOL_PATH```, ```OBC_DATA_PATH```, ```OBC_WORK_PATH``` are the environment variables that have been presented before. The ```input__parameter__parallel__1``` is the input parameter with the name ```parameter``` of the workflow. Set the OBC_* variables with the desired path in your system and the ```input__parameter__parallel__1``` with a random constant. An example could be:
+
+```
+OBC_WORK_PATH: "/myfavorite_path/WORK"
+OBC_DATA_PATH: "/myfavorite_path/DATA"
+OBC_TOOL_PATH: "/myfavorite_path/TOOL"
+
+# Please set this input parameter!
+input__parameter__parallel__1: "hello" # Input parameter
+```
+
+Notice that the paths in the OBC_* variables should exist! You can execute this workflow with any environment that supports CWL files. For example we can install [cwltool](https://github.com/common-workflow-language/cwltool) and run the command:
+
+```bash
+cwl-runner workflow.cwl inputs.yml 
+``` 
+
+After a long output you will see the result:
+```
+INFO [workflow ] completed success
+{
+    "output__result__parallel__1": "42"
+}
+INFO Final process status is success
+(
+```
+
+At this points you might be wondering why there are so many steps in this workflow. To examine this we can visualize the execution flow graph of the workflow. Run the following command:
+
+```bash
+cwl-runner --print-dot workflow.cwl inputs.yml  
+```
+
+This will generate the execution flow of the workflow in [dot format](https://en.wikipedia.org/wiki/DOT_%28graph_description_language%29) 
+```dot
+digraph {compound=true
+"workflow.cwl#step__subtask_2__parallel__1__1" [label="step__subtask_2__parallel__1__1"]
+"workflow.cwl#step__complex_task__parallel__1__4" [label="step__complex_task__parallel__1__4"]
+"workflow.cwl#step__complex_task__parallel__1__5" [label="step__complex_task__parallel__1__5"]
+"workflow.cwl#step__complex_task__parallel__1__2" [label="step__complex_task__parallel__1__2"]
+"workflow.cwl#step__main_step__parallel__1__2" [label="step__main_step__parallel__1__2"]
+"workflow.cwl#step__subtask_1__parallel__1__2" [label="step__subtask_1__parallel__1__2"]
+"workflow.cwl#step__subtask_2__parallel__1__2" [label="step__subtask_2__parallel__1__2"]
+"workflow.cwl#OBC_CWL_FINAL" [label="OBC_CWL_FINAL"]
+"workflow.cwl#step__complex_task__parallel__1__1" [label="step__complex_task__parallel__1__1"]
+"workflow.cwl#step__complex_task__parallel__1__3" [label="step__complex_task__parallel__1__3"]
+"workflow.cwl#step__subtask_1__parallel__1__1" [label="step__subtask_1__parallel__1__1"]
+"workflow.cwl#step__subtask_1__parallel__1__3" [label="step__subtask_1__parallel__1__3"]
+"workflow.cwl#OBC_CWL_INIT" [label="OBC_CWL_INIT"]
+"workflow.cwl#step__complex_task__parallel__1__6" [label="step__complex_task__parallel__1__6"]
+"workflow.cwl#step__subtask_2__parallel__1__3" [label="step__subtask_2__parallel__1__3"]
+"workflow.cwl#step__main_step__parallel__1__1" [label="step__main_step__parallel__1__1"]
+"workflow.cwl#step__complex_task__parallel__1__1" -> "workflow.cwl#step__subtask_1__parallel__1__1" []
+"workflow.cwl#step__subtask_1__parallel__1__2" -> "workflow.cwl#step__complex_task__parallel__1__4" []
+"workflow.cwl#step__complex_task__parallel__1__6" -> "workflow.cwl#step__main_step__parallel__1__2" []
+"workflow.cwl#OBC_CWL_INIT" -> "workflow.cwl#step__main_step__parallel__1__1" []
+"workflow.cwl#step__complex_task__parallel__1__3" -> "workflow.cwl#step__subtask_1__parallel__1__2" []
+"workflow.cwl#step__main_step__parallel__1__2" -> "workflow.cwl#OBC_CWL_FINAL" []
+"workflow.cwl#step__subtask_1__parallel__1__3" -> "workflow.cwl#step__complex_task__parallel__1__6" []
+"workflow.cwl#step__main_step__parallel__1__1" -> "workflow.cwl#step__complex_task__parallel__1__3" []
+"workflow.cwl#step__complex_task__parallel__1__2" -> "workflow.cwl#step__main_step__parallel__1__2" []
+"workflow.cwl#step__main_step__parallel__1__1" -> "workflow.cwl#step__complex_task__parallel__1__5" []
+"workflow.cwl#step__complex_task__parallel__1__4" -> "workflow.cwl#step__main_step__parallel__1__2" []
+"workflow.cwl#step__subtask_1__parallel__1__1" -> "workflow.cwl#step__complex_task__parallel__1__2" []
+"workflow.cwl#step__main_step__parallel__1__1" -> "workflow.cwl#step__complex_task__parallel__1__1" []
+"workflow.cwl#step__complex_task__parallel__1__3" -> "workflow.cwl#step__subtask_2__parallel__1__2" []
+"workflow.cwl#step__subtask_2__parallel__1__1" -> "workflow.cwl#step__complex_task__parallel__1__2" []
+"workflow.cwl#step__subtask_2__parallel__1__3" -> "workflow.cwl#step__complex_task__parallel__1__6" []
+"workflow.cwl#step__complex_task__parallel__1__5" -> "workflow.cwl#step__subtask_1__parallel__1__3" []
+"workflow.cwl#step__complex_task__parallel__1__5" -> "workflow.cwl#step__subtask_2__parallel__1__3" []
+"workflow.cwl#step__complex_task__parallel__1__1" -> "workflow.cwl#step__subtask_2__parallel__1__1" []
+"workflow.cwl#step__subtask_2__parallel__1__2" -> "workflow.cwl#step__complex_task__parallel__1__4" []
+}
+```
+
+We can visualize the graph either by using the dot tool:
+
+```bash
+dot -Tpng graph.dot > graph.png 
+```
+
+Or by simply copy-pasting the graph in the amazing [GraphvizOnline](https://dreampuf.github.io/GraphvizOnline) tool. The graph is:
+
+![img](screenshots/graph.png)
+
+If you inspect the graph you will notice that every parallel execution has been split in a different step. The parallel steps then are merged in single steps. The workflow lies between a ```OBC_CWL_INIT``` step and a ```OBC_CWL_FINAL``` step. Basically, the ```OBC_CWL_INIT``` step sets the input parameters and the ```OBC_CWL_FINAL``` collects the output parameters. If you inspect the .cwl and .sh generated files you can get many insights regarding this split. 
 
 ## BASH script
 The BASH script is a directly executable file. Assuming the BASH script filename is bash_7Lt2o.sh and you are in a BASH shell you can type:
