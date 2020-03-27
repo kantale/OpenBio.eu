@@ -3814,9 +3814,17 @@ def reports_search_3(request, **kwargs):
     Search for an individual report
     '''
 
+    if request.user.is_anonymous or (not user_is_validated(request)):
+        return fail('You are either anonymous or your email is not validated. You do not have access to reports')
+
+    obc_user = OBC_user.objects.get(user=request.user)
+
     run = kwargs['run']
 
-    report = Report.objects.get(nice_id=run)
+    try:
+        report = Report.objects.get(nice_id=run, obc_user=obc_user)
+    except ObjectDoesNotExist as e:
+        return fail('Could not find report, or you do not have access.')
     workflow = report.workflow
 
     #Get all tokens
