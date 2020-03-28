@@ -7,7 +7,7 @@ attrs==19.1.0
 bagit==1.7.0
 bashlex==0.14
 CacheControl==0.11.7
-certifi==2019.3.9
+certifi==2019.11.28
 cffi==1.12.2
 chardet==3.0.4
 Click==7.0
