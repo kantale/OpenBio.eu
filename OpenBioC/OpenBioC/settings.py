@@ -51,6 +51,11 @@ try:
 except ImportError:
 	DEBUG = True
 
+try:
+	from .obc_private import STATIC_ROOT
+except ImportError:
+	pass
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
