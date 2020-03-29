@@ -837,10 +837,21 @@
                             {% endverbatim %}
                         </small>
                     </div>
-                    <span class="green lighten-2 draft" ng-show="report_client_status == 'SUCCESS' || report_client_status == 'FAILED'"><span ng-bind="report_client_status"></span></span>
+                    <span class="green lighten-2 draft" ng-show="report_client_status == 'SUCCESS' || report_client_status == 'SUBMITTED' || report_client_status == 'PAUSE_SUBMITTED' || report_client_status == 'RUNNING' || report_client_status == 'PAUSED' "><span ng-bind="report_client_status"></span></span>
+                    <span class="red lighten-2 draft" ng-show="report_client_status == 'FAILED'"><span ng-bind="report_client_status"></span></span>
                 </div>
             </div>
             <div class="row right-align" style="margin-bottom: 0px;">
+                <!-- REFRESH BUTTON -->
+                <a class="btn tooltipped" data-position="bottom" data-tooltip="Refresh" style="margin-bottom:2px" ng-show="(username == report_username) && (report_client_status == 'RUNNING' || report_client_status == 'SUBMITTED' || report_client_status == 'PAUSE_SUBMITTED' || report_client_status == 'RESUME_SUBMITTED')" ng-click="report_refresh(1, true)">Refresh</a>
+
+                <!-- PAUSE BUTTON -->
+                <a class="btn tooltipped" data-position="bottom" data-tooltip="Pause" style="margin-bottom:2px" ng-show="(username == report_username) && (report_client_status == 'RUNNING')" ng-click="report_refresh(2, true)">Pause</a>
+
+                <!-- RESUME BUTTON -->
+                <a class="btn tooltipped" data-position="bottom" data-tooltip="Resume" style="margin-bottom:2px" ng-show="(username == report_username) && (report_client_status == 'PAUSED')" ng-click="report_refresh(3, true)">Resume</a>
+                
+                <!-- DELETE BUTTON -->
                 <a class="btn tooltipped" data-position="bottom" data-tooltip="Delete" style="margin-bottom:2px" ng-show="username == report_username" ng-click="report_refresh(4, false)">Delete</a>
             </div>
             <!-- Links -->
@@ -852,8 +863,9 @@
                 <a class="waves-effect btn-flat right reportUrl btn-small" ng-show="report_visualization_url" ng-href="{{report_visualization_url}}" target="_blank">Moninor Execution</a>
                 {% endverbatim %}
             </div>
+            <!--
             <div class="left-align" style="margin-top: 5px; margin-bottom: 5px;" ng-show="report_client">
-                <!-- <div ng-show="true">
+                 <div ng-show="true">
                     {% verbatim %}
                     <div ng-show="report_visualization_url"><strong>Moninor Execution: </strong><a ng-href="{{report_visualization_url}}"><span ng-bind="report_visualization_url"></span></a></div><br>
                     <div ng-show="report_monitor_url"><strong>Monitor Resources: </strong><a ng-href="{{report_monitor_url}}"><span ng-bind="report_monitor_url"></span></a></div><br>                    
@@ -864,7 +876,7 @@
                     <div ng-show="report_url"><strong>Report: </strong><a ng-href="{{report_url}}"><span ng-bind="report_url"></span></a></div><br>
                     <div ng-show="report_log_url"><strong>Logs: </strong><a ng-href="{{report_log_url}}"><span ng-bind="report_log_url"></span></a></div>
                     {% endverbatim %}
-                </div> -->
+                </div> 
                 <div ng-show="report_client_status == 'SUBMITTED' || report_client_status == 'PAUSE_SUBMITTED' || report_client_status == 'RESUME_SUBMITTED' ">
                     <strong>Current status: </strong><span ng-bind="report_client_status"></span><button ng-click="report_refresh(1, true)">Refresh</button>
                 </div>
@@ -874,7 +886,9 @@
                 <div ng-show="report_client_status == 'PAUSED'">
                     <strong>Current status: </strong><span ng-bind="report_client_status"></span><button ng-click="report_refresh(3, true)">Resume</button>
                 </div>
+
             </div>
+            -->
             <ul id="reportsRightPanelAccordion" class="collapsible expandable faster">
                 <!-- --------------------------------------------------------------------------------------- -->
                 <!-- ------------------------------------ General ------------------------------------------ -->
