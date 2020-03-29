@@ -1150,7 +1150,93 @@ Or by simply copy-pasting the graph in the amazing [GraphvizOnline](https://drea
 
 ![img](screenshots/graph.png)
 
-If you inspect the graph you will notice that every parallel execution has been split in a different step. The parallel steps then are merged in single steps. The workflow lies between a ```OBC_CWL_INIT``` step and a ```OBC_CWL_FINAL``` step. Basically, the ```OBC_CWL_INIT``` step sets the input parameters and the ```OBC_CWL_FINAL``` collects the output parameters. If you inspect the .cwl and .sh generated files you can get many insights regarding this split. 
+If you inspect the graph you will notice that every parallel execution has been split in a different step. The parallel steps then are merged in a single step. The workflow lies between a ```OBC_CWL_INIT``` step and a ```OBC_CWL_FINAL``` step. Basically, the ```OBC_CWL_INIT``` step sets the input parameters and the ```OBC_CWL_FINAL``` collects the output parameters. If you inspect the .cwl and .sh generated files you can get many insights regarding this split. 
+
+# Executing a Workflow
+You can execute a Workflow directly from OpenBio.eu. To do that you need to install the "OpenBio Execution Environment" (OEE) to a computer of your own. That means that the actual execution happens to the computer that you have installed the OEE. The "OpenBio Execution Environment" is comprised by tree components:
+* A resource manager. This is a framework that monitors the resources (memory, CPU, hard disk, bandwidth) that are used by the OEE. We use [netdata](https://www.netdata.cloud/) for this purpose. 
+* An execution manager. This is a framework that monitors the progress of the workflow. It provides a visual indication of which steps are currently running, it gives access to the logs and it allows you to pause/restart the workflow. Currently we are using [airflow](https://airflow.apache.org/) for this purpose, although we are planning to support multiple environments in the future (priorities are [nextflow](https://www.nextflow.io/) and [galaxy](https://galaxyproject.org/)).  
+* The "OpenBio client". This is a client that uses [flask](https://flask.palletsprojects.com/en/1.1.x/). This client acts as the mediator between the OpenBio.eu website and the rest of the components. When you click the "RUN" button in OpenBio.eu, the site communicates with this client, the client aqcuires the workflow and submits it to aiflow. It also performs some secondary jobs like providing the resource manager and execution manager URLs to the server and deleting the workflows when requested. 
+
+Both three components are installed in separate virtualized containers through [docker](https://www.docker.com/). This means:
+* The workflow that is executed **does not have access to any file in your system**. Even if malicious code is somehow injected in the workflow, it will not have access to files in your system and it will not be able to permanently make any changes. 
+* The software installed is completely isolated with the rest of your system. The installation will not alter any of your existing libraries or software.
+* The workflow will use the resources of **your** computer, therefore its execution time depends on them.
+
+## Installation 
+[The source of the OpenBio Execution Envirnment is here](https://github.com/kantale/OpenBioC_Execution). To install it download [the install script](https://github.com/kantale/OpenBioC_Execution/blob/master/obc_scripts/install.sh) and run it with:
+
+```bash
+bash install.sh
+```
+
+The script attempts to also install docker and [docker-compose](https://docs.docker.com/compose/) in your system if they are not already installed. If docker and docker-compose are already installed and require sudo access you will have to run the script with:
+
+```bash
+sudo bash install.sh
+```
+
+After installation you will see a message like this:
+```
+
+
+ Successful installation 
+
+
+ Netdata url : http://52.58.167.29:19998/ff508b0b0283078ce6aea8d55e7e059c
+**IMPORTANT**
+
+	Copy this link below in OpenBioC Settings to confirm the connection: 
+
+http://52.58.167.29:5000/236f1e291a052b4f8c4ebd395e7e059c
+
+	The executor already running on your system. If you like to kill the service simply run:
+		$ docker-compose -f /home/root/obc_executor_main down
+		or, if you like to make some changes on docker-compose.yml or on airflow.cfg file:
+		$ cd /home/root/obc_executor_main  
+
+
+```
+
+Next step is to insert the link that appears last (in this case: ```http://52.58.167.29:5000/236f1e291a052b4f8c4ebd395e7e059```), in OpenBio.eu. To do that login in OpenBio.eu, and on the upper-right side of the page where it shows your username click on the dropdown and select ```Profile```. On the bottom of the page there is a section called: ```Execution Environment```:
+
+![img](screenshots/screen_38.png)
+
+On this section you can insert this link and associate it with a name (i.e. ```my_cluster```):
+
+![img](screenshots/screen_39.png)
+
+**Important: Anyone with this link can submit workflows in this computer. Do not share this link.** Different accounts in OpenBio can share the same link and submit workflows in the same Execution Environment. 
+
+## Using the RUN button 
+After submitting at least one OEE in OpenBio, you can submit workflows directly for execution. For example we can submit the Workflow presented in the previous chapter (regarding CWL output). This workflow is accessible here: https://www.openbio.eu/platform/w/parallel/1. First notice that this workflow has an input parameter (called ```parameter```). We can set a value to this input parameter (although this is not obligatory). To do that, right click on the ```parameter``` node in the graph and select ```Set```. An input dialog appears, where you can set a value:
+
+![img](screenshots/screen_40.png)
+
+Now if we press the "RUN" button on the top, a dropdown appears with all OEEs that you have submitted. Select the one where you want this workflow to be submitted for execution. If everything goes well you will see two messages:
+
+```
+Please wait while the workflow is submitted for execution..
+Workflow submitted for execution with a Report id: kge7p
+``` 
+
+The last message means that a new report has been generated. In OpenBio.eu a *Report* is an object that represents a Workflow that has been submitted for execution. Reports carry information regarding the execution status of the Workflow. A Report has an ID that contains 5 random letters, in this case ```kge7p```. **Only the creator of a Report has access to this Report**. To access the details of this report you can enter this ID on the search input. On the ```Reports``` section on the left panel you can see that a new item has been generated:
+
+![img](screenshots/screen_41.png)
+
+If you click it, you can access all information regarding this report:
+
+![img](screenshots/screen_43.png)
+
+The ```MONITOR EXECUTION``` is a link to the execution manager (currently: airflow). For example the airflow DAG (Directed Acyclic Graph) representation of this Workflow is:
+
+![img](screenshots/screen_42.png)
+
+The ```MONITOR RESOURCES``` is a link to the resource manager (currently: netdata). It might look like this:
+
+![img](screenshots/screen_44.png)
+
+After execution you can have access to the generated logs and to the HTML report that the workflow creates by default. You can also delete a report. 
 
 ## BASH script
 The BASH script is a directly executable file. Assuming the BASH script filename is bash_7Lt2o.sh and you are in a BASH shell you can type:
