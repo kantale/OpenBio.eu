@@ -1232,6 +1232,8 @@ The ```MONITOR EXECUTION``` is a link to the execution manager (currently: airfl
 
 ![img](screenshots/screen_42.png)
 
+Notice how this graph is the same with the [DOT graph generated from CWL](screenshots/graph.png).
+
 The ```MONITOR RESOURCES``` is a link to the resource manager (currently: netdata). It might look like this:
 
 ![img](screenshots/screen_44.png)
