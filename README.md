@@ -40,6 +40,9 @@ Main developer is [Alexandros Kanterakis](https://www.ics.forth.gr/cbml/index_ma
 ## Funding
 This research has been co‐financed by the European Union and Greek national funds through the Operational Program Competitiveness, Entrepreneurship and Innovation, under the call RESEARCH – CREATE – INNOVATE (project code: T1EDK - 05275)
 
+## Posters / Conferences / Papers 
+* [Poster in BOSC2019](https://f1000research.com/posters/8-1350), DOI: https://doi.org/10.7490/f1000research.1117273.1 
+
 ## More
 * Twitter: https://twitter.com/openbioe/ 
 
