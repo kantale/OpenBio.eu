@@ -1,6 +1,6 @@
 # BSD 3-Clause License
 
-Copyright (c) 2019, The Institute of Computer Science-FORTH and the OpenBio.eu contributors (see CONTRIBUTORS.md for a full list).
+Copyright (c) 2019-2020, The Institute of Computer Science-FORTH and the OpenBio.eu contributors (see CONTRIBUTORS.md for a full list).
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
