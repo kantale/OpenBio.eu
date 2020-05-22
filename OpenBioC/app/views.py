@@ -3131,6 +3131,7 @@ def tool_node_cytoscape(tool, tool_depending_from_me=None):
                 'dependencies': [str(t) for t in tool.dependencies.all()],
                 'version': tool.version,
                 'draft': tool.draft,
+                'disconnected': False,
             }
         }
     elif type(tool) is dict:
@@ -3152,6 +3153,7 @@ def tool_node_cytoscape(tool, tool_depending_from_me=None):
                 'validation_commands': tool['validation_commands'],
                 'os_choices': tool['os_choices'],
                 'dependencies': tool['dependencies'],
+                'disconnected': False,
             }
         }
 
