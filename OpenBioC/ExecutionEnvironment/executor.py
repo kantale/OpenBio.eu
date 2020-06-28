@@ -1518,7 +1518,7 @@ ENDOFFILE
 
                 # This is a command
                 # check for PARALLEL step__new_step__test5__1 ${STEPS}
-                if len(main_command.parts) == 3:
+                if len(main_command.parts) == 3 and all(hasattr(x,'word') for x in main_command.parts): # Make sure that it contains only word nodes #186 
                     line_to_match = ' '.join(x.word for x in main_command.parts)
                     parallel_call = parse_parrallel_call_1(line_to_match)
                     if  parallel_call and \
@@ -1530,7 +1530,7 @@ ENDOFFILE
                             pos = (main_command.parts[0].pos[0], main_command.parts[2].pos[1])
 
                 # check for PARALLEL step_step_1, step_step_2, ....
-                if len(main_command.parts) > 1:
+                if len(main_command.parts) > 1 and all(hasattr(x,'word') for x in main_command.parts): # Make sure that it contains only word nodes #186
                     line_to_match = ' '.join(x.word for x in main_command.parts)
                     parallel_call_2 = parse_parallel_call_2(line_to_match)
                     if parallel_call_2 and all(x in calling_steps for x in parallel_call_2):
