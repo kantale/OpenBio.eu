@@ -1579,7 +1579,7 @@ ENDOFFILE
                     'last': False,
                     'input_variables': input_workflow_variables,
                     'output_variables': output_workflow_variables,
-                    'run_after': run_after,
+                    'run_after': run_after + run_afters,
                 }
                 #read_from = save_to
                 read_from = save_to_nodot
