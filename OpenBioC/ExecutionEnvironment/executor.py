@@ -172,6 +172,11 @@ function REPORT() {
            local LOCALFILENAME=${OBC_NICE_ID}/$(basename ${2})
            cp ${2} ${NEWFILENAME}
            local HTML="<li>${EXTRA} ${VAR}: <br><img src=\"${LOCALFILENAME}\"></li>\\\\n      <!-- {{${TAG}}} -->\\\\n"
+        elif [[ $FILEKIND == *"PDF document"* ]]; then
+           local NEWFILENAME=${OBC_REPORT_DIR}/$(basename ${2})
+           local LOCALFILENAME=${OBC_NICE_ID}/$(basename ${2})
+           cp ${2} ${NEWFILENAME}
+           local HTML="<li>${EXTRA} ${VAR}: <br><a href=\"${LOCALFILENAME}\">${LOCALFILENAME}</a></li>\\\\n      <!-- {{${TAG}}} -->\\\\n"
         else
            local VALUE=$(echo "${2}" | sed 's/&/\\\&amp;/g; s/</\\\&lt;/g; s/>/\\\&gt;/g; s/"/\\\&quot;/g; s/'"'"'/\\\&#39;/g')
            local HTML="<li>${EXTRA} ${VAR}=${VALUE}</li>\\\\n      <!-- {{${TAG}}} -->\\\\n"
