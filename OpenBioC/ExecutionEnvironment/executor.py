@@ -2009,14 +2009,29 @@ steps:
     ENVIRONMENT_VARIABLE_PATTERN = '         {NAME}: "{VALUE}"'
     ENVIRONMENT_VARIABLE_PATTERN_INPUTS = '         {NAME}: $(inputs.{NAME})' # Passing environment variables from inputs
 
+    # Not Using cwl.output.json : It should be declared in output: https://www.commonwl.org/v1.0/CommandLineTool.html#Output_binding
     OUTPUT_VARIABLES_PATTERN = r'''   {ID}:
       type: string
       outputBinding:
-         glob: cwl.output.json
+         glob: cwl2.output.json
          loadContents: true
          outputEval: $(JSON.parse(self[0].contents).{ID})
 '''
+
+    # This is a trick to allow absolute paths in glob 
+    OUTPUT_REPORT_PATTERN = '''
+   OBC_FINAL_REPORT:
+      type: File
+      outputBinding:
+         glob: $(runtime.outdir)/../../../../../../../../$(inputs.OBC_WORK_PATH)/{NICE_ID}.tgz
+'''
     
+    OUTPUT_VARIABLES_REPORT_WORKFLOW_PATTERN = r'''
+   OBC_FINAL_REPORT:
+      type: File
+      outputSource: OBC_CWL_FINAL/OBC_FINAL_REPORT
+'''
+
     OUTPUT_VARIABLES_WORKFLOW_PATTERN = r'''
    {ID}:
       type: string
@@ -2036,7 +2051,7 @@ steps:
         '''
         '''
         if not arguments:
-            return '[]'
+            return '\n'
 
         return '\n'.join(self.INPUT_STRING_FROMCOMMANDLINE_PATTERN.format(ID=argument) for argument in arguments)
 
@@ -2049,8 +2064,8 @@ steps:
     def create_final_step_output_cwl(self, ):
         '''
         '''
-        if not self.workflow.output_parameters:
-            return '[]'
+        #if not self.workflow.output_parameters:
+        #    return '[]'
 
         return '\n' + '\n'.join(self.OUTPUT_VARIABLES_PATTERN.format(ID=variable['id']) for variable in self.workflow.output_parameters) + '\n'
 
@@ -2063,17 +2078,19 @@ steps:
         '''
         '''
         if not arguments:
-            return '[]'
+            return ''
 
         return '\n' + '\n'.join(self.create_init_step_input_on_final_cwl(argument) for argument in arguments) + '\n'
 
     def create_final_workflow_output_cwl(self, ):
         '''
+        outputs: ...
         '''
-        if not self.workflow.output_parameters:
-            return '[]'
+        # There is always an output which is the report
+        #if not self.workflow.output_parameters:
+        #    return '[]'
 
-        return '\n'.join(self.OUTPUT_VARIABLES_WORKFLOW_PATTERN.format(ID=variable['id']) for variable in self.workflow.output_parameters) + '\n'
+        return self.OUTPUT_VARIABLES_REPORT_WORKFLOW_PATTERN + '\n'.join(self.OUTPUT_VARIABLES_WORKFLOW_PATTERN.format(ID=variable['id']) for variable in self.workflow.output_parameters) + '\n'
 
     def create_final_workflow_input_cwl(self, arguments):
         '''
@@ -2083,29 +2100,27 @@ steps:
 
         return '\n' + '\n'.join('   {ID}: string'.format(ID=argument) for argument in arguments) + '\n'
 
+    def create_intermediate_step_cwl(self, inputs):
+        '''
+        '''
+        return '\n'.join('         {X}: {X}/{X}'.format(X=x) for x in inputs) + '\n'
+
 
     def create_main_workflow_step(self, step_inter_id, inputs, input_parameters,):
         '''
+        Create the steps in workflow.cwl
         '''
 
-        INPUTS = '\n'.join(self.create_init_step_input_on_final_cwl(var) for var in self.unset_variables)
-        if INPUTS:
-            INPUTS = '\n' + INPUTS + '\n'
-
+        # Create INPUTS
         if step_inter_id == 'OBC_CWL_INIT':
-            INPUTS = INPUTS + self.create_init_step_inputs_on_final_cwl(input_parameters)
+            INPUTS = self.create_init_step_inputs_on_final_cwl(input_parameters + self.unset_variables)
         else:
-            if not inputs:
-                INPUTS = '[]'
-            else:
-                INPUTS = INPUTS + '\n'.join('         {X}: {X}/{X}'.format(X=x) for x in inputs) + '\n'
+            INPUTS = self.create_init_step_inputs_on_final_cwl(self.unset_variables) + self.create_intermediate_step_cwl(inputs)
 
-
+        # Create OUTPUTS
         if step_inter_id == 'OBC_CWL_FINAL':
-            if self.workflow.output_parameters:
-                OUTPUTS = '[' + ', '.join(par['id'] for par in self.workflow.output_parameters) + ']'
-            else:
-                OUTPUTS = '[OBC_CWL_FINAL]'
+                output_list = ['OBC_FINAL_REPORT', ] + [par['id'] for par in self.workflow.output_parameters]
+                OUTPUTS = '[' + ', '.join(output_list) + ']'
         else:
             OUTPUTS = '[' + step_inter_id + ']'
 
@@ -2288,8 +2303,9 @@ steps:
 
             if node == 'OBC_CWL_FINAL':
                 INPUTS = self.cwl_inputs(predecessors)
-                OUTPUTS = self.create_final_step_output_cwl()
-                STDOUT = 'stdout: cwl.output.json'
+                OUTPUTS = self.OUTPUT_REPORT_PATTERN.format(NICE_ID=env_variables['OBC_NICE_ID']) + self.create_final_step_output_cwl() # OBC_FINAL_OUTPUT = REPORT + WORKFLOW_OUTPUTS
+                STDOUT = 'stdout: cwl2.output.json' # Normally this should be cwl.output.json . https://www.commonwl.org/v1.0/CommandLineTool.html#Output_binding 
+                                                    # It is not very clear how this feature will hold in future.. 
             else:
                 INPUTS = self.cwl_inputs(predecessors)
                 OUTPUTS = self.cwl_output(node)
@@ -2323,9 +2339,9 @@ steps:
             output_wf_fn = 'workflow.cwl'
 
         files[output_wf_fn] = self.WORKFLOW_CWL_PATTERN.format(
-            STEPS='\n'.join(steps_cwl),
-            INPUTS=self.create_final_workflow_input_cwl(input_parameters) + self.create_argument_input_cwl(),
+            INPUTS=self.create_final_workflow_input_cwl(input_parameters + self.unset_variables), #  + self.create_argument_input_cwl(),
             OUTPUTS=self.create_final_workflow_output_cwl(),
+            STEPS='\n'.join(steps_cwl),
         )
 
         # Create a file with input values
