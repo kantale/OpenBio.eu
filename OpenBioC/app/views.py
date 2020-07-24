@@ -3306,6 +3306,8 @@ def download_workflow(request, **kwargs):
     workflow_info_editable = kwargs['workflow_info_editable'] # IS this workflow saved or not ? . TRUE: NOT SAVED 
     workflow_id = kwargs.get('workflow_id')
     workflow_obc_client = kwargs.get('obc_client', False)
+    do_url_quote = kwargs.get('do_url_quote', True) # See rest_views.py
+    return_bytes = kwargs.get('return_bytes', False) # See rest_views.py 
 
     #print ('Name:', workflow_arg['name'])
     #print ('Edit:', workflow_arg['edit'])
@@ -3394,22 +3396,28 @@ def download_workflow(request, **kwargs):
 
     try:
         if download_type == 'JSON':
-            output_object = urllib.parse.quote(simplejson.dumps(output_object))
-            ret['output_object'] = output_object
+            output_object = simplejson.dumps(output_object)
         elif download_type == 'BASH':
-            output_object = urllib.parse.quote(create_bash_script(output_object, server_url, 'sh'))
-            ret['output_object'] = output_object
+            output_object = create_bash_script(output_object, server_url, 'sh')
         elif download_type == 'CWLTARGZ':
-            output_object = urllib.parse.quote(create_bash_script(output_object, server_url, 'cwltargz'))
-            ret['output_object'] = output_object
+            output_object = create_bash_script(output_object, server_url, 'cwltargz')
         elif download_type == 'CWLZIP':
-            output_object = urllib.parse.quote(create_bash_script(output_object, server_url, 'cwlzip',))
-            ret['output_object'] = output_object
+            output_object = create_bash_script(output_object, server_url, 'cwlzip',)
         elif download_type == 'AIRFLOW':
-            output_object = urllib.parse.quote(create_bash_script(output_object, server_url, 'airflow', workflow_id=workflow_id, obc_client=workflow_obc_client))
-            ret['output_object'] = output_object
+            output_object = create_bash_script(output_object, server_url, 'airflow', workflow_id=workflow_id, obc_client=workflow_obc_client)
+        else:
+            output_object = 'UNKNOWN TYPE' # THIS SHOULD NEVER HAPPEN
+
+        if do_url_quote:
+            output_object = urllib.parse.quote(output_object)
+        
+        ret['output_object'] = output_object
+
     except OBC_Executor_Exception as e:
         return fail(str(e))
+
+    if return_bytes:
+        return ret['output_object']
 
     ret['report_created'] = report_created
     ret['nice_id'] = nice_id
