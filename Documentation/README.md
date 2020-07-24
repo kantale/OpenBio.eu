@@ -1275,7 +1275,7 @@ The main endpoint of the REST api is at: https://openbio.eu/platform/rest/
 ## Request A Workflow 
 The GET parameters to request a workflow are:
 
-```http://0.0.0.0:8200/platform/rest/workflows/<workflow_name>/<workflow_edit>/?workflow_id=<workflow_id>&format=<format>```
+```https://openbio.eu/platform/rest/workflows/<workflow_name>/<workflow_edit>/?workflow_id=<workflow_id>&format=<format>```
 
 * ```workflow_name``` : The name of a workflow.
 * ```workflow_edit``` : The edit of a workflow
