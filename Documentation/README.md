@@ -301,7 +301,7 @@ The most important part here is that the name of the workflow appears as ```my_w
 * A "name" provided by the user
 * A number called "edit" provided from the platform.
 
-The naming/ID-ing scheme is exactly the same as with Tools/Data. The only difference is that Workflows do not have versions. The idea here is that Tools/Data are items that get "fetched" (i.e. downloaded) from the Internet. They have versions that are maintained externally (outside OpenBio.eu), hence the "version" is part of the identity of a Tool/Data. On the other hand, Workflows are sets of Tool/Data, plus the logic that combines them for the purpose of an analysis. Workflow are merely constructs that exist only in OpenBio.eu this is why they don't have "version". Nevertheless they do have an edit, so it is possible to have multiple Workflows with the same name. 
+The naming/ID-ing scheme is exactly the same as with Tools/Data. The only difference is that Workflows do not have versions. The idea here is that Tools/Data are items that get "fetched" (i.e. downloaded) from the Internet. They have versions that are maintained externally (outside OpenBio.eu), hence the "version" is part of the identity of a Tool/Data. On the other hand, Workflows are sets of Tool/Data, plus the logic that combines them for the purpose of an analysis. Workflows are merely constructs that exist only in OpenBio.eu this is why they don't have "version". Nevertheless they do have an edit, so it is possible to have multiple Workflows with the same name. 
 
 Now, let's download and run this workflow. Select "BASH Executable" from the "Downlood" dropdown. A file named "bash.sh" gets donloaded. Run this as before (i.e. with ```bash bash.sh```). The output should be:
 
@@ -1270,17 +1270,47 @@ This information contains the name (i.e. ```myworkflow```), edit (i.e. ```1```) 
 # API
 The API is currently under heavy development. 
 
-## Airlfow DAG (Directed Acyclic Graph)
+The main endpoint of the REST api is at: https://openbio.eu/platform/rest/
 
-So far you can access the airflow DAG with:
+## Request A Workflow 
+The GET parameters to request a workflow are:
 
-```bash
-curl  -H 'Accept: application/json; indent=4' "http://0.0.0.0:8200/platform/rest/workflows/my_workflow/1/?dag=true&workflow_id=xyz" 
+```http://0.0.0.0:8200/platform/rest/workflows/<workflow_name>/<workflow_edit>/?workflow_id=<workflow_id>&format=<format>```
+
+* ```workflow_name``` : The name of a workflow.
+* ```workflow_edit``` : The edit of a workflow
+* ```workflow_id``` : Some workflow management systems, need to have a unique id in the workflow representation. [An example is airflow](https://airflow.apache.org/docs/stable/tutorial.html#instantiate-a-dag) that expects to have a ```dag_id``` value. This field can take any string. Also, this is optional, if you don't set this, then the ```workflow_id``` will be: ```<workflow_name>__<workflow_edit>```
+* ```format```. The format of the workflow. So far accepted values are:
+   * ```json```: A json representation of the workflow
+   * ```bash```: A directly executable bash version of the workflow
+   * ```airflow```: An [airflow](https://airflow.apache.org) representation of the workflow that uses the [BashOperator](https://airflow.apache.org/docs/stable/howto/operator/bash.html). 
+   * ```cwltargz```: The workflow in [CWL](https://www.commonwl.org/) format (current v. 1.0). Since this representation is split in many files it returns a tar gzip file. Uncompress it with : ```tar zxvf workflow.tar.gz```. 
+   * ```cwlzip```: Some as above but returns a singe zip file. 
+
+If the chosen format is not a binary file: (```json```, ```bash```, ```airflow```), then the result is a JSON object. This object contains the following fields:
+```json
+{
+    "success": true,
+    "name": "test",
+    "edit": 1,
+    "format": "BASH",
+    "workflow": "..."
+}
 ```
 
-Arguments:
-* ```dag=true```. Obligatory
-* ```workflow_id=<string>``` This is optional. If you don't set this, then the workflow id in the DAG will be: ```<workflow_name>__<workflow_edit>```
+The workflow is on the ```workflow``` field of the returned JSON object.
+
+For example you can do:
+```
+curl -H 'Accept: application/json' "https://openbio.eu/platform/rest/workflows/hapmap3_pca/1/?workflow_id=xyz&format=json" 
+```
+
+If the chosen format is a binary file (```cwltargz```, ```cwlzip```), then the REST-API directly downloads a file with filename: ```workflow.tar.gz``` or ```workflow.zip``` depending on the requested format. For example you can do:
+
+```
+curl "https://openbio.eu/platform/rest/workflows/hapmap3_pca/1/?workflow_id=xyz&format=cwltargz" -o workflow.tar.gz
+```
+
 
 
 

@@ -12,7 +12,8 @@ class IgnoreClientContentNegotiation(BaseContentNegotiation):
         Select the first renderer in the `.renderer_classes` list.
         """
 
-        
+        #print (request.headers)
+
         format_ = str(request.query_params.get('format')).upper()
 
         if format_ in ['CWLTARGZ', ]:
@@ -20,5 +21,9 @@ class IgnoreClientContentNegotiation(BaseContentNegotiation):
         elif format_ in ['CWLZIP', ]:
             return (renderers[1], renderers[1].media_type)
         else:
-            return (renderers[2], renderers[2].media_type)
+
+            if 'application/json' in request.headers.get('Accept', ''):
+                return (renderers[2], renderers[2].media_type)
+            else:
+                return (renderers[3], renderers[3].media_type)
 
