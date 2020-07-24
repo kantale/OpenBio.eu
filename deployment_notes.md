@@ -222,7 +222,20 @@ Start server
 python manage.py runserver 
 ```
 
+# Deployment notes on Windows 
 
+1. [Install anaconda / conda for windows](https://docs.conda.io/projects/conda/en/latest/user-guide/install/windows.html) 
+2. [Install git for windows](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+3. Clone this repository: ```git clone https://github.com/kantale/OpenBioC``` 
+4. Create conda virtual environment: ```conda create -n obc_python phython=3.7``` 
+5. Activate the environment: ```conda activate obc_python```
+6. install python packages ```pip install -r requirements.txt```
+7. Initialize database: ```cd OpenBioC/OpenBioC``` :
 
+```
+python manage.py makemigrations app
+python manage.py migrate
+```
 
+8. start the django service ```python manage.py runserver```
 
