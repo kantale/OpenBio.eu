@@ -186,7 +186,7 @@ def workflow_name(request, workflow_name):
 
 
 @api_view(['GET'])
-@renderer_classes([BinaryRenderer_TARGZ, BinaryRenderer_ZIP, CustomBrowsableAPIRenderer]) #  , JSONRenderer, CustomBrowsableAPIRenderer, BrowsableAPIRenderer
+@renderer_classes([BinaryRenderer_TARGZ, BinaryRenderer_ZIP, JSONRenderer, CustomBrowsableAPIRenderer]) #  , JSONRenderer, CustomBrowsableAPIRenderer, BrowsableAPIRenderer
 def workflow_complete(request, workflow_name, workflow_edit):
     '''
     Called from urls.py 
