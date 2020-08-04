@@ -1369,6 +1369,7 @@ class Workflow:
                 calling_step = m.group('step_name')
                 calling_variable = m.group('var_name1') or m.group('var_name2')
                 if calling_variable:
+
                     return {
                         'step': calling_step,
                         'variable': calling_variable
@@ -1430,7 +1431,7 @@ ENDOFFILE
         def break_down_step_recursive(step, parallel_variables=None, run_after=None):
             '''
             Use bashlex to break down all steps of a bash script
-            parallel_variables: Initialize script these variables. Used for the parallel execution
+            parallel_variables: Initialize script with these variables. Used for the parallel execution
             run_after: Run this step after "run_after". This is a list 
             '''
 
@@ -1515,10 +1516,15 @@ ENDOFFILE
                     continue
 
                 # Check if this is a CommandNode(parts=[AssignmentNode(parts=[] pos=(118, 152) word='STEPS=\nA,B\n1,2\n3,4\n5,6\n7,8\n9,10\n')] pos=(118, 152))
+                # OR 
+                # Check if this is a CommandNode(pos=(0, 20), parts=[WordNode(pos=(0, 20), word='VAR1=\nA,B\n1,2\n3,4\n'),])
+                # word='VAR1=\nA,B\n1,2\n3,4\n' --> THIS IS A WordNode !
+                # word='VAR=\nA,B\n1,2\n3,4\n' --> THIS IS A AssignmentNode 
                 if len(main_command.parts) == 1:
-                    if main_command.parts[0].kind == 'assignment':
+                    if main_command.parts[0].kind in ['assignment', 'word']:
                         # This is an assignment
                         assignment_word = main_command.parts[0].word
+                        #print ('BEFORE parse_parallel_constant')
                         last_assignment = parse_parallel_constant(assignment_word)
 
                 # This is a command
@@ -1526,11 +1532,12 @@ ENDOFFILE
                 if len(main_command.parts) == 3 and all(hasattr(x,'word') for x in main_command.parts): # Make sure that it contains only word nodes #186 
                     line_to_match = ' '.join(x.word for x in main_command.parts)
                     parallel_call = parse_parrallel_call_1(line_to_match)
+                    #print ('Last assignment:', last_assignment)
                     if  parallel_call and \
                         last_assignment and \
                         parallel_call['variable'] == last_assignment['variable'] and \
                         parallel_call['step'] in calling_steps:
-                            # THIS IS A VALID PARALLEL CALL
+                            #print ('THIS IS A VALID PARALLEL CALL')
                             this_is_a_parallel_call_1 = True
                             pos = (main_command.parts[0].pos[0], main_command.parts[2].pos[1])
 
