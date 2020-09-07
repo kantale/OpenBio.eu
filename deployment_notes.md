@@ -238,4 +238,5 @@ python manage.py migrate
 ```
 
 8. start the django service ```python manage.py runserver```
+9. Get your browser to: 127.0.0.1:8080/platform 
 

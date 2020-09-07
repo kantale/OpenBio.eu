@@ -1970,7 +1970,7 @@ class CWLExecutor(BaseExecutor):
 
     COMMAND_LINE_CWL_PATTERN = r'''
 class: CommandLineTool
-cwlVersion: v1.0
+cwlVersion: v1.2
 
 baseCommand: ["{SHELL}", "{COMMAND_LINE_SH}"]
 
@@ -1994,7 +1994,7 @@ outputs: {OUTPUTS}
 
     WORKFLOW_CWL_PATTERN = r'''#!/usr/bin/env cwl-runner
 
-cwlVersion: v1.0
+cwlVersion: v1.2
 class: Workflow
 
 inputs: {INPUTS}

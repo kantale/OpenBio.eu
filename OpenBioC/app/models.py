@@ -465,7 +465,7 @@ class UpDownCommentVote(models.Model):
 
 class UpDownToolVote(models.Model):
     '''
-    Represents one Up/Down vote at a comment
+    Represents one Up/Down vote at a Tool
     '''
 
     class Meta:
@@ -488,7 +488,7 @@ class UpDownToolVote(models.Model):
 
 class UpDownWorkflowVote(models.Model):
     '''
-    Represents one Up/Down vote at a comment
+    Represents one Up/Down vote at a Workflow
     '''
 
     class Meta:
