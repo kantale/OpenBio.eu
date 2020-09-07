@@ -1968,9 +1968,11 @@ class CWLExecutor(BaseExecutor):
     '''
     '''
 
+    CWL_VERSION = "v1.0"
+
     COMMAND_LINE_CWL_PATTERN = r'''
 class: CommandLineTool
-cwlVersion: v1.2
+cwlVersion: {CWL_VERSION}
 
 baseCommand: ["{SHELL}", "{COMMAND_LINE_SH}"]
 
@@ -1994,7 +1996,7 @@ outputs: {OUTPUTS}
 
     WORKFLOW_CWL_PATTERN = r'''#!/usr/bin/env cwl-runner
 
-cwlVersion: v1.2
+cwlVersion: {CWL_VERSION}
 class: Workflow
 
 inputs: {INPUTS}
@@ -2220,6 +2222,7 @@ steps:
         files['OBC_CWL_INIT.sh'] = bash 
 
         files['OBC_CWL_INIT.cwl'] = self.COMMAND_LINE_CWL_PATTERN.format(
+            CWL_VERSION=self.CWL_VERSION,
             SHELL=shell,
             COMMAND_LINE_SH='OBC_CWL_INIT.sh',
             INPUTS = self.create_init_step_inputs_cwl(input_parameters) + self.create_argument_input_cwl(), # self.cwl_inputs([]),
@@ -2321,6 +2324,7 @@ steps:
             INPUTS = INPUTS + self.create_argument_input_cwl()
 
             cwl = self.COMMAND_LINE_CWL_PATTERN.format(
+                CWL_VERSION=self.CWL_VERSION,
                 SHELL=shell,
                 COMMAND_LINE_SH=self.create_step_inter_id_sh_fn(node),
                 INPUTS= INPUTS,
@@ -2346,6 +2350,7 @@ steps:
             output_wf_fn = 'workflow.cwl'
 
         files[output_wf_fn] = self.WORKFLOW_CWL_PATTERN.format(
+            CWL_VERSION=self.CWL_VERSION,
             INPUTS=self.create_final_workflow_input_cwl(input_parameters + self.unset_variables), #  + self.create_argument_input_cwl(),
             OUTPUTS=self.create_final_workflow_output_cwl(),
             STEPS='\n'.join(steps_cwl),
