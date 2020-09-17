@@ -1685,8 +1685,8 @@ class BaseExecutor():
     def save_input_parameters(self, from_variable=False, from_workflow=False):
         '''
         from_variable: Read the variable from the variable with the same name: A="${A}". 
-                       Somehow the variable musye be already set
-        from_workflow: Reaf the variable from the workflow. The value of the variable
+                       Somehow the variable must be already set
+        from_workflow: Read the variable from the workflow. The value of the variable
                        must exist in the workflow
         '''
         bash = 'touch {}\n'.format(self.file_with_input_parameters)
@@ -2216,7 +2216,8 @@ steps:
 
 
         bash = Workflow.read_arguments_from_commandline(input_parameters)
-        bash += self.save_input_parameters(from_variable=True)
+        #bash += self.save_input_parameters(from_variable=True)
+        bash += self.save_input_parameters(from_workflow=True)
         bash += self.obc_init_step()
 
         files['OBC_CWL_INIT.sh'] = bash 

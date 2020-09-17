@@ -14,6 +14,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from .views import download_workflow # Import from main views
 
+import re
 import simplejson
 import urllib.parse
 
@@ -114,6 +115,9 @@ class WorkflowSerializerDAG(serializers.BaseSerializer):
     def set_workflow_format(self, format_):
         self.format_ = format_.upper()
 
+    def set_workflow_input_parameters(self, input_parameters):
+        self.input_parameters = input_parameters
+
     def to_representation(self, instance):
         '''
         Call run_workflow to get a dag representation of the workflow
@@ -140,7 +144,7 @@ class WorkflowSerializerDAG(serializers.BaseSerializer):
             'download_type': self.format_,
             'workflow_id': self.workflow_id,
             'obc_client': True, # Declare that we need an airflow DAG explicitly for the OBC client
-            'workflow_options': {}, # Workflow options . An interesting idea is to get them from the REST API
+            'workflow_options': self.input_parameters, # Workflow options (input parameters) . An interesting idea is to get them from the REST API. DONE. see #196
             'do_url_quote': do_url_quote, # In case of binary Do not url encode objects . We need the bytes object
             'return_bytes': return_bytes, # Return bytes ?
         }
@@ -209,11 +213,21 @@ def workflow_complete(request, workflow_name, workflow_edit):
         except ObjectDoesNotExist as e:
             return Response({'success': False, 'error': 'Workflow not found'}, status=status.HTTP_404_NOT_FOUND)
 
+        # Support input parameters in GET parameters Issue 196 
+        # /?input__inp__test__2=aaaaa
+        # Example : http://0.0.0.0:8200/platform/rest/workflows/test/2/?format=BASH&input__inp__test__2=aaaa 
+        input_parameters = {}
+        for input_name, input_value in request.GET.items():
+            if re.match(r'input__([\w]+)__([\w]+)__([\d])', input_name):
+                input_parameters[input_name] = input_value
+
+
         
         serializer = WorkflowSerializerDAG(workflow, many=False)
         serializer.set_request(request)
         serializer.set_workflow_id(workflow_id)
         serializer.set_workflow_format(format_)
+        serializer.set_workflow_input_parameters(input_parameters)
 
         filename = None
         if format_ == 'CWLTARGZ':
