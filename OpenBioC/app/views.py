@@ -3301,13 +3301,19 @@ def download_workflow(request, **kwargs):
     '''
 
     workflow_arg = kwargs['workflow']
-    workflow_options_arg = kwargs['workflow_options']
+
+    # These are the options fetched from the UI. Check ui.js : window.OBCUI.get_workflow_options 
+    #    OR
+    # The options fetched from the REST API . See rest_views.py : input_parameters
+    workflow_options_arg = kwargs['workflow_options'] 
+
     download_type = kwargs['download_type'] # For a full list of types see below . if download_type == ...
     workflow_info_editable = kwargs['workflow_info_editable'] # IS this workflow saved or not ? . TRUE: NOT SAVED 
     workflow_id = kwargs.get('workflow_id')
     workflow_obc_client = kwargs.get('obc_client', False)
     do_url_quote = kwargs.get('do_url_quote', True) # See rest_views.py
     return_bytes = kwargs.get('return_bytes', False) # See rest_views.py 
+
 
     #print ('Name:', workflow_arg['name'])
     #print ('Edit:', workflow_arg['edit'])
@@ -3426,7 +3432,7 @@ def download_workflow(request, **kwargs):
 
 def callback_url(request):
     '''
-    Buld callbacl url
+    Buld callback url
     '''
     return f'{request.scheme}://{request.META["HTTP_HOST"]}/platform/'
 
@@ -3440,8 +3446,6 @@ def run_workflow(request, **kwargs):
     source: Where the request came from. If it from rest then source='frontend'
     '''
 
-
-
     if request.user.is_anonymous: # Server should always check..
         return fail('Error 3291. User is anonymous')
 
@@ -3453,6 +3457,8 @@ def run_workflow(request, **kwargs):
     profile_name = kwargs.get('profile_name', '')
     if not str(profile_name):
         return fail('Error 3288. Invalid profile name')
+
+    workflow_options = kwargs.get('workflow_options', {}) # Get the workflow input options (arguments)
 
     name = kwargs.get('name', '')
     if not str(name):
@@ -3488,6 +3494,7 @@ def run_workflow(request, **kwargs):
         'edit': edit,
         'callback': callback_url(request),
         'workflow_id': nice_id,
+        'input_parameters' : workflow_options,
     }
 
     headers={ "Content-Type" : "application/json", "Accept" : "application/json"}

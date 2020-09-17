@@ -4513,7 +4513,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             {
                 'profile_name': profile_name,
                 'name': $scope.workflow_info_name,
-                'edit': $scope.workflow_info_edit
+                'edit': $scope.workflow_info_edit,
+                'workflow_options': window.OBCUI.get_workflow_options() //Get the workflow_options from the UI 
             },
             function (data) {
                 $scope.toast('Workflow submitted for execution with a Report id: ' + data['nice_id'], 'success');
