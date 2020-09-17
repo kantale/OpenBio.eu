@@ -2195,11 +2195,11 @@ steps:
         return '\n   {}:\n      type: stdout'.format(output_id)
 
 
-    def build(self, output, shell='bash', output_format='cwltargz'):
+    def build(self, output, shell='bash', output_format='cwltargz', workflow_id=None):
         '''
         '''
 
-        env_variables = self.get_environment_variables()
+        env_variables = self.get_environment_variables(workflow_id=workflow_id)
         env_variables_string = self.get_environment_variables_string(env_variables)
         # Get the essential variables that have not been set 
         # We will set these variable from the input yml file
@@ -2608,9 +2608,9 @@ def create_bash_script(workflow_object, server, output_format, workflow_id=None,
         e = LocalExecutor(w)
         return e.build(output=None)
     elif output_format in ['cwltargz', 'cwlzip']:
-        w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server)
+        w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
         e = CWLExecutor(w)
-        return e.build(output=None, output_format=output_format)
+        return e.build(output=None, output_format=output_format, workflow_id=workflow_id)
     elif output_format in ['airflow']:
         w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
         e = AirflowExecutor(w)

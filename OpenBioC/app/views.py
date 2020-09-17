@@ -3406,9 +3406,9 @@ def download_workflow(request, **kwargs):
         elif download_type == 'BASH':
             output_object = create_bash_script(output_object, server_url, 'sh')
         elif download_type == 'CWLTARGZ':
-            output_object = create_bash_script(output_object, server_url, 'cwltargz')
+            output_object = create_bash_script(output_object, server_url, 'cwltargz', workflow_id=workflow_id)
         elif download_type == 'CWLZIP':
-            output_object = create_bash_script(output_object, server_url, 'cwlzip',)
+            output_object = create_bash_script(output_object, server_url, 'cwlzip', workflow_id=workflow_id)
         elif download_type == 'AIRFLOW':
             output_object = create_bash_script(output_object, server_url, 'airflow', workflow_id=workflow_id, obc_client=workflow_obc_client)
         else:
