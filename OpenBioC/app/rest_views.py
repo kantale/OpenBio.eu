@@ -94,6 +94,18 @@ class BinaryRenderer_ZIP(BaseRenderer):
     def render(self, data, accepted_media_type=None, renderer_context=None):
         return data
 
+class PlainTextRenderer(BaseRenderer):
+    media_type = 'text/plain'
+    format = 'txt'
+    charset = 'UTF-8'
+
+    def render(self, data, media_type=None, renderer_context=None):
+        if 'workflow' in data:
+            if type(data['workflow']) is str:
+                return data['workflow'].encode(self.charset)
+            elif type(data['workflow']) is dict:
+                return simplejson.dumps(data)
+
 class CustomBrowsableAPIRenderer(BrowsableAPIRenderer):
     def get_default_renderer(self, view):
         return JSONRenderer()
@@ -190,7 +202,7 @@ def workflow_name(request, workflow_name):
 
 
 @api_view(['GET'])
-@renderer_classes([BinaryRenderer_TARGZ, BinaryRenderer_ZIP, JSONRenderer, CustomBrowsableAPIRenderer]) #  , JSONRenderer, CustomBrowsableAPIRenderer, BrowsableAPIRenderer
+@renderer_classes([BinaryRenderer_TARGZ, BinaryRenderer_ZIP, JSONRenderer, CustomBrowsableAPIRenderer, PlainTextRenderer]) #  , JSONRenderer, CustomBrowsableAPIRenderer, BrowsableAPIRenderer
 def workflow_complete(request, workflow_name, workflow_edit):
     '''
     Called from urls.py 
