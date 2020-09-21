@@ -24,6 +24,8 @@ class IgnoreClientContentNegotiation(BaseContentNegotiation):
 
             if 'application/json' in request.headers.get('Accept', ''):
                 return (renderers[2], renderers[2].media_type)
+            elif 'application/text' in request.headers.get('Accept', ''):
+                return (renderers[4], renderers[4].media_type)
             else:
                 return (renderers[3], renderers[3].media_type)
 

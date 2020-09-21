@@ -1275,11 +1275,13 @@ The main endpoint of the REST api is at: https://openbio.eu/platform/rest/
 ## Request A Workflow 
 The GET parameters to request a workflow are:
 
-```https://openbio.eu/platform/rest/workflows/<workflow_name>/<workflow_edit>/?workflow_id=<workflow_id>&format=<format>```
+```https://openbio.eu/platform/rest/workflows/<workflow_name>/<workflow_edit>/?workflow_id=<workflow_id>&format=<format>&<input_parameter_1>=<value_1>&<input_parameter_2>=<value_2>```
 
 * ```workflow_name``` : The name of a workflow.
 * ```workflow_edit``` : The edit of a workflow
 * ```workflow_id``` : Some workflow management systems, need to have a unique id in the workflow representation. [An example is airflow](https://airflow.apache.org/docs/stable/tutorial.html#instantiate-a-dag) that expects to have a ```dag_id``` value. This field can take any string. Also, this is optional, if you don't set this, then the ```workflow_id``` will be: ```<workflow_name>__<workflow_edit>```
+* ```input_parameter_1```: The name of an input parameter of a workflow
+* ```value_1```: The value of the input parameter.
 * ```format```. The format of the workflow. So far accepted values are:
    * ```json```: A json representation of the workflow
    * ```bash```: A directly executable bash version of the workflow
@@ -1300,10 +1302,23 @@ If the chosen format is not a binary file: (```json```, ```bash```, ```airflow``
 
 The workflow is on the ```workflow``` field of the returned JSON object.
 
+The return object of the REST API can be one of the following:
+* A binary file if the format is ```cwltargz```, ```cwlzip```
+* Text in HTML format if the format is not a binary file (default Django-REST API html format)
+* Text in JSON format if the format is not a binary file and the header ```Accept: application/json``` exists in the request. 
+* Text in plain text format if the format is not a binary file and the header ```Accept: application/text``` exists in the request. 
+   * **IMPORTANT** if the format is ```"bash"``` and the ```Accept: application/text``` is present then the REST API will fetch an executable BASH file. It will not contain additional information shown above such as ```success```, ```name```, ```edit```. 
+
+
 For example you can do:
 ```
 curl -H 'Accept: application/json' "https://openbio.eu/platform/rest/workflows/hapmap3_pca/1/?workflow_id=xyz&format=json" 
 ```
+
+```
+curl -H 'Accept: application/text' "https://openbio.eu/platform/rest/workflows/hapmap3_pca/1/?workflow_id=xyz&format=bash" 
+```
+
 
 If the chosen format is a binary file (```cwltargz```, ```cwlzip```), then the REST-API directly downloads a file with filename: ```workflow.tar.gz``` or ```workflow.zip``` depending on the requested format. For example you can do:
 
