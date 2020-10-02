@@ -15,6 +15,8 @@
                 <span class="brand-logo center black-text" style="font-size: 14px; top: 20px;">
                     Version: {{version}} 
                     <a href="https://github.com/kantale/OpenBioC" target="_blank">Source</a>
+                    {% if TERMS %}<a href="{{TERMS}}">Terms</a>{% endif %}
+                    {% if PRIVACY %}<a href="{{PRIVACY}}">Privacy</a>{% endif %}
                 </span>
             </div>
             <!-- on medium and down screens -->

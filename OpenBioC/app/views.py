@@ -79,6 +79,8 @@ g = {
     'SERVER': 'https://www.openbio.eu',
     'EMAIL': 'info@swww.openbio.eu',
     'ADMIN': 'kantale@ics.forth.gr', # In case the email fail, use this instead
+    'TERMS': 'https://www.openbio.eu/static/static/static/docs/terms_privacy/OpenBio_Conditions.pdf', # URL OF TERMS OF USE
+    'PRIVACY': 'https://www.openbio.eu/static/static/static/docs/terms_privacy/OpenBio_Privacy_Policy.pdf', # URL OF PRIVACY 
 
     'DEFAULT_DEBUG_PORT': 8200,
     'SEARCH_TOOL_TREE_ID': '1',
@@ -1062,6 +1064,8 @@ def index(request, **kwargs):
     context = {}
     context['general_alert_message'] = ''
     context['general_success_message'] = ''
+    context['TERMS'] = g.get('TERMS')
+    context['PRIVACY'] = g.get('PRIVACY')
 
 
     # Are we linking to a specific RO?
