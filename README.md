@@ -1,5 +1,5 @@
-# OpenBioC
-[OpenBioC](https://www.openbio.eu) is an open collaborative workflow management system. It is focused (but not limited!) to the bioinformatics community.
+# OpenBio.eu
+[OpenBio.eu](https://www.openbio.eu) is an open collaborative workflow management system. It is focused (but not limited!) to the bioinformatics community.
 
 ## Documentation
 [Here is an incomplete documentation](Documentation/README.md)
@@ -24,7 +24,7 @@ Main features include:
 * ...more to come 
 
 ## Directories
-* OpenBioC: The awesome OpenBioC platform! This directory also contains:
+* OpenBio: The awesome OpenBio platform! This directory also contains:
     * app/ The Django application of the project
     * ExecutionEnvironment. The Execution Environment of openbio.eu . Use [executor.py](ExecutionEnvironment/executor.py) to execute a worfklow in json format that you downloaded from openbio.eu.
 * [deployment_notes.md](deployment_notes.md): Some notes on how to deploy on an Ubuntu 16.04 server 
