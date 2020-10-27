@@ -12,7 +12,7 @@ cffi==1.12.2
 chardet==3.0.4
 Click==7.0
 coloredlogs==10.0
-cryptography==2.6.1
+cryptography==3.2
 cwlref-runner==1.0
 cwltool==1.0.20191022103248
 decorator==4.4.1
