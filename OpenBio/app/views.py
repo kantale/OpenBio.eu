@@ -1880,6 +1880,7 @@ def tools_add(request, **kwargs):
     # Get forked from and edit summary
     tool_forked_from_info = kwargs.get('tool_forked_from', None)
     if tool_forked_from_info:
+
         tool_forked_from = Tool.objects.get(name=tool_forked_from_info['name'], version=tool_forked_from_info['version'], edit=int(tool_forked_from_info['edit']))
         tool_changes = kwargs.get('tool_changes', '')
         if not tool_changes:
