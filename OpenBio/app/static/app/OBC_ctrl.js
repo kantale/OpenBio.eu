@@ -1471,6 +1471,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.tool_score = data['score'];
                 $scope.tool_voted = data['voted']; // {'up': false, 'down': false};
 
+                //This tool is not any more in an edit state (if it was)
+                $scope.tools_info_edit_state = false;
+
                 //EXPERIMENTAL. UPDATE SEARCH RESULTS
                 $scope.all_search_2();
             },
