@@ -4172,6 +4172,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 //EXPERIMENTAL. UPDATE SEARCH RESULTS
                 $scope.all_search_2();
 
+                //Workflow is not edited any more (if it was)
+                $scope.workflows_info_edit_state = false;
+
                 //Close STEP accordion
                 M.Collapsible.getInstance($('#editWorkflowAccordion')).close();
             },
