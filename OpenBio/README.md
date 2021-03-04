@@ -15,6 +15,8 @@ bash Anaconda3-5.2.0-Linux-x86_64.sh
 
 ```
 
+A script to install miniconda is available at [install_miniconda.sh](install_miniconda.sh).
+
 ### Create A dedicated python installation from Anaconda:
 I assume that you have already cloned this repository: ```https://github.com/kantale/OpenBioC```
 Go to the directory: ```OpenBioC``` of this repository.
