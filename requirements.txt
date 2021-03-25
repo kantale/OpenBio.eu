@@ -49,7 +49,7 @@ PySocks==1.6.8
 pytest==5.1.2
 python-dateutil==2.8.1
 pytz==2018.9
-PyYAML==5.1
+PyYAML==5.4
 rdflib==4.2.2
 rdflib-jsonld==0.4.0
 requests==2.23.0
