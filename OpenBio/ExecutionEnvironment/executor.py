@@ -2590,57 +2590,6 @@ class ArgoExecutor(BaseExecutor):
     https://github.com/argoproj/argo-workflows/blob/master/examples/README.md
     '''
 
-    test = '''
-apiVersion: argoproj.io/v1alpha1
-kind: Workflow
-metadata:
-  generateName: test1
-spec:
-  entrypoint: diamond
-  templates:
-  - name: echo
-    inputs:
-      parameters:
-      - name: message
-    container:
-      image: alpine:3.7
-      command: [echo, "{{inputs.parameters.message}}"]
-  - name: scriptA
-    script:
-      image: debian:9.4
-      env:
-      - name: ARGO_ROOT
-        value: MITSARAS
-      command: [bash]
-      source: |                                         # Contents of the here-script
-        cat /dev/urandom | od -N2 -An -i | awk -v f=1 -v r=100 '{printf "%i\n", f + r * $1 / 65536}'
-        echo ${ARGO_ROOT}
-        mkdir -p /private/openbio
-  - name: scriptB
-    script:
-      image: debian:9.4
-      env:
-      - name: ARGO_ROOT
-        value: MITSARAS
-      command: [bash]
-      source: |                                         # Contents of the here-script
-        cat /dev/urandom | od -N2 -An -i | awk -v f=1 -v r=100 '{printf "%i\n", f + r * $1 / 65536}'
-        echo ${ARGO_ROOT}
-
-  - name: diamond
-    dag:
-      tasks:
-      - name: A
-        template: scriptA
-      - name: B
-        dependencies: [A]
-        template: scriptB
-
-
-
-'''
-
-
     ARGO_ROOT = "/private/openbio"
 
     WORKFLOW_TEMPLATE = '''
@@ -2895,6 +2844,10 @@ class NextflowExecutor(BaseExecutor):
     '''
     pass
 
+class SnakemakeExecutor(BaseExecutor):
+    '''
+    '''
+    pass
 
 def create_bash_script(workflow_object, server, output_format, workflow_id=None, obc_client=False):
     '''
