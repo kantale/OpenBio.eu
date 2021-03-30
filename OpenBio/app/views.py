@@ -3416,6 +3416,8 @@ def download_workflow(request, **kwargs):
             output_object = create_bash_script(output_object, server_url, 'cwlzip', workflow_id=workflow_id)
         elif download_type == 'AIRFLOW':
             output_object = create_bash_script(output_object, server_url, 'airflow', workflow_id=workflow_id, obc_client=workflow_obc_client)
+        elif download_type == 'ARGO':
+            output_object = create_bash_script(output_object, server_url, 'argo', workflow_id=workflow_id, obc_client=workflow_obc_client)
         else:
             output_object = 'UNKNOWN TYPE' # THIS SHOULD NEVER HAPPEN
 

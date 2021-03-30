@@ -4427,9 +4427,16 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         else if (download_type == 'AIRFLOW') {
             var output_filename = 'airflow.py';
             $("#hiddena").attr({
-                "download" : output_filename,      
+                "download" : output_filename,
                 "href" : "data:," + data['output_object']
             }).get(0).click();              
+        }
+        else if (download_type == 'ARGO') {
+            var output_filename = 'argo.yaml';
+            $("#hiddena").attr({
+                "download" : output_filename,
+                 "href" : "data:," + data['output_object']
+            }).get(0).click();
         }
 
         else {

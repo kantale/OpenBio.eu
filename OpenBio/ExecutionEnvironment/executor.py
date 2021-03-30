@@ -1688,6 +1688,8 @@ class BaseExecutor():
                        Somehow the variable must be already set
         from_workflow: Read the variable from the workflow. The value of the variable
                        must exist in the workflow
+
+        Either from_variable or from_workflow should be True. Not both.
         '''
         bash = 'touch {}\n'.format(self.file_with_input_parameters)
         for name, parameter in self.workflow.input_parameter_values.items():
@@ -2428,6 +2430,9 @@ dag = DAG(
 
 
     def create_DAG(self, run_afters):
+        '''
+        Create an Airflow format of the transitive reduction of the graph
+        '''
         #print (DAG.edges)
         DAG = self.transitive_reduction(run_afters)
         return '\n'.join('{} >> {}'.format(edge[0], edge[1]) for edge in DAG.edges)
@@ -2556,7 +2561,7 @@ dag = DAG(
         DAG = self.create_DAG(run_afters)
 
         airflow_python = self.pattern.format(
-            WORKFLOW_ID = (workflow_id if workflow_id else self.workflow.root_workflow_id),
+            WORKFLOW_ID = workflow_id if workflow_id else self.workflow.root_workflow_id,
             BASH_OPERATORS = '\n'.join(init_operators + tool_bash_operators + step_bash_operators + final_operators),
             ORDER = DAG, 
         )
@@ -2577,6 +2582,312 @@ dag = DAG(
             # Return string
             return airflow_python
 
+class ArgoExecutor(BaseExecutor):
+    '''
+    https://argoproj.github.io/
+
+    Documentation: 
+    https://github.com/argoproj/argo-workflows/blob/master/examples/README.md
+    '''
+
+    test = '''
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: test1
+spec:
+  entrypoint: diamond
+  templates:
+  - name: echo
+    inputs:
+      parameters:
+      - name: message
+    container:
+      image: alpine:3.7
+      command: [echo, "{{inputs.parameters.message}}"]
+  - name: scriptA
+    script:
+      image: debian:9.4
+      env:
+      - name: ARGO_ROOT
+        value: MITSARAS
+      command: [bash]
+      source: |                                         # Contents of the here-script
+        cat /dev/urandom | od -N2 -An -i | awk -v f=1 -v r=100 '{printf "%i\n", f + r * $1 / 65536}'
+        echo ${ARGO_ROOT}
+        mkdir -p /private/openbio
+  - name: scriptB
+    script:
+      image: debian:9.4
+      env:
+      - name: ARGO_ROOT
+        value: MITSARAS
+      command: [bash]
+      source: |                                         # Contents of the here-script
+        cat /dev/urandom | od -N2 -An -i | awk -v f=1 -v r=100 '{printf "%i\n", f + r * $1 / 65536}'
+        echo ${ARGO_ROOT}
+
+  - name: diamond
+    dag:
+      tasks:
+      - name: A
+        template: scriptA
+      - name: B
+        dependencies: [A]
+        template: scriptB
+
+
+
+'''
+
+
+    ARGO_ROOT = "/private/openbio"
+
+    WORKFLOW_TEMPLATE = '''
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: {WORKFLOW_NAME}
+spec:
+  entrypoint: OBCINIT
+  templates:
+  - name: SCRIPTOBCINIT
+    script:
+      image: debian:9.4
+      env:
+      - name: OBC_WORK_PATH
+        value: "/private/openbio/work"
+      - name: OBC_TOOL_PATH
+        value: "/private/openbio/tool"
+      - name: OBC_DATA_PATH
+        value: "/private/openbio/data"
+{VARIABLES}
+      command: [bash]
+      source: |3+
+         mkdir -p ${{OBC_WORK_PATH}}
+         mkdir -p ${{OBC_TOOL_PATH}}
+         mkdir -p ${{OBC_DATA_PATH}}
+{INIT_BASH}
+{SCRIPTS}
+  - name: OBCINIT
+    dag:
+      tasks:
+      - name: TASKOBCINIT
+        template: SCRIPTOBCINIT
+{DAGS}
+
+'''
+
+    SCRIPT_TEMPLATE = '''
+  - name: {ID}
+    script:
+      image: debian:9.4
+      env:
+      - name: OBC_WORK_PATH
+        value: "/private/openbio/work"
+      - name: OBC_TOOL_PATH
+        value: "/private/openbio/tool"
+      - name: OBC_DATA_PATH
+        value: "/private/openbio/data"
+{ENVS}
+      command: [bash]
+      source: |3+
+         {BASH}
+'''
+
+    DAG_TEMPLATE = '''
+      - name: {TASK_NAME}
+        dependencies: [{DEPENDENCIES}]
+        template: {TEMPLATE_NAME}
+'''
+
+    VARIABLE_TEMPLATE = '''      - name: {NAME}
+        value: "{VALUE}"'''  # Numerical variables need to be encoded in double quotes (?)  
+
+    @staticmethod
+    def yaml_variable(name, value):
+        return ArgoExecutor.VARIABLE_TEMPLATE.format(NAME=name, VALUE=value)
+
+    @staticmethod
+    def yaml_variables(variables):
+        return '\n'.join([ArgoExecutor.yaml_variable(name=k, value=v) for k,v in variables.items()])
+
+    @staticmethod
+    def argo_workflow_id(workflow_id):
+        r'''
+        a DNS-1123 subdomain must consist of lower case alphanumeric characters, '-' or '.', 
+        and must start and end with an alphanumeric character (e.g. 'example.com', regex used for validation 
+        is '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'), 
+        '''
+        return workflow_id.replace('_', '-')
+
+    @staticmethod
+    def yaml_intend(text, indent=9):
+        ret = ''
+        for line in text.split('\n'):
+            ret += ' '*indent + line + '\n'
+        return ret
+
+    def build(self, output, output_format='argo', workflow_id=None, obc_client=False):
+        '''
+        '''
+
+        variables = self.get_environment_variables(obc_client=obc_client, workflow_id=workflow_id)
+        print (variables)
+
+#        if d:
+#            envs = 'env={},'.format(str(d))
+#        else:
+#            envs = ''
+
+        # Create init step
+        init_bash = self.obc_init_step()
+        init_bash += self.save_input_parameters(from_workflow=True)
+
+        dags = []
+        run_afters = {}
+
+        #print (bash)
+
+        # 
+
+        # CREATE TOOL OPERATORS ARGO
+        previous_tools = []
+        tool_bash_scripts = []
+        tool_ids = []
+        for tool_index, tool in enumerate(self.workflow.tool_bash_script_generator()):
+
+            tool_vars_filename = os.path.join('${OBC_WORK_PATH}', Workflow.get_tool_vars_filename(tool))
+            tool_id = self.workflow.get_tool_dash_id(tool, no_dots=True)
+            
+            bash = self.workflow.get_tool_bash_commands(
+                tool=tool, 
+                validation=True, 
+                update_server_status=False,
+                read_variables_from_command_line=False,
+                variables_json_filename=None,
+                variables_sh_filename_read = previous_tools,
+                variables_sh_filename_write = tool_vars_filename,
+            )
+            
+            argo_bash = self.SCRIPT_TEMPLATE.format(
+                ID = ArgoExecutor.argo_workflow_id(tool_id),
+                BASH = ArgoExecutor.yaml_intend(bash),
+                ENVS = ArgoExecutor.yaml_variables(variables),
+            )
+
+            tool_bash_scripts.append(argo_bash)
+            this_tool_run_after = [] # The tools that this tools should run after from
+            if tool_ids:
+                run_afters[tool_id] = copy.copy(tool_ids)
+                this_tool_run_after = run_afters[tool_id]
+            tool_ids.append(tool_id)
+
+            
+
+            dags.append(self.DAG_TEMPLATE.format(
+                TASK_NAME = ArgoExecutor.argo_workflow_id('TASK-' + tool_id),
+                DEPENDENCIES = ', '.join(
+                    ['TASKOBCINIT'] + \
+                    [ArgoExecutor.argo_workflow_id('TASK-'+x) for x in this_tool_run_after]
+                    ), 
+                TEMPLATE_NAME = ArgoExecutor.argo_workflow_id(tool_id)
+            ))
+
+
+            previous_tools.append(tool_vars_filename)
+
+
+        # CREATE STEP OPERATORS ARGO
+        previous_steps_vars = []
+        step_inter_ids = []
+        step_bash_scripts = []
+        all_step_inter_ids = []
+        for step in self.workflow.break_down_step_generator(
+            enable_read_arguments_from_commandline=False,
+            enable_save_variables_to_json=False,
+            enable_save_variables_to_sh=False,
+            ):
+
+            step_id = step['id']
+            count = step['count']
+            bash = step['bash']
+            step_inter_id = '{}__{}'.format(step_id, str(count))
+            all_step_inter_ids.append(step_inter_id)
+            step_inter_ids.append(step_inter_id)
+            step_vars_filename = self.create_step_vars_filename(step_inter_id) # os.path.join('${OBC_WORK_PATH}', step_inter_id + '.sh')
+
+            if step['run_after']:
+                run_afters[step_inter_id] = step['run_after']
+
+            # Add declare. This should be first
+            bash = self.workflow.declare_decorate_bash(bash, step_vars_filename)
+
+            # Add all variables from previous tools
+            load_tool_vars = ''
+            for tool_filename in previous_tools:
+                load_tool_vars += '. {}\n'.format(tool_filename)
+            
+            # Load all variables from previous steps
+            load_step_vars = ''
+            if step['run_after']:
+                for run_after_step in step['run_after']:
+                    load_step_vars += '. {}\n'.format(self.create_step_vars_filename(run_after_step))
+            
+            bash = load_tool_vars + self.load_file_with_input_parameters() + load_step_vars + self.load_obc_functions_bash + bash
+
+            previous_steps_vars.append(step_vars_filename)
+
+            #bash = self.raw_jinja2(bash)
+            argo_bash = self.SCRIPT_TEMPLATE.format(
+                ID = ArgoExecutor.argo_workflow_id(step_inter_id),
+                BASH = ArgoExecutor.yaml_intend(bash),
+                ENVS = ArgoExecutor.yaml_variables(variables),
+            )
+            step_bash_scripts.append(argo_bash)
+
+            dags.append(self.DAG_TEMPLATE.format(
+                TASK_NAME = ArgoExecutor.argo_workflow_id('TASK-' + step_inter_id),
+                DEPENDENCIES = ', '.join(
+                    ['TASKOBCINIT'] + \
+                    [ArgoExecutor.argo_workflow_id('TASK-'+x) for x in tool_ids] + \
+                    [ArgoExecutor.argo_workflow_id('TASK-'+x) for x in run_afters.get(step_inter_id, [])]
+                ), 
+                TEMPLATE_NAME = ArgoExecutor.argo_workflow_id(step_inter_id)
+            ))
+
+
+        # Create final step
+        bash = self.obc_final_step(previous_tools, previous_steps_vars) 
+         
+        final_argo_bash = self.SCRIPT_TEMPLATE.format(
+            ID='SCRIPTOBCFINAL',
+            BASH=ArgoExecutor.yaml_intend(bash),
+            ENVS=ArgoExecutor.yaml_variables(variables),
+        )
+
+        self.add_init_and_final_in_graph('SCRIPTOBCINIT', 'SCRIPTOBCFINAL', run_afters, tool_ids, step_inter_ids) 
+        dags.append(self.DAG_TEMPLATE.format(
+            TASK_NAME = 'TASKOBCFINAL',
+            DEPENDENCIES = ', '.join([ArgoExecutor.argo_workflow_id('TASK-' + x) for x in all_step_inter_ids]), 
+            TEMPLATE_NAME = 'SCRIPTOBCFINAL',
+        ))
+
+
+        argo = self.WORKFLOW_TEMPLATE.format(
+            WORKFLOW_NAME = ArgoExecutor.argo_workflow_id(workflow_id if workflow_id else self.workflow.root_workflow_id),
+            VARIABLES = ArgoExecutor.yaml_variables(variables),
+            INIT_BASH = ArgoExecutor.yaml_intend(init_bash), # indent = 9
+            SCRIPTS = '\n'.join(tool_bash_scripts + step_bash_scripts + [final_argo_bash]),
+            DAGS = ''.join(dags)
+        )
+
+
+        # Create init step
+        print (argo)
+
+
+        return argo
 
 
 class NextflowExecutor(BaseExecutor):
@@ -2615,6 +2926,10 @@ def create_bash_script(workflow_object, server, output_format, workflow_id=None,
         w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
         e = AirflowExecutor(w)
         return e.build(output=None, output_format='airflow', workflow_id=workflow_id, obc_client=obc_client)
+    elif output_format in ['argo']:
+        w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
+        e = ArgoExecutor(w)
+        return e.build(output=None, output_format='argo', workflow_id=workflow_id, obc_client=obc_client)
     else:
         raise OBC_Executor_Exception('Error: 6912: Unknown output format: {}'.format(str(output_format)))
 
@@ -2638,7 +2953,8 @@ if __name__ == '__main__':
 'cwl: Create a set of Common Workflow Language files\n' \
 'cwltargz: Same as cwl but create a tar.gz file\n' \
 'cwlzip: Same as cwl but create a zip file\n' \
-'airflow: Create airflow bashoperator scripts',
+'airflow: Create airflow bashoperator scripts\n' \
+'argo: Create ARGO workflow (YAML)\n', 
         default='sh')
     parser.add_argument('-O', '--output', dest='output', help='The output filename. default is script.sh, workflow.cwl and workflow.tar.gz, depending on the format', default='script')
     parser.add_argument('--insecure', dest='insecure', help="Pass insecure option (-k) to curl", default=False, action="store_true")
@@ -2683,6 +2999,9 @@ if __name__ == '__main__':
         e.build(output = args.output, output_format=args.format)
     elif args.format in ['airflow']:
         e = AirflowExecutor(w)
+        e.build(output = args.output)
+    elif args.format in ['argo']:
+        e = ArgoExecutor(w)
         e.build(output = args.output)
     else:
         raise OBC_Executor_Exception('Unknown format: {}'.format(args.format))
