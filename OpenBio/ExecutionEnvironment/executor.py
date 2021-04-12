@@ -2555,7 +2555,7 @@ dag = DAG(
         )
         final_operators = [airflow_bash]
 
-        # Add INIT and FINAL in the graph
+        # Add INIT and FINAL in the run_afters graph
         self.add_init_and_final_in_graph('OBC_AIRFLOW_INIT', 'OBC_AIRFLOW_FINAL', run_afters, tool_ids, step_inter_ids) 
         # Create dag
         DAG = self.create_DAG(run_afters)
@@ -2598,31 +2598,12 @@ kind: Workflow
 metadata:
   generateName: {WORKFLOW_NAME}
 spec:
-  entrypoint: OBCINIT
+  entrypoint: DAG-{WORKFLOW_NAME}
   templates:
-  - name: SCRIPTOBCINIT
-    script:
-      image: debian:9.4
-      env:
-      - name: OBC_WORK_PATH
-        value: "/private/openbio/work"
-      - name: OBC_TOOL_PATH
-        value: "/private/openbio/tool"
-      - name: OBC_DATA_PATH
-        value: "/private/openbio/data"
-{VARIABLES}
-      command: [bash]
-      source: |3+
-         mkdir -p ${{OBC_WORK_PATH}}
-         mkdir -p ${{OBC_TOOL_PATH}}
-         mkdir -p ${{OBC_DATA_PATH}}
-{INIT_BASH}
 {SCRIPTS}
-  - name: OBCINIT
+  - name: DAG-{WORKFLOW_NAME}
     dag:
       tasks:
-      - name: TASKOBCINIT
-        template: SCRIPTOBCINIT
 {DAGS}
 
 '''
@@ -2633,15 +2614,15 @@ spec:
       image: debian:9.4
       env:
       - name: OBC_WORK_PATH
-        value: "/private/openbio/work"
+        value: "{ARGO_ROOT}/work"
       - name: OBC_TOOL_PATH
-        value: "/private/openbio/tool"
+        value: "{ARGO_ROOT}/tool"
       - name: OBC_DATA_PATH
-        value: "/private/openbio/data"
+        value: "{ARGO_ROOT}/data"
 {ENVS}
       command: [bash]
       source: |3+
-         {BASH}
+{BASH}
 '''
 
     DAG_TEMPLATE = '''
@@ -2679,26 +2660,30 @@ spec:
 
     def build(self, output, output_format='argo', workflow_id=None, obc_client=False):
         '''
+        ARGO
         '''
 
         variables = self.get_environment_variables(obc_client=obc_client, workflow_id=workflow_id)
-        print (variables)
-
-#        if d:
-#            envs = 'env={},'.format(str(d))
-#        else:
-#            envs = ''
+        
+        # List of all argo_dags. First we store them. Then we add the dependent steps after transitive reduction (TR)
+        # ARGO does not apply TR. This makes the graph overly dense and complex 
+        argo_dags = ['TASKOBCINIT']
 
         # Create init step
-        init_bash = self.obc_init_step()
-        init_bash += self.save_input_parameters(from_workflow=True)
+        bash = self.obc_init_step()
+        bash += self.save_input_parameters(from_workflow=True)
 
-        dags = []
-        run_afters = {}
+        argo_bash = self.SCRIPT_TEMPLATE.format(
+            ARGO_ROOT = ArgoExecutor.ARGO_ROOT,
+            ID = 'SCRIPTOBCINIT',
+            BASH = ArgoExecutor.yaml_intend(bash),
+            ENVS = ArgoExecutor.yaml_variables(variables),
+        )
+        init_bash_scripts = [argo_bash]
 
-        #print (bash)
 
-        # 
+        run_afters = {'TASKOBCINIT': []}
+
 
         # CREATE TOOL OPERATORS ARGO
         previous_tools = []
@@ -2720,28 +2705,29 @@ spec:
             )
             
             argo_bash = self.SCRIPT_TEMPLATE.format(
+                ARGO_ROOT = ArgoExecutor.ARGO_ROOT,
                 ID = ArgoExecutor.argo_workflow_id(tool_id),
                 BASH = ArgoExecutor.yaml_intend(bash),
                 ENVS = ArgoExecutor.yaml_variables(variables),
             )
 
             tool_bash_scripts.append(argo_bash)
-            this_tool_run_after = [] # The tools that this tools should run after from
+
+            run_afters[tool_id] = ['TASKOBCINIT'] # All tools run after TASKOBCINIT
             if tool_ids:
-                run_afters[tool_id] = copy.copy(tool_ids)
-                this_tool_run_after = run_afters[tool_id]
+                run_afters[tool_id] += copy.copy(tool_ids)
+                
             tool_ids.append(tool_id)
 
-            
-
-            dags.append(self.DAG_TEMPLATE.format(
-                TASK_NAME = ArgoExecutor.argo_workflow_id('TASK-' + tool_id),
-                DEPENDENCIES = ', '.join(
-                    ['TASKOBCINIT'] + \
-                    [ArgoExecutor.argo_workflow_id('TASK-'+x) for x in this_tool_run_after]
-                    ), 
-                TEMPLATE_NAME = ArgoExecutor.argo_workflow_id(tool_id)
-            ))
+            argo_dags.append(tool_id)
+            #dags.append(self.DAG_TEMPLATE.format(
+            #    TASK_NAME = ArgoExecutor.argo_workflow_id('TASK-' + tool_id),
+            #    DEPENDENCIES = ', '.join(
+            #        ['TASKOBCINIT'] + \
+            #        [ArgoExecutor.argo_workflow_id('TASK-'+x) for x in this_tool_run_after]
+            #        ), 
+            #    TEMPLATE_NAME = ArgoExecutor.argo_workflow_id(tool_id)
+            #))
 
 
             previous_tools.append(tool_vars_filename)
@@ -2766,8 +2752,9 @@ spec:
             step_inter_ids.append(step_inter_id)
             step_vars_filename = self.create_step_vars_filename(step_inter_id) # os.path.join('${OBC_WORK_PATH}', step_inter_id + '.sh')
 
+            run_afters[step_inter_id] = ['TASKOBCINIT'] + tool_ids
             if step['run_after']:
-                run_afters[step_inter_id] = step['run_after']
+                run_afters[step_inter_id] += step['run_after']
 
             # Add declare. This should be first
             bash = self.workflow.declare_decorate_bash(bash, step_vars_filename)
@@ -2787,62 +2774,309 @@ spec:
 
             previous_steps_vars.append(step_vars_filename)
 
-            #bash = self.raw_jinja2(bash)
+            
             argo_bash = self.SCRIPT_TEMPLATE.format(
+                ARGO_ROOT = ArgoExecutor.ARGO_ROOT,
                 ID = ArgoExecutor.argo_workflow_id(step_inter_id),
                 BASH = ArgoExecutor.yaml_intend(bash),
                 ENVS = ArgoExecutor.yaml_variables(variables),
             )
             step_bash_scripts.append(argo_bash)
 
-            dags.append(self.DAG_TEMPLATE.format(
-                TASK_NAME = ArgoExecutor.argo_workflow_id('TASK-' + step_inter_id),
-                DEPENDENCIES = ', '.join(
-                    ['TASKOBCINIT'] + \
-                    [ArgoExecutor.argo_workflow_id('TASK-'+x) for x in tool_ids] + \
-                    [ArgoExecutor.argo_workflow_id('TASK-'+x) for x in run_afters.get(step_inter_id, [])]
-                ), 
-                TEMPLATE_NAME = ArgoExecutor.argo_workflow_id(step_inter_id)
-            ))
+            argo_dags.append(step_inter_id)
+            #dags.append(self.DAG_TEMPLATE.format(
+            #    TASK_NAME = ArgoExecutor.argo_workflow_id('TASK-' + step_inter_id),
+            #    DEPENDENCIES = ', '.join(
+            #        ['TASKOBCINIT'] + \
+            #        [ArgoExecutor.argo_workflow_id('TASK-'+x) for x in tool_ids] + \
+            #        [ArgoExecutor.argo_workflow_id('TASK-'+x) for x in run_afters.get(step_inter_id, [])]
+            #    ), 
+            #    TEMPLATE_NAME = ArgoExecutor.argo_workflow_id(step_inter_id)
+            #))
 
 
         # Create final step
         bash = self.obc_final_step(previous_tools, previous_steps_vars) 
          
-        final_argo_bash = self.SCRIPT_TEMPLATE.format(
+        argo_bash = self.SCRIPT_TEMPLATE.format(
+            ARGO_ROOT = ArgoExecutor.ARGO_ROOT,
             ID='SCRIPTOBCFINAL',
             BASH=ArgoExecutor.yaml_intend(bash),
             ENVS=ArgoExecutor.yaml_variables(variables),
         )
+        final_bash_scripts = [argo_bash]
 
-        self.add_init_and_final_in_graph('SCRIPTOBCINIT', 'SCRIPTOBCFINAL', run_afters, tool_ids, step_inter_ids) 
-        dags.append(self.DAG_TEMPLATE.format(
-            TASK_NAME = 'TASKOBCFINAL',
-            DEPENDENCIES = ', '.join([ArgoExecutor.argo_workflow_id('TASK-' + x) for x in all_step_inter_ids]), 
-            TEMPLATE_NAME = 'SCRIPTOBCFINAL',
-        ))
+        # Build the run_afters so that 'SCRIPTOBCINIT' is before everything
+        # and 'SCRIPTOBCFINAL' is after everything 
+        # We did this when filling the run_afters dictionary so we don't have to call it
+        #self.add_init_and_final_in_graph('SCRIPTOBCINIT', 'SCRIPTOBCFINAL', run_afters, tool_ids, step_inter_ids) 
+
+        argo_dags.append('TASKOBCFINAL')
+        run_afters['TASKOBCFINAL'] = ['TASKOBCINIT'] + tool_ids + all_step_inter_ids 
+
+        #print (run_afters)
+
+        # Create the DAGS part of the YAML
+        dags = []
+        DAG = self.transitive_reduction(run_afters)
+        for node in DAG.nodes():
+            predecessors = list(DAG.predecessors(node))
+
+            def create_task_name(node):
+                if node in ['TASKOBCINIT', 'TASKOBCFINAL']:
+                    return node
+            
+                return ArgoExecutor.argo_workflow_id('TASK-' + node)
+
+            def create_template_name(node):
+                if node == 'TASKOBCINIT':
+                    return 'SCRIPTOBCINIT'
+
+                if node == 'TASKOBCFINAL':
+                    return 'SCRIPTOBCFINAL'
+
+                return ArgoExecutor.argo_workflow_id(node)
+
+            dags.append(self.DAG_TEMPLATE.format(
+                TASK_NAME = create_task_name(node),
+                DEPENDENCIES = ', '.join([create_task_name(x) for x in predecessors]),
+                TEMPLATE_NAME = create_template_name(node),
+            ))
 
 
         argo = self.WORKFLOW_TEMPLATE.format(
             WORKFLOW_NAME = ArgoExecutor.argo_workflow_id(workflow_id if workflow_id else self.workflow.root_workflow_id),
-            VARIABLES = ArgoExecutor.yaml_variables(variables),
-            INIT_BASH = ArgoExecutor.yaml_intend(init_bash), # indent = 9
-            SCRIPTS = '\n'.join(tool_bash_scripts + step_bash_scripts + [final_argo_bash]),
+            SCRIPTS = '\n'.join(init_bash_scripts + tool_bash_scripts + step_bash_scripts + final_bash_scripts),
             DAGS = ''.join(dags)
         )
 
-
-        # Create init step
-        print (argo)
-
+        #print (argo)
 
         return argo
 
 
 class NextflowExecutor(BaseExecutor):
     '''
+    
     '''
-    pass
+
+    NEXTFLOW_TEMPLATE = '''
+
+{PROCESSES}
+
+'''
+    
+    # Source: https://www.nextflow.io/docs/latest/process.html#script 
+    # When you need to access a system environment variable in your script you have two options. 
+    # The first choice is as easy as defining your script block by using a single-quote string. 
+    NEXTFLOW_PROCESS_TEMPLATE = """
+process {PROCESS_NAME} {{
+{INPUT_CHANNELS}
+
+{OUTPUT_CHANNELS}
+
+    '''
+{BASH}
+    '''
+}}
+"""
+
+    NEXTLOW_INPUT_TEMPLATE = '''
+    input:
+{INPUT_CHANNELS}
+'''
+    NEXTFLOW_INPUT_CHANNEL = "    val {VALUE} from {CHANNEL}\n"
+
+    NEXTFLOW_OUTPUT_TEMPLATE = '''
+    output:
+    val '{VALUE}' into {CHANNELS}
+
+'''
+    
+    @staticmethod
+    def create_input_channels(channels):
+
+        if not channels:
+            return ''
+
+        input_channels = ''.join(NextflowExecutor.NEXTFLOW_INPUT_CHANNEL.format(
+            VALUE='VAL_{}'.format(channel), 
+            CHANNEL=channel) 
+        for channel in channels)
+
+        return NextflowExecutor.NEXTLOW_INPUT_TEMPLATE.format(INPUT_CHANNELS=input_channels)
+
+    @staticmethod
+    def create_output_channels(channels):
+
+        if not channels:
+            return ''
+
+        return NextflowExecutor.NEXTFLOW_OUTPUT_TEMPLATE.format(
+            VALUE='OBC',
+            CHANNELS = ', '.join(channels)
+        )
+
+    @staticmethod
+    def bash_escape(bash):
+        '''
+        https://github.com/nextflow-io/nextflow/issues/2017
+        '''
+
+        return bash.replace('\\', '\\\\')
+
+    @staticmethod
+    def create_process(process_name, input_channels, output_channels, bash):
+        return NextflowExecutor.NEXTFLOW_PROCESS_TEMPLATE.format(
+            PROCESS_NAME= 'PR_' + process_name,
+            INPUT_CHANNELS = NextflowExecutor.create_input_channels(input_channels),
+            OUTPUT_CHANNELS = NextflowExecutor.create_output_channels(output_channels),
+            BASH= NextflowExecutor.bash_escape(bash),
+        )
+
+
+    def initial_variabes(self,):
+        ret  = 'export OBC_WORKFLOW_NAME={}\n'.format(self.workflow.root_workflow['name'])
+        ret += 'export OBC_WORKFLOW_EDIT={}\n'.format(self.workflow.root_workflow['edit'])
+        ret += 'export OBC_NICE_ID={}\n'.format(self.workflow.nice_id_global)
+        ret += 'export OBC_SERVER={}\n\n'.format(self.workflow.obc_server)
+
+        return ret
+
+
+    def build(self, output, output_format='nextflow', workflow_id=None, obc_client=False):
+        '''
+        In nextflow processes we need to know all the forward and backward steps of every step.
+        For this reason we keep everything in a dictionary and we export it after TR
+        '''
+
+
+        #variables = self.get_environment_variables(obc_client=obc_client, workflow_id=workflow_id)
+
+        nextflow_process = {}
+        
+        # Create init step
+        bash = self.initial_variabes() # Use this ONLY for NEXFLOW
+        bash += self.obc_init_step()
+        bash += self.save_input_parameters(from_workflow=True)
+
+
+        nextflow_process['PROCESSOBCINIT'] = {'BASH': bash}
+
+        run_afters = {'PROCESSOBCINIT': []}
+
+        # CREATE TOOL OPERATORS ARGO
+        previous_tools = []
+        #tool_bash_scripts = []
+        tool_ids = []
+        for tool_index, tool in enumerate(self.workflow.tool_bash_script_generator()):
+
+            tool_vars_filename = os.path.join('${OBC_WORK_PATH}', Workflow.get_tool_vars_filename(tool))
+            tool_id = self.workflow.get_tool_dash_id(tool, no_dots=True)
+            
+            bash = self.initial_variabes()
+            bash += self.workflow.get_tool_bash_commands(
+                tool=tool, 
+                validation=True, 
+                update_server_status=False,
+                read_variables_from_command_line=False,
+                variables_json_filename=None,
+                variables_sh_filename_read = previous_tools,
+                variables_sh_filename_write = tool_vars_filename,
+            )
+
+            nextflow_process[tool_id] = {'BASH': bash}
+        
+            run_afters[tool_id] = ['PROCESSOBCINIT'] # All tools run after PROCESSOBCINIT
+            if tool_ids:
+                run_afters[tool_id] += copy.copy(tool_ids)
+                
+            tool_ids.append(tool_id)
+
+            #argo_dags.append(tool_id)
+
+            previous_tools.append(tool_vars_filename)
+
+
+        # CREATE STEP OPERATORS ARGO
+        previous_steps_vars = []
+        step_inter_ids = []
+        step_bash_scripts = []
+        all_step_inter_ids = []
+        for step in self.workflow.break_down_step_generator(
+            enable_read_arguments_from_commandline=False,
+            enable_save_variables_to_json=False,
+            enable_save_variables_to_sh=False,
+            ):
+
+            step_id = step['id']
+            count = step['count']
+            bash = step['bash']
+            step_inter_id = '{}__{}'.format(step_id, str(count))
+            all_step_inter_ids.append(step_inter_id)
+            step_inter_ids.append(step_inter_id)
+            step_vars_filename = self.create_step_vars_filename(step_inter_id) # os.path.join('${OBC_WORK_PATH}', step_inter_id + '.sh')
+
+            run_afters[step_inter_id] = ['PROCESSOBCINIT'] + tool_ids
+            if step['run_after']:
+                run_afters[step_inter_id] += step['run_after']
+
+            # Add declare. This should be first
+            bash = self.workflow.declare_decorate_bash(bash, step_vars_filename)
+
+            # Add all variables from previous tools
+            load_tool_vars = ''
+            for tool_filename in previous_tools:
+                load_tool_vars += '. {}\n'.format(tool_filename)
+            
+            # Load all variables from previous steps
+            load_step_vars = ''
+            if step['run_after']:
+                for run_after_step in step['run_after']:
+                    load_step_vars += '. {}\n'.format(self.create_step_vars_filename(run_after_step))
+            
+            bash = self.initial_variabes() + load_tool_vars + self.load_file_with_input_parameters() + load_step_vars + self.load_obc_functions_bash + bash
+
+            previous_steps_vars.append(step_vars_filename)
+
+            nextflow_process[step_inter_id] = {'BASH': bash}
+
+        # Create final step
+        bash = self.initial_variabes() + self.obc_final_step(previous_tools, previous_steps_vars) 
+
+        nextflow_process['PROCESSOBCFINAL'] = {'BASH': bash}
+        
+        run_afters['PROCESSOBCFINAL'] = ['PROCESSOBCINIT'] + tool_ids + all_step_inter_ids 
+        #print (run_afters)
+
+        # Create the DAGS part of the YAML
+        processes = []
+        DAG = self.transitive_reduction(run_afters)
+        for node in DAG.nodes():
+            predecessors = list(DAG.predecessors(node))
+            successors = list(DAG.successors(node))
+
+            def create_channel_mame(node_from, node_to):
+                return node_from + '__' + node_to
+
+            input_channels = [create_channel_mame(x, node) for x in predecessors]
+            output_channels = [create_channel_mame(node, x) for x in successors]
+
+            # create_process(process_name, input_channels, output_channels, bash):
+            processes.append(
+                NextflowExecutor.create_process(node, input_channels, output_channels, nextflow_process[node]['BASH'])
+            )
+
+
+        nextflow = self.NEXTFLOW_TEMPLATE.format(
+            PROCESSES = '\n\n'.join(processes),
+        )
+
+        #print (nextflow)
+
+        return nextflow
+
+
 
 class SnakemakeExecutor(BaseExecutor):
     '''
@@ -2883,6 +3117,11 @@ def create_bash_script(workflow_object, server, output_format, workflow_id=None,
         w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
         e = ArgoExecutor(w)
         return e.build(output=None, output_format='argo', workflow_id=workflow_id, obc_client=obc_client)
+    elif output_format in ['nextflow']:
+        w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
+        e = NextflowExecutor(w)
+        return e.build(output=None, output_format='nextflow', workflow_id=workflow_id, obc_client=obc_client)
+
     else:
         raise OBC_Executor_Exception('Error: 6912: Unknown output format: {}'.format(str(output_format)))
 
@@ -2907,7 +3146,8 @@ if __name__ == '__main__':
 'cwltargz: Same as cwl but create a tar.gz file\n' \
 'cwlzip: Same as cwl but create a zip file\n' \
 'airflow: Create airflow bashoperator scripts\n' \
-'argo: Create ARGO workflow (YAML)\n', 
+'argo: Create ARGO workflow (YAML)\n' 
+'nextflow: Create NEXTFLOW workflow\n',
         default='sh')
     parser.add_argument('-O', '--output', dest='output', help='The output filename. default is script.sh, workflow.cwl and workflow.tar.gz, depending on the format', default='script')
     parser.add_argument('--insecure', dest='insecure', help="Pass insecure option (-k) to curl", default=False, action="store_true")
@@ -2956,6 +3196,9 @@ if __name__ == '__main__':
     elif args.format in ['argo']:
         e = ArgoExecutor(w)
         e.build(output = args.output)
+    elif args.format in ['nextflow']:
+        e = NextflowExecutor(w)
+        e.build(output=args.output)
     else:
         raise OBC_Executor_Exception('Unknown format: {}'.format(args.format))
 

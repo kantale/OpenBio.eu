@@ -1152,6 +1152,14 @@ Or by simply copy-pasting the graph in the amazing [GraphvizOnline](https://drea
 
 If you inspect the graph you will notice that every parallel execution has been split in a different step. The parallel steps then are merged in a single step. The workflow lies between a ```OBC_CWL_INIT``` step and a ```OBC_CWL_FINAL``` step. Basically, the ```OBC_CWL_INIT``` step sets the input parameters and the ```OBC_CWL_FINAL``` collects the output parameters. If you inspect the .cwl and .sh generated files you can get many insights regarding this split. 
 
+## Downloading a workflow in [Nextflow](https://www.nextflow.io/) format.
+By selecting to download a workflow in Nextflow format a file named: workflow.nf gets downloaded. You can run this with:
+
+```bash
+nextflow run workflow.nf
+```
+
+
 # Executing a Workflow
 You can execute a Workflow directly from OpenBio.eu. To do that you need to install the "OpenBio Execution Environment" (OEE) to a computer of your own. That means that the actual execution happens to the computer that you have installed the OEE. The "OpenBio Execution Environment" is comprised by tree components:
 * A resource manager. This is a framework that monitors the resources (memory, CPU, hard disk, bandwidth) that are used by the OEE. We use [netdata](https://www.netdata.cloud/) for this purpose. 
