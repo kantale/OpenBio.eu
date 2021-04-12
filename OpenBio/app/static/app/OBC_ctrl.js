@@ -4445,6 +4445,13 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                  "href" : "data:," + data['output_object']
             }).get(0).click();
         }
+        else if (download_type == 'SNAKEMAKE') {
+            var output_filename = 'snakefile';
+            $("#hiddena").attr({
+                "download" : output_filename,
+                 "href" : "data:," + data['output_object']
+            }).get(0).click();
+        }
 
 
         else {
