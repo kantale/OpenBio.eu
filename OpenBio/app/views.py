@@ -3420,6 +3420,9 @@ def download_workflow(request, **kwargs):
             output_object = create_bash_script(output_object, server_url, 'argo', workflow_id=workflow_id, obc_client=workflow_obc_client)
         elif download_type == 'NEXTFLOW':
             output_object = create_bash_script(output_object, server_url, 'nextflow', workflow_id=workflow_id, obc_client=workflow_obc_client)
+        elif download_type == 'SNAKEMAKE':
+            output_object = create_bash_script(output_object, server_url, 'snakemake', workflow_id=workflow_id, obc_client=workflow_obc_client)
+
         else:
             output_object = 'UNKNOWN TYPE' # THIS SHOULD NEVER HAPPEN
 

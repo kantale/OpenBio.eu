@@ -1828,6 +1828,15 @@ OBCENDOFFILE
         #Add 'OBC_AIRFLOW_FINAL' AFTER ALL STEPS
         run_afters[final_step_name] = step_inter_ids + [init_step_name]
 
+    def initial_variabes(self,):
+        ret  = 'export OBC_WORKFLOW_NAME={}\n'.format(self.workflow.root_workflow['name'])
+        ret += 'export OBC_WORKFLOW_EDIT={}\n'.format(self.workflow.root_workflow['edit'])
+        ret += 'export OBC_NICE_ID={}\n'.format(self.workflow.nice_id_global)
+        ret += 'export OBC_SERVER={}\n\n'.format(self.workflow.obc_server)
+
+        return ret
+
+
     def create_targz(self, output, files):
         '''
         Adapted from: https://stackoverflow.com/questions/740820/python-write-string-directly-to-tarfile
@@ -2861,9 +2870,7 @@ class NextflowExecutor(BaseExecutor):
     '''
 
     NEXTFLOW_TEMPLATE = '''
-
 {PROCESSES}
-
 '''
     
     # Source: https://www.nextflow.io/docs/latest/process.html#script 
@@ -2872,9 +2879,7 @@ class NextflowExecutor(BaseExecutor):
     NEXTFLOW_PROCESS_TEMPLATE = """
 process {PROCESS_NAME} {{
 {INPUT_CHANNELS}
-
 {OUTPUT_CHANNELS}
-
     '''
 {BASH}
     '''
@@ -2890,7 +2895,6 @@ process {PROCESS_NAME} {{
     NEXTFLOW_OUTPUT_TEMPLATE = '''
     output:
     val '{VALUE}' into {CHANNELS}
-
 '''
     
     @staticmethod
@@ -2965,7 +2969,7 @@ process {PROCESS_NAME} {{
 
         run_afters = {'PROCESSOBCINIT': []}
 
-        # CREATE TOOL OPERATORS ARGO
+        # CREATE TOOL OPERATORS Nextflow
         previous_tools = []
         #tool_bash_scripts = []
         tool_ids = []
@@ -2998,7 +3002,7 @@ process {PROCESS_NAME} {{
             previous_tools.append(tool_vars_filename)
 
 
-        # CREATE STEP OPERATORS ARGO
+        # CREATE STEP OPERATORS Nextflow
         previous_steps_vars = []
         step_inter_ids = []
         step_bash_scripts = []
@@ -3081,7 +3085,170 @@ process {PROCESS_NAME} {{
 class SnakemakeExecutor(BaseExecutor):
     '''
     '''
-    pass
+
+
+    RULE_TEMPLATE = '''
+
+rule {RULE_ID}:
+{INPUT}
+{OUTPUT}
+{SHELL}
+
+'''
+
+    @staticmethod
+    def create_input_output(input_output, variables):
+        if not variables:
+            return '    # no {}'.format(input_output)
+
+        ret = '    {}:\n'.format(input_output)
+        ret += '        ' + ', '.join([repr(x) for x in variables]) + '\n'
+
+        return ret
+
+
+    def create_shell(self, shell, node):
+
+        touch = '\ntouch {}\n'.format(self.create_rule_filename(node))
+
+        ret = '    shell:\n'
+        #ret += '        ' + repr(shell + touch) + '\n'
+        ret +=  '        r"""\n'
+        ret += shell.replace('{', '{{').replace('}', '}}')
+        ret += touch
+        ret +=  '        """\n'
+
+        return ret
+    
+    def create_rule_filename(self, rule):
+       return os.path.join(self.OBC_DONE_DIR, rule + '.done' ) 
+    
+    def build(self, output, output_format='snakemake', workflow_id=None, obc_client=False):
+
+
+        #self.RANDOM_ID = 'OBC_DONE_DIR'
+        self.RANDOM_ID = Workflow.create_nice_id()
+        #self.OBC_DONE_DIR = os.path.join('${OBC_WORK_PATH}', self.RANDOM_ID)
+        self.OBC_DONE_DIR =  'OBC_' + self.RANDOM_ID
+
+
+        snakemake_rules = {}
+        
+        # Create init step
+        bash = 'mkdir -p {}\n'.format(self.OBC_DONE_DIR)
+        bash += self.initial_variabes() # Load OBC_WORKFLOW, OBC
+        bash += self.obc_init_step()
+        bash += self.save_input_parameters(from_workflow=True)
+
+
+        snakemake_rules['RULEOBCINIT'] = {'BASH': bash}
+
+        run_afters = {'RULEOBCINIT': []}
+
+        # CREATE TOOL OPERATORS Snakemake
+        previous_tools = []
+        tool_ids = []
+        for tool_index, tool in enumerate(self.workflow.tool_bash_script_generator()):
+
+            tool_vars_filename = os.path.join('${OBC_WORK_PATH}', Workflow.get_tool_vars_filename(tool))
+            tool_id = self.workflow.get_tool_dash_id(tool, no_dots=True)
+            
+            bash = self.initial_variabes()
+            bash += self.workflow.get_tool_bash_commands(
+                tool=tool, 
+                validation=True, 
+                update_server_status=False,
+                read_variables_from_command_line=False,
+                variables_json_filename=None,
+                variables_sh_filename_read = previous_tools,
+                variables_sh_filename_write = tool_vars_filename,
+            )
+
+            snakemake_rules[tool_id] = {'BASH': bash}
+        
+            run_afters[tool_id] = ['RULEOBCINIT'] # All tools run after PROCESSOBCINIT
+            if tool_ids:
+                run_afters[tool_id] += copy.copy(tool_ids)
+                
+            tool_ids.append(tool_id)
+
+            previous_tools.append(tool_vars_filename)
+
+        # CREATE STEP OPERATORS Snakemake
+        previous_steps_vars = []
+        step_inter_ids = []
+        step_bash_scripts = []
+        all_step_inter_ids = []
+        for step in self.workflow.break_down_step_generator(
+            enable_read_arguments_from_commandline=False,
+            enable_save_variables_to_json=False,
+            enable_save_variables_to_sh=False,
+            ):
+
+            step_id = step['id']
+            count = step['count']
+            bash = step['bash']
+            step_inter_id = '{}__{}'.format(step_id, str(count))
+            all_step_inter_ids.append(step_inter_id)
+            step_inter_ids.append(step_inter_id)
+            step_vars_filename = self.create_step_vars_filename(step_inter_id) # os.path.join('${OBC_WORK_PATH}', step_inter_id + '.sh')
+
+            run_afters[step_inter_id] = ['RULEOBCINIT'] + tool_ids
+            if step['run_after']:
+                run_afters[step_inter_id] += step['run_after']
+
+            # Add declare. This should be first
+            bash = self.workflow.declare_decorate_bash(bash, step_vars_filename)
+
+            # Add all variables from previous tools
+            load_tool_vars = ''
+            for tool_filename in previous_tools:
+                load_tool_vars += '. {}\n'.format(tool_filename)
+            
+            # Load all variables from previous steps
+            load_step_vars = ''
+            if step['run_after']:
+                for run_after_step in step['run_after']:
+                    load_step_vars += '. {}\n'.format(self.create_step_vars_filename(run_after_step))
+            
+            bash = self.initial_variabes() + load_tool_vars + self.load_file_with_input_parameters() + load_step_vars + self.load_obc_functions_bash + bash
+
+            previous_steps_vars.append(step_vars_filename)
+
+            snakemake_rules[step_inter_id] = {'BASH': bash}
+
+        # Create final step snakemake
+        bash = self.initial_variabes() + self.obc_final_step(previous_tools, previous_steps_vars) 
+
+        snakemake_rules['RULEOBCFINAL'] = {'BASH': bash}
+        
+        run_afters['RULEOBCFINAL'] = ['RULEOBCINIT'] + tool_ids + all_step_inter_ids 
+        #print (run_afters)
+
+        # Create the DAGS part of the YAML
+        rules = [SnakemakeExecutor.RULE_TEMPLATE.format(
+            RULE_ID = 'all',
+            INPUT = SnakemakeExecutor.create_input_output('input', [self.create_rule_filename('RULEOBCFINAL')]),
+            OUTPUT = SnakemakeExecutor.create_input_output('output', []),
+            SHELL = '',
+        )]
+        DAG = self.transitive_reduction(run_afters)
+        for node in DAG.nodes():
+            predecessors = list(DAG.predecessors(node))
+            #successors = list(DAG.successors(node))
+
+            rules.append(SnakemakeExecutor.RULE_TEMPLATE.format(
+                RULE_ID=node,
+                INPUT =  SnakemakeExecutor.create_input_output('input',  [self.create_rule_filename(x) for x in predecessors]),
+                OUTPUT = SnakemakeExecutor.create_input_output('output',  [self.create_rule_filename(node)]),
+                SHELL = self.create_shell(snakemake_rules[node]['BASH'], node),
+            ))
+
+        snakemake = '\n\n'.join(rules)
+        #print (snakemake)
+
+
+        return snakemake
 
 def create_bash_script(workflow_object, server, output_format, workflow_id=None, obc_client=False):
     '''
@@ -3121,6 +3288,11 @@ def create_bash_script(workflow_object, server, output_format, workflow_id=None,
         w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
         e = NextflowExecutor(w)
         return e.build(output=None, output_format='nextflow', workflow_id=workflow_id, obc_client=obc_client)
+    elif output_format in ['snakemake']:
+        w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
+        e = SnakemakeExecutor(w)
+        return e.build(output=None, output_format='snakemake', workflow_id=workflow_id, obc_client=obc_client)
+
 
     else:
         raise OBC_Executor_Exception('Error: 6912: Unknown output format: {}'.format(str(output_format)))
@@ -3147,7 +3319,8 @@ if __name__ == '__main__':
 'cwlzip: Same as cwl but create a zip file\n' \
 'airflow: Create airflow bashoperator scripts\n' \
 'argo: Create ARGO workflow (YAML)\n' 
-'nextflow: Create NEXTFLOW workflow\n',
+'nextflow: Create NEXTFLOW workflow\n'
+'snakemake: Create a Snakemake workflow\n',
         default='sh')
     parser.add_argument('-O', '--output', dest='output', help='The output filename. default is script.sh, workflow.cwl and workflow.tar.gz, depending on the format', default='script')
     parser.add_argument('--insecure', dest='insecure', help="Pass insecure option (-k) to curl", default=False, action="store_true")
@@ -3198,6 +3371,9 @@ if __name__ == '__main__':
         e.build(output = args.output)
     elif args.format in ['nextflow']:
         e = NextflowExecutor(w)
+        e.build(output=args.output)
+    elif args.format in ['snakemake']:
+        e = SnakemakeExecutor(w)
         e.build(output=args.output)
     else:
         raise OBC_Executor_Exception('Unknown format: {}'.format(args.format))
