@@ -59,6 +59,16 @@
                                                     <input id="profileLastname" type="text" class="validate" ng-model=profile_lastname>
                                                     <label for="profileLastname">Lastname</label>
                                                 </div>
+                                                <div class="input-field col s12">
+                                                    <input id="ordid_id" type="text" class="validate" disabled>
+                                                    <label for="ordid_id"><img alt="ORCID logo" src="/static/app/images/konstantina/orcid_16x16.png" width="16" height="16" style="margin-bottom: -3px;" /> ORCID iD</label>
+                                                    <a class="waves-effect waves-teal btn-flat right tooltipped" data-position="bottom" data-tooltip="Connect to ORCID" style="margin-top: -45px; width: auto;" ng-click="">Connect</a>
+                                                </div>
+                                                <div class="input-field col s12">
+                                                    <input id="ordid_id" type="text" class="validate" disabled value="0000-1234-1234-1234">
+                                                    <label for="ordid_id"><img alt="ORCID logo" src="/static/app/images/konstantina/orcid_16x16.png" width="16" height="16" style="margin-bottom: -3px;" /> ORCID iD</label>
+                                                    <a class="waves-effect waves-light btn right tooltipped" data-position="bottom" data-tooltip="Disconnect from ORCID" style="margin-top: -45px; width: auto;" ng-click="">Disassociate</a>
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="input-field col s12">

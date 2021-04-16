@@ -1020,6 +1020,8 @@
                 <h5>
                     <span ng-bind="references_name"></span>
                 </h5>
+                <a class="waves-effect waves-teal btn-flat right tooltipped" data-position="bottom" data-tooltip="Claim this paper with ORCID iD" style="margin-top: -30px;" ng-click="">
+                    <img alt="ORCID logo" src="/static/app/images/konstantina/orcid_16x16.png" width="16" height="16" style="margin-bottom: -3px;" /> Claim</a>
                 <div ng-show="!references_info_editable">
                     <small class="form-text text-muted">
                         <!-- <span ng-bind="tool_info_username"></span>
@@ -1053,7 +1055,7 @@
                 </div>
             </div>
 
-            <ul id="referencesRightPanelAccordion" class="collapsible expandable popout faster">
+            <ul id="referencesRightPanelAccordion" class="collapsible expandable faster">
                 <!-- --------------------------------------------------------------------------------------- -->
                 <!-- ------------------------------------ General ------------------------------------------ -->
                 <!-- --------------------------------------------------------------------------------------- -->
@@ -1237,37 +1239,45 @@
                         {% endverbatim %}
                     </div>
                     <div class="collapsible-body">
-                        <form class="col s12">
-                            <div class="row left-align">
-                                <div class="col s12 m3 grid-s12-m3-l3"><b>First Name:</b></div>
-                                <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="user_firstname"></span></div>
-                            </div>
-                            <div class="row left-align">
-                                <div class="col s12 m3 grid-s12-m3-l3"><b>Second Name:</b></div>
-                                <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="user_lastname"></span></div>
-                            </div>
-                            {% verbatim %}
-                            <div class="row left-align">
-                                <div class="col s12 m3 grid-s12-m3-l3"><b>Website:</b></div>
-                                <div class="col s12 m9 grid-s12-m9-l9"><a 
-                                        ng-href="{{user_website}}"
-                                        target="_blank"><span ng-bind="user_website"></span></a></div>
-                            </div>
-                            {% endverbatim %}
-                            <div class="row left-align">
-                                <div class="col s12 m3 grid-s12-m3-l3"><b>Affiliation:</b></div>
-                                <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="user_affiliation"></span>
+                        <div class="row">
+
+                            <form class="col s12">
+                                <div class="row left-align">
+                                    <div class="col s12 font13">First Name</div>
+                                    <div class="col s12"><span ng-bind="user_firstname"></span></div>
                                 </div>
-                            </div>
-                            <div class="row left-align">
-                                <div class="col s12 m3 grid-s12-m3-l3"><b>Member Since:</b></div>
-                                <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="user_created_at"></span></div>
-                            </div>
-                            <div class="row left-align">
-                                <div class="col s12 m3 grid-s12-m3-l3"><b>Info:</b></div>
-                                <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="user_publicinfo"></span></div>
-                            </div>
-                        </form>
+                                <div class="row left-align">
+                                    <div class="col s12 font13">Last Name</div>
+                                    <div class="col s12"><span ng-bind="user_lastname"></span></div>
+                                </div>
+                                {% verbatim %}
+                                <div class="row left-align">
+                                    <div class="col s12 font13">ORCID iD</div>
+                                    <div class="col s12"><a href=""><img alt="ORCID logo" src="/static/app/images/konstantina/orcid_16x16.png" width="16" height="16" />000-1234-3333-44434</a></div>
+                                </div>
+                                {% endverbatim %}
+                                {% verbatim %}
+                                <div class="row left-align">
+                                    <div class="col s12 font13">Website</div>
+                                    <div class="col s12"><a 
+                                            ng-href="{{user_website}}"
+                                            target="_blank"><span ng-bind="user_website"></span></a></div>
+                                </div>
+                                {% endverbatim %}
+                                <div class="row left-align">
+                                    <div class="col s12 font13">Affiliation</div>
+                                    <div class="col s12"><span ng-bind="user_affiliation"></span></div>
+                                </div>
+                                <div class="row left-align">
+                                    <div class="col s12 font13">Member Since</div>
+                                    <div class="col s12"><span ng-bind="user_created_at"></span></div>
+                                </div>
+                                <div class="row left-align">
+                                    <div class="col s12 font13">Info</div>
+                                    <div class="col s12"><span ng-bind="user_publicinfo"></span></div>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </li>
             </ul>
