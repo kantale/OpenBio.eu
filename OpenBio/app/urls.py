@@ -18,6 +18,10 @@ urlpatterns = [
 	re_path(r'^rest/workflows/(?P<workflow_name>[\w]+)/$', rest_views.workflow_name),
 	re_path(r'^rest/workflows/(?P<workflow_name>[\w]+)/(?P<workflow_edit>[\d]+)/$', rest_views.workflow_complete),
 
+
+	# python-social-auth 
+        path('', include('social_django.urls', namespace='social')),
+
 	re_path(r'^[td]/(?P<tool_name>[\w]+)/(?P<tool_version>[\w\.]+)/(?P<tool_edit>[\d]+)/$', views.index), # tool link
 	re_path(r'^w/(?P<workflow_name>[\w]+)/(?P<workflow_edit>[\d]+)', views.index), # workflow link
 	re_path(r'^r/(?P<reference_name>[\w]+)', views.index), # reference link
