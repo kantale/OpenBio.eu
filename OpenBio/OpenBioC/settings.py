@@ -82,9 +82,20 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'social_django',  #  DO NOT FORGET TO: SOCIAL_AUTH_POSTGRES_JSONFIELD = True 
+                      # https://python-social-auth.readthedocs.io/en/latest/configuration/django.html
     'rest_framework',
     'app',
 ] + INSTALLED_APPS_EXTRA
+
+SOCIAL_AUTH_ORCID_SANDBOX_KEY = 'APP-6Q7N9OQYSV28461S'
+SOCIAL_AUTH_ORCID_SANDBOX_SECRET = 'f7b262d9-efcd-4a65-9e64-792241968076'
+
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.orcid.ORCIDOAuth2Sandbox',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -109,10 +120,16 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+
+                # python-social-auth 
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
 ]
+
+LOGIN_REDIRECT_URL = '/platform/'
 
 WSGI_APPLICATION = 'OpenBioC.wsgi.application'
 

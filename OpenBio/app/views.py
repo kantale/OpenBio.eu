@@ -39,6 +39,10 @@ from ExecutionEnvironment.executor import create_bash_script, OBC_Executor_Excep
 import smtplib
 from email.message import EmailMessage
 
+# Social Core Authentication
+#import social_core
+from social_core.pipeline.social_auth import social_details
+
 # System imports 
 import io
 import os
@@ -1067,6 +1071,8 @@ def index(request, **kwargs):
     context['TERMS'] = g.get('TERMS')
     context['PRIVACY'] = g.get('PRIVACY')
 
+    #print (social_core.pipeline.social_auth.social_details)
+    #print (social_details())
 
     # Are we linking to a specific RO?
     init_interlink_args = {}
