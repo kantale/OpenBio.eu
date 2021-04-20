@@ -130,6 +130,9 @@ TEMPLATES = [
 ]
 
 LOGIN_REDIRECT_URL = '/platform/'
+# https://python-social-auth.readthedocs.io/en/latest/configuration/settings.html 
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/platform/?orcid=success'
+# SOCIAL_AUTH_LOGIN_ERROR_URL = ...  # TODO 
 
 WSGI_APPLICATION = 'OpenBioC.wsgi.application'
 

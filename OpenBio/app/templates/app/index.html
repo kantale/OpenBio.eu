@@ -31,6 +31,7 @@
 		window.profile_clients = {{ profile_clients | safe}};
 		window.menu = null;
 		window.input_menu = null;
+		window.orcid_success = {% if orcid_success %}true;{% else %}false;{% endif %} 
 	</script>
 
 	<script src="/static/app/jquery-3.3.1.min.js"></script>

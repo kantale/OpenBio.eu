@@ -292,6 +292,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.profile_publicinfo = data['profile_publicinfo'];
                 $scope.profile_created_at = data['profile_created_at'];
                 $scope.profile_clients = data['profile_clients'];
+                $scope.profile_ORCID = data['profile_ORCID'];
 
                 //If the server did not return any client. Add an empty placeholder
                 if (!$scope.profile_clients.length) {
@@ -392,6 +393,41 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             }
         );
     };
+
+    /*
+    * Profile --> ORCID --> Disconnect
+    */
+    $scope.profile_orcid_disconnect_pressed = function() {
+        $scope.warning_modal_message = 'You are about to disassociate your OpenBio account with ORCID. Are you sure?';
+        $scope.warning_modal_action = 'DISASSOCIATE';
+        $('#deleteModal').modal('open');
+        return;
+    };
+
+    /*
+    * Profile --> ORCid --> Disconnect --> Modal --> Yes
+    * Do the POST request https://stackoverflow.com/questions/32279855/cant-disconnect-user-with-python-social-auth-error-405  
+    */
+    
+    $scope.profile_orcid_disconnect_confirmed = function() {
+        $http({
+            headers: {"X-CSRFToken" : window.CSRF_TOKEN,},
+            method : "POST",
+            url : "/platform/disconnect/orcid-sandbox/", 
+            data : {csrftoken: CSRF_TOKEN}
+        }).then(function mySucces(response) {
+            $scope.profile_ORCID = null;                
+        }, function myError(response) {
+            if (response.statusText) {
+                fail_ajax(response.statusText);
+            }
+            else {
+                fail_ajax('Internal Error. Server not responding');
+            }
+        });
+    };
+
+
 
     /*
     * DEPRECATED
@@ -804,12 +840,16 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         //$scope.show_tools = true;
         //$scope.tools_search_1();
 
+        // Show toad is orcid success 
+        if (window.orcid_success) {
+            $scope.toast('Successfully connected with ORCID', 'success');
+        }
         
         $scope.init_search_results();
     };
 
     /*
-    * Initialize Research Objkect counters
+    * Initialize Research Object counters
     */
     $scope.init_search_results = function() {
 
@@ -1520,19 +1560,18 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     $scope.are_you_sure_modal_post_action = function(action) {
         if (action == 'DELETE' || action == 'FINALIZE') {
             $scope.ro_finalize_delete_pressed($scope.warning_modal_ro, $scope.warning_modal_action, true);
-            return;
         }
         else if (action == 'DISCONNECT') {
             $scope.disassociate_workflow_tool($scope.node, true);
-            return;
         }
         else if (action == 'DELETENODE') {
             $scope.workflow_cytoscape_delete_node($scope.node_id, true);
-            return;
         }
         else if (action == 'DELETEREPORT') {
             $scope.report_refresh($scope.report_refresh_action, true);
-            return;
+        }
+        else if (action == 'DISASSOCIATE') {
+            $scope.profile_orcid_disconnect_confirmed();
         }
     };
 
