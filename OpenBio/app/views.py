@@ -185,6 +185,19 @@ def user_is_validated(request):
 
     return ret
 
+def get_obc_user(request):
+    '''
+    Get the obc_user
+    instead of def get_user
+    '''
+
+    try:
+        obc_user = OBC_user.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        return None
+
+    return obc_user
+
 
 def resolve_doi(doi):
     '''
@@ -817,7 +830,6 @@ def get_instance_settings():
     Each instance should have their own port
     '''
 
-
     if not os.path.exists('id.txt'):
         if not g['instance_setting_not_found_printed']:
             logger.warning('Could not find id.txt setting default')
@@ -830,6 +842,29 @@ def get_instance_settings():
     return g['instance_settings'][this_id]
 
 ### USERS 
+
+def get_orcid_data(user):
+    '''
+    https://stackoverflow.com/questions/24221117/get-access-token-from-python-social-auth
+
+    social.extra_data structure:
+    {
+        'auth_time': 1618581152, 
+        'id': '0000-0002-0077-7296', 
+        'expires': 631138518, 
+        'refresh_token': '4d039eb0-e7f5-49e4-a2e4-f07ce8c22715', 
+        'access_token': '2a1ad4d3-32f0-45b0-822c-a52295caae15', 
+        'token_type': 'bearer'
+    }
+    '''
+    try:
+        social = user.social_auth.get(provider="orcid-sandbox")
+    except ObjectDoesNotExist:
+        # User does not have ORCID
+        return None
+
+    return social.extra_data['id']
+    #return social
 
 @has_data
 def users_search_3(request, **kwargs):
@@ -857,6 +892,7 @@ def users_search_3(request, **kwargs):
         'profile_affiliation': u.affiliation,
         'profile_publicinfo': u.public_info,
         'profile_created_at': datetime_to_str(u.user.date_joined), # https://docs.djangoproject.com/en/2.2/ref/contrib/auth/#django.contrib.auth.models.User.date_joined
+        'profile_ORCID': get_orcid_data(u.user),
     }
 
     # only for registered user:
@@ -1065,6 +1101,13 @@ def index(request, **kwargs):
     #print ('kwargs')
     #print (kwargs)
 
+    # Is this a redirect from ORCID?
+
+    orcid_success = False
+    if request.method == 'GET':
+        if request.GET.get('orcid', '') == 'success':
+            orcid_success = True
+
     context = {}
     context['general_alert_message'] = ''
     context['general_success_message'] = ''
@@ -1214,6 +1257,9 @@ def index(request, **kwargs):
 
     # Get User clients
     context['profile_clients'] = get_execution_clients_angular(request)
+
+    # Is this a redirect from ORCID ?
+    context['orcid_success'] = orcid_success
 
     # Add version
     context['version'] = __version__
