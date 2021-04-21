@@ -413,16 +413,17 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $http({
             headers: {"X-CSRFToken" : window.CSRF_TOKEN,},
             method : "POST",
-            url : "/platform/disconnect/orcid-sandbox/", 
+            // url : "/platform/disconnect/orcid-sandbox/", 
+            url : "/platform/disconnect/orcid/", 
             data : {csrftoken: CSRF_TOKEN}
         }).then(function mySucces(response) {
             $scope.profile_ORCID = null;                
         }, function myError(response) {
             if (response.statusText) {
-                fail_ajax(response.statusText);
+                $scope.toast(response.statusText, 'error');
             }
             else {
-                fail_ajax('Internal Error. Server not responding');
+                $scope.toast('Internal Error. Server not responding', 'error');
             }
         });
     };
@@ -2303,6 +2304,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.user_affiliation = data['profile_affiliation'];
                 $scope.user_publicinfo = data['profile_publicinfo'];
                 $scope.user_created_at = data['profile_created_at'];
+                $scope.user_ORCID = data['profile_ORCID'];
 
                 //Open right panel
                 document.getElementById('userDataDiv').style.display = 'block';

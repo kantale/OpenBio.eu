@@ -1253,7 +1253,7 @@
                                 {% verbatim %}
                                 <div class="row left-align">
                                     <div class="col s12 font13">ORCID iD</div>
-                                    <div class="col s12"><a href=""><img alt="ORCID logo" src="/static/app/images/orcid_16x16.png" width="16" height="16" />000-1234-3333-44434</a></div>
+                                    <div class="col s12"><a href=""><img alt="ORCID logo" src="/static/app/images/orcid_16x16.png" width="16" height="16" /><span ng-bind="user_ORCID ? user_ORCID : 'Not associated with ORCID'"></span></a></div>
                                 </div>
                                 {% endverbatim %}
                                 {% verbatim %}

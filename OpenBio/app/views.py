@@ -858,7 +858,8 @@ def get_orcid_data(user):
     }
     '''
     try:
-        social = user.social_auth.get(provider="orcid-sandbox")
+        #social = user.social_auth.get(provider="orcid-sandbox")
+        social = user.social_auth.get(provider="orcid")
     except ObjectDoesNotExist:
         # User does not have ORCID
         return None

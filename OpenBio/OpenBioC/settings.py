@@ -57,10 +57,15 @@ except ImportError:
 	pass
 
 try:
-    from .obc_private import SOCIAL_AUTH_ORCID_SANDBOX_KEY, SOCIAL_AUTH_ORCID_SANDBOX_SECRET
+    from .obc_private import SOCIAL_AUTH_ORCID_KEY, SOCIAL_AUTH_ORCID_SECRET
+    #from .obc_private import SOCIAL_AUTH_ORCID_SANDBOX_KEY, SOCIAL_AUTH_ORCID_SANDBOX_SECRET
 except ImportError:
-    SOCIAL_AUTH_ORCID_SANDBOX_KEY='APP-XXXYYYZZZ'
-    SOCIAL_AUTH_ORCID_SANDBOX_SECRET='XXXYYYZZZ'
+    SOCIAL_AUTH_ORCID_KEY='APP-XXXYYYZZZ'
+    SOCIAL_AUTH_ORCID_SECRET='XXXYYYZZZ'
+    #SOCIAL_AUTH_ORCID_SANDBOX_KEY='APP-XXXYYYZZZ'
+    #SOCIAL_AUTH_ORCID_SANDBOX_SECRET='XXXYYYZZZ'
+
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -96,7 +101,8 @@ INSTALLED_APPS = [
 
 
 AUTHENTICATION_BACKENDS = (
-    'social_core.backends.orcid.ORCIDOAuth2Sandbox',
+    #'social_core.backends.orcid.ORCIDOAuth2Sandbox',
+    'social_core.backends.orcid.ORCIDOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 )
 
