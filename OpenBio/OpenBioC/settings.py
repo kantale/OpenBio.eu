@@ -56,6 +56,12 @@ try:
 except ImportError:
 	pass
 
+try:
+    from .obc_private import SOCIAL_AUTH_ORCID_SANDBOX_KEY, SOCIAL_AUTH_ORCID_SANDBOX_SECRET
+except ImportError:
+    SOCIAL_AUTH_ORCID_SANDBOX_KEY='APP-XXXYYYZZZ'
+    SOCIAL_AUTH_ORCID_SANDBOX_SECRET='XXXYYYZZZ'
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -88,8 +94,6 @@ INSTALLED_APPS = [
     'app',
 ] + INSTALLED_APPS_EXTRA
 
-SOCIAL_AUTH_ORCID_SANDBOX_KEY = 'APP-6Q7N9OQYSV28461S'
-SOCIAL_AUTH_ORCID_SANDBOX_SECRET = 'f7b262d9-efcd-4a65-9e64-792241968076'
 
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.orcid.ORCIDOAuth2Sandbox',
