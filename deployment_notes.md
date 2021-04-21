@@ -60,11 +60,7 @@ logout
 ### Install python packages for openbio.eu
 (Make sure that the conda obc_prod_python environment is activated)
 ```
-pip install Django==2.1.5 simplejson pybtex mistune requests ansi2html  
-pip install psycopg2 # If we want to run on postgresql
-pip install bashlex # https://github.com/idank/bashlex , python bash parser 
-pip install mistune # Markdown parser 
-pip install djangorestframework
+pip install --upgrade  -r requirements.txt 
 ```
 
 ### Clone and configure openbio.eu
