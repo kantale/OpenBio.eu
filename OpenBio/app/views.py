@@ -1195,8 +1195,6 @@ def index(request, **kwargs):
     context['init_interlink_args'] = simplejson.dumps(init_interlink_args)
 
 
-
-
     # Is this user already logged in?
     # https://stackoverflow.com/questions/4642596/how-do-i-check-whether-this-user-is-anonymous-or-actually-a-user-on-my-system 
     if request.user.is_anonymous:
@@ -1210,6 +1208,12 @@ def index(request, **kwargs):
     context['password_reset_token'] = ''
     context['reset_signup_username'] = ''
     context['reset_signup_email'] = ''
+
+    # Get orcid_id
+    if username:
+        context['profile_ORCID'] = get_orcid_data(request.user)
+    else:
+        context['profile_ORCID'] = None
 
     #Check for GET variables
     GET = request.GET
@@ -1254,7 +1258,7 @@ def index(request, **kwargs):
     context['controller_url'] = instance_settings['controller_url']
 
     # Get OS choices
-    context['os_choices'] = simplejson.dumps(OS_types.get_angular_model());
+    context['os_choices'] = simplejson.dumps(OS_types.get_angular_model())
 
     # Get User clients
     context['profile_clients'] = get_execution_clients_angular(request)

@@ -60,19 +60,18 @@
                                                     <label for="profileLastname">Lastname</label>
                                                 </div>
                                                 <div class="input-field col s12">
+
                                                     <!-- use this link for orcid sandbox <a href="/platform/login/orcid-sandbox/" -->
-                                                    {% verbatim %}
-                                                    <input id="ordid_id" type="text" class="validate" value="{{ profile_ORCID ? profile_ORCID : 'Not associated with ORCID' }}" disabled>
+                                                    
+                                                    {% verbatim %}                                                    
                                                     <label for="ordid_id"><img alt="ORCID logo" src="/static/app/images/orcid_16x16.png" width="16" height="16" style="margin-bottom: -3px; ">ORCID iD</label>
+                                                    <a ng-href="{{ profile_ORCID_url }}" target="_blank"><span ng-bind="profile_ORCID" ng-show="profile_ORCID"></span></a>
+                                                    <span ng-show="!profile_ORCID">Not associated with ORCID</span>
                                                     <a href="/platform/login/orcid/" class="waves-effect waves-teal btn-flat right tooltipped" data-position="bottom" data-tooltip="Associate with ORCID" style="margin-top: -45px; width: auto;" ng-show="!profile_ORCID">Associate</a>
                                                     <a class="waves-effect waves-teal btn-flat right tooltipped" data-position="bottom" data-tooltip="Disassociate with ORCID" style="margin-top: -45px; width: auto;" ng-click="profile_orcid_disconnect_pressed()" ng-show="profile_ORCID">Disassociate</a>
                                                     {% endverbatim %}
-                                                </div>
-                                         <!--       <div class="input-field col s12">
-                                                    <input id="ordid_id" type="text" class="validate" ng-model="profile_ORCID" disabled>
-                                                    <label for="ordid_id"><img alt="ORCID logo" src="/static/app/images/orcid_16x16.png" width="16" height="16" style="margin-bottom: -3px;" /> ORCID iD</label>
 
-                                                </div> --> 
+                                                </div> 
                                             </div>
                                         </div>
                                         <div class="input-field col s12">
