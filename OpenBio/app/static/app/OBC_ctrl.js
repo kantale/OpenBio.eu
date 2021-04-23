@@ -58,6 +58,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     */
     $scope.init = function() {
         $scope.username = window.username; // Empty username means non-authenticated user.
+        $scope.profile_ORCID = window.profile_ORCID; // null means no ORCID id
         $scope.general_success_message = window.general_success_message;
         $scope.general_alert_message = window.general_alert_message;
         $scope.password_reset_token = window.password_reset_token;
@@ -293,6 +294,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.profile_created_at = data['profile_created_at'];
                 $scope.profile_clients = data['profile_clients'];
                 $scope.profile_ORCID = data['profile_ORCID'];
+                $scope.profile_ORCID_url = data['profile_ORCID'] ? "https://orcid.org/" + data['profile_ORCID'] : null;
 
                 //If the server did not return any client. Add an empty placeholder
                 if (!$scope.profile_clients.length) {
@@ -417,7 +419,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             url : "/platform/disconnect/orcid/", 
             data : {csrftoken: CSRF_TOKEN}
         }).then(function mySucces(response) {
-            $scope.profile_ORCID = null;                
+            $scope.profile_ORCID = null;
+            $scope.profile_ORCID_url = null;
         }, function myError(response) {
             if (response.statusText) {
                 $scope.toast(response.statusText, 'error');
@@ -428,7 +431,23 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         });
     };
 
+    /*
+    * References --> Claim it! --> pressed 
+    */
+    $scope.references_orcid_claim_pressed = function() {
 
+        if (!$scope.username) {
+            $scope.toast('You need to be logged in to claim a paper..', 'error');
+            return
+        }
+
+        //Is user's email validated? Do we need to check this?
+
+        if (!$scope.profile_ORCID) {
+            $scope.toast('You need to associate your account with ORCID to claim a paper. You can do this by editing your profile.', 'warning');
+            return;
+        }
+    };
 
     /*
     * DEPRECATED
@@ -2305,6 +2324,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.user_publicinfo = data['profile_publicinfo'];
                 $scope.user_created_at = data['profile_created_at'];
                 $scope.user_ORCID = data['profile_ORCID'];
+                $scope.user_ORCID_url = data['profile_ORCID'] ? "https://orcid.org/" + data['profile_ORCID'] : null;
 
                 //Open right panel
                 document.getElementById('userDataDiv').style.display = 'block';

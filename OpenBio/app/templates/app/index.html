@@ -18,6 +18,7 @@
 	<script type="text/javascript">
 		window.CSRF_TOKEN = "{{ csrf_token }}";
 		window.username = "{{ username }}";
+		window.profile_ORCID = {% if profile_ORCID %} "{{ profile_ORCID }}"; {% else %} null;{% endif %}
 		window.general_alert_message = {% autoescape off %}"{{ general_alert_message }}"{% endautoescape %};
 		window.general_success_message = {% autoescape off %}"{{ general_success_message }}"{% endautoescape %};
 		window.password_reset_token = "{{ password_reset_token }}";

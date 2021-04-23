@@ -1020,7 +1020,7 @@
                 <h5>
                     <span ng-bind="references_name"></span>
                 </h5>
-                <a class="waves-effect waves-teal btn-flat right tooltipped" data-position="bottom" data-tooltip="Claim this paper with ORCID iD" style="margin-top: -30px;" ng-click="">
+                <a class="waves-effect waves-teal btn-flat right tooltipped" data-position="bottom" data-tooltip="Are you the (co)author of this paper? Claim it with ORCID iD!" style="margin-top: -30px;" ng-click="references_orcid_claim_pressed()">
                     <img alt="ORCID logo" src="/static/app/images/orcid_16x16.png" width="16" height="16" style="margin-bottom: -3px;" /> Claim</a>
                 <div ng-show="!references_info_editable">
                     <small class="form-text text-muted">
@@ -1253,7 +1253,10 @@
                                 {% verbatim %}
                                 <div class="row left-align">
                                     <div class="col s12 font13">ORCID iD</div>
-                                    <div class="col s12"><a href=""><img alt="ORCID logo" src="/static/app/images/orcid_16x16.png" width="16" height="16" /><span ng-bind="user_ORCID ? user_ORCID : 'Not associated with ORCID'"></span></a></div>
+                                    <div class="col s12">
+                                        <a ng-href="{{ user_ORCID_url }}" target="_blank" ng-show="user_ORCID"><img alt="ORCID logo" src="/static/app/images/orcid_16x16.png" width="16" height="16" /><span ng-bind="user_ORCID"></span></a>
+                                        <span ng-show="!user_ORCID">Not associated with ORCID</span>
+                                    </div>
                                 </div>
                                 {% endverbatim %}
                                 {% verbatim %}
