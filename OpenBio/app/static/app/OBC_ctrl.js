@@ -2678,6 +2678,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.references_created_at = data['references_created_at']; // We currently do not do anything with this.
                 $scope.references_username = data['references_username']; // We currently do not do anything with this.
                 $scope.references_claimed = data['references_claimed']; // Has this paper been claimed by the user? 
+                $scope.references_claim_list = data['references_claim_list']; //List of usernames that claimed this paper. 
 
                 $scope.hide_all_right_accordions('references');
                 document.getElementById('referencesRightPanel').style.display = 'block';

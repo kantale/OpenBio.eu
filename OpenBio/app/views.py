@@ -191,6 +191,9 @@ def get_obc_user(request):
     instead of def get_user
     '''
 
+    if request.user.is_anonymous:
+        return None
+
     try:
         obc_user = OBC_user.objects.get(user=request.user)
     except ObjectDoesNotExist:
@@ -4585,6 +4588,14 @@ def references_search_3(request, **kwargs):
             obc_user.references.filter(pk=reference.pk).exists()
     )
 
+    # List of all usernames that claimed this reference
+    references_claim_list = list(
+        reference
+        .users_authored_me
+        .all()
+        .values_list('user__username', flat=True)
+    )
+
     ret = {
         'references_name': reference.name,
         'references_title': reference.title,
@@ -4596,6 +4607,7 @@ def references_search_3(request, **kwargs):
         'references_created_at': datetime_to_str(reference.created_at),
         'references_username': reference.obc_user.user.username,
         'references_claimed': claimed,
+        'references_claim_list': references_claim_list,
     }
 
     return success(ret)
