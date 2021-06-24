@@ -442,11 +442,52 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         }
 
         //Is user's email validated? Do we need to check this?
-
         if (!$scope.profile_ORCID) {
             $scope.toast('You need to associate your account with ORCID to claim a paper. You can do this by editing your profile.', 'warning');
             return;
         }
+
+        $scope.ajax(
+            'references_orcid_claim_pressed/',
+            {
+                references_name: $scope.references_name
+            },
+            function(data) {
+                $scope.toast('Successfully linked this reference with your ORCID account', 'success');
+                $scope.references_claimed = true;
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast('ORCID system error', 'error');
+            }
+        );
+    };
+
+    /*
+    * References --> Unclaim reference --> Pressed 
+    */
+    $scope.references_orcid_unclaim_pressed = function() {
+
+        $scope.ajax(
+            'references_orcid_unclaim_pressed/',
+            {
+                references_name: $scope.references_name
+            },
+            function(data) {
+                $scope.toast('Successfully unlinked this reference with your ORCID account', 'success');
+                $scope.references_claimed = false;
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast('ORCID system error', 'error');
+            }
+        );
+
+
     };
 
     /*
@@ -2636,6 +2677,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.references_formatted = data['references_html'];
                 $scope.references_created_at = data['references_created_at']; // We currently do not do anything with this.
                 $scope.references_username = data['references_username']; // We currently do not do anything with this.
+                $scope.references_claimed = data['references_claimed']; // Has this paper been claimed by the user? 
 
                 $scope.hide_all_right_accordions('references');
                 document.getElementById('referencesRightPanel').style.display = 'block';

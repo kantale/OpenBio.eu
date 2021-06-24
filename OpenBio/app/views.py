@@ -845,6 +845,7 @@ def get_instance_settings():
 
 def get_orcid_data(user):
     '''
+    Retrieve orcid data from the database.
     https://stackoverflow.com/questions/24221117/get-access-token-from-python-social-auth
 
     social.extra_data structure:
@@ -856,6 +857,7 @@ def get_orcid_data(user):
         'access_token': '2a1ad4d3-32f0-45b0-822c-a52295caae15', 
         'token_type': 'bearer'
     }
+
     '''
     try:
         #social = user.social_auth.get(provider="orcid-sandbox")
@@ -866,6 +868,142 @@ def get_orcid_data(user):
 
     return social.extra_data['id']
     #return social
+
+def get_doi_from_orcid(orcid_id):
+    '''
+    Get an orcid_id and return a set with all DOIs of this user
+    '''
+    url = f"https://orcid.org/{orcid_id}/worksPage.json?offset=0&sort=date&sortAsc=false&pageSize=1000"
+    
+    def get_doi_from_externalIdentifier(ei):
+        ret = set()
+        
+        indexes = ['externalIdentifierId', 'url', 'normalized', 'normalizedUrl']
+        
+        
+        for index in indexes:
+            if index in ei:
+                if 'value' in ei[index]:
+                    ret.add(ei[index]['value'])
+        
+        #print (ret)
+        return ret
+    
+    def get_doi_from_orcid_object(j):
+        ret = set()
+        
+        if 'groups' in j:
+            for group in j['groups']:
+                
+                if 'externalIdentifiers' in group:
+                    for ei in group['externalIdentifiers']:
+                        ret |= get_doi_from_externalIdentifier(ei)
+                
+                if 'works' in group:
+                    for work in group['works']:
+                        if 'workExternalIdentifiers' in work:
+                            for wei in work['workExternalIdentifiers']:
+                                ret |= get_doi_from_externalIdentifier(wei)
+
+        return ret
+            
+
+    try:
+        r = requests.get(url)
+        if not r.ok:
+            raise Exception
+    except:
+        return None
+    
+    j = r.json()
+    
+    doi_set = get_doi_from_orcid_object(j)
+    return doi_set
+
+@has_data
+def references_orcid_claim_pressed(request, **kwargs):
+    '''
+    Called when ORCID icon pressed in reference right panel
+    '''
+
+    references_name = kwargs.get('references_name')
+    if not references_name:
+        return fail('Error 7567')
+
+    OBC_user = get_obc_user(request)
+    if not OBC_user:
+        return fail('Error 7568. User not found.')
+
+    orcid_id = get_orcid_data(OBC_user.user)
+    if not orcid_id:
+        return fail('You have not connected your profile with ORCID')
+
+
+    # Get DOI of publication
+    try:
+        reference = Reference.objects.get(name=references_name)
+    except ObjectDoesNotExist:
+        return fail('Error 7569. Could not find reference object')
+
+    doi = reference.doi
+    if not doi:
+        return fail('This publication does not have a DOI field')
+
+    # Check if this doi exists in user's references 
+    if OBC_user.references.filter(pk=reference.pk).exists():
+        return fail('You have already claimed this publication')
+
+    doi_set = get_doi_from_orcid(orcid_id)
+    if doi_set is None:
+        return fail('Could not Retrieve DOIs from ORCID')
+
+    if not doi_set:
+        return fail('ORCID returned an empty set for your ID')
+
+    if not doi in doi_set:
+        return fail('Could not find the DOI of this paper in your ORCID profile.')
+
+    # Add this reference to this user
+    OBC_user.references.add(reference)
+    OBC_user.save()
+
+
+    ret = {
+        'doi': doi,
+        'orcid_id': orcid_id,
+    }
+    return success(ret)
+
+@has_data
+def references_orcid_unclaim_pressed(request, **kwargs):
+    '''
+    Called when ORCID unclaim pressed in reference right panel
+    '''
+
+    references_name = kwargs.get('references_name')
+    if not references_name:
+        return fail('Error 7667')
+
+    OBC_user = get_obc_user(request)
+    if not OBC_user:
+        return fail('Error 7668. User not found.')
+
+    # Reference
+    try:
+        reference = Reference.objects.get(name=references_name)
+    except ObjectDoesNotExist:
+        return fail('Error 7669. Could not find reference object')
+
+    # Confirm that this reference belongs to user
+    if not OBC_user.references.filter(pk=reference.pk).exists():
+        return fail('Error 7670.') # This paper is not linked to this user ????
+
+    # Unlink it!!!
+    OBC_user.references.remove(reference)
+    OBC_user.save()
+
+    ret = {}
+    return success(ret)
 
 @has_data
 def users_search_3(request, **kwargs):
@@ -4430,6 +4568,7 @@ def qa_search_2(main_search):
 @has_data
 def references_search_3(request, **kwargs):
     '''
+    Fetch the data for a unique reference 
     '''
 
     name = kwargs.get('name', '')
@@ -4437,6 +4576,14 @@ def references_search_3(request, **kwargs):
         reference = Reference.objects.get(name__iexact=name)
     except ObjectDoesNotExist as e:
         return fail('Could not find Reference') # This should never happen..
+
+    # Has this reference been claimed by the user ?
+    obc_user = get_obc_user(request)
+    claimed = bool(
+            obc_user and 
+            reference.doi and
+            obc_user.references.filter(pk=reference.pk).exists()
+    )
 
     ret = {
         'references_name': reference.name,
@@ -4448,6 +4595,7 @@ def references_search_3(request, **kwargs):
         'references_html': reference.html,
         'references_created_at': datetime_to_str(reference.created_at),
         'references_username': reference.obc_user.user.username,
+        'references_claimed': claimed,
     }
 
     return success(ret)

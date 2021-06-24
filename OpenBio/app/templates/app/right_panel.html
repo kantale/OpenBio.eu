@@ -1020,8 +1020,14 @@
                 <h5>
                     <span ng-bind="references_name"></span>
                 </h5>
-                <a class="waves-effect waves-teal btn-flat right tooltipped" data-position="bottom" data-tooltip="Are you the (co)author of this paper? Claim it with ORCID iD!" style="margin-top: -30px;" ng-click="references_orcid_claim_pressed()">
+                <a class="waves-effect waves-teal btn-flat right tooltipped" data-position="bottom" data-tooltip="Are you the (co)author of this paper? Claim it with ORCID iD!" style="margin-top: -30px;" ng-click="references_orcid_claim_pressed()" ng-show="!references_claimed">
                     <img alt="ORCID logo" src="/static/app/images/orcid_16x16.png" width="16" height="16" style="margin-bottom: -3px;" /> Claim</a>
+
+                <a class="waves-effect waves-teal btn-flat right tooltipped" data-position="bottom" data-tooltip="This paper has been linked to your ORCID account!" style="margin-top: -30px;"  ng-show="references_claimed">
+                    <img alt="ORCID logo" src="/static/app/images/orcid_16x16.png" width="16" height="16" style="margin-bottom: -3px;" /> Claimed!</a>
+                <a class="waves-effect waves-teal btn-flat right tooltipped" ng-show="references_claimed" ng-click="references_orcid_unclaim_pressed()">unlink</a>
+
+
                 <div ng-show="!references_info_editable">
                     <small class="form-text text-muted">
                         <!-- <span ng-bind="tool_info_username"></span>

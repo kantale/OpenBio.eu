@@ -74,4 +74,6 @@ urlpatterns = [
   	path('get_pk_from_root_comment/', views.get_pk_from_root_comment), # COMMENT IS MISSING!! PLEASE ADD !
 	path('updownvote_tool_workflow/', views.updownvote_tool_workflow), # thumbs up or thumbs down was pressed on a tool or on a workflow
 	path('markdown_preview/', views.markdown_preview), # Called from markdown preview tab. angular_previewTabClicked 
+	path('references_orcid_claim_pressed/', views.references_orcid_claim_pressed), # Called when ORCID icon pressed in reference right panel
+	path('references_orcid_unclaim_pressed/', views.references_orcid_unclaim_pressed), # Called when ORCID unclaim pressed in reference right panel
 ]

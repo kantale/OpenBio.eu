@@ -46,6 +46,10 @@ class OBC_user(models.Model):
     #A user can have many Execution Clients
     clients = models.ManyToManyField(ExecutionClient)
 
+    # A user can have many References
+    references = models.ManyToManyField(to='Reference', related_name='users_authored_me')
+
+
 class Keyword(models.Model):
     '''
     Tool and Workflow Keywords 
