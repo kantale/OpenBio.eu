@@ -119,7 +119,7 @@ class OS_types(models.Model):
             'value': os_value,
         } for os_value, os_name in OS_types.OS_CHOICES if (not values) or (os_value in values)]
 
-    os_choices = models.CharField(choices=OS_CHOICES, max_length=100)
+    os_choices = models.CharField(choices=OS_CHOICES, max_length=100, unique=True)
 
 
 
