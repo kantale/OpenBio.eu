@@ -1,6 +1,8 @@
 {% comment %}
 Style taken from here: https://www.codeply.com/go/nhbdi2FkJm/bootstrap-4-login-form 
 
+!!! NOT USED !!! 
+
 {% endcomment %}
 
 <div class="row" ng-show="login_error_message">
@@ -36,7 +38,7 @@ Style taken from here: https://www.codeply.com/go/nhbdi2FkJm/bootstrap-4-login-f
 			        <div class="form-group small">
 			                <a href ng-click="login_password_reset_pressed()">Forgot your password? Click here to reset it</a>
 			        </div>
-			        <button class="btn btn-success btn-lg float-right" ng-click="login_login_pressed()">Login</button>
+			        <button id="loginbtn" class="btn btn-success btn-lg float-right" ng-click="login_login_pressed()">Login</button>
 			    </form>
 			</div>
 			<!--/card-body-->

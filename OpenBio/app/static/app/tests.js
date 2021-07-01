@@ -2,6 +2,7 @@
 /*
 * Testing suite for OpenBio.eu
 * Run with test.test(prefix); i.e. test.test('test1')
+* window.test.test()
 */
 (function (){
 	var ret = {};
@@ -125,6 +126,22 @@
 		$('#' + id).val(text).trigger('input');
 		setTimeout(function(){M.updateTextFields()}, 10);
 	};
+
+	var sign_in_button_press = function() {
+		$('#signInBtn').click();
+	};
+
+	var sign_in_insert_username = function(args) {
+		ret.insert('signInUsername', args);
+	}
+
+	var login_button_clicked = function() {
+		ret.click('signinbtn');
+	}
+
+	var sign_in_insert_password = function(args) {
+		ret.insert('signInPassword', args);
+	}
 
 	var click_plus_search_tools_button = function() {
 		ret.click('toolsDataPlusBtn');
@@ -267,6 +284,10 @@
 	};
 
 
+	// 
+	// Add here your higher order actions
+	//
+
 	var create_new_tool = function(args) {
 
 		var actions = [
@@ -306,18 +327,35 @@
 		return actions;
 	};
 
+	var signin = function(args) {
+
+		var actions = [
+			sign_in_button_press,
+			[sign_in_insert_username, args['username']],
+			[sign_in_insert_password, args['password']],
+			login_button_clicked
+		]
+
+		return actions;
+	}
+
 	ret.test = function(prefix) {
 
 		ret.prefix = prefix;
-		ret.args = {};
+		ret.args = {
+			'username': 'test_user',
+			'password': 'test_pw' 
+		};
 
 		var actions = [];
 
-		actions.push(... create_new_tool({'name': prefix + '_t'})); // https://stackoverflow.com/questions/1374126/how-to-extend-an-existing-javascript-array-with-another-array-without-creating 
-		actions.push(... create_new_workflow({'name': prefix + '_w', 'import_tool_name': prefix + '_t'}));
+//		actions.push(... create_new_tool({'name': prefix + '_t'})); // https://stackoverflow.com/questions/1374126/how-to-extend-an-existing-javascript-array-with-another-array-without-creating 
+//		actions.push(... create_new_workflow({'name': prefix + '_w', 'import_tool_name': prefix + '_t'}));
+		actions.push(... signin(ret.args));
 
 		return build_chain(actions, 0);
 	};
+
 
 
 	window.test = ret;
