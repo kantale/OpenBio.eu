@@ -28,7 +28,7 @@
                                 ng-show="!tools_info_editable">/<span ng-bind="tools_info_edit"></span></span>
                         </h5>
                         <small class="form-text text-muted" ng-show="(!tools_info_editable) || tools_info_edit_state">
-                            created by <a ng-click="interlink({type: 'u', username: tool_info_username})">u/<span ng-bind="tool_info_username"></span></a>, created at <span
+                            created by <a class="cursorPointer" ng-click="interlink({type: 'u', username: tool_info_username})">u/<span ng-bind="tool_info_username"></span></a>, created at <span
                                 ng-bind="tool_info_created_at"></span>
                             {% verbatim %}
                             <a href="/platform/t/{{tools_info_name}}/{{tools_info_version}}/{{tools_info_edit}}">link</a>
@@ -440,7 +440,7 @@
                                     ng-bind="workflow_info_edit"></span></span>
                         </h5>
                         <small class="form-text text-muted" ng-show="(!workflows_info_editable) || workflows_info_edit_state">
-                            created by <a ng-click="interlink({type: 'u', username: workflows_info_username})">u/<span ng-bind="workflows_info_username"></span></a>
+                            created by <a class="cursorPointer" ng-click="interlink({type: 'u', username: workflows_info_username})">u/<span ng-bind="workflows_info_username"></span></a>
                             <span>, created at <span ng-bind="workflow_info_created_at"></span></span>
                             {% verbatim %}
                             <a href="/platform/w/{{workflow_info_name}}/{{workflow_info_edit}}">link</a>
@@ -830,11 +830,11 @@
                 <div style="overflow: auto; margin-bottom: 5px;">
                     <div style="float: left;">
                         <span style="margin: 0px;">
-                            <h5 style="margin: 0px; margin-bottom: 2px;"><span>Workflow: </span><a ng-click="interlink({type: 'w', name: report_workflow_name, edit:report_workflow_edit})">w/<span ng-bind="report_workflow_name"></span>/<span ng-bind="report_workflow_edit"></span></a></h5>
+                            <h5 style="margin: 0px; margin-bottom: 2px;"><span>Workflow: </span><a class="cursorPointer" ng-click="interlink({type: 'w', name: report_workflow_name, edit:report_workflow_edit})">w/<span ng-bind="report_workflow_name"></span>/<span ng-bind="report_workflow_edit"></span></a></h5>
                             <h5 style="margin: 0px;"><span>Run: </span><span ng-bind="report_workflow_run"></span></h5>                            
                         </span>
                         <small class="form-text text-muted">
-                            <a ng-click="interlink({type: 'u', username: report_username})">u/<span ng-bind="report_username"></span></a>, created at: <span ng-bind="report_created_at"></span>
+                            <a class="cursorPointer" ng-click="interlink({type: 'u', username: report_username})">u/<span ng-bind="report_username"></span></a>, created at: <span ng-bind="report_created_at"></span>
                             {% verbatim %}
                             <a ng-href="/platform/report/{{report_workflow_run}}">link</a>
                             {% endverbatim %}
@@ -1016,16 +1016,16 @@
             </div>
         </div>
         <div style="margin: 20px;">
-            <div class="left-align" style="margin-left: 10px; margin-right: 15px;">
+            <div class="left-align">
                 <h5>
                     <span ng-bind="references_name"></span>
                 </h5>
                 <a class="waves-effect waves-teal btn-flat right tooltipped" data-position="bottom" data-tooltip="Are you the (co)author of this paper? Claim it with ORCID iD!" style="margin-top: -30px;" ng-click="references_orcid_claim_pressed()" ng-show="!references_claimed">
                     <img alt="ORCID logo" src="/static/app/images/orcid_16x16.png" width="16" height="16" style="margin-bottom: -3px;" /> Claim</a>
 
-                <a class="waves-effect waves-teal btn-flat right tooltipped" data-position="bottom" data-tooltip="This paper has been linked to your ORCID account!" style="margin-top: -30px;"  ng-show="references_claimed">
-                    <img alt="ORCID logo" src="/static/app/images/orcid_16x16.png" width="16" height="16" style="margin-bottom: -3px;" /> Claimed!</a>
-                <a class="waves-effect waves-teal btn-flat right tooltipped" ng-show="references_claimed" ng-click="references_orcid_unclaim_pressed()">unlink</a>
+                <a class="waves-effect waves-teal btn-small right tooltipped" data-position="bottom" data-tooltip="Unlink this paper with your ORCID account" style="margin-top: -30px;" ng-show="references_claimed" ng-click="references_orcid_unclaim_pressed()">unlink</a>
+                <a disabled class="btn-flat right tooltipped" data-position="bottom" data-tooltip="This paper has been linked to your ORCID account!" style="margin-top: -31px; color: #343434 !important; pointer-events: auto;"  ng-show="references_claimed">
+                    <img alt="ORCID logo" src="/static/app/images/orcid_16x16.png" width="16" height="16" style="margin-bottom: -3px;"/> Claimed!</a>
 
 
                 <div ng-show="!references_info_editable">
@@ -1037,7 +1037,7 @@
                                     ng-click="tools_search_show_item(tools_info_forked_from)"><span
                                         ng-bind="tools_info_forked_from | tool_label"></span></a></span>
                             <span>USED IN 86 WFs</span> -->
-                        added from <a ng-click="interlink({type: 'u', username: references_username})">u/<span ng-bind="references_username"></span></a>
+                        added from <a class="cursorPointer" ng-click="interlink({type: 'u', username: references_username})">u/<span ng-bind="references_username"></span></a>
                         <span>, created at <span ng-bind="references_created_at"></span>
                         {% verbatim %}
                         <a href="/platform/r/{{references_name}}">link</a>
@@ -1120,53 +1120,51 @@
                             </form>
                         </div>
                         <div class="row" ng-show="!references_info_editable">
-                            <div class="col s12">
+                            <form class="col s12">
                                 <div class="row left-align">
-                                    <div class="col s12 m3 grid-s12-m3-l3"><b>Name:</b></div>
-                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_name"></span>
-                                    </div>
+                                    <div class="col s12 font13">Name</div>
+                                    <div class="col s12"><span ng-bind="references_name"></span></div>
                                 </div>
                                 <div class="row left-align">
-                                    <div class="col s12 m3 grid-s12-m3-l3"><b>Title:</b></div>
-                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_title"></span>
+                                    <div class="col s12 font13">Title</div>
+                                    <div class="col s12"><span ng-bind="references_title"></span>
                                     </div>
                                 </div>
                                 {% verbatim %}
                                 <!-- ng-href="{{ trust_url(references_url) }}" -->
                                 <div class="row left-align">
-                                    <div class="col s12 m3 grid-s12-m3-l3"><b>URL:</b></div>
-                                    <div class="col s12 m9 grid-s12-m9-l9"><a 
+                                    <div class="col s12 font13">URL</div>
+                                    <div class="col s12"><a 
                                         ng-href="{{ references_url }}" 
                                         target="_blank"><span ng-bind="references_url"></span></a>
                                     </div>
                                 </div>
                                 {% endverbatim %}
                                 <div class="row left-align">
-                                    <div class="col s12 m3 grid-s12-m3-l3"><b>DOI:</b></div>
-                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_doi"></span>
+                                    <div class="col s12 font13">DOI</div>
+                                    <div class="col s12"><span ng-bind="references_doi"></span>
                                     </div>
                                 </div>
                                 <div class="row left-align">
-                                    <div class="col s12 m3 grid-s12-m3-l3"><b>Notes:</b></div>
-                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_notes"></span>
+                                    <div class="col s12 font13">Notes</div>
+                                    <div class="col s12"><span ng-bind="references_notes"></span>
                                     </div>
                                 </div>
                                 <div class="row left-align">
-                                    <div class="col s12 m3 grid-s12-m3-l3"><b>BIBTEX:</b></div>
-                                    <div class="col s12 m9 grid-s12-m9-l9"><span ng-bind="references_BIBTEX"></span>
+                                    <div class="col s12 font13">BIBTEX</div>
+                                    <div class="col s12"><span ng-bind="references_BIBTEX"></span>
                                     </div>
                                 </div>
                                 <div class="row left-align">
-                                    <div class="col s12 m3 grid-s12-m3-l3"><b>Claimed by:</b></div>
-                                    <div class="col s12 m9 grid-s12-m9-l9">
-                                        <div ng-repeat="r in references_claim_list">
-                                            <a ng-click="interlink({type: 'u', username: r})">u/<span ng-bind="r"></span></a>
+                                    <div class="col s12 font13">Claimed by</div>
+                                    <div class="col s12">
+                                        <span ng-repeat="r in references_claim_list">
+                                            <a class="cursorPointer" ng-click="interlink({type: 'u', username: r})">u/<span ng-bind="r"></span></a>
                                             <span ng-show="!$last">, </span>
-                                        </div>
+                                        </span>
                                     </div>
                                 </div>
-
-                            </div>
+                            </form>
                         </div>
                     </div>
                 </li>
@@ -1241,7 +1239,7 @@
             </div>
         </div>
         <div style="margin: 20px;">
-            <ul id="userDataAccordion" class="collapsible expandable popout faster">
+            <ul id="userDataAccordion" class="collapsible expandable faster">
                 <!-- --------------------------------------------------------------------------------------- -->
                 <!-- ------------------------------------ General ------------------------------------------ -->
                 <!-- --------------------------------------------------------------------------------------- -->
@@ -1249,10 +1247,12 @@
                     <div class="collapsible-header">
                         <i class="material-icons arrow">keyboard_arrow_right</i>
                         <i class="material-icons">info</i>
-                        User Info for &nbsp; <span ng-bind="user_username"></span>
+                        User Info for&nbsp;
+                        <!-- &nbsp; <span ng-bind="user_username"></span>
                         {% verbatim %}
                         &nbsp;<a href="/platform/u/{{user_username}}">link</a>
-                        {% endverbatim %}
+                        {% endverbatim %} -->
+                        <a class="cursorPointer" ng-click="interlink({type: 'u', username: user_username})"><span ng-bind="user_username"></span></a>
                     </div>
                     <div class="collapsible-body">
                         <div class="row">
@@ -1275,6 +1275,10 @@
                                     </div>
                                 </div>
                                 {% endverbatim %}
+                                <div class="row left-align" ng-show="user_ORCID">
+                                    <div class="col s12 font13">Claimed papers</div>
+                                    <div class="col s12"><span ng-bind=""></span></div>
+                                </div>
                                 {% verbatim %}
                                 <div class="row left-align">
                                     <div class="col s12 font13">Website</div>
@@ -1375,7 +1379,7 @@
                         <div class="valign-wrapper">
                             <img src="/static/app/images/konstantina/img_avatar.png" alt=""
                                 class="circle avatarForumQuestion">
-                            <small>Asked by <a ng-click="interlink({type: 'u', username: qa_username})">u/<span ng-bind="qa_username"></span></a> on <span ng-bind="qa_created_at"></span><span>, </span><a ng-click="interlink({type: 'c', id: qa_comment_id})">c/<span ng-bind="qa_comment_id"></span></a>
+                            <small>Asked by <a class="cursorPointer" ng-click="interlink({type: 'u', username: qa_username})">u/<span ng-bind="qa_username"></span></a> on <span ng-bind="qa_created_at"></span><span>, </span><a class="cursorPointer" ng-click="interlink({type: 'c', id: qa_comment_id})">c/<span ng-bind="qa_comment_id"></span></a>
                             {% verbatim %}
                             <a href="/platform/c/{{qa_comment_id}}">link</a>
                             {% endverbatim %}
@@ -1483,7 +1487,7 @@
                             <div class="valign-wrapper">
                                 <img src="/static/app/images/konstantina/img_avatar.png" alt=""
                                     class="circle avatarForumReply">
-                                <small>Replied by <a ng-click="interlink({type: 'u', username: post.username})">u/<span ng-bind="post.username"></span></a> on <span ng-bind="post.created_at"></span> <span ng-bind="post.opinion"></span></small>
+                                <small>Replied by <a class="cursorPointer" ng-click="interlink({type: 'u', username: post.username})">u/<span ng-bind="post.username"></span></a> on <span ng-bind="post.created_at"></span> <span ng-bind="post.opinion"></span></small>
                                 <div class="box upDownVoteBox">
                                     <div class="upDownVoteDiv upvoteDiv" ng-class="{'active': post.voted['up']}"><i class="material-icons tiny" ng-click="updownvote_comment(post.id, true, post, post.voted)">arrow_upward</i></div>
                                     <span class="upDownVoteSpan" ng-bind="post.score"></span>
@@ -1526,7 +1530,7 @@
                                     <div class="valign-wrapper">
                                         <img src="/static/app/images/konstantina/img_avatar.png" alt=""
                                             class="circle avatarForumReply">
-                                        <small>Replied by <a ng-click="interlink({type: 'u', username: post2.username})">u/<span ng-bind="post2.username"></span></a> on <span ng-bind="post2.created_at"></span> <span ng-bind="post2.opinion"></span></small>
+                                        <small>Replied by <a class="cursorPointer" ng-click="interlink({type: 'u', username: post2.username})">u/<span ng-bind="post2.username"></span></a> on <span ng-bind="post2.created_at"></span> <span ng-bind="post2.opinion"></span></small>
                                         <div class="box upDownVoteBox">
                                             <div class="upDownVoteDiv upvoteDiv" ng-class="{'active': post2.voted['up']}"><i class="material-icons tiny" ng-click="updownvote_comment(post2.id, true, post2, post2.voted)">arrow_upward</i></div>
                                             <span class="upDownVoteSpan" ng-bind="post2.score"></span>
@@ -1569,7 +1573,7 @@
                                             <div class="valign-wrapper">
                                                 <img src="/static/app/images/konstantina/img_avatar.png" alt=""
                                                     class="circle avatarForumReply">
-                                                <small>Replied by <a ng-click="interlink({type: 'u', username: post3.username})">u/<span ng-bind="post3.username"></span></a> on <span ng-bind="post3.created_at"></span> <span ng-bind="post3.opinion"></span></small>
+                                                <small>Replied by <a class="cursorPointer" ng-click="interlink({type: 'u', username: post3.username})">u/<span ng-bind="post3.username"></span></a> on <span ng-bind="post3.created_at"></span> <span ng-bind="post3.opinion"></span></small>
                                                 <div class="box upDownVoteBox">
                                                     <div class="upDownVoteDiv upvoteDiv" ng-class="{'active': post3.voted['up']}"><i class="material-icons tiny" ng-click="updownvote_comment(post3.id, true, post3, post3.voted)">arrow_upward</i></div>
                                                     <span class="upDownVoteSpan" ng-bind="post3.score"></span>
@@ -1612,7 +1616,7 @@
                                                     <div class="valign-wrapper">
                                                         <img src="/static/app/images/konstantina/img_avatar.png" alt=""
                                                             class="circle avatarForumReply">
-                                                        <small>Replied by <a ng-click="interlink({type: 'u', username: post4.username})">u/<span ng-bind="post4.username"></span></a> on <span ng-bind="post4.created_at"></span> <span ng-bind="post4.opinion"></span></small>
+                                                        <small>Replied by <a class="cursorPointer" ng-click="interlink({type: 'u', username: post4.username})">u/<span ng-bind="post4.username"></span></a> on <span ng-bind="post4.created_at"></span> <span ng-bind="post4.opinion"></span></small>
                                                         <div class="box upDownVoteBox">
                                                             <div class="upDownVoteDiv upvoteDiv" ng-class="{'active': post4.voted['up']}"><i class="material-icons tiny" ng-click="updownvote_comment(post4.id, true, post4, post4.voted)">arrow_upward</i></div>
                                                             <span class="upDownVoteSpan" ng-bind="post4.score"></span>
@@ -1655,7 +1659,7 @@
                                                             <div class="valign-wrapper">
                                                                 <img src="/static/app/images/konstantina/img_avatar.png"
                                                                     alt="" class="circle avatarForumReply">
-                                                                <small>Replied by <a ng-click="interlink({type: 'u', username: post5.username})">u/<span ng-bind="post5.username"></span></a> on <span ng-bind="post5.created_at"></span> <span ng-bind="post5.opinion"></span></small>
+                                                                <small>Replied by <a class="cursorPointer" ng-click="interlink({type: 'u', username: post5.username})">u/<span ng-bind="post5.username"></span></a> on <span ng-bind="post5.created_at"></span> <span ng-bind="post5.opinion"></span></small>
                                                                 <div class="box upDownVoteBox">
                                                                     <div class="upDownVoteDiv upvoteDiv" ng-class="{'active': post5.voted['up']}"><i class="material-icons tiny" ng-click="updownvote_comment(post5.id, true, post5, post5.voted)">arrow_upward</i></div>
                                                                     <span class="upDownVoteSpan" ng-bind="post5.score"></span>
