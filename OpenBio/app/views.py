@@ -4571,10 +4571,11 @@ def qa_get_root_comment(comment):
 
     return qa_get_root_comment(comment.parent)
 
-def qa_search_2(main_search):
+def qa_search_2(main_search, *, request):
     '''
     Collect all Q&A from main search
     '''
+    obc_user = get_obc_user(request)
     title_Q = Q(title__icontains=main_search)
     comment_Q = Q(comment__icontains=main_search)
     username_Q = Q(obc_user__user__username__icontains=main_search)
@@ -4586,6 +4587,21 @@ def qa_search_2(main_search):
     for result in results:
         # Get the root message
         result_parent = qa_get_root_comment(result)
+
+        #Exclude comments on private ROs
+        to_continue = False
+        for comment_attr in ['tool_comment', 'workflow_comment']: # Reverse relationships from Tools/WF --> Comment
+            target_m2m_ROs = getattr(result_parent, comment_attr)
+            if target_m2m_ROs.exists():
+                RO = target_m2m_ROs.first()
+                if (
+                    RO.visibility != str(VisibilityOptions.PUBLIC_CODE) and
+                    RO.obc_user != obc_user
+                ):
+                    to_continue = True
+                    break
+        if to_continue:
+            continue
 
         #Is this on the tree?
         if result_parent.pk in entries_in_tree:
@@ -4742,7 +4758,7 @@ def all_search_2(request, **kwargs):
         ret[key] = value
 
     # Get QAs
-    for key, value in qa_search_2(main_search).items():
+    for key, value in qa_search_2(main_search, request=request).items():
         ret[key] = value
 
     return success(ret)
