@@ -1466,7 +1466,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
 
     /*
-    * Get a list of dependecies for the current tool
+    * Get a list of dependencies for the current tool
     */
     $scope.get_tool_dependencies = function() {
         //Get the dependencies
@@ -1487,8 +1487,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * Navbar --> Tools/data --> Appropriate input --> "Create New" button --> Pressed --> Filled input --> Save (button) --> Pressed
     * See also: workflows_create_save_pressed 
     * save tool save add tool add 
+    * visibility = 'public' | 'private'
     */
-    $scope.tool_create_save_pressed = function() {
+    $scope.tool_create_save_pressed = function(visibility) {
 
         //Check if tool name and version are valid
         if (!$scope.tools_name_regexp.test($scope.tools_info_name)) {
@@ -1538,7 +1539,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 'tool_variables': $scope.tool_variables,
                 'tool_installation_commands': tool_installation_editor.getValue(),
                 'tool_validation_commands': tool_validation_editor.getValue(),
-                'tool_edit_state' : $scope.tools_info_edit_state // Are we editing this tool ?
+                'tool_edit_state' : $scope.tools_info_edit_state, // Are we editing this tool ?
+                'tool_visibility': visibility
             },
             function(data) {
                 $scope.tools_info_success_message = 'Tool/Data successfully saved';
@@ -4214,8 +4216,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * Workflows --> Save button --> pressed 
     * See also: tool_create_save_pressed 
     * add workflow add save workflow save 
+    * visibility : public | private 
     */
-    $scope.workflows_create_save_pressed = function() {
+    $scope.workflows_create_save_pressed = function(visibility) {
 
         //Check workflow name
         if (!$scope.tools_name_regexp.test($scope.workflow_info_name)) {
@@ -4246,7 +4249,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 workflow_changes: $scope.workflow_changes,
                 workflow_keywords: window.OBCUI.get_chip_data('workflowChips'),
                 workflow_json : cy.json(),
-                workflow_edit_state : $scope.workflows_info_edit_state // Are we editing this tool ?
+                workflow_edit_state : $scope.workflows_info_edit_state, // Are we editing this tool ?
+                workflow_visibility: visibility
             },
             function(data) {
                 $scope.workflow_info_created_at = data['created_at'];

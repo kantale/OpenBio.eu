@@ -1958,6 +1958,17 @@ def validate_toast_button():
     '''
     return '<button class="waves-effect waves-light btn red lighten-3 black-text" onclick="window.OBCUI.send_validation_mail()">Validate</button>'
 
+def validate_visibility(ro_visibilty):
+    '''
+    Get the visibility value from the frontend and validate. 
+    Return the corresponding visibility code from the model
+    '''
+    visibility_options_dict = dict((y,x) for x,y in VisibilityOptions.VISIBILITY_OPTIONS)
+
+    if not ro_visibilty in visibility_options_dict:
+        return 'Error 8751 invalid visibility value'
+    return visibility_options_dict[ro_visibilty]
+
 @has_data
 def tools_add(request, **kwargs):
     '''
@@ -2000,6 +2011,12 @@ def tools_add(request, **kwargs):
     tool_edit_state = kwargs.get('tool_edit_state', '')
     if not type(tool_edit_state) is bool:
         return fail('Error 8715')
+
+    tool_visibility = kwargs.get('tool_visibility')
+    visibility_code = validate_visibility(tool_visibility)
+    if type(visibility_code) is str:
+        return fail(visibility_code)
+
 
     upvoted = False
     downvoted = False
@@ -2149,7 +2166,7 @@ def tools_add(request, **kwargs):
         upvotes = upvotes,
         downvotes = downvotes,
         draft = True, # By defaut all new tools are draft 
-        
+        visibility = visibility_code,
         last_validation=None,
     )
 
@@ -3000,6 +3017,12 @@ def workflows_add(request, **kwargs):
     if not type(workflow_edit_state) is bool:
         return fail('Error 4877')
 
+    # Check visibility
+    workflow_visibility = kwargs.get('workflow_visibility')
+    visibility_code = validate_visibility(workflow_visibility)
+    if type(visibility_code) is str:
+        return fail(visibility_code)
+
     upvoted = False
     downvoted = False
     workflow_forked_from = None
@@ -3156,6 +3179,7 @@ def workflows_add(request, **kwargs):
         changes = workflow_changes,
         upvotes = upvotes,
         downvotes = downvotes,
+        visibility = visibility_code,
         draft = True, # We always save new workflows as draft. 
     )
 
