@@ -1578,6 +1578,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 //This tool is not any more in an edit state (if it was)
                 $scope.tools_info_edit_state = false;
 
+                //Set visibility
+                $scope.tools_visibility = visibility;
+
                 //EXPERIMENTAL. UPDATE SEARCH RESULTS
                 $scope.all_search_2();
             },
@@ -4284,6 +4287,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
                 //Workflow is not edited any more (if it was)
                 $scope.workflows_info_edit_state = false;
+
+                //Set visibility 
+                $scope.workflows_visibility = visibility;
 
                 //Close STEP accordion
                 M.Collapsible.getInstance($('#editWorkflowAccordion')).close();
