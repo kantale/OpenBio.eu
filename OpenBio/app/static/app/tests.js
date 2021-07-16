@@ -1,6 +1,7 @@
 
 /*
 * Testing suite for OpenBio.eu
+* https://github.com/kantale/OpenBio.eu/issues/148
 * Run with test.test(prefix); i.e. test.test('test1')
 * window.test.test()
 */
