@@ -28,7 +28,8 @@ from django.middleware.csrf import get_token
 #Import database objects
 from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations, \
     OS_types, Keyword, Report, ReportToken, Reference, ReferenceField, Comment, \
-    UpDownCommentVote, UpDownToolVote, UpDownWorkflowVote, ExecutionClient
+    UpDownCommentVote, UpDownToolVote, UpDownWorkflowVote, ExecutionClient, \
+    VisibilityOptions
 
 from app.models import create_nice_id
 
@@ -1694,8 +1695,28 @@ def tools_search_1(request, **kwargs):
 
     return success(ret)
 
+def get_visibility_Q_objects(request):
+    '''
+    See Issue #217 
+    '''
 
-def tools_search_2(tools_search_name, tools_search_version, tools_search_edit):
+    obc_user = get_obc_user(request)
+    Q1 = Q(visibility = VisibilityOptions.PUBLIC_CODE)
+
+    if not obc_user:
+        # If the user is not logged in only public ROs are allowed
+        return [Q1]
+
+    Q2 = Q(visibility = VisibilityOptions.PRIVATE_CODE, obc_user = obc_user) # <-- Private ROs that belong to me
+
+    # If user is logged in, then return:
+    # (All PUBLIC) OR (PRIVATE that belong to me)
+    Q3 = Q(Q1 | Q2)
+    
+    return [Q3]
+
+
+def tools_search_2(tools_search_name, tools_search_version, tools_search_edit, *, request):
     '''
     This is triggered when there is a key-change on the main-search
     '''
@@ -1712,7 +1733,8 @@ def tools_search_2(tools_search_name, tools_search_version, tools_search_edit):
     if tools_search_edit:
         Qs.append(Q(edit = int(tools_search_edit)))
 
-
+    # Extend with visibility (private/public) filters
+    Qs.extend(get_visibility_Q_objects(request))
 
     # This applies an AND operator. https://docs.djangoproject.com/en/2.2/topics/db/queries/#complex-lookups-with-q-objects 
     # For the order_by part see issue #120
@@ -1741,7 +1763,7 @@ def tools_search_2(tools_search_name, tools_search_version, tools_search_edit):
 
     return ret
 
-def workflows_search_2(workflows_search_name, workflows_search_edit):
+def workflows_search_2(workflows_search_name, workflows_search_edit, *, request):
     '''
     Called by all_search_2
     '''
@@ -1756,6 +1778,10 @@ def workflows_search_2(workflows_search_name, workflows_search_edit):
     #workflows_search_edit = kwargs.get('workflows_search_edit', '')
     if workflows_search_edit:
         Qs.append(Q(edit = int(workflows_search_edit)))
+
+    # Extend with visibility (private/public) filters. 
+    Qs.extend(get_visibility_Q_objects(request))
+
 
     # For the order_by part see issue #120 
     results = Workflow.objects.filter(*Qs).order_by('created_at')
@@ -4672,11 +4698,11 @@ def all_search_2(request, **kwargs):
     ret = {}
 
     #Get tools
-    for key, value in tools_search_2(tools_search_name, tools_search_version, tools_search_edit).items():
+    for key, value in tools_search_2(tools_search_name, tools_search_version, tools_search_edit, request=request).items():
         ret[key] = value
 
     #Get workflows
-    for key, value in workflows_search_2(workflows_search_name, workflows_search_edit).items():
+    for key, value in workflows_search_2(workflows_search_name, workflows_search_edit, request=request).items():
         ret[key] = value
 
     #Get reports
