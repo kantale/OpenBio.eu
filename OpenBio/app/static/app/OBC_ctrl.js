@@ -1050,6 +1050,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.tools_info_success_message = '';
                 $scope.tools_info_error_message = '';
                 $scope.tools_info_draft = data['draft'];
+                $scope.tools_visibility = data['visibility'];
 
                 //Set chip data
                 window.OBCUI.set_chip_data('toolChips', data['tool_keywords']);
@@ -3352,6 +3353,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.workflow_score = data['workflow_score']; // For upvotes / downvotes
                 $scope.workflow_voted = data['workflow_voted']; //Check if this workflow is voted from the user 
                 $scope.workflows_info_draft = data['draft'];
+                $scope.workflows_visibility = data['visibility'];
 
                 // Load the graph. TODO: WHAT HAPPENS WHEN WE CLICK TO NODE? IT IS NOT REGISTERED
                 window.initializeTree();

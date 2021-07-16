@@ -14,8 +14,7 @@
         </div>
         <div style="margin: 20px;">
             <div class="left-align">
-                <span class="red lighten-2 draft tooltipped" data-position="left" data-tooltip="This tool is not finalized. It might change in the future!"
-                    ng-show="tools_info_draft">DRAFT</span>
+                <span class="red lighten-2 draft tooltipped" data-position="left" data-tooltip="This tool is not finalized. It might change in the future!" ng-show="tools_info_draft">DRAFT</span>
                 <div style="overflow: auto;">
                     <div class="box upDownVoteBoxTitle" ng-show="!tools_info_editable">
                         <div class="upvoteDiv upDownvoteDivTitle" ng-class="{'active': tool_voted['up']}"><i class="material-icons" style="font-size: 1.64rem;" ng-click="updownvote_tool_workflow('tool', true)">arrow_upward</i></div>
@@ -36,6 +35,7 @@
                             <span ng-show="tools_info_forked_from">, forked from <a href
                                     ng-click="tools_search_show_item(tools_info_forked_from)">t/<span
                                         ng-bind="tools_info_forked_from | tool_label"></span></a></span>
+                            status: <span ng-bind="tools_visibility"></span>
                         </small>
                     </div>
                 </div>
@@ -451,6 +451,7 @@
                             <span ng-show="workflow_info_forked_from">, forked from <a href
                                 ng-click="workflows_search_show_item(workflow_info_forked_from)">w/<span
                                 ng-bind="workflow_info_forked_from | workflow_label"></span></a></span>
+                            status: <span ng-bind="workflows_visibility"></span>
                         </small>
                     </div>
                     <span class="red lighten-2 draft tooltipped" data-position="left" data-tooltip="This workflow is not finalized. It might change in the future!"

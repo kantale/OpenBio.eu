@@ -134,6 +134,9 @@ class VisibilityOptions:
         (PRIVATE_CODE, PRIVATE_NAME),
     )
 
+    VISIBILITY_OPTIONS_CODE_dic = {str(x):y for x,y in VISIBILITY_OPTIONS}
+    VISIBILITY_OPTIONS_NAME_dic = {y:x for x,y in VISIBILITY_OPTIONS}
+
 class Tool(models.Model):
     '''
     This table describes Tools and Data

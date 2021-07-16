@@ -141,7 +141,6 @@ g = {
     'create_client_resume_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'workflow/{NICE_ID}/paused/false'.format(NICE_ID=nice_id)), 
     'create_client_abort_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'workflow/delete/{NICE_ID}'.format(NICE_ID=nice_id)), 
     'create_client_airflow_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'admin/airflow/graph?dag_id={NICE_ID}&execution_date='.format(NICE_ID=nice_id)),
-
 }
 
 ### HELPING FUNCTIONS AND DECORATORS #####
@@ -1881,6 +1880,7 @@ def tools_search_3(request, **kwargs):
         'validation_commands': tool.validation_commands,
         
         'validation_status': tool.last_validation.validation_status if tool.last_validation else 'Unvalidated',
+        'visibility': VisibilityOptions.VISIBILITY_OPTIONS_CODE_dic[tool.visibility],
         # Show stdout, stderr and error code when the tool is clicked on the tool-search-jstree
         'stdout' : tool.last_validation.stdout if tool.last_validation else None,
         'stderr' : tool.last_validation.stderr if tool.last_validation else None,
@@ -1963,11 +1963,10 @@ def validate_visibility(ro_visibilty):
     Get the visibility value from the frontend and validate. 
     Return the corresponding visibility code from the model
     '''
-    visibility_options_dict = dict((y,x) for x,y in VisibilityOptions.VISIBILITY_OPTIONS)
 
-    if not ro_visibilty in visibility_options_dict:
+    if not ro_visibilty in VisibilityOptions.VISIBILITY_OPTIONS_NAME_dic:
         return 'Error 8751 invalid visibility value'
-    return visibility_options_dict[ro_visibilty]
+    return VisibilityOptions.VISIBILITY_OPTIONS_NAME_dic[ro_visibilty]
 
 @has_data
 def tools_add(request, **kwargs):
@@ -3320,6 +3319,7 @@ def workflows_search_3(request, **kwargs):
         'keywords': [keyword.keyword for keyword in workflow.keywords.all()],
         'workflow' : simplejson.loads(workflow.workflow),
         'changes': workflow.changes,
+        'visibility': VisibilityOptions.VISIBILITY_OPTIONS_CODE_dic[workflow.visibility],
         'workflow_pk': workflow.pk, # Used in comments (QAs)
         'workflow_thread': qa_create_thread(workflow.comment, obc_user), # Workflow comment thread 
         'workflow_score': workflow.upvotes - workflow.downvotes,
