@@ -1266,7 +1266,9 @@ def index(request, **kwargs):
     tool_version = kwargs.get('tool_version', '')
     tool_edit = kwargs.get('tool_edit', 0)
     if tool_name and tool_version and tool_edit:
-        if Tool.objects.filter(name=tool_name, version=tool_version, edit=int(tool_edit)).exists():
+        Qs = [Q(name=tool_name, version=tool_version, edit=int(tool_edit))]
+        Qs.extend(get_visibility_Q_objects(request))
+        if Tool.objects.filter(*Qs).exists():
             init_interlink_args = {
                 'type': 't',
                 'name': tool_name,
@@ -1280,7 +1282,9 @@ def index(request, **kwargs):
     workflow_name = kwargs.get('workflow_name', '')
     workflow_edit = kwargs.get('workflow_edit', 0)
     if workflow_name and workflow_edit:
-        if Workflow.objects.filter(name=workflow_name, edit=int(workflow_edit)).exists():
+        Qs = [Q(name=workflow_name, edit=int(workflow_edit))]
+        Qs.extend(get_visibility_Q_objects(request))
+        if Workflow.objects.filter(*Qs).exists():
             init_interlink_args = {
                 'type': 'w',
                 'name': workflow_name,
