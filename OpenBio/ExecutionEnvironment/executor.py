@@ -2854,7 +2854,7 @@ spec:
 
 
         argo = self.WORKFLOW_TEMPLATE.format(
-            WORKFLOW_NAME = ArgoExecutor.argo_workflow_id(workflow_id if workflow_id else self.workflow.root_workflow_id),
+            WORKFLOW_NAME = ArgoExecutor.argo_workflow_id(workflow_id if workflow_id else self.workflow.root_workflow_id).replace('_', '-').lower(),
             SCRIPTS = '\n'.join(init_bash_scripts + tool_bash_scripts + step_bash_scripts + final_bash_scripts),
             DAGS = ''.join(dags)
         )
