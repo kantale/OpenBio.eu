@@ -1,3 +1,12 @@
+<div style="margin-top: 1px;">
+    <div class="card blue-grey lighten-4 rightPanelTitleCard">
+        <div class="card-content rightPanelTitleContent">
+            <h5 class="rightPanelTitleHeader center">Profile</h5>
+            <a class="waves-effect btn-flat white-text red lighten-2 right tooltipped cancelButton" data-position="bottom" data-tooltip="Close Profile" ng-click="profile_cancel_clicked()">Close</a>
+            <a class="waves-effect btn-flat white-text green lighten-2 right tooltipped cancelButton" data-position="bottom" data-tooltip="Save Profile" ng-click="profile_update_clicked()">Save</a>
+        </div>
+    </div>
+</div>
 <div class="row container left-align">
     <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
     <!-- -------------------------------------------------------------- ScrollSpy ------------------------------------------------------------------------ -->
@@ -7,6 +16,7 @@
             style="position:fixed; padding-top: 200px; margin-left: -40px;">
             <ul class="section table-of-contents">
                 <li><a class="lien_projet" href="#profileCard">Profile</a></li>
+                <li><a class="lien_projet" href="#changePasswordCard">Change Password</a></li>
                 <li><a class="lien_projet" href="#executionCard">Execution Environment</a></li>
                 <li><a class="lien_projet" href="#notificationsCard" ng-show="false">Notifications</a></li>
                 <li><a class="lien_projet" href="#settingsCard" ng-show="false">Settings</a></li>
@@ -32,10 +42,6 @@
                     <section id="profileCard" class="scrollspy section_projet">
                         <div class="card">
                             <div class="card-content">
-                                <div class="row right">
-                                    <a class="waves-effect waves-teal btn-flat" ng-click="profile_cancel_clicked()">Cancel</a>
-                                    <a class="waves-effect waves-teal btn-flat" ng-click="profile_update_clicked()">Update</a>
-                                </div>
                                 <blockquote><span class="card-title">Profile</span></blockquote>
                                 <div class="row">
                                     <form class="col s12">
@@ -64,7 +70,7 @@
                                                         <!-- use this link for orcid sandbox <a href="/platform/login/orcid-sandbox/" -->
                                                         
                                                         {% verbatim %}                                                    
-                                                        <label><img alt="ORCID logo" src="/static/app/images/orcid_16x16.png" width="16" height="16" style="margin-bottom: -3px; ">ORCID iD</label>
+                                                        <label><img alt="ORCID logo" src="/static/app/images/orcid_16x16.png" width="16" height="16" style="margin-bottom: -3px; "> ORCID iD</label>
                                                         <a ng-href="{{ profile_ORCID_url }}" target="_blank"><span ng-bind="profile_ORCID" ng-show="profile_ORCID" style="font-size: 16px; display: block; margin: 4px 0px 12px 0px;">0000-0000-00000-0000</span></a>
                                                         <span ng-show="!profile_ORCID" style="font-size: 16px; display: block; margin: 4px 0px 12px 0px;">Not associated with ORCID</span>
                                                         <a href="/platform/login/orcid/" class="waves-effect waves-teal btn-flat right tooltipped" data-position="bottom" data-tooltip="Associate with ORCID" style="margin-top: -42px; width: auto;" ng-show="!profile_ORCID">Associate</a>
@@ -102,6 +108,18 @@
                                         </div>
                                     </form>
                                 </div>
+                                
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <!-- --------------------------------------------------------------------------------------- -->
+                <!-- -------------------------------- Change Password Card --------------------------------- -->
+                <!-- --------------------------------------------------------------------------------------- -->
+                <div class="col s12">
+                    <section id="changePasswordCard" class="scrollspy section_projet">
+                        <div class="card">
+                            <div class="card-content">
                                 <div class="row">
                                     <blockquote><span class="card-title">Change Password</span></blockquote>
                                     <form class="col s12">
@@ -123,6 +141,7 @@
                         </div>
                     </section>
                 </div>
+
                 <!-- --------------------------------------------------------------------------------------- -->
                 <!-- ----------------------------- Execution Environment Card ------------------------------ -->
                 <!-- --------------------------------------------------------------------------------------- -->
@@ -130,14 +149,10 @@
                     <section id="executionCard" class="scrollspy section_projet">
                         <div class="card">
                             <div class="card-content">
-                                <div class="row right">
-                                    <a class="waves-effect waves-teal btn-flat">Cancel</a>
-                                    <a class="waves-effect waves-teal btn-flat">Update</a>
-                                </div>
-                                <blockquote><span class="card-title">Execution Environment</span></blockquote>
                                 <div class="row">
+                                    <blockquote><span class="card-title">Execution Environment</span></blockquote>
                                     <p style="padding-left: 0.7rem;">Manage your execution environments</p>
-                                    <table class="centered highlight">
+                                    <table class="highlight">
                                         <thead>
                                             <tr>
                                                 <th>Name</th>
