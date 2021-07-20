@@ -1056,8 +1056,17 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 window.OBCUI.set_chip_data('toolChips', data['tool_keywords']);
                 window.OBCUI.chip_disable('toolChips');
 
-                angular.copy(data['dependencies_jstree'], $scope.tools_dep_jstree_model);
-                angular.copy(data['variables_js_tree'], $scope.tools_var_jstree_model);
+                // Empty the tools js trees (dependencies and variables)
+                angular.copy([], $scope.tools_dep_jstree_model);
+                angular.copy([], $scope.tools_var_jstree_model);
+
+                //Add the new data : data['dependencies_jstree'], data['variables_jstree']
+                $scope.update_tool_dependencies(data);
+
+                //angular.copy(data['dependencies_jstree'], $scope.tools_dep_jstree_model);
+                //angular.copy(data['variables_jstree'], $scope.tools_var_jstree_model);
+
+                //Update tool variables
                 $scope.tool_variables = data['variables'];
 
                 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
@@ -2049,6 +2058,101 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     };
 
     /*
+    * //Issue #220 . Make sure that tree node IDs are unique
+    * Get new tool dependencies and update:
+    *  $scope.tools_dep_jstree_model and $scope.tools_var_jstree_model
+    */
+    $scope.update_tool_dependencies = function(data) {
+        
+        //This dictionary keys: old_ids: values maximum occurence (can be 0)
+        var tree_nodes_ids = {};
+
+        /*
+        * Takes a jstree node and changes its ID.
+        * code: The code to be added to the id
+        * ignore_parent : If true then do not change the parent.
+        */
+        function add_code(node, code, ignore_parent) {
+            var data = JSON.parse(node.id);
+            data.push(code);
+            node.id = JSON.stringify(data);
+
+            if (node.parent != '#' && (!ignore_parent)) {
+                data = JSON.parse(node.parent);
+                data.push(tree_nodes_ids[node.parent]); // This assumes that the parent is already in the tree
+                node.parent = JSON.stringify(data);
+            }
+        }
+
+        /*
+        * Take the 5th element of the ID (the occurrence number in the tree)
+        */
+        function get_code(node) {
+            var data = JSON.parse(node.id);
+            return data[4];
+        }
+
+        // These nodes are already in the tree. Store the maximum occurrence number for each ID
+        
+        for (var i=0; i<$scope.tools_dep_jstree_model.length; i++) {
+            var old_id = $scope.tools_dep_jstree_model[i].old_id;
+            if (old_id in tree_nodes_ids) {
+                tree_nodes_ids[$scope.tools_dep_jstree_model[i].old_id] = Math.max(tree_nodes_ids[old_id], get_code($scope.tools_dep_jstree_model[i]));
+            }
+            else {
+                tree_nodes_ids[$scope.tools_dep_jstree_model[i].old_id] = get_code($scope.tools_dep_jstree_model[i]);
+            }
+        }
+
+        //Add all dependencies to the Dependencies jSTREE
+        for (var i=0; i<data['dependencies_jstree'].length; i++) {
+            //We are about to add a new node. Perhaps there is already a node with that id in the tree
+            var this_node = data['dependencies_jstree'][i]
+            var this_id = this_node.id;
+            if (this_id in tree_nodes_ids) {
+                //This node exists already in the tree. Add it again with a new id
+                this_node.old_id = this_id;
+
+                // The new code is tree_nodes_ids[this_id]+1 
+                var new_code = tree_nodes_ids[this_id]+1;
+                add_code(this_node, new_code, false)
+                tree_nodes_ids[this_id] = new_code;
+            }
+            else {
+                // This node does not exist in the tree
+                this_node.old_id = this_id;
+                add_code(this_node, 0, false);
+                tree_nodes_ids[this_id] = 0;
+            }
+
+            //Add new node
+            $scope.tools_dep_jstree_model.push(this_node);
+
+            //Add to the variables jstree as well
+            $scope.tools_var_jstree_model.push(this_node);
+            //Add the variables of this node to the variables jstree
+            for (var j=0; j<data['variables_jstree'].length; j++) {
+                var var_node = data['variables_jstree'][j];
+                if (var_node.type != 'variable') {
+                    continue;
+                }
+
+                //this is a variable
+                //Does this variable belong to this tool?
+                if (var_node.parent == this_node.old_id) {
+                    //Yes it belongs. Change the parent and id and add id to the model.
+                    var_node.parent = this_node.id;
+                    add_code(var_node, tree_nodes_ids[this_node.old_id], true);
+                    $scope.tools_var_jstree_model.push(var_node);
+                    break;
+                }
+            }
+
+        }
+
+    };
+
+    /*
     * Get the dependencies of this tool
     * This is called from ui.js
     * what_to_do == 1: drag and drop FROM SEARCH TREE TO DEPENDENCY TREE
@@ -2085,9 +2189,12 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                         }
                     }
 
+                    console.log(data['dependencies_jstree']);
+                    console.log($scope.tools_dep_jstree_model);
+
                     //Check if this parent is already in the tree
                     for (var i=0; i<$scope.tools_dep_jstree_model.length; i++) {
-                        if ($scope.tools_dep_jstree_model[i].id == inserted_parent_id) {
+                        if ($scope.tools_dep_jstree_model[i].old_id == inserted_parent_id) {
                             //$scope.tools_info_error_message = 'This tool is already in the dependency tree';
                             $scope.toast('This tool is already in the dependency tree', 'error');
                             return;
@@ -2106,15 +2213,11 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                     //We suppose there is no error
                     $scope.tools_info_error_message = '';
 
-                    //Add all dependencies to the Dependencies jSTREE
-                    for (var i=0; i<data['dependencies_jstree'].length; i++) {
-                        $scope.tools_dep_jstree_model.push(data['dependencies_jstree'][i]);
-                    }
+                    //Do the update
+                    $scope.update_tool_dependencies(data);
 
-                    //Add all dependencies to the Dependencies + Variables JSTREE
-                    for (var i=0; i<data['variables_jstree'].length; i++) {
-                        $scope.tools_var_jstree_model.push(data['variables_jstree'][i]);
-                    }
+
+
                 }
                 else if (what_to_do == 2) { //drag and drop FROM TOOLS SEARCH TREE TO CYTOSCAPE WORKFLOW DIV
                     //console.log('UPDATE THE GRAPH WITH: dependencies_jstree');

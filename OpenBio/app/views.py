@@ -1876,7 +1876,7 @@ def tools_search_3(request, **kwargs):
         'tool_keywords': [keyword.keyword for keyword in tool.keywords.all()],
 
         'dependencies_jstree': tool_dependencies_jstree,
-        'variables_js_tree': tool_variables_jstree,
+        'variables_jstree': tool_variables_jstree,
 
         'variables': tool_variables,
         'tool_os_choices': OS_types.get_angular_model([x.os_choices for x in tool.os_choices.all()]),
