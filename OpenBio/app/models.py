@@ -121,7 +121,21 @@ class OS_types(models.Model):
 
     os_choices = models.CharField(choices=OS_CHOICES, max_length=100, unique=True)
 
+class VisibilityOptions:
 
+    PUBLIC_CODE = 1
+    PUBLIC_NAME = 'public'
+
+    PRIVATE_CODE = 2
+    PRIVATE_NAME = 'private'
+
+    VISIBILITY_OPTIONS = (
+        (PUBLIC_CODE, PUBLIC_NAME),
+        (PRIVATE_CODE, PRIVATE_NAME),
+    )
+
+    VISIBILITY_OPTIONS_CODE_dic = {str(x):y for x,y in VISIBILITY_OPTIONS}
+    VISIBILITY_OPTIONS_NAME_dic = {y:x for x,y in VISIBILITY_OPTIONS}
 
 class Tool(models.Model):
     '''
@@ -199,6 +213,8 @@ class Tool(models.Model):
     draft = models.BooleanField() # Is this a draft Tool?
 
     comment = models.ForeignKey(to='Comment', null=True, on_delete=models.CASCADE, related_name='tool_comment') # The comments of the tool
+
+    visibility = models.CharField(choices=VisibilityOptions.VISIBILITY_OPTIONS, max_length=100, default=VisibilityOptions.PUBLIC_CODE)
     
 
 class ToolValidations(models.Model):
@@ -290,10 +306,12 @@ class Workflow(models.Model):
     draft = models.BooleanField() # Is this a draft Workflow?
     comment = models.ForeignKey(to='Comment', null=True, on_delete=models.CASCADE, related_name='workflow_comment') # The comments of the tool
 
+    visibility = models.CharField(choices=VisibilityOptions.VISIBILITY_OPTIONS, max_length=100, default=VisibilityOptions.PUBLIC_CODE)
+
 class ReportToken(models.Model):
     '''
     Each report has multiple Tokens 
-    Each Token represent represent a state of the workflow
+    Each Token represent a state of the workflow
     '''
 
     # IMPORTANT: ADD THESE CODES ALSO IN ui.js :  window.OBCUI 

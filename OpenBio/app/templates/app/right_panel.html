@@ -14,8 +14,7 @@
         </div>
         <div style="margin: 20px;">
             <div class="left-align">
-                <span class="red lighten-2 draft tooltipped" data-position="left" data-tooltip="This tool is not finalized. It might change in the future!"
-                    ng-show="tools_info_draft">DRAFT</span>
+                <span class="red lighten-2 draft tooltipped" data-position="left" data-tooltip="This tool is not finalized. It might change in the future!" ng-show="tools_info_draft">DRAFT</span>
                 <div style="overflow: auto;">
                     <div class="box upDownVoteBoxTitle" ng-show="!tools_info_editable">
                         <div class="upvoteDiv upDownvoteDivTitle" ng-class="{'active': tool_voted['up']}"><i class="material-icons" style="font-size: 1.64rem;" ng-click="updownvote_tool_workflow('tool', true)">arrow_upward</i></div>
@@ -36,6 +35,7 @@
                             <span ng-show="tools_info_forked_from">, forked from <a href
                                     ng-click="tools_search_show_item(tools_info_forked_from)">t/<span
                                         ng-bind="tools_info_forked_from | tool_label"></span></a></span>
+                            status: <span ng-bind="tools_visibility"></span>
                         </small>
                     </div>
                 </div>
@@ -52,8 +52,11 @@
                         ng-click="ro_finalize_delete_pressed('tool', 'DELETE', false)">Delete</a>
                     <a class="dropdown-trigger btn" data-target='runDropdownTool' style="margin-bottom:2px" ng-disabled="profile_clients.length<=1">Run</a>
                     <a class="dropdown-trigger btn" data-target='downloadDropdownTool' style="margin-bottom:2px">Download</a>
-                    <a id="tool_save_button_id" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
-                        data-tooltip="Save" ng-click="tool_create_save_pressed()" ng-show="tools_info_editable"><i
+                    <a id="tool_save_button_id_public" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
+                        data-tooltip="Save Public" ng-click="tool_create_save_pressed('public')" ng-show="tools_info_editable"><i
+                            class="material-icons">save</i></a>
+                    <a id="tool_save_button_id_private" class="waves-effect waves-light btn tooltipped cyan-text text-darken-4" style="margin-bottom:2px" data-position="bottom"
+                        data-tooltip="Save Private" ng-click="tool_create_save_pressed('private')" ng-show="tools_info_editable"><i
                             class="material-icons">save</i></a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fork" ng-click="tool_info_fork_pressed()" ng-show="!tools_info_editable"
@@ -448,6 +451,7 @@
                             <span ng-show="workflow_info_forked_from">, forked from <a href
                                 ng-click="workflows_search_show_item(workflow_info_forked_from)">w/<span
                                 ng-bind="workflow_info_forked_from | workflow_label"></span></a></span>
+                            status: <span ng-bind="workflows_visibility"></span>
                         </small>
                     </div>
                     <span class="red lighten-2 draft tooltipped" data-position="left" data-tooltip="This workflow is not finalized. It might change in the future!"
@@ -474,8 +478,10 @@
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Clear" ng-click="workflow_info_clear_pressed()"
                         ng-disabled="!workflows_info_editable">Clear</a>
-                    <a id="workflow_save_button_id" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
-                        data-tooltip="Save" ng-click="workflows_create_save_pressed()"
+                    <a id="workflow_save_button_id_public" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
+                        data-tooltip="Save Public" ng-click="workflows_create_save_pressed('public')"
+                        ng-show="workflows_info_editable"><i class="material-icons">save</i></a>
+                    <a id="workflow_save_button_id_private" class="waves-effect waves-light btn tooltipped cyan-text text-darken-4" style="margin-bottom:2px"    data-position="bottom" data-tooltip="Save Private" ng-click="workflows_create_save_pressed('private')"
                         ng-show="workflows_info_editable"><i class="material-icons">save</i></a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fork" ng-click="workflows_info_fork_pressed('FORK')" ng-show="!workflows_info_editable"

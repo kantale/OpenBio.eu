@@ -28,7 +28,8 @@ from django.middleware.csrf import get_token
 #Import database objects
 from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations, \
     OS_types, Keyword, Report, ReportToken, Reference, ReferenceField, Comment, \
-    UpDownCommentVote, UpDownToolVote, UpDownWorkflowVote, ExecutionClient
+    UpDownCommentVote, UpDownToolVote, UpDownWorkflowVote, ExecutionClient, \
+    VisibilityOptions
 
 from app.models import create_nice_id
 
@@ -140,7 +141,6 @@ g = {
     'create_client_resume_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'workflow/{NICE_ID}/paused/false'.format(NICE_ID=nice_id)), 
     'create_client_abort_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'workflow/delete/{NICE_ID}'.format(NICE_ID=nice_id)), 
     'create_client_airflow_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'admin/airflow/graph?dag_id={NICE_ID}&execution_date='.format(NICE_ID=nice_id)),
-
 }
 
 ### HELPING FUNCTIONS AND DECORATORS #####
@@ -1266,7 +1266,9 @@ def index(request, **kwargs):
     tool_version = kwargs.get('tool_version', '')
     tool_edit = kwargs.get('tool_edit', 0)
     if tool_name and tool_version and tool_edit:
-        if Tool.objects.filter(name=tool_name, version=tool_version, edit=int(tool_edit)).exists():
+        Qs = [Q(name=tool_name, version=tool_version, edit=int(tool_edit))]
+        Qs.extend(get_visibility_Q_objects(request))
+        if Tool.objects.filter(*Qs).exists():
             init_interlink_args = {
                 'type': 't',
                 'name': tool_name,
@@ -1280,7 +1282,9 @@ def index(request, **kwargs):
     workflow_name = kwargs.get('workflow_name', '')
     workflow_edit = kwargs.get('workflow_edit', 0)
     if workflow_name and workflow_edit:
-        if Workflow.objects.filter(name=workflow_name, edit=int(workflow_edit)).exists():
+        Qs = [Q(name=workflow_name, edit=int(workflow_edit))]
+        Qs.extend(get_visibility_Q_objects(request))
+        if Workflow.objects.filter(*Qs).exists():
             init_interlink_args = {
                 'type': 'w',
                 'name': workflow_name,
@@ -1694,8 +1698,28 @@ def tools_search_1(request, **kwargs):
 
     return success(ret)
 
+def get_visibility_Q_objects(request):
+    '''
+    See Issue #217 
+    '''
 
-def tools_search_2(tools_search_name, tools_search_version, tools_search_edit):
+    obc_user = get_obc_user(request)
+    Q1 = Q(visibility = VisibilityOptions.PUBLIC_CODE)
+
+    if not obc_user:
+        # If the user is not logged in only public ROs are allowed
+        return [Q1]
+
+    Q2 = Q(visibility = VisibilityOptions.PRIVATE_CODE, obc_user = obc_user) # <-- Private ROs that belong to me
+
+    # If user is logged in, then return:
+    # (All PUBLIC) OR (PRIVATE that belong to me)
+    Q3 = Q(Q1 | Q2)
+    
+    return [Q3]
+
+
+def tools_search_2(tools_search_name, tools_search_version, tools_search_edit, *, request):
     '''
     This is triggered when there is a key-change on the main-search
     '''
@@ -1712,7 +1736,8 @@ def tools_search_2(tools_search_name, tools_search_version, tools_search_edit):
     if tools_search_edit:
         Qs.append(Q(edit = int(tools_search_edit)))
 
-
+    # Extend with visibility (private/public) filters
+    Qs.extend(get_visibility_Q_objects(request))
 
     # This applies an AND operator. https://docs.djangoproject.com/en/2.2/topics/db/queries/#complex-lookups-with-q-objects 
     # For the order_by part see issue #120
@@ -1741,7 +1766,7 @@ def tools_search_2(tools_search_name, tools_search_version, tools_search_edit):
 
     return ret
 
-def workflows_search_2(workflows_search_name, workflows_search_edit):
+def workflows_search_2(workflows_search_name, workflows_search_edit, *, request):
     '''
     Called by all_search_2
     '''
@@ -1756,6 +1781,10 @@ def workflows_search_2(workflows_search_name, workflows_search_edit):
     #workflows_search_edit = kwargs.get('workflows_search_edit', '')
     if workflows_search_edit:
         Qs.append(Q(edit = int(workflows_search_edit)))
+
+    # Extend with visibility (private/public) filters. 
+    Qs.extend(get_visibility_Q_objects(request))
+
 
     # For the order_by part see issue #120 
     results = Workflow.objects.filter(*Qs).order_by('created_at')
@@ -1855,6 +1884,7 @@ def tools_search_3(request, **kwargs):
         'validation_commands': tool.validation_commands,
         
         'validation_status': tool.last_validation.validation_status if tool.last_validation else 'Unvalidated',
+        'visibility': VisibilityOptions.VISIBILITY_OPTIONS_CODE_dic[tool.visibility],
         # Show stdout, stderr and error code when the tool is clicked on the tool-search-jstree
         'stdout' : tool.last_validation.stdout if tool.last_validation else None,
         'stderr' : tool.last_validation.stderr if tool.last_validation else None,
@@ -1932,6 +1962,16 @@ def validate_toast_button():
     '''
     return '<button class="waves-effect waves-light btn red lighten-3 black-text" onclick="window.OBCUI.send_validation_mail()">Validate</button>'
 
+def validate_visibility(ro_visibilty):
+    '''
+    Get the visibility value from the frontend and validate. 
+    Return the corresponding visibility code from the model
+    '''
+
+    if not ro_visibilty in VisibilityOptions.VISIBILITY_OPTIONS_NAME_dic:
+        return 'Error 8751 invalid visibility value'
+    return VisibilityOptions.VISIBILITY_OPTIONS_NAME_dic[ro_visibilty]
+
 @has_data
 def tools_add(request, **kwargs):
     '''
@@ -1974,6 +2014,12 @@ def tools_add(request, **kwargs):
     tool_edit_state = kwargs.get('tool_edit_state', '')
     if not type(tool_edit_state) is bool:
         return fail('Error 8715')
+
+    tool_visibility = kwargs.get('tool_visibility')
+    visibility_code = validate_visibility(tool_visibility)
+    if type(visibility_code) is str:
+        return fail(visibility_code)
+
 
     upvoted = False
     downvoted = False
@@ -2123,7 +2169,7 @@ def tools_add(request, **kwargs):
         upvotes = upvotes,
         downvotes = downvotes,
         draft = True, # By defaut all new tools are draft 
-        
+        visibility = visibility_code,
         last_validation=None,
     )
 
@@ -2974,6 +3020,12 @@ def workflows_add(request, **kwargs):
     if not type(workflow_edit_state) is bool:
         return fail('Error 4877')
 
+    # Check visibility
+    workflow_visibility = kwargs.get('workflow_visibility')
+    visibility_code = validate_visibility(workflow_visibility)
+    if type(visibility_code) is str:
+        return fail(visibility_code)
+
     upvoted = False
     downvoted = False
     workflow_forked_from = None
@@ -3130,6 +3182,7 @@ def workflows_add(request, **kwargs):
         changes = workflow_changes,
         upvotes = upvotes,
         downvotes = downvotes,
+        visibility = visibility_code,
         draft = True, # We always save new workflows as draft. 
     )
 
@@ -3270,6 +3323,7 @@ def workflows_search_3(request, **kwargs):
         'keywords': [keyword.keyword for keyword in workflow.keywords.all()],
         'workflow' : simplejson.loads(workflow.workflow),
         'changes': workflow.changes,
+        'visibility': VisibilityOptions.VISIBILITY_OPTIONS_CODE_dic[workflow.visibility],
         'workflow_pk': workflow.pk, # Used in comments (QAs)
         'workflow_thread': qa_create_thread(workflow.comment, obc_user), # Workflow comment thread 
         'workflow_score': workflow.upvotes - workflow.downvotes,
@@ -4521,10 +4575,11 @@ def qa_get_root_comment(comment):
 
     return qa_get_root_comment(comment.parent)
 
-def qa_search_2(main_search):
+def qa_search_2(main_search, *, request):
     '''
     Collect all Q&A from main search
     '''
+    obc_user = get_obc_user(request)
     title_Q = Q(title__icontains=main_search)
     comment_Q = Q(comment__icontains=main_search)
     username_Q = Q(obc_user__user__username__icontains=main_search)
@@ -4536,6 +4591,21 @@ def qa_search_2(main_search):
     for result in results:
         # Get the root message
         result_parent = qa_get_root_comment(result)
+
+        #Exclude comments on private ROs
+        to_continue = False
+        for comment_attr in ['tool_comment', 'workflow_comment']: # Reverse relationships from Tools/WF --> Comment
+            target_m2m_ROs = getattr(result_parent, comment_attr)
+            if target_m2m_ROs.exists():
+                RO = target_m2m_ROs.first()
+                if (
+                    RO.visibility != str(VisibilityOptions.PUBLIC_CODE) and
+                    RO.obc_user != obc_user
+                ):
+                    to_continue = True
+                    break
+        if to_continue:
+            continue
 
         #Is this on the tree?
         if result_parent.pk in entries_in_tree:
@@ -4672,11 +4742,11 @@ def all_search_2(request, **kwargs):
     ret = {}
 
     #Get tools
-    for key, value in tools_search_2(tools_search_name, tools_search_version, tools_search_edit).items():
+    for key, value in tools_search_2(tools_search_name, tools_search_version, tools_search_edit, request=request).items():
         ret[key] = value
 
     #Get workflows
-    for key, value in workflows_search_2(workflows_search_name, workflows_search_edit).items():
+    for key, value in workflows_search_2(workflows_search_name, workflows_search_edit, request=request).items():
         ret[key] = value
 
     #Get reports
@@ -4692,7 +4762,7 @@ def all_search_2(request, **kwargs):
         ret[key] = value
 
     # Get QAs
-    for key, value in qa_search_2(main_search).items():
+    for key, value in qa_search_2(main_search, request=request).items():
         ret[key] = value
 
     return success(ret)

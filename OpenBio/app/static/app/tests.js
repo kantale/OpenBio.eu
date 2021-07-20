@@ -1,6 +1,7 @@
 
 /*
 * Testing suite for OpenBio.eu
+* https://github.com/kantale/OpenBio.eu/issues/148
 * Run with test.test(prefix); i.e. test.test('test1')
 * window.test.test()
 */
@@ -222,12 +223,20 @@
 		M.Collapsible.getInstance($('#createToolDataAccordion')).open();
 	};
 
-	var tool_save_button = function() {
-		ret.click('tool_save_button_id');
+	var tool_save_button_public = function() {
+		ret.click('tool_save_button_id_public');
 	};
 
-	var workflow_save_button = function() {
-		ret.click('workflow_save_button_id');
+	var tool_save_button_private = function() {
+		ret.click('tool_save_button_id_private');
+	};
+
+	var workflow_save_button_public = function() {
+		ret.click('workflow_save_button_id_public');
+	};
+
+	var workflow_save_button_private = function() {
+		ret.click('workflow_save_button_id_private');
 	};
 
 	var tool_cancel_button = function() {
@@ -299,7 +308,7 @@
 			tools_set_description,
 			tools_select_os_posix,
 			// tools_dnd_search_dep,
-			tool_save_button,
+			args['visibility'] == 'public' ? tool_save_button_public : tool_save_button_private,
 			tool_cancel_button,
 			remove_toast
 		];
@@ -334,7 +343,18 @@
 			[sign_in_insert_username, args['username']],
 			[sign_in_insert_password, args['password']],
 			login_button_clicked
-		]
+		];
+
+		return actions;
+	}
+
+	var search = function(args) {
+
+		var actions = [
+			global_search_close_accordions,
+			global_search_empty,
+			[global_search, {'search': args['search']}],
+		];
 
 		return actions;
 	}
@@ -351,7 +371,12 @@
 
 //		actions.push(... create_new_tool({'name': prefix + '_t'})); // https://stackoverflow.com/questions/1374126/how-to-extend-an-existing-javascript-array-with-another-array-without-creating 
 //		actions.push(... create_new_workflow({'name': prefix + '_w', 'import_tool_name': prefix + '_t'}));
-		actions.push(... signin(ret.args));
+
+		//actions.push(... signin(ret.args)); // 1. Sign in 
+		//actions.push(... create_new_tool({'name': 'vpublic', 'visibility': 'public'}) ); // 2. Create public tool
+		//actions.push(... create_new_tool({'name': 'vprivate', 'visibility': 'private'}) ); // 2. Create private tool
+		actions.push(... search({'search': 'v'}));
+
 
 		return build_chain(actions, 0);
 	};
