@@ -9,7 +9,7 @@
         <div class="card blue-grey lighten-4 rightPanelTitleCard">
             <div class="card-content rightPanelTitleContent">
                 <h5 class="rightPanelTitleHeader">Tool/Data</h5>
-                <a id="tool_cancel_button_id" class="waves-effect btn-flat white-text red lighten-2 right tooltipped cancelButton" data-position="bottom" data-tooltip="Close this Tool/Data" ng-click="tools_button_cancel_clicked()">Close</a>
+                <a id="tool_cancel_button_id" class="waves-effect btn-flat white-text red lighten-2 right tooltipped cancelButton" data-position="bottom" data-tooltip="Close this Tool/Data" ng-click="tools_button_cancel_clicked()"><span ng-show="!tools_info_editable">Close</span><span ng-show="tools_info_editable">Cancel</span></a>
             </div>
         </div>
         <div style="margin: 20px;">
@@ -50,8 +50,11 @@
                     <a class="btn tooltipped" data-position="bottom" data-tooltip="Delete" style="margin-bottom:2px"
                         ng-show="tools_info_draft && tool_info_username==username && !tools_info_editable"
                         ng-click="ro_finalize_delete_pressed('tool', 'DELETE', false)">Delete</a>
+
+                    <!-- FEATURE ABANDONED #221
                     <a class="dropdown-trigger btn" data-target='runDropdownTool' style="margin-bottom:2px" ng-disabled="profile_clients.length<=1">Run</a>
                     <a class="dropdown-trigger btn" data-target='downloadDropdownTool' style="margin-bottom:2px">Download</a>
+                    -->
                     <a id="tool_save_button_id_public" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Save Public" ng-click="tool_create_save_pressed('public')" ng-show="tools_info_editable"><i
                             class="material-icons">save</i></a>
@@ -61,8 +64,10 @@
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fork" ng-click="tool_info_fork_pressed()" ng-show="!tools_info_editable"
                         ng-class="{'disabled': !username}"><i class="material-icons">call_split</i></a>
+                    
 
                     <!-- Run Dropdown -->
+                    <!--FEATURE ABANDONED #221
                     <ul id='runDropdownTool' class='dropdown-content'>
                         <li ng-repeat="profile_client in profile_clients" ng-if="profile_client.name">
                             <a>
@@ -70,7 +75,9 @@
                             </a>
                         </li>
                     </ul>
+                    -->
                     <!-- Download Dropdown -->
+                    <!-- FEATURE ABANDONED #221
                     <ul id='downloadDropdownTool' class='dropdown-content'>
                         <li><a ng-click="tool_info_download_pressed('BASH')">BASH executable</a></li>
                         <li><a ng-click="tool_info_download_pressed('JSON')">JSON</a></li>
@@ -78,6 +85,7 @@
                         <li><a ng-click="tool_info_download_pressed('CWLZIP')">CWL zip</a></li>
                         <li><a ng-click="tool_info_download_pressed('AIRFLOW')">Airflow</a></li>
                     </ul>
+                    --> 
 
                 </div>
             </div>
@@ -426,7 +434,7 @@
         <div class="card blue-grey lighten-4 rightPanelTitleCard">
             <div class="card-content rightPanelTitleContent">
                 <h5 class="rightPanelTitleHeader">Workflow</h5>
-                <a id="workflow_cancel_button_id" class="waves-effect btn-flat white-text red lighten-2 right tooltipped cancelButton" data-position="bottom" data-tooltip="Close this Workflow" ng-click="workflows_button_cancel_clicked()">Close</a>
+                <a id="workflow_cancel_button_id" class="waves-effect btn-flat white-text red lighten-2 right tooltipped cancelButton" data-position="bottom" data-tooltip="Close this Workflow" ng-click="workflows_button_cancel_clicked()"><span ng-show="!workflows_info_editable">Close</span><span ng-show="workflows_info_editable">Cancel</span></a>
             </div>
         </div>
         <div style="margin: 20px;">
@@ -472,7 +480,7 @@
                         ng-show="workflows_info_draft && workflows_info_username==username && !workflows_info_editable"
                         ng-click="ro_finalize_delete_pressed('workflow', 'DELETE', false)">Delete</a>
                     <a class="dropdown-trigger btn" data-target='runDropdownWorkflow' style="margin-bottom:2px" ng-disabled="(profile_clients.length<=1) || workflow_run_disabled || workflows_info_editable">Run</a>
-                    <a class="dropdown-trigger btn" data-target='downloadDropdownWorkflow' style="margin-bottom:2px">Download</a>
+                    <a class="dropdown-trigger btn" data-target='downloadDropdownWorkflow' ng-show="!workflows_info_editable" style="margin-bottom:2px">Download</a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fit" ng-click="workflow_info_fit_pressed()">Fit</a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
