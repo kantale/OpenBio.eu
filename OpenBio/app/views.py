@@ -2040,11 +2040,32 @@ def tools_add(request, **kwargs):
             return fail('Invalid tool edit number. Error 8714')
 
 
-        # Delete the previous object!
+        # Get the previous object
         try:
             tool = Tool.objects.get(name=tools_search_name, version=tools_search_version, edit=tools_search_edit)
         except ObjectDoesNotExist as e:
             return fail('Error 8716')
+
+        #Are we converting from public to private?
+        if tool.visibility == str(VisibilityOptions.PUBLIC_CODE) and tool_visibility == VisibilityOptions.PRIVATE_NAME:
+            # We are about to make this public tool, private
+            # Make sure that there isn't any public tool that depends from this tool
+            first = tool.dependencies_related.filter(visibility=str(VisibilityOptions.PUBLIC_CODE)).first()
+            if first:
+                return fail(f'Cannot make this tool private. Tool {tool} depends from this tool and is public.')
+
+            # Make sure that there isn't any public workflow that contains this tool
+            first = Workflow.objects.filter(tools__in = [tool], visibility=str(VisibilityOptions.PUBLIC_CODE)).first()
+            if first:
+                return fail(f'Cannot make this tool private. Workflow {first} contains this Tool and is public.')
+
+        #Are we converting from private to public?
+        if tool.visibility == str(VisibilityOptions.PRIVATE_CODE) and tool_visibility == VisibilityOptions.PUBLIC_NAME:
+            # We are about to make this private tool, public
+            # Does it contain any private dependency?
+            first = tool.dependencies.filter(visibility=str(VisibilityOptions.PRIVATE_CODE)).first()
+            if first:
+                return fail(f'Cannot make this tool public. It depends from the private tool: {first}')
 
         # Check that the user who created this tool is the one who deletes it!
         if tool.obc_user != obc_user:
@@ -3047,6 +3068,26 @@ def workflows_add(request, **kwargs):
             w = Workflow.objects.get(name=workflow_info_name, edit=workflow_info_edit)
         except ObjectDoesNotExist as e:
             return fail('Error 4879')
+
+        # Are we converting from private to public?
+        if w.visibility == str(VisibilityOptions.PRIVATE_CODE) and workflow_visibility == VisibilityOptions.PUBLIC_NAME:
+            # Does this workflow contain any private tool?
+            first = w.tools.filter(visibility=str(VisibilityOptions.PRIVATE_CODE)).first()
+            if first:
+                return fail(f'Cannot convert this Workflow to public. It contains the private tool {first}')
+
+            # Does this workflow contain an private workflow?
+            first = w.workflows.filter(visibility=str(VisibilityOptions.PRIVATE_CODE)).first()
+            if first:
+                return fail(f'Cannot convert this Workflow to public. It contains the private workflow {first}')
+
+        # Are we converting from public to private?
+        if w.visibility == str(VisibilityOptions.PUBLIC_CODE) and workflow_visibility == VisibilityOptions.PRIVATE_NAME:
+            # Is there any public workflow that uses this workflow?
+            first = w.workflows_using_me.filter(visibility=str(VisibilityOptions.PUBLIC_CODE)).first()
+            if first:
+                return fail(f'Cannot convert this Workflow to private. It is contained in the public workflow {first}')
+
 
         # Basic sanity check. We shouldn't be able to edit a workflow which is not a draft..
         if not w.draft:

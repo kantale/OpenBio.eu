@@ -296,9 +296,6 @@ class Workflow(models.Model):
 
     changes = models.TextField(null=True) # What changes have been made from forked tool?
 
-    # Links to the tools used (for stats)
-    tools = models.ManyToManyField(Tool)
-
     created_at = models.DateTimeField(auto_now_add=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#datefield 
 
     upvotes = models.IntegerField() # Number of upvotes
