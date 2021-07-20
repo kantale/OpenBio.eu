@@ -62,7 +62,10 @@ Here is the philosophy behind this naming/ID-ing scheme. In a repository of scie
 
 
 ### Downloading a Tool/Data 
-On the "Download" dropdown, select "BASH executable". A file named ```bash.sh``` get's downloaded. As you might have guessed you can actually execute this file. If you don't know how, there are many online resources to help you on that (just google: run .sh file). Before executing it, you should read carefully the following:
+To actually download and run the commands that install and validate a tool you need first to create a workflow with it. This process will be explained in detail later in the manual. 
+For now you can click the green "+" icon on the left panel next to "Workflows". Enter the name "test" in the "Name" input field and add something in the "Description". Next on the search bar on the left panel enter "my_tool". The tool appears in the Tools/Data section. Now you can drag and drop the `my_tool/1/1` icon in the workflow panel in the right part of the screen. Next click "Save" to save this workflow.
+
+On the "Download" dropdown on this Workflow, select "BASH executable". A file named ```bash.sh``` get's downloaded. As you might have guessed you can actually execute this file. If you don't know how, there are many online resources to help you on that (just google: run .sh file). Before executing it, you should read carefully the following:
 
 **Always execute scripts that you have downloaded from openbio.eu (or from anywhere on the Internet..) in a [sandboxed environment](https://en.wikipedia.org/wiki/Sandbox_%28computer_security%29). If you don't know what that is then DO NOT RUN IT! OpenBio.eu takes absolutely no liability on damages caused by executing scripts downloaded from openbio.eu.**
 
@@ -73,8 +76,8 @@ bash bash.sh
 
 The output is:
 ```
-OBC: Workflow name: root
-OBC: Workflow edit: 0
+OBC: Workflow name: test
+OBC: Workflow edit: 1
 OBC: Workflow report: None
 OBC: INSTALLING TOOL: my_tool/1/1
 OBC: INSTALLATION OF TOOL: my_tool/1/1 . COMPLETED
@@ -104,7 +107,7 @@ Let's move back to the platform. On the left part of the platform, on the search
 
 ![img](screenshots/screen_4.png)
 
-On the items that appear, click the one that you created before (i.e. my_tool/1/1). Now on the right panel unfold the "Installation" commands. There you will notice two Bash editors, the one titled "Installation Commands" and the other is called "Validation Commands":
+On the items that appear, click the one that you created before (i.e. `my_tool/1/1`). Now on the right panel unfold the "Installation" commands. There you will notice two Bash editors, the one titled "Installation Commands" and the other is called "Validation Commands":
 
 ![img](screenshots/screen_5.png)
 
@@ -133,8 +136,8 @@ The environment should look like this:
 Now press "SAVE" again, then Download the "BASH executable" as before and run the ```bash.sh``` again in a sandboxed environment. Now you will notice that the validation status has changed to ```SUCCEEDED```:
 
 ```
-OBC: Workflow name: root
-OBC: Workflow edit: 0
+OBC: Workflow name: test
+OBC: Workflow edit: 1
 OBC: Workflow report: None
 OBC: INSTALLING TOOL: my_tool/1/1
 installing tool my_tool
@@ -175,7 +178,7 @@ Output Variables:
 Notice that after validating the tool, it sets the variable named ```my_tool__1__1__var_1``` the value ```hello world```. The name of the variable (```my_tool__1__1__var_1```) can be interpreted as "variable named var_1 of the tool my_tool with version 1 and edit 1".
 
 ### Tool/Data dependencies 
-Suppose that the we have another tool/data which depends from my_tool. Let's call this tool/data 'another_tool' and assume version 1. Since in OpenBio.eu we *have to* insert the installation / validation Bash commands, we also *have to* declare the depencencies of this tool/data. Click the '+' button on Tools/Data and add ```another_tool``` as name and ```1``` as version. Also unfold the 'Dependencies panel'
+Suppose that the we have another tool/data which depends from my_tool. Let's call this tool/data 'another_tool' and assume version 1. Since in OpenBio.eu we *have to* insert the installation / validation Bash commands, we also *have to* declare the dependencies of this tool/data. Click the '+' button on Tools/Data and add ```another_tool``` as name and ```1``` as version. Also unfold the 'Dependencies panel'
 
 Next, enter ```my_tool``` on the search text field on the left and locate the item on the results that you created before. Now drag and drop this item in the Dependencies panel (red border):
 
@@ -204,11 +207,11 @@ We can also add a variable named ```var_2```. Now the data on ```another_tool```
 ![img](screenshots/screen_10.png)
 
 
-Now if we save, Download the "Bash Executable", and run it we will see something like this:
+Now Save `my_tool\1\1`. The workfow `test\1` has been also changed since it includes the tool `my_tool\1\1`. Go to the `test\1` workflow, Download the "Bash Executable", and run it. You will see something like this:
 
 ```
-OBC: Workflow name: root
-OBC: Workflow edit: 0
+OBC: Workflow name: test
+OBC: Workflow edit: 1
 OBC: Workflow report: None
 OBC: INSTALLING TOOL: my_tool/1/1
 installing tool my_tool
