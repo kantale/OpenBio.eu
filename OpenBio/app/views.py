@@ -1698,6 +1698,18 @@ def tools_search_1(request, **kwargs):
 
     return success(ret)
 
+def is_visibility_allowed(*, obc_user, ro):
+    '''
+    Return True/False if this user is allowed to see this RO
+    '''
+    is_public = ro.visibility == str(VisibilityOptions.PUBLIC_CODE)
+    if obc_user:
+        if not is_public:
+            return obc_user == ro.obc_user
+        
+    return is_public
+
+
 def get_visibility_Q_objects(request):
     '''
     See Issue #217 
@@ -1745,15 +1757,23 @@ def tools_search_2(tools_search_name, tools_search_version, tools_search_edit, *
 
     # { id : 'ajson1', parent : '#', text : 'KARAPIPERIM', state: { opened: true} }
 
-    # Build JS TREE structure
+    obc_user = get_obc_user(request)
 
+    # Build JS TREE structure
     tools_search_jstree = []
     for x in results:
+
+        # Get the id of the parent
+        if x.forked_from and is_visibility_allowed(obc_user=obc_user, ro=x.forked_from):
+            parent_id = tool_id_jstree(x.forked_from, g['SEARCH_TOOL_TREE_ID'])
+        else:
+            parent_id = '#'
+
         to_add = {
             'data': {'name': x.name, 'version': x.version, 'edit': x.edit},
             'text': tool_node_jstree(x), #  tool_text_jstree(x) + (' <span class="red lighten-3">DRAFT</span>' if x.draft else '') + jstree_icon_html('tools'),
             'id': tool_id_jstree(x, g['SEARCH_TOOL_TREE_ID']),
-            'parent': tool_id_jstree(x.forked_from, g['SEARCH_TOOL_TREE_ID']) if x.forked_from else '#',
+            'parent':  parent_id,
             'state': { 'opened': True},
         }
         tools_search_jstree.append(to_add)
@@ -1789,15 +1809,23 @@ def workflows_search_2(workflows_search_name, workflows_search_edit, *, request)
     # For the order_by part see issue #120 
     results = Workflow.objects.filter(*Qs).order_by('created_at')
 
+    obc_user = get_obc_user(request)
+
     # Build JS TREE structure
-    
     workflows_search_jstree = []
     for x in results:
+
+        # Get the id of the parent
+        if x.forked_from and is_visibility_allowed(obc_user=obc_user, ro=x.forked_from):
+            parent_id = workflow_id_jstree(x.forked_from, g['SEARCH_WORKFLOW_TREE_ID'])
+        else:
+            parent_id = '#'
+
         to_add = {
             'data': {'name': x.name, 'edit': x.edit},
             'text': workflow_node_jstree(x),
             'id': workflow_id_jstree(x, g['SEARCH_WORKFLOW_TREE_ID']),
-            'parent': workflow_id_jstree(x.forked_from, g['SEARCH_WORKFLOW_TREE_ID']) if x.forked_from else '#',
+            'parent': parent_id,
             'state': { 'opened': True},
         }
         workflows_search_jstree.append(to_add)
@@ -1822,6 +1850,11 @@ def tools_search_3(request, **kwargs):
 
     tool = Tool.objects.get(name__iexact=tool_name, version__iexact=tool_version, edit=tool_edit)
 
+    obc_user = get_obc_user(request)
+
+    if not is_visibility_allowed(obc_user=obc_user, ro=tool):
+        return fail(f'This tool is private.')
+
     #Get the dependencies of this tool and build a JSTREE
     tool_dependencies_jstree = []
     for dependency in tool.dependencies.all():
@@ -1844,11 +1877,6 @@ def tools_search_3(request, **kwargs):
     for variable in tool.variables.all():
         tool_variables.append({'name': variable.name, 'value': variable.value, 'description': variable.description})
 
-    # Get obc_user
-    if request.user.is_anonymous:
-        obc_user = None
-    else:
-        obc_user = OBC_user.objects.get(user=request.user)
 
     #Is it voted?
     if obc_user:
@@ -3352,6 +3380,10 @@ def workflows_search_3(request, **kwargs):
         obc_user = None
     else:
         obc_user = OBC_user.objects.get(user=request.user)
+
+    #Is this user allowed to get access to this workflow?
+    if not is_visibility_allowed(obc_user=obc_user, ro=workflow):
+        return fail('This workflow is private.')
 
     #Is it voted?
     if obc_user:

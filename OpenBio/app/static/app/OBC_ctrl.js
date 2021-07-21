@@ -1034,7 +1034,6 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 document.getElementById('createToolDataDiv').style.display = 'block';
                 M.Collapsible.getInstance($('#createToolDataAccordion')).open(0);
 
-
                 $scope.tool_info_username = data['username'];
                 $scope.tool_website = data['website'];
                 $scope.tool_description = data['description'];
@@ -1120,7 +1119,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.qa_gen['tool'].qa_comment_username = data['tool_comment_username'];
             },
             function (data) {
-                $scope.toast('Error 5429', 'error');
+                $scope.toast(data['error_message'], 'error');
             },
             function(statusText) {
                 $scope.tools_info_error_message = statusText;
