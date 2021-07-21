@@ -2020,6 +2020,19 @@ def tools_add(request, **kwargs):
     if type(visibility_code) is str:
         return fail(visibility_code)
 
+    #Dependencies
+    tool_dependencies = kwargs['tool_dependencies']
+    
+    # FIXME! What if a dependency is deleted???
+    tool_dependencies_objects = [Tool.objects.get(name=t['name'], version=t['version'], edit=int(t['edit'])) for t in tool_dependencies]
+
+    #If this is a public tool check that all tool dependencies are public as well
+    if visibility_code == VisibilityOptions.PUBLIC_CODE:
+        for tool_dependencies_object in tool_dependencies_objects:
+            if tool_dependencies_object.visibility != str(VisibilityOptions.PUBLIC_CODE):
+                return fail(f'This tool depends from the private tool: {tool_dependencies_object}. Cannot create a public tool with private dependencies.')
+
+
 
     upvoted = False
     downvoted = False
@@ -2158,11 +2171,6 @@ def tools_add(request, **kwargs):
     tool_installation_commands = kwargs['tool_installation_commands']
     tool_validation_commands = kwargs['tool_validation_commands']
 
-    #Dependencies
-    tool_dependencies = kwargs['tool_dependencies']
-    
-    # FIXME! What if a dependency is deleted???
-    tool_dependencies_objects = [Tool.objects.get(name=t['name'], version=t['version'], edit=int(t['edit'])) for t in tool_dependencies]
 
     #Variables
     tool_variables = kwargs['tool_variables']
@@ -3023,6 +3031,12 @@ def workflows_add(request, **kwargs):
     edit workflow edit update workflow
     '''
 
+    workflow_forked_from = None
+    workflow_changes = None
+    upvoted = False
+    downvoted = False
+
+
     if request.user.is_anonymous: # Server should always check..
         return fail('Please login to create new workflow')
 
@@ -3047,10 +3061,86 @@ def workflows_add(request, **kwargs):
     if type(visibility_code) is str:
         return fail(visibility_code)
 
-    upvoted = False
-    downvoted = False
-    workflow_forked_from = None
-    workflow_changes = None
+    workflow = kwargs.get('workflow_json', '')
+    #print ('Workflow from angular:')
+    #print (simplejson.dumps(workflow, indent=4))
+
+    if not workflow:
+        return fail ('workflows json object is empty') # This should never happen!
+
+    if not workflow['elements']:
+        return fail('workflow graph cannot be empty')
+
+    # Get all tools that are used in this workflow except the ones that are disconnected 
+    tool_nodes = [x for x in workflow['elements']['nodes'] if (x['data']['type'] == 'tool') and (not x['data']['disconnected'])]
+    tools = [Tool.objects.get(name=x['data']['name'], version=x['data']['version'], edit=x['data']['edit']) for x in tool_nodes]
+    # If this is a public workflow make sure that it does not include any private tool
+    if visibility_code == VisibilityOptions.PUBLIC_CODE:
+        for tool in tools:
+            if tool.visibility != str(VisibilityOptions.PUBLIC_CODE):
+                return fail(f'This public workflow contains the private tool: {tool}. Public workflows cannot include private tools.')
+
+    # Compute next_edit
+    if workflow_edit_state:
+        next_edit = workflow_info_edit
+    else:
+        #Get the maximum version. FIXME DUPLICATE CODE
+        workflow_all = Workflow.objects.filter(name__iexact=workflow_info_name)
+        if not workflow_all.exists():
+            next_edit = 1
+        else:
+            max_edit = workflow_all.aggregate(Max('edit'))
+            next_edit = max_edit['edit__max'] + 1
+
+    #Change the edit value in the cytoscape json object
+    set_edit_to_cytoscape_json(workflow, next_edit, workflow_info_name)
+
+    # Get all workflows that are used in this workflow
+    workflow_nodes = [x for x in workflow['elements']['nodes'] if x['data']['type'] == 'workflow']
+
+    # Remove self workflow and workflows that are disconnected
+    workflow_nodes = [
+        {'name': x['data']['name'], 'edit': x['data']['edit']} 
+        for x in workflow_nodes if 
+            (not (x['data']['name'] == workflow_info_name and x['data']['edit'] == next_edit)) and (not x['data']['disconnected'])  
+        ]
+    # Get workflow database objects
+    workflows = [Workflow.objects.get(**x) for x in workflow_nodes]
+
+    # If this is a public workflow make sure that it does not include any private workflow
+    if visibility_code == VisibilityOptions.PUBLIC_CODE:
+        for w in workflows:
+            if w.visibility != str(VisibilityOptions.PUBLIC_CODE):
+                return fail(f'This public workflow contains the private workflow: {w}. Public workflows cannot include private workflows.')
+
+    # Check main_step
+    main_counter = check_workflow_step_main(workflow, {'name':workflow_info_name, 'edit': next_edit })
+    if main_counter == 0:
+        return fail('Could not find main step. One step needs to be declared as "main"')
+    if main_counter > 1:
+        return fail('Error 49188') # This should never happen
+
+    workflow_changes = kwargs.get('workflow_changes', None)
+    if workflow_info_forked_from:
+        if not workflow_changes:
+            return fail('Edit Summary cannot be empty')
+        workflow_forked_from = Workflow.objects.get(name=workflow_info_forked_from['name'], edit=workflow_info_forked_from['edit'])
+    else:
+        pass # Do nothing 
+
+    # Check workflow website
+    workflow_website = kwargs.get('workflow_website', '')
+    if workflow_website:
+        if not valid_url(workflow_website):
+            return fail('website is not a valid URL')
+
+    # Check workflow description
+    workflow_description = kwargs.get('workflow_description', '')
+    if not workflow_description.strip():
+        return fail('Description cannot be empty')
+
+    workflow_description_html = markdown(workflow_description)
+
     if workflow_edit_state:
         # We are editing this workflow
 
@@ -3144,68 +3234,6 @@ def workflows_add(request, **kwargs):
         upvotes = 0
         downvotes = 0
 
-    workflow_changes = kwargs.get('workflow_changes', None)
-    if workflow_info_forked_from:
-        if not workflow_changes:
-            return fail('Edit Summary cannot be empty')
-        workflow_forked_from = Workflow.objects.get(name=workflow_info_forked_from['name'], edit=workflow_info_forked_from['edit'])
-    else:
-        pass # Do nothing 
-
-
-    workflow_website = kwargs.get('workflow_website', '')
-    if workflow_website:
-        if not valid_url(workflow_website):
-            return fail('website is not a valid URL')
-
-    workflow_description = kwargs.get('workflow_description', '')
-    if not workflow_description.strip():
-        return fail('Description cannot be empty')
-
-    workflow_description_html = markdown(workflow_description)
-
-    workflow = kwargs.get('workflow_json', '')
-    #print ('Workflow from angular:')
-    #print (simplejson.dumps(workflow, indent=4))
-
-    if not workflow:
-        return fail ('workflows json object is empty') # This should never happen!
-
-    if not workflow['elements']:
-        return fail('workflow graph cannot be empty')
-
-    # Client sents the root workflow node.
-    # When we save we make root False so that it is easier to import it later 
-    #workflow_root_node = [x for x in workflow['elements']['nodes'] if x['data']['type']=='workflow' and x['data']['root']]
-    #if len(workflow_root_node) != 1:
-    #    return fail('Error 28342')
-    #workflow_root_node[0]['data']['root'] = False
-
-    #Check that one and only one step is main
-
-    if workflow_edit_state:
-        next_edit = workflow_info_edit
-    else:
-        #Get the maximum version. FIXME DUPLICATE CODE
-        workflow_all = Workflow.objects.filter(name__iexact=workflow_info_name)
-        if not workflow_all.exists():
-            next_edit = 1
-        else:
-            max_edit = workflow_all.aggregate(Max('edit'))
-            next_edit = max_edit['edit__max'] + 1
-
-
-    #Change the edit value in the cytoscape json object
-    set_edit_to_cytoscape_json(workflow, next_edit, workflow_info_name)
-#    print ('Workflow from set_edit:')
-#    print (simplejson.dumps(workflow, indent=4))
-
-    #print (simplejson.dumps(workflow, indent=4))
-    main_counter = check_workflow_step_main(workflow, {'name':workflow_info_name, 'edit': next_edit })
-    if main_counter == 0:
-        return fail('Could not find main step. One step needs to be declared as "main"')
-    if main_counter > 1:
-        return fail('Error 49188') # This should never happen
 
     new_workflow = Workflow(
         obc_user=obc_user, 
@@ -3235,26 +3263,12 @@ def workflows_add(request, **kwargs):
         new_workflow.created_at = workflow_created_at
         new_workflow.save()
 
-    # Get all tools that are used in this workflow except the ones that are disconnected 
-    tool_nodes = [x for x in workflow['elements']['nodes'] if (x['data']['type'] == 'tool') and (not x['data']['disconnected'])]
-    tools = [Tool.objects.get(name=x['data']['name'], version=x['data']['version'], edit=x['data']['edit']) for x in tool_nodes]
+    # Add tools 
     if tools:
         new_workflow.tools.add(*tools)
         new_workflow.save()
 
-    # Get all workflows that are used in this workflow
-    workflow_nodes = [x for x in workflow['elements']['nodes'] if x['data']['type'] == 'workflow']
-
-    # print (simplejson.dumps(workflow_nodes, indent=4))
-
-    # Remove self workflow and workflows that are disconnected
-    workflow_nodes = [
-        {'name': x['data']['name'], 'edit': x['data']['edit']} 
-        for x in workflow_nodes if 
-            (not (x['data']['name'] == workflow_info_name and x['data']['edit'] == next_edit)) and (not x['data']['disconnected'])  
-        ]
-    # Get workflow database objects
-    workflows = [Workflow.objects.get(**x) for x in workflow_nodes]
+    # Add workflows
     if workflows:
         new_workflow.workflows.add(*workflows)
         new_workflow.save()
