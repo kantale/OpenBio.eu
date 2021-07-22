@@ -143,6 +143,27 @@
                 </div>
 
                 <!-- --------------------------------------------------------------------------------------- -->
+                <!-- ----------------------------- Access token Card --------------------------------------- -->
+                <!-- --------------------------------------------------------------------------------------- -->
+                <div class="col s12">
+                    <section id="accessToknCard" class="scrollspy section_projet">
+                        <div class="card">
+                            <div class="card-content">
+                                <div class="row">
+                                    <blockquote><span class="card-title">Access Token</span></blockquote>
+                                    <p style="padding-left: 0.7rem;">Manage your access tokens</p>
+                                    Access token: <span ng-bind="profile_access_token ? profile_access_token : 'Acess token is not set'"></span>
+                                    <button ng-click="profile_delete_access_token()" ng-show="profile_access_token">Delete</button>
+                                    <button ng-click="profile_issue_access_token()" ng-show="profile_access_token">Renew</button>
+                                    <button ng-click="profile_issue_access_token()" ng-show="!profile_access_token">Create</button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+
+                <!-- --------------------------------------------------------------------------------------- -->
                 <!-- ----------------------------- Execution Environment Card ------------------------------ -->
                 <!-- --------------------------------------------------------------------------------------- -->
                 <div class="col s12">

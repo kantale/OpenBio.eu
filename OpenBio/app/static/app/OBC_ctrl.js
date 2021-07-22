@@ -295,6 +295,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.profile_clients = data['profile_clients'];
                 $scope.profile_ORCID = data['profile_ORCID'];
                 $scope.profile_ORCID_url = data['profile_ORCID'] ? "https://orcid.org/" + data['profile_ORCID'] : null;
+                $scope.profile_access_token = data['profile_access_token'];
 
                 //If the server did not return any client. Add an empty placeholder
                 if (!$scope.profile_clients.length) {
@@ -429,6 +430,47 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.toast('Internal Error. Server not responding', 'error');
             }
         });
+    };
+
+    /*
+    * Profile --> Manage Access Tokens --> Delete
+    */
+    $scope.profile_delete_access_token = function() {
+
+        $scope.ajax(
+            'profile_delete_access_token/',
+            {},
+            function(data) {
+                $scope.profile_access_token = null;
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
+
+    };
+
+    /*
+    * Profile --> Manage Access Tokens --> Re-issue a new token
+    */
+    $scope.profile_issue_access_token = function() {
+        $scope.ajax(
+            'profile_issue_access_token/',
+            {},
+            function(data) {
+                $scope.profile_access_token = data['profile_access_token'];
+            },
+            function(data) {
+                $scope.toast(data['error_message'], 'error');
+            },
+            function(statusText) {
+                $scope.toast(statusText, 'error');
+            }
+        );
+
     };
 
     /*

@@ -31,6 +31,8 @@ from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations, \
     UpDownCommentVote, UpDownToolVote, UpDownWorkflowVote, ExecutionClient, \
     VisibilityOptions
 
+from rest_framework.authtoken.models import Token # https://www.django-rest-framework.org/api-guide/authentication/#setting-the-authentication-scheme
+
 from app.models import create_nice_id
 
 #Import executor
@@ -1019,6 +1021,51 @@ def references_orcid_unclaim_pressed(request, **kwargs):
     ret = {}
     return success(ret)
 
+def get_user_access_token(obc_user):
+    '''
+    Get the access token for private API access
+    '''
+
+    try:
+        t = Token.objects.get(user = obc_user.user)
+    except ObjectDoesNotExist:
+        return None
+
+    return t
+
+@has_data
+def profile_delete_access_token(request, **kwargs):
+    '''
+    Delete the access token of a user
+    '''
+
+    obc_user = get_obc_user(request)
+    token = get_user_access_token(obc_user)
+    if not token:
+        return fail('Error. 5891 Could not find the access token of this user.')
+
+    token.delete()
+
+    return success()
+
+@has_data
+def profile_issue_access_token(request, **kwargs):
+    '''
+    Generate a new acess token
+    '''
+    profile_delete_access_token(request)
+    obc_user = get_obc_user(request)
+    if not obc_user:
+        return fail('Error 5892. Could not find user.')
+
+    token = Token.objects.create(user=obc_user.user)
+
+    ret = {
+        'profile_access_token': token.key,
+    }
+
+    return success(ret)
+
 @has_data
 def users_search_3(request, **kwargs):
     '''
@@ -1032,9 +1079,8 @@ def users_search_3(request, **kwargs):
     if not username:
         return fail('Could not get username')
 
-    try:
-        u = OBC_user.objects.get(user__username__iexact=username)
-    except ObjectDoesNotExist as e:
+    u = get_obc_user(request)
+    if not u:
         return fail('Could not find user with this username')
 
     ret = {
@@ -1046,6 +1092,7 @@ def users_search_3(request, **kwargs):
         'profile_publicinfo': u.public_info,
         'profile_created_at': datetime_to_str(u.user.date_joined), # https://docs.djangoproject.com/en/2.2/ref/contrib/auth/#django.contrib.auth.models.User.date_joined
         'profile_ORCID': get_orcid_data(u.user),
+        'profile_access_token' : getattr(get_user_access_token(u), 'key', None),
     }
 
     # only for registered user:

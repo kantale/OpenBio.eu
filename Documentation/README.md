@@ -1016,7 +1016,7 @@ As you notice the step ```complex_task``` run 3 times in parallel, each with dif
 # Downloading a Workflow
 We have already seen that on every Tool/Data and on every Workflow there is a "DOWNLOAD" button. We have already used the ```BASH``` option in order to download a Tool/Data/Workflow as a standalone bash script. Here we will explore all the other options.
 
-## Dowload a Workflow in CWL format.
+## Download a Workflow in CWL format.
 CWL ([Common Workflow Language](https://www.commonwl.org/)) is one of the most known formats for workflow description. OpenBio exports workflows in CWL. To examine this ability, first let's create a workflow named ```parallel/1``` that has an input named ```parameter``` and an output named ```result```. The workflow will have the following steps:
 
 step: ```main_step```:
@@ -1337,7 +1337,12 @@ If the chosen format is a binary file (```cwltargz```, ```cwlzip```), then the R
 curl "https://openbio.eu/platform/rest/workflows/hapmap3_pca/1/?workflow_id=xyz&format=cwltargz" -o workflow.tar.gz
 ```
 
+## Access credentials 
+Workflows in OpenBio can be public or private. In order to get a private workflow through the API you need to provide a valid access token. For example the following command requests the workflow `w/1` assuming that a user has the access token: `11203cc7c93f32a9a0b0e9961177a41f4fe833d3`.
 
+```bash
+curl -H 'Accept: application/json' -H 'Authorization: Token 11203cc7c93f32a9a0b0e9961177a41f4fe833d3'  "https://www.openbio.eu/platform/rest/workflows/w/1/?workflow_id=xyz&format=json"
+```
 
 
 
