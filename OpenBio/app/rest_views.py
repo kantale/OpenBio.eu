@@ -12,7 +12,9 @@ from rest_framework.renderers import BaseRenderer, JSONRenderer, BrowsableAPIRen
 
 from django.core.exceptions import ObjectDoesNotExist
 
-from .views import download_workflow # Import from main views
+from .views import (
+        download_workflow, is_visibility_allowed, get_obc_user
+    ) # Import from main views
 
 import re
 import simplejson
@@ -25,6 +27,15 @@ import urllib.parse
 #    #queryset = Tool.objects.all().order_by('-created_at')
 #    queryset = Tool.objects.filter(name__in=['samtools', 'hapmap3', 'bioconvert']).order_by('-created_at')
 #    serializer_class = ToolSerializer
+
+# from rest_framework.authtoken.models import Token
+# curl -H 'Accept: application/json' "http://0.0.0.0:8200/platform/rest/workflows/w/2/?workflow_id=xyz&format=json" 
+# curl -H 'Accept: application/json' -H 'Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b'  "http://0.0.0.0:8200/platform/rest/workflows/w/2/?workflow_id=xyz&format=json" 
+# curl -H 'Accept: application/json' -H 'Authorization: Token 11203cc7c93f32a9a0b0e9961177a41f4fe833d3'  "http://0.0.0.0:8200/platform/rest/workflows/w/2/?workflow_id=xyz&format=json"
+# curl -H 'Accept: application/json' -H 'Authorization: Token 228d6d31ff985bfb5a264e2db889afaf9493f182'  "http://0.0.0.0:8200/platform/rest/workflows/w/2/?workflow_id=xyz&format=json"
+
+# curl -H 'Accept: application/json' -H 'Authorization: Token 228d6d31ff985bfb5a264e2db889afaf9493f182'  "http://0.0.0.0:8200/platform/rest/workflows/w/1/?workflow_id=xyz&format=json"
+# curl -H 'Accept: application/json' -H 'Authorization: Token 11203cc7c93f32a9a0b0e9961177a41f4fe833d3'  "http://0.0.0.0:8200/platform/rest/workflows/w/1/?workflow_id=xyz&format=json"
 
 
 #=====================
@@ -224,6 +235,10 @@ def workflow_complete(request, workflow_name, workflow_edit):
             workflow = Workflow.objects.get(name=workflow_name, edit=int(workflow_edit))
         except ObjectDoesNotExist as e:
             return Response({'success': False, 'error': 'Workflow not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        obc_user = get_obc_user(request)
+        if not is_visibility_allowed(obc_user=obc_user, ro=workflow):
+            return Response({'success': False, 'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
         # Support input parameters in GET parameters Issue 196 
         # /?input__inp__test__2=aaaaa
