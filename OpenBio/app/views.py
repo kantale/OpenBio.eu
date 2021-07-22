@@ -129,6 +129,7 @@ g = {
         'references': 'link',
         'users': 'person',
         'qas': 'forum',
+        'private': 'lock',
     },
     'url_validator': URLValidator(), # Can be customized: URLValidator(schemes=('http', 'https', 'ftp', 'ftps', 'rtsp', 'rtmp'))
     'client_name_regex': r'^[\w]+$', # The regular expression to validate the name of exutation client
@@ -613,7 +614,12 @@ def tool_node_jstree(tool):
     '''
     The HTML that is node in a jstree that contains a tool
     '''
-    return tool_text_jstree(tool) + (' <span class="red lighten-3">DRAFT</span>' if tool.draft else '') + jstree_icon_html('tools'),    
+    return (
+        tool_text_jstree(tool) + 
+        (' <span class="red lighten-3">DRAFT</span>' if tool.draft else '') +
+        jstree_icon_html('tools') + 
+        (jstree_icon_html('private') if tool.visibility == str(VisibilityOptions.PRIVATE_CODE) else '')
+    )
 
 
 def workflow_text_jstree(workflow):
@@ -626,7 +632,12 @@ def workflow_node_jstree(workflow):
     '''
     The HTML that is node in a jstree that contains a workflow
     '''
-    return workflow_text_jstree(workflow) + (' <span class="red lighten-3">DRAFT</span>' if workflow.draft else '') + jstree_icon_html('workflows')
+    return (
+        workflow_text_jstree(workflow) + 
+        (' <span class="red lighten-3">DRAFT</span>' if workflow.draft else '') + 
+        jstree_icon_html('workflows') + 
+        (jstree_icon_html('private') if workflow.visibility == str(VisibilityOptions.PRIVATE_CODE) else '')
+    )
 
 def report_text_jstree(report):
     '''
