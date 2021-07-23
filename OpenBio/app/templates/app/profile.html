@@ -17,6 +17,7 @@
             <ul class="section table-of-contents">
                 <li><a class="lien_projet" href="#profileCard">Profile</a></li>
                 <li><a class="lien_projet" href="#changePasswordCard">Change Password</a></li>
+                <li><a class="lien_projet" href="#accessTokenCard">Access Token</a></li>
                 <li><a class="lien_projet" href="#executionCard">Execution Environment</a></li>
                 <li><a class="lien_projet" href="#notificationsCard" ng-show="false">Notifications</a></li>
                 <li><a class="lien_projet" href="#settingsCard" ng-show="false">Settings</a></li>
@@ -42,8 +43,8 @@
                     <section id="profileCard" class="scrollspy section_projet">
                         <div class="card">
                             <div class="card-content">
-                                <blockquote><span class="card-title">Profile</span></blockquote>
-                                <div class="row">
+                                <blockquote style="margin-bottom: 0px;"><span class="card-title">Profile</span></blockquote>
+                                <div class="row" style="margin-top: 20px;">
                                     <form class="col s12">
                                         <div class="row valign-wrapper">
                                             <div class="col s3">
@@ -73,8 +74,8 @@
                                                         <label><img alt="ORCID logo" src="/static/app/images/orcid_16x16.png" width="16" height="16" style="margin-bottom: -3px; "> ORCID iD</label>
                                                         <a ng-href="{{ profile_ORCID_url }}" target="_blank"><span ng-bind="profile_ORCID" ng-show="profile_ORCID" style="font-size: 16px; display: block; margin: 4px 0px 12px 0px;">0000-0000-00000-0000</span></a>
                                                         <span ng-show="!profile_ORCID" style="font-size: 16px; display: block; margin: 4px 0px 12px 0px;">Not associated with ORCID</span>
-                                                        <a href="/platform/login/orcid/" class="waves-effect waves-teal btn-flat right tooltipped" data-position="bottom" data-tooltip="Associate with ORCID" style="margin-top: -42px; width: auto;" ng-show="!profile_ORCID">Associate</a>
-                                                        <a class="waves-effect waves-teal btn-flat right tooltipped" data-position="bottom" data-tooltip="Disassociate with ORCID" style="margin-top: -42px; width: auto;" ng-click="profile_orcid_disconnect_pressed()" ng-show="profile_ORCID">Disassociate</a>
+                                                        <a href="/platform/login/orcid/" class="waves-effect waves-teal btn right tooltipped" data-position="bottom" data-tooltip="Associate with ORCID" style="margin-top: -42px; width: auto;" ng-show="!profile_ORCID">Associate</a>
+                                                        <a class="waves-effect waves-teal btn right tooltipped" data-position="bottom" data-tooltip="Disassociate with ORCID" style="margin-top: -42px; width: auto;" ng-click="profile_orcid_disconnect_pressed()" ng-show="profile_ORCID">Disassociate</a>
                                                         {% endverbatim %}
                                                     </div>
 
@@ -121,8 +122,8 @@
                         <div class="card">
                             <div class="card-content">
                                 <div class="row">
-                                    <blockquote><span class="card-title">Change Password</span></blockquote>
-                                    <form class="col s12">
+                                    <blockquote style="margin-bottom: 0px;"><span class="card-title">Change Password</span></blockquote>
+                                    <form class="col s12" style="margin-top: 20px;">
                                         <div class="input-field col s12">
                                             <input id="profileOldPassword" type="password" class="validate">
                                             <label for="profileOldPassword">Old Password</label>
@@ -150,12 +151,25 @@
                         <div class="card">
                             <div class="card-content">
                                 <div class="row">
-                                    <blockquote><span class="card-title">Access Token</span></blockquote>
-                                    <p style="padding-left: 0.7rem;">Manage your access tokens</p>
-                                    Access token: <span id="access_token_span" ng-bind="profile_access_token ? profile_access_token : 'Acess token is not set'"></span>
+                                    <blockquote style="margin-bottom: 0px;"><span class="card-title">Access Token</span></blockquote>
+                                    <p>Manage your access tokens</p>
+                                    <form class="col s12" style="margin-top: 20px;">
+                                        <div class="col s12" style="margin-top: 15px; margin-bottom: 15px;">
+                                            <div style="border-bottom: 1px solid #9e9e9e;">
+                                                {% verbatim %}                                                    
+                                                <label>Access Token</label><br>
+                                                <span id="access_token_span" ng-bind="profile_access_token ? profile_access_token : 'Access token is not set'" style="font-size: 16px; display: block; margin: 4px 0px 12px 0px;"></span>
+                                                <a id="at_delete" ng-click="profile_delete_access_token()" class="waves-effect waves-teal btn right" style="margin-top: -42px; left: -90px; width: auto;" ng-show="profile_access_token">Delete</a>
+                                                <a id="at_renew" ng-click="profile_issue_access_token()" class="waves-effect waves-teal btn right" style="margin-top: -42px; width: auto;" ng-show="profile_access_token">Renew</a>
+                                                <a id="at_create" ng-click="profile_issue_access_token()" class="waves-effect waves-teal btn right" style="margin-top: -42px; width: auto;" ng-show="!profile_access_token">Create</a>
+                                                {% endverbatim %}
+                                            </div>
+                                        </div> 
+                                    </form>
+                                    <!-- Access token: <span id="access_token_span" ng-bind="profile_access_token ? profile_access_token : 'Acess token is not set'"></span>
                                     <button id="at_delete" ng-click="profile_delete_access_token()" ng-show="profile_access_token">Delete</button>
                                     <button id="at_renew" ng-click="profile_issue_access_token()" ng-show="profile_access_token">Renew</button>
-                                    <button ud="at_create" ng-click="profile_issue_access_token()" ng-show="!profile_access_token">Create</button>
+                                    <button ud="at_create" ng-click="profile_issue_access_token()" ng-show="!profile_access_token">Create</button> -->
                                 </div>
                             </div>
                         </div>
@@ -171,9 +185,9 @@
                         <div class="card">
                             <div class="card-content">
                                 <div class="row">
-                                    <blockquote><span class="card-title">Execution Environment</span></blockquote>
-                                    <p style="padding-left: 0.7rem;">Manage your execution environments</p>
-                                    <table class="highlight">
+                                    <blockquote style="margin-bottom: 0px;"><span class="card-title">Execution Environment</span></blockquote>
+                                    <p>Manage your execution environments</p>
+                                    <table class="highlight" style="margin-top: 20px;">
                                         <thead>
                                             <tr>
                                                 <th>Name</th>
