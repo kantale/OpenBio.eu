@@ -1024,6 +1024,7 @@ def references_orcid_unclaim_pressed(request, **kwargs):
 def get_user_access_token(obc_user):
     '''
     Get the access token for private API access
+    ### TEST 217_access_token
     '''
 
     try:
@@ -1033,13 +1034,7 @@ def get_user_access_token(obc_user):
 
     return t
 
-@has_data
-def profile_delete_access_token(request, **kwargs):
-    '''
-    Delete the access token of a user
-    '''
-
-    obc_user = get_obc_user(request)
+def delete_user_access_token(obc_user):
     token = get_user_access_token(obc_user)
     if not token:
         return fail('Error. 5891 Could not find the access token of this user.')
@@ -1048,13 +1043,18 @@ def profile_delete_access_token(request, **kwargs):
 
     return success()
 
+
 @has_data
-def profile_issue_access_token(request, **kwargs):
+def profile_delete_access_token(request, **kwargs):
     '''
-    Generate a new acess token
+    Delete the access token of a user
+    ### TEST 217_access_token
     '''
-    profile_delete_access_token(request)
+
     obc_user = get_obc_user(request)
+    return delete_user_access_token(obc_user)
+
+def create_user_access_token(obc_user):
     if not obc_user:
         return fail('Error 5892. Could not find user.')
 
@@ -1065,6 +1065,17 @@ def profile_issue_access_token(request, **kwargs):
     }
 
     return success(ret)
+
+
+@has_data
+def profile_issue_access_token(request, **kwargs):
+    '''
+    Generate a new access token
+    ### TEST 217_access_token
+    '''
+    profile_delete_access_token(request)
+    obc_user = get_obc_user(request)
+    return create_user_access_token(obc_user)
 
 @has_data
 def users_search_3(request, **kwargs):
@@ -2117,6 +2128,7 @@ def tools_add(request, **kwargs):
         for tool_dependencies_object in tool_dependencies_objects:
             if tool_dependencies_object.visibility != str(VisibilityOptions.PUBLIC_CODE):
                 return fail(f'This tool depends from the private tool: {tool_dependencies_object}. Cannot create a public tool with private dependencies.')
+                ### TEST 217_create_public_tool_with_private_dependency
 
 
 
@@ -2152,11 +2164,13 @@ def tools_add(request, **kwargs):
             first = tool.dependencies_related.filter(visibility=str(VisibilityOptions.PUBLIC_CODE)).first()
             if first:
                 return fail(f'Cannot make this tool private. Tool {tool} depends from this tool and is public.')
+                ### TEST  217_convert_from_public_to_private_tool_that_is_a_dependency_to_public_tool 
 
             # Make sure that there isn't any public workflow that contains this tool
             first = Workflow.objects.filter(tools__in = [tool], visibility=str(VisibilityOptions.PUBLIC_CODE)).first()
             if first:
                 return fail(f'Cannot make this tool private. Workflow {first} contains this Tool and is public.')
+                ### TEST 217_convert_from_public_to_private_tool_that_exists_in_public_wf
 
         #Are we converting from private to public?
         if tool.visibility == str(VisibilityOptions.PRIVATE_CODE) and tool_visibility == VisibilityOptions.PUBLIC_NAME:
@@ -2165,6 +2179,8 @@ def tools_add(request, **kwargs):
             first = tool.dependencies.filter(visibility=str(VisibilityOptions.PRIVATE_CODE)).first()
             if first:
                 return fail(f'Cannot make this tool public. It depends from the private tool: {first}')
+                # Actually we never end up here. Check:
+                ### TEST 217_convert_from_private_to_public_tool_has_a_private_dependency
 
         # Check that the user who created this tool is the one who deletes it!
         if tool.obc_user != obc_user:
@@ -3165,9 +3181,16 @@ def workflows_add(request, **kwargs):
         for tool in tools:
             if tool.visibility != str(VisibilityOptions.PUBLIC_CODE):
                 return fail(f'This public workflow contains the private tool: {tool}. Public workflows cannot include private tools.')
+                ### TEST 217_create_public_wf_containing_private_tool 
 
     # Compute next_edit
     if workflow_edit_state:
+        try:
+            # workflow_info_edit comes from client. 
+            workflow_info_edit = int(kwargs.get('workflow_info_edit', ''))
+        except ValueError:
+            return fail('Error 4878')
+
         next_edit = workflow_info_edit
     else:
         #Get the maximum version. FIXME DUPLICATE CODE
@@ -3198,6 +3221,7 @@ def workflows_add(request, **kwargs):
         for w in workflows:
             if w.visibility != str(VisibilityOptions.PUBLIC_CODE):
                 return fail(f'This public workflow contains the private workflow: {w}. Public workflows cannot include private workflows.')
+                ### TEST 217_create_public_wf_containing_private_wf 
 
     # Check main_step
     main_counter = check_workflow_step_main(workflow, {'name':workflow_info_name, 'edit': next_edit })
@@ -3230,15 +3254,6 @@ def workflows_add(request, **kwargs):
     if workflow_edit_state:
         # We are editing this workflow
 
-        # Get the edit
-        workflow_info_edit = kwargs.get('workflow_info_edit', '')
-
-        # Is this an int?
-        try:
-            workflow_info_edit = int(workflow_info_edit)
-        except ValueError as e:
-            return fail('Error 4878')
-
         # Does this workflow exist?
         try:
             w = Workflow.objects.get(name=workflow_info_name, edit=workflow_info_edit)
@@ -3251,11 +3266,13 @@ def workflows_add(request, **kwargs):
             first = w.tools.filter(visibility=str(VisibilityOptions.PRIVATE_CODE)).first()
             if first:
                 return fail(f'Cannot convert this Workflow to public. It contains the private tool {first}')
+                ### TEST 217_convert_from_private_to_public_workflow_containing_private_tool
 
             # Does this workflow contain an private workflow?
             first = w.workflows.filter(visibility=str(VisibilityOptions.PRIVATE_CODE)).first()
             if first:
                 return fail(f'Cannot convert this Workflow to public. It contains the private workflow {first}')
+                ### TEST 217_concvert_from_private_to_public_workflow_containing_private_wf
 
         # Are we converting from public to private?
         if w.visibility == str(VisibilityOptions.PUBLIC_CODE) and workflow_visibility == VisibilityOptions.PRIVATE_NAME:
@@ -3263,6 +3280,7 @@ def workflows_add(request, **kwargs):
             first = w.workflows_using_me.filter(visibility=str(VisibilityOptions.PUBLIC_CODE)).first()
             if first:
                 return fail(f'Cannot convert this Workflow to private. It is contained in the public workflow {first}')
+                ### TEST 217_convert_wf_from_public_to_private_that_contains_public_wf
 
 
         # Basic sanity check. We shouldn't be able to edit a workflow which is not a draft..
