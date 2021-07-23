@@ -1490,7 +1490,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * save tool save add tool add 
     * visibility = 'public' | 'private'
     */
-    $scope.tool_create_save_pressed = function(visibility) {
+    $scope.tool_create_save_pressed = function() {
 
         //Check if tool name and version are valid
         if (!$scope.tools_name_regexp.test($scope.tools_info_name)) {
@@ -1541,7 +1541,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 'tool_installation_commands': tool_installation_editor.getValue(),
                 'tool_validation_commands': tool_validation_editor.getValue(),
                 'tool_edit_state' : $scope.tools_info_edit_state, // Are we editing this tool ?
-                'tool_visibility': visibility
+                'tool_visibility': $("#toolVisibility").val()
             },
             function(data) {
                 $scope.tools_info_success_message = 'Tool/Data successfully saved';
@@ -1579,7 +1579,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.tools_info_edit_state = false;
 
                 //Set visibility
-                $scope.tools_visibility = visibility;
+                $scope.tools_visibility = $("#toolVisibility").val();
 
                 //EXPERIMENTAL. UPDATE SEARCH RESULTS
                 $scope.all_search_2();
@@ -4223,7 +4223,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * add workflow add save workflow save 
     * visibility : public | private 
     */
-    $scope.workflows_create_save_pressed = function(visibility) {
+    $scope.workflows_create_save_pressed = function() {
 
         //Check workflow name
         if (!$scope.tools_name_regexp.test($scope.workflow_info_name)) {
@@ -4255,7 +4255,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 workflow_keywords: window.OBCUI.get_chip_data('workflowChips'),
                 workflow_json : cy.json(),
                 workflow_edit_state : $scope.workflows_info_edit_state, // Are we editing this tool ?
-                workflow_visibility: visibility
+                workflow_visibility: $("#workflowVisibility").val()
             },
             function(data) {
                 $scope.workflow_info_created_at = data['created_at'];
@@ -4289,7 +4289,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.workflows_info_edit_state = false;
 
                 //Set visibility 
-                $scope.workflows_visibility = visibility;
+                $scope.workflows_visibility = $("#workflowVisibility").val();
 
                 //Close STEP accordion
                 M.Collapsible.getInstance($('#editWorkflowAccordion')).close();

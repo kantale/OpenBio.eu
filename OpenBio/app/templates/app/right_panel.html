@@ -14,7 +14,9 @@
         </div>
         <div style="margin: 20px;">
             <div class="left-align">
-                <span class="red lighten-2 draft tooltipped" data-position="left" data-tooltip="This tool is not finalized. It might change in the future!" ng-show="tools_info_draft">DRAFT</span>
+                <span class="red lighten-2 draft tooltipped" style="margin-left: 10px;" data-position="left" data-tooltip="This tool is not finalized. It might change in the future!" ng-show="tools_info_draft">DRAFT</span>
+                <span class="grey darken-1 draft tooltipped" style="text-transform: uppercase;" data-position="left" data-tooltip="This tool can be viewed by everyone" ng-show="tools_visibility == 'public'"><span ng-bind="tools_visibility"></span></span>
+                <span class="grey darken-1 draft tooltipped" style="text-transform: uppercase;" data-position="left" data-tooltip="This tool can only be viewed by you" ng-show="tools_visibility == 'private'"><span ng-bind="tools_visibility"></span></span>
                 <div style="overflow: auto;">
                     <div class="box upDownVoteBoxTitle" ng-show="!tools_info_editable">
                         <div class="upvoteDiv upDownvoteDivTitle" ng-class="{'active': tool_voted['up']}"><i class="material-icons" style="font-size: 1.64rem;" ng-click="updownvote_tool_workflow('tool', true)">arrow_upward</i></div>
@@ -35,7 +37,7 @@
                             <span ng-show="tools_info_forked_from">, forked from <a href
                                     ng-click="tools_search_show_item(tools_info_forked_from)">t/<span
                                         ng-bind="tools_info_forked_from | tool_label"></span></a></span>
-                            status: <span ng-bind="tools_visibility"></span>
+                            <!-- status: <span ng-bind="tools_visibility"></span> -->
                         </small>
                     </div>
                 </div>
@@ -52,12 +54,15 @@
                         ng-click="ro_finalize_delete_pressed('tool', 'DELETE', false)">Delete</a>
                     <a class="dropdown-trigger btn" data-target='runDropdownTool' style="margin-bottom:2px" ng-disabled="profile_clients.length<=1">Run</a>
                     <a class="dropdown-trigger btn" data-target='downloadDropdownTool' style="margin-bottom:2px">Download</a>
-                    <a id="tool_save_button_id_public" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
+                    <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
+                        data-tooltip="Save" ng-click="tool_create_save_pressed()" ng-show="tools_info_editable"><i
+                            class="material-icons">save</i></a>
+                    <!-- <a id="tool_save_button_id_public" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Save Public" ng-click="tool_create_save_pressed('public')" ng-show="tools_info_editable"><i
-                            class="material-icons">save</i></a>
-                    <a id="tool_save_button_id_private" class="waves-effect waves-light btn tooltipped cyan-text text-darken-4" style="margin-bottom:2px" data-position="bottom"
+                            class="material-icons">save</i></a> -->
+                    <!-- <a id="tool_save_button_id_private" class="waves-effect waves-light btn tooltipped cyan-text text-darken-4" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Save Private" ng-click="tool_create_save_pressed('private')" ng-show="tools_info_editable"><i
-                            class="material-icons">save</i></a>
+                            class="material-icons">save</i></a> -->
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fork" ng-click="tool_info_fork_pressed()" ng-show="!tools_info_editable"
                         ng-class="{'disabled': !username}"><i class="material-icons">call_split</i></a>
@@ -107,6 +112,13 @@
                                         data-tooltip="Version of the tool or dataset. Available characters: a-z, A-Z, 0-0, _, ."
                                         ng-model="tools_info_version" ng-disabled="tools_info_forked_from || tools_info_edit_state">
                                     <label for="generalVersion">Version</label>
+                                </div>
+                                <div class="input-field col s12 m4 grid-s12-m4-l4">
+                                    <select id="toolVisibility">
+                                      <option value="public" ng-selected="tools_visibility == 'public'">Public</option>
+                                      <option value="private" ng-selected="tools_visibility == 'private'">Private</option>
+                                    </select>
+                                    <label>Visibility</label>
                                 </div>
                                 <div class="input-field col s12 grid-s12-m12-l12">
                                     <input id="generalWebsite" type="text" class="validate tooltipped" 
@@ -431,6 +443,9 @@
         </div>
         <div style="margin: 20px;">
             <div class="left-align">
+                <span class="red lighten-2 draft tooltipped" style="margin-left: 10px;" data-position="left" data-tooltip="This workflow is not finalized. It might change in the future!" ng-show="workflows_info_draft">DRAFT</span>
+                <span class="grey darken-1 draft tooltipped" style="text-transform: uppercase;" data-position="left" data-tooltip="This workflow can be viewed by everyone" ng-show="workflows_visibility == 'public'"><span ng-bind="workflows_visibility"></span></span>
+                <span class="grey darken-1 draft tooltipped" style="text-transform: uppercase;" data-position="left" data-tooltip="This workflow can only be viewed by you" ng-show="workflows_visibility == 'private'"><span ng-bind="workflows_visibility"></span></span>
                 <div style="overflow: auto; margin-bottom: 5px;">
                     <div class="box upDownVoteBoxTitle" ng-show="!workflows_info_editable">
                         <div class="upvoteDiv upDownvoteDivTitle" ng-class="{'active': workflow_voted['up']}"><i class="material-icons" style="font-size: 1.64rem;" ng-click="updownvote_tool_workflow('workflow', true)">arrow_upward</i></div>
@@ -451,11 +466,9 @@
                             <span ng-show="workflow_info_forked_from">, forked from <a href
                                 ng-click="workflows_search_show_item(workflow_info_forked_from)">w/<span
                                 ng-bind="workflow_info_forked_from | workflow_label"></span></a></span>
-                            status: <span ng-bind="workflows_visibility"></span>
+                            <!-- status: <span ng-bind="workflows_visibility"></span> -->
                         </small>
                     </div>
-                    <span class="red lighten-2 draft tooltipped" data-position="left" data-tooltip="This workflow is not finalized. It might change in the future!"
-                    ng-show="workflows_info_draft">DRAFT</span>
                 </div>
                 <!-- Buttons -->
                 <div class="row right-align">
@@ -478,11 +491,14 @@
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Clear" ng-click="workflow_info_clear_pressed()"
                         ng-disabled="!workflows_info_editable">Clear</a>
-                    <a id="workflow_save_button_id_public" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
+                    <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
+                        data-tooltip="Save" ng-click="workflows_create_save_pressed()" ng-show="workflows_info_editable"><i
+                        class="material-icons">save</i></a>
+                    <!-- <a id="workflow_save_button_id_public" class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Save Public" ng-click="workflows_create_save_pressed('public')"
                         ng-show="workflows_info_editable"><i class="material-icons">save</i></a>
                     <a id="workflow_save_button_id_private" class="waves-effect waves-light btn tooltipped cyan-text text-darken-4" style="margin-bottom:2px"    data-position="bottom" data-tooltip="Save Private" ng-click="workflows_create_save_pressed('private')"
-                        ng-show="workflows_info_editable"><i class="material-icons">save</i></a>
+                        ng-show="workflows_info_editable"><i class="material-icons">save</i></a> -->
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fork" ng-click="workflows_info_fork_pressed('FORK')" ng-show="!workflows_info_editable"
                         ng-class="{'disabled': !username}"><i class="material-icons">call_split</i></a>
@@ -524,11 +540,18 @@
                     <div class="collapsible-body">
                         <form class="col s12">
                             <div class="row" ng-show="workflows_info_editable">
-                                <div class="input-field col s12 m12 grid-s12-m12-l12">
+                                <div class="input-field col s12 m6 grid-s12-m6-l6">
                                     <input id="generalWorkflowName" type="text" class="validate"
                                         ng-model="workflow_info_name" ng-change="workflow_info_name_changed()"
                                         ng-disabled="workflow_info_forked_from || workflows_info_edit_state">
                                     <label for="generalWorkflowName" required>Name</label>
+                                </div>
+                                <div class="input-field col s12 m6 grid-s12-m6-l6">
+                                    <select id="workflowVisibility">
+                                      <option value="public" [selected]="workflows_visibility == 'public'">Public</option>
+                                      <option value="private" [selected]="workflows_visibility == 'private'">Private</option>
+                                    </select>
+                                    <label>Visibility</label>
                                 </div>
                                 <div class="input-field col s12 grid-s12-m12-l12">
                                     <input id="workflowsGeneralWebsite" type="text" class="validate"
