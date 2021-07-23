@@ -31,6 +31,8 @@ from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations, \
     UpDownCommentVote, UpDownToolVote, UpDownWorkflowVote, ExecutionClient, \
     VisibilityOptions
 
+from rest_framework.authtoken.models import Token # https://www.django-rest-framework.org/api-guide/authentication/#setting-the-authentication-scheme
+
 from app.models import create_nice_id
 
 #Import executor
@@ -129,6 +131,7 @@ g = {
         'references': 'link',
         'users': 'person',
         'qas': 'forum',
+        'private': 'lock',
     },
     'url_validator': URLValidator(), # Can be customized: URLValidator(schemes=('http', 'https', 'ftp', 'ftps', 'rtsp', 'rtmp'))
     'client_name_regex': r'^[\w]+$', # The regular expression to validate the name of exutation client
@@ -613,7 +616,12 @@ def tool_node_jstree(tool):
     '''
     The HTML that is node in a jstree that contains a tool
     '''
-    return tool_text_jstree(tool) + (' <span class="red lighten-3">DRAFT</span>' if tool.draft else '') + jstree_icon_html('tools'),    
+    return (
+        tool_text_jstree(tool) + 
+        (' <span class="red lighten-3">DRAFT</span>' if tool.draft else '') +
+        jstree_icon_html('tools') + 
+        (jstree_icon_html('private') if tool.visibility == str(VisibilityOptions.PRIVATE_CODE) else '')
+    )
 
 
 def workflow_text_jstree(workflow):
@@ -626,7 +634,12 @@ def workflow_node_jstree(workflow):
     '''
     The HTML that is node in a jstree that contains a workflow
     '''
-    return workflow_text_jstree(workflow) + (' <span class="red lighten-3">DRAFT</span>' if workflow.draft else '') + jstree_icon_html('workflows')
+    return (
+        workflow_text_jstree(workflow) + 
+        (' <span class="red lighten-3">DRAFT</span>' if workflow.draft else '') + 
+        jstree_icon_html('workflows') + 
+        (jstree_icon_html('private') if workflow.visibility == str(VisibilityOptions.PRIVATE_CODE) else '')
+    )
 
 def report_text_jstree(report):
     '''
@@ -1008,6 +1021,62 @@ def references_orcid_unclaim_pressed(request, **kwargs):
     ret = {}
     return success(ret)
 
+def get_user_access_token(obc_user):
+    '''
+    Get the access token for private API access
+    ### TEST 217_access_token
+    '''
+
+    try:
+        t = Token.objects.get(user = obc_user.user)
+    except ObjectDoesNotExist:
+        return None
+
+    return t
+
+def delete_user_access_token(obc_user):
+    token = get_user_access_token(obc_user)
+    if not token:
+        return fail('Error. 5891 Could not find the access token of this user.')
+
+    token.delete()
+
+    return success()
+
+
+@has_data
+def profile_delete_access_token(request, **kwargs):
+    '''
+    Delete the access token of a user
+    ### TEST 217_access_token
+    '''
+
+    obc_user = get_obc_user(request)
+    return delete_user_access_token(obc_user)
+
+def create_user_access_token(obc_user):
+    if not obc_user:
+        return fail('Error 5892. Could not find user.')
+
+    token = Token.objects.create(user=obc_user.user)
+
+    ret = {
+        'profile_access_token': token.key,
+    }
+
+    return success(ret)
+
+
+@has_data
+def profile_issue_access_token(request, **kwargs):
+    '''
+    Generate a new access token
+    ### TEST 217_access_token
+    '''
+    profile_delete_access_token(request)
+    obc_user = get_obc_user(request)
+    return create_user_access_token(obc_user)
+
 @has_data
 def users_search_3(request, **kwargs):
     '''
@@ -1021,9 +1090,8 @@ def users_search_3(request, **kwargs):
     if not username:
         return fail('Could not get username')
 
-    try:
-        u = OBC_user.objects.get(user__username__iexact=username)
-    except ObjectDoesNotExist as e:
+    u = get_obc_user(request)
+    if not u:
         return fail('Could not find user with this username')
 
     ret = {
@@ -1035,6 +1103,7 @@ def users_search_3(request, **kwargs):
         'profile_publicinfo': u.public_info,
         'profile_created_at': datetime_to_str(u.user.date_joined), # https://docs.djangoproject.com/en/2.2/ref/contrib/auth/#django.contrib.auth.models.User.date_joined
         'profile_ORCID': get_orcid_data(u.user),
+        'profile_access_token' : getattr(get_user_access_token(u), 'key', None),
     }
 
     # only for registered user:
@@ -1698,6 +1767,18 @@ def tools_search_1(request, **kwargs):
 
     return success(ret)
 
+def is_visibility_allowed(*, obc_user, ro):
+    '''
+    Return True/False if this user is allowed to see this RO
+    '''
+    is_public = ro.visibility == str(VisibilityOptions.PUBLIC_CODE)
+    if obc_user:
+        if not is_public:
+            return obc_user == ro.obc_user
+        
+    return is_public
+
+
 def get_visibility_Q_objects(request):
     '''
     See Issue #217 
@@ -1745,15 +1826,23 @@ def tools_search_2(tools_search_name, tools_search_version, tools_search_edit, *
 
     # { id : 'ajson1', parent : '#', text : 'KARAPIPERIM', state: { opened: true} }
 
-    # Build JS TREE structure
+    obc_user = get_obc_user(request)
 
+    # Build JS TREE structure
     tools_search_jstree = []
     for x in results:
+
+        # Get the id of the parent
+        if x.forked_from and is_visibility_allowed(obc_user=obc_user, ro=x.forked_from):
+            parent_id = tool_id_jstree(x.forked_from, g['SEARCH_TOOL_TREE_ID'])
+        else:
+            parent_id = '#'
+
         to_add = {
             'data': {'name': x.name, 'version': x.version, 'edit': x.edit},
             'text': tool_node_jstree(x), #  tool_text_jstree(x) + (' <span class="red lighten-3">DRAFT</span>' if x.draft else '') + jstree_icon_html('tools'),
             'id': tool_id_jstree(x, g['SEARCH_TOOL_TREE_ID']),
-            'parent': tool_id_jstree(x.forked_from, g['SEARCH_TOOL_TREE_ID']) if x.forked_from else '#',
+            'parent':  parent_id,
             'state': { 'opened': True},
         }
         tools_search_jstree.append(to_add)
@@ -1789,15 +1878,23 @@ def workflows_search_2(workflows_search_name, workflows_search_edit, *, request)
     # For the order_by part see issue #120 
     results = Workflow.objects.filter(*Qs).order_by('created_at')
 
+    obc_user = get_obc_user(request)
+
     # Build JS TREE structure
-    
     workflows_search_jstree = []
     for x in results:
+
+        # Get the id of the parent
+        if x.forked_from and is_visibility_allowed(obc_user=obc_user, ro=x.forked_from):
+            parent_id = workflow_id_jstree(x.forked_from, g['SEARCH_WORKFLOW_TREE_ID'])
+        else:
+            parent_id = '#'
+
         to_add = {
             'data': {'name': x.name, 'edit': x.edit},
             'text': workflow_node_jstree(x),
             'id': workflow_id_jstree(x, g['SEARCH_WORKFLOW_TREE_ID']),
-            'parent': workflow_id_jstree(x.forked_from, g['SEARCH_WORKFLOW_TREE_ID']) if x.forked_from else '#',
+            'parent': parent_id,
             'state': { 'opened': True},
         }
         workflows_search_jstree.append(to_add)
@@ -1822,6 +1919,11 @@ def tools_search_3(request, **kwargs):
 
     tool = Tool.objects.get(name__iexact=tool_name, version__iexact=tool_version, edit=tool_edit)
 
+    obc_user = get_obc_user(request)
+
+    if not is_visibility_allowed(obc_user=obc_user, ro=tool):
+        return fail(f'This tool is private.')
+
     #Get the dependencies of this tool and build a JSTREE
     tool_dependencies_jstree = []
     for dependency in tool.dependencies.all():
@@ -1844,11 +1946,6 @@ def tools_search_3(request, **kwargs):
     for variable in tool.variables.all():
         tool_variables.append({'name': variable.name, 'value': variable.value, 'description': variable.description})
 
-    # Get obc_user
-    if request.user.is_anonymous:
-        obc_user = None
-    else:
-        obc_user = OBC_user.objects.get(user=request.user)
 
     #Is it voted?
     if obc_user:
@@ -1876,7 +1973,7 @@ def tools_search_3(request, **kwargs):
         'tool_keywords': [keyword.keyword for keyword in tool.keywords.all()],
 
         'dependencies_jstree': tool_dependencies_jstree,
-        'variables_js_tree': tool_variables_jstree,
+        'variables_jstree': tool_variables_jstree,
 
         'variables': tool_variables,
         'tool_os_choices': OS_types.get_angular_model([x.os_choices for x in tool.os_choices.all()]),
@@ -2020,6 +2117,20 @@ def tools_add(request, **kwargs):
     if type(visibility_code) is str:
         return fail(visibility_code)
 
+    #Dependencies
+    tool_dependencies = kwargs['tool_dependencies']
+    
+    # FIXME! What if a dependency is deleted???
+    tool_dependencies_objects = [Tool.objects.get(name=t['name'], version=t['version'], edit=int(t['edit'])) for t in tool_dependencies]
+
+    #If this is a public tool check that all tool dependencies are public as well
+    if visibility_code == VisibilityOptions.PUBLIC_CODE:
+        for tool_dependencies_object in tool_dependencies_objects:
+            if tool_dependencies_object.visibility != str(VisibilityOptions.PUBLIC_CODE):
+                return fail(f'This tool depends from the private tool: {tool_dependencies_object}. Cannot create a public tool with private dependencies.')
+                ### TEST 217_create_public_tool_with_private_dependency
+
+
 
     upvoted = False
     downvoted = False
@@ -2040,11 +2151,36 @@ def tools_add(request, **kwargs):
             return fail('Invalid tool edit number. Error 8714')
 
 
-        # Delete the previous object!
+        # Get the previous object
         try:
             tool = Tool.objects.get(name=tools_search_name, version=tools_search_version, edit=tools_search_edit)
         except ObjectDoesNotExist as e:
             return fail('Error 8716')
+
+        #Are we converting from public to private?
+        if tool.visibility == str(VisibilityOptions.PUBLIC_CODE) and tool_visibility == VisibilityOptions.PRIVATE_NAME:
+            # We are about to make this public tool, private
+            # Make sure that there isn't any public tool that depends from this tool
+            first = tool.dependencies_related.filter(visibility=str(VisibilityOptions.PUBLIC_CODE)).first()
+            if first:
+                return fail(f'Cannot make this tool private. Tool {tool} depends from this tool and is public.')
+                ### TEST  217_convert_from_public_to_private_tool_that_is_a_dependency_to_public_tool 
+
+            # Make sure that there isn't any public workflow that contains this tool
+            first = Workflow.objects.filter(tools__in = [tool], visibility=str(VisibilityOptions.PUBLIC_CODE)).first()
+            if first:
+                return fail(f'Cannot make this tool private. Workflow {first} contains this Tool and is public.')
+                ### TEST 217_convert_from_public_to_private_tool_that_exists_in_public_wf
+
+        #Are we converting from private to public?
+        if tool.visibility == str(VisibilityOptions.PRIVATE_CODE) and tool_visibility == VisibilityOptions.PUBLIC_NAME:
+            # We are about to make this private tool, public
+            # Does it contain any private dependency?
+            first = tool.dependencies.filter(visibility=str(VisibilityOptions.PRIVATE_CODE)).first()
+            if first:
+                return fail(f'Cannot make this tool public. It depends from the private tool: {first}')
+                # Actually we never end up here. Check:
+                ### TEST 217_convert_from_private_to_public_tool_has_a_private_dependency
 
         # Check that the user who created this tool is the one who deletes it!
         if tool.obc_user != obc_user:
@@ -2137,11 +2273,6 @@ def tools_add(request, **kwargs):
     tool_installation_commands = kwargs['tool_installation_commands']
     tool_validation_commands = kwargs['tool_validation_commands']
 
-    #Dependencies
-    tool_dependencies = kwargs['tool_dependencies']
-    
-    # FIXME! What if a dependency is deleted???
-    tool_dependencies_objects = [Tool.objects.get(name=t['name'], version=t['version'], edit=int(t['edit'])) for t in tool_dependencies]
 
     #Variables
     tool_variables = kwargs['tool_variables']
@@ -3002,6 +3133,12 @@ def workflows_add(request, **kwargs):
     edit workflow edit update workflow
     '''
 
+    workflow_forked_from = None
+    workflow_changes = None
+    upvoted = False
+    downvoted = False
+
+
     if request.user.is_anonymous: # Server should always check..
         return fail('Please login to create new workflow')
 
@@ -3026,27 +3163,125 @@ def workflows_add(request, **kwargs):
     if type(visibility_code) is str:
         return fail(visibility_code)
 
-    upvoted = False
-    downvoted = False
-    workflow_forked_from = None
-    workflow_changes = None
+    workflow = kwargs.get('workflow_json', '')
+    #print ('Workflow from angular:')
+    #print (simplejson.dumps(workflow, indent=4))
+
+    if not workflow:
+        return fail ('workflows json object is empty') # This should never happen!
+
+    if not workflow['elements']:
+        return fail('workflow graph cannot be empty')
+
+    # Get all tools that are used in this workflow except the ones that are disconnected 
+    tool_nodes = [x for x in workflow['elements']['nodes'] if (x['data']['type'] == 'tool') and (not x['data']['disconnected'])]
+    tools = [Tool.objects.get(name=x['data']['name'], version=x['data']['version'], edit=x['data']['edit']) for x in tool_nodes]
+    # If this is a public workflow make sure that it does not include any private tool
+    if visibility_code == VisibilityOptions.PUBLIC_CODE:
+        for tool in tools:
+            if tool.visibility != str(VisibilityOptions.PUBLIC_CODE):
+                return fail(f'This public workflow contains the private tool: {tool}. Public workflows cannot include private tools.')
+                ### TEST 217_create_public_wf_containing_private_tool 
+
+    # Compute next_edit
+    if workflow_edit_state:
+        try:
+            # workflow_info_edit comes from client. 
+            workflow_info_edit = int(kwargs.get('workflow_info_edit', ''))
+        except ValueError:
+            return fail('Error 4878')
+
+        next_edit = workflow_info_edit
+    else:
+        #Get the maximum version. FIXME DUPLICATE CODE
+        workflow_all = Workflow.objects.filter(name__iexact=workflow_info_name)
+        if not workflow_all.exists():
+            next_edit = 1
+        else:
+            max_edit = workflow_all.aggregate(Max('edit'))
+            next_edit = max_edit['edit__max'] + 1
+
+    #Change the edit value in the cytoscape json object
+    set_edit_to_cytoscape_json(workflow, next_edit, workflow_info_name)
+
+    # Get all workflows that are used in this workflow
+    workflow_nodes = [x for x in workflow['elements']['nodes'] if x['data']['type'] == 'workflow']
+
+    # Remove self workflow and workflows that are disconnected
+    workflow_nodes = [
+        {'name': x['data']['name'], 'edit': x['data']['edit']} 
+        for x in workflow_nodes if 
+            (not (x['data']['name'] == workflow_info_name and x['data']['edit'] == next_edit)) and (not x['data']['disconnected'])  
+        ]
+    # Get workflow database objects
+    workflows = [Workflow.objects.get(**x) for x in workflow_nodes]
+
+    # If this is a public workflow make sure that it does not include any private workflow
+    if visibility_code == VisibilityOptions.PUBLIC_CODE:
+        for w in workflows:
+            if w.visibility != str(VisibilityOptions.PUBLIC_CODE):
+                return fail(f'This public workflow contains the private workflow: {w}. Public workflows cannot include private workflows.')
+                ### TEST 217_create_public_wf_containing_private_wf 
+
+    # Check main_step
+    main_counter = check_workflow_step_main(workflow, {'name':workflow_info_name, 'edit': next_edit })
+    if main_counter == 0:
+        return fail('Could not find main step. One step needs to be declared as "main"')
+    if main_counter > 1:
+        return fail('Error 49188') # This should never happen
+
+    workflow_changes = kwargs.get('workflow_changes', None)
+    if workflow_info_forked_from:
+        if not workflow_changes:
+            return fail('Edit Summary cannot be empty')
+        workflow_forked_from = Workflow.objects.get(name=workflow_info_forked_from['name'], edit=workflow_info_forked_from['edit'])
+    else:
+        pass # Do nothing 
+
+    # Check workflow website
+    workflow_website = kwargs.get('workflow_website', '')
+    if workflow_website:
+        if not valid_url(workflow_website):
+            return fail('website is not a valid URL')
+
+    # Check workflow description
+    workflow_description = kwargs.get('workflow_description', '')
+    if not workflow_description.strip():
+        return fail('Description cannot be empty')
+
+    workflow_description_html = markdown(workflow_description)
+
     if workflow_edit_state:
         # We are editing this workflow
-
-        # Get the edit
-        workflow_info_edit = kwargs.get('workflow_info_edit', '')
-
-        # Is this an int?
-        try:
-            workflow_info_edit = int(workflow_info_edit)
-        except ValueError as e:
-            return fail('Error 4878')
 
         # Does this workflow exist?
         try:
             w = Workflow.objects.get(name=workflow_info_name, edit=workflow_info_edit)
         except ObjectDoesNotExist as e:
             return fail('Error 4879')
+
+        # Are we converting from private to public?
+        if w.visibility == str(VisibilityOptions.PRIVATE_CODE) and workflow_visibility == VisibilityOptions.PUBLIC_NAME:
+            # Does this workflow contain any private tool?
+            first = w.tools.filter(visibility=str(VisibilityOptions.PRIVATE_CODE)).first()
+            if first:
+                return fail(f'Cannot convert this Workflow to public. It contains the private tool {first}')
+                ### TEST 217_convert_from_private_to_public_workflow_containing_private_tool
+
+            # Does this workflow contain an private workflow?
+            first = w.workflows.filter(visibility=str(VisibilityOptions.PRIVATE_CODE)).first()
+            if first:
+                return fail(f'Cannot convert this Workflow to public. It contains the private workflow {first}')
+                ### TEST 217_concvert_from_private_to_public_workflow_containing_private_wf
+
+        # Are we converting from public to private?
+        if w.visibility == str(VisibilityOptions.PUBLIC_CODE) and workflow_visibility == VisibilityOptions.PRIVATE_NAME:
+            # Is there any public workflow that uses this workflow?
+            first = w.workflows_using_me.filter(visibility=str(VisibilityOptions.PUBLIC_CODE)).first()
+            if first:
+                return fail(f'Cannot convert this Workflow to private. It is contained in the public workflow {first}')
+                ### TEST 217_convert_wf_from_public_to_private_that_contains_public_wf
+
 
         # Basic sanity check. We shouldn't be able to edit a workflow which is not a draft..
         if not w.draft:
@@ -3103,68 +3338,6 @@ def workflows_add(request, **kwargs):
         upvotes = 0
         downvotes = 0
 
-    workflow_changes = kwargs.get('workflow_changes', None)
-    if workflow_info_forked_from:
-        if not workflow_changes:
-            return fail('Edit Summary cannot be empty')
-        workflow_forked_from = Workflow.objects.get(name=workflow_info_forked_from['name'], edit=workflow_info_forked_from['edit'])
-    else:
-        pass # Do nothing 
-
-
-    workflow_website = kwargs.get('workflow_website', '')
-    if workflow_website:
-        if not valid_url(workflow_website):
-            return fail('website is not a valid URL')
-
-    workflow_description = kwargs.get('workflow_description', '')
-    if not workflow_description.strip():
-        return fail('Description cannot be empty')
-
-    workflow_description_html = markdown(workflow_description)
-
-    workflow = kwargs.get('workflow_json', '')
-    #print ('Workflow from angular:')
-    #print (simplejson.dumps(workflow, indent=4))
-
-    if not workflow:
-        return fail ('workflows json object is empty') # This should never happen!
-
-    if not workflow['elements']:
-        return fail('workflow graph cannot be empty')
-
-    # Client sents the root workflow node.
-    # When we save we make root False so that it is easier to import it later 
-    #workflow_root_node = [x for x in workflow['elements']['nodes'] if x['data']['type']=='workflow' and x['data']['root']]
-    #if len(workflow_root_node) != 1:
-    #    return fail('Error 28342')
-    #workflow_root_node[0]['data']['root'] = False
-
-    #Check that one and only one step is main
-
-    if workflow_edit_state:
-        next_edit = workflow_info_edit
-    else:
-        #Get the maximum version. FIXME DUPLICATE CODE
-        workflow_all = Workflow.objects.filter(name__iexact=workflow_info_name)
-        if not workflow_all.exists():
-            next_edit = 1
-        else:
-            max_edit = workflow_all.aggregate(Max('edit'))
-            next_edit = max_edit['edit__max'] + 1
-
-
-    #Change the edit value in the cytoscape json object
-    set_edit_to_cytoscape_json(workflow, next_edit, workflow_info_name)
-#    print ('Workflow from set_edit:')
-#    print (simplejson.dumps(workflow, indent=4))
-
-    #print (simplejson.dumps(workflow, indent=4))
-    main_counter = check_workflow_step_main(workflow, {'name':workflow_info_name, 'edit': next_edit })
-    if main_counter == 0:
-        return fail('Could not find main step. One step needs to be declared as "main"')
-    if main_counter > 1:
-        return fail('Error 49188') # This should never happen
 
     new_workflow = Workflow(
         obc_user=obc_user, 
@@ -3194,26 +3367,12 @@ def workflows_add(request, **kwargs):
         new_workflow.created_at = workflow_created_at
         new_workflow.save()
 
-    # Get all tools that are used in this workflow except the ones that are disconnected 
-    tool_nodes = [x for x in workflow['elements']['nodes'] if (x['data']['type'] == 'tool') and (not x['data']['disconnected'])]
-    tools = [Tool.objects.get(name=x['data']['name'], version=x['data']['version'], edit=x['data']['edit']) for x in tool_nodes]
+    # Add tools 
     if tools:
         new_workflow.tools.add(*tools)
         new_workflow.save()
 
-    # Get all workflows that are used in this workflow
-    workflow_nodes = [x for x in workflow['elements']['nodes'] if x['data']['type'] == 'workflow']
-
-    # print (simplejson.dumps(workflow_nodes, indent=4))
-
-    # Remove self workflow and workflows that are disconnected
-    workflow_nodes = [
-        {'name': x['data']['name'], 'edit': x['data']['edit']} 
-        for x in workflow_nodes if 
-            (not (x['data']['name'] == workflow_info_name and x['data']['edit'] == next_edit)) and (not x['data']['disconnected'])  
-        ]
-    # Get workflow database objects
-    workflows = [Workflow.objects.get(**x) for x in workflow_nodes]
+    # Add workflows
     if workflows:
         new_workflow.workflows.add(*workflows)
         new_workflow.save()
@@ -3297,6 +3456,10 @@ def workflows_search_3(request, **kwargs):
         obc_user = None
     else:
         obc_user = OBC_user.objects.get(user=request.user)
+
+    #Is this user allowed to get access to this workflow?
+    if not is_visibility_allowed(obc_user=obc_user, ro=workflow):
+        return fail('This workflow is private.')
 
     #Is it voted?
     if obc_user:

@@ -96,6 +96,8 @@ INSTALLED_APPS = [
     'social_django',  #  DO NOT FORGET TO: SOCIAL_AUTH_POSTGRES_JSONFIELD = True 
                       # https://python-social-auth.readthedocs.io/en/latest/configuration/django.html
     'rest_framework',
+    'rest_framework.authtoken',
+
     'app',
 ] + INSTALLED_APPS_EXTRA
 
@@ -200,6 +202,10 @@ STATIC_URL = '/static/'
 
 REST_FRAMEWORK = {
     'DEFAULT_CONTENT_NEGOTIATION_CLASS': 'app.negotiation.IgnoreClientContentNegotiation',
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ],
 }
 
 

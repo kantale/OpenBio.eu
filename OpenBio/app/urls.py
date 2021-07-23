@@ -76,4 +76,6 @@ urlpatterns = [
 	path('markdown_preview/', views.markdown_preview), # Called from markdown preview tab. angular_previewTabClicked 
 	path('references_orcid_claim_pressed/', views.references_orcid_claim_pressed), # Called when ORCID icon pressed in reference right panel
 	path('references_orcid_unclaim_pressed/', views.references_orcid_unclaim_pressed), # Called when ORCID unclaim pressed in reference right panel
+	path('profile_delete_access_token/', views.profile_delete_access_token), # Called when delete token is pressed in the profile page
+	path('profile_issue_access_token/', views.profile_issue_access_token), # Called to generate a new access token
 ]
