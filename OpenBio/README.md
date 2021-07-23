@@ -123,5 +123,11 @@ export RMATE_HOST=localhost
 export RMATE_PORT=52699
 ```
 
+## Testing 
+Run from this directory:
+```bash
+pytest tests/
+```
+
 
 

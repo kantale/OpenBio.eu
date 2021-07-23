@@ -88,6 +88,7 @@ g = {
     'ADMIN': 'kantale@ics.forth.gr', # In case the email fail, use this instead
     'TERMS': 'https://www.openbio.eu/static/static/static/docs/terms_privacy/OpenBio_Conditions.pdf', # URL OF TERMS OF USE
     'PRIVACY': 'https://www.openbio.eu/static/static/static/docs/terms_privacy/OpenBio_Privacy_Policy.pdf', # URL OF PRIVACY 
+    'TEST': False, # Are we testing the views ?
 
     'DEFAULT_DEBUG_PORT': 8200,
     'SEARCH_TOOL_TREE_ID': '1',
@@ -204,6 +205,12 @@ def get_obc_user(request):
 
     return obc_user
 
+def str_boolean(b):
+    '''
+    For testing. Testing passes Booleans as strings
+    '''
+
+    return {'False': False, 'True': True}.get(b, b) # Testing passes strings
 
 def resolve_doi(doi):
     '''
@@ -348,6 +355,12 @@ def has_data(f):
                     for k in request.GET:
                         kwargs[k] = request.GET[k]
                         #print ("GET: {} == {}".format(k, kwargs[k]))
+
+            if g['TEST']:
+                kwargs = {
+                    k:simplejson.loads(v)
+                    for k,v in kwargs.items()
+                }
 
             return f(*args, **kwargs)
 
@@ -2112,12 +2125,14 @@ def tools_add(request, **kwargs):
     if not type(tool_edit_state) is bool:
         return fail('Error 8715')
 
-    tool_visibility = kwargs.get('tool_visibility')
+    tool_visibility = kwargs.get('tool_visibility', '')
     visibility_code = validate_visibility(tool_visibility)
     if type(visibility_code) is str:
         return fail(visibility_code)
 
     #Dependencies
+    if not 'tool_dependencies' in kwargs:
+        return fail('Error 8777')
     tool_dependencies = kwargs['tool_dependencies']
     
     # FIXME! What if a dependency is deleted???
@@ -2270,12 +2285,21 @@ def tools_add(request, **kwargs):
         pass # Do nothing
     
     #Installation/Validation commands 
-    tool_installation_commands = kwargs['tool_installation_commands']
-    tool_validation_commands = kwargs['tool_validation_commands']
+    try:
+        tool_installation_commands = kwargs['tool_installation_commands']
+    except KeyError:
+        return fail('Error 8778')
 
+    try:
+        tool_validation_commands = kwargs['tool_validation_commands']
+    except KeyError:
+        return fail('Error 8779')
 
     #Variables
-    tool_variables = kwargs['tool_variables']
+    try:
+        tool_variables = kwargs['tool_variables']
+    except KeyError:
+        return fail('Error 8780')
     tool_variables = [x for x in tool_variables if x['name'] and x['value'] and x['description']] # Filter out empty fields
 
     # Check that variables do not have the same name
@@ -2336,7 +2360,10 @@ def tools_add(request, **kwargs):
     new_tool.save()
 
     #Add keywords
-    keywords = [Keyword.objects.get_or_create(keyword=keyword)[0] for keyword in kwargs['tool_keywords']]
+    try:
+        keywords = [Keyword.objects.get_or_create(keyword=keyword)[0] for keyword in kwargs['tool_keywords']]
+    except KeyError:
+        return fail('Error 8781')
     new_tool.keywords.add(*keywords)
     new_tool.save()
 
@@ -3151,7 +3178,10 @@ def workflows_add(request, **kwargs):
     if not workflow_info_name.strip():
         return fail('Invalid workflow name')
 
-    workflow_info_forked_from = kwargs['workflow_info_forked_from'] # If it does not exist, it should raise an Exception
+    try:
+        workflow_info_forked_from = kwargs['workflow_info_forked_from']
+    except KeyError:
+        return fail('Error 4876')
 
     workflow_edit_state = kwargs.get('workflow_edit_state', '')
     if not type(workflow_edit_state) is bool:
@@ -3378,7 +3408,10 @@ def workflows_add(request, **kwargs):
         new_workflow.save()
 
     # Add keywords
-    keywords = [Keyword.objects.get_or_create(keyword=keyword)[0] for keyword in kwargs['workflow_keywords']]
+    try:
+        keywords = [Keyword.objects.get_or_create(keyword=keyword)[0] for keyword in kwargs['workflow_keywords']]
+    except KeyError:
+        return fail('Error 4882')
     new_workflow.keywords.add(*keywords)
     new_workflow.save();
 
