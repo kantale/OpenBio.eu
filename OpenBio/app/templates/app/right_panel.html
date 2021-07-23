@@ -550,8 +550,8 @@
                                 </div>
                                 <div class="input-field col s12 m6 grid-s12-m6-l6">
                                     <select id="workflowVisibility">
-                                      <option value="public" [selected]="workflows_visibility == 'public'">Public</option>
-                                      <option value="private" [selected]="workflows_visibility == 'private'">Private</option>
+                                      <option value="public" ng-selected="workflows_visibility == 'public'">Public</option>
+                                      <option value="private" ng-selected="workflows_visibility == 'private'">Private</option>
                                     </select>
                                     <label>Visibility</label>
                                 </div>

@@ -1659,6 +1659,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         if (!$scope.tool_variables.length) {
             $scope.tool_variables = [{name: '', value: '', description: ''}];
         }
+        // Visibility select form update field
+        $('#toolVisibility').formSelect();
     };
 
     /*
@@ -1668,6 +1670,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     $scope.workflow_edit_pressed = function() {
         $scope.workflows_info_edit_state = true;
         $scope.workflows_info_fork_pressed('EDIT');
+        // Visibility select form update field
+        $('#workflowVisibility').formSelect();
     };
 
     /*
