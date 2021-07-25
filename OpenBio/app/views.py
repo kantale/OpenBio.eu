@@ -2086,7 +2086,7 @@ def validate_visibility(ro_visibilty):
 def tools_add(request, **kwargs):
     '''
     Add a new tool
-    tool add tool save tool . Create tool 
+    tool add tool save tool . Create tool tools add
 
     * names and version is searched case insensitive
     '''
@@ -2129,6 +2129,9 @@ def tools_add(request, **kwargs):
     visibility_code = validate_visibility(tool_visibility)
     if type(visibility_code) is str:
         return fail(visibility_code)
+
+    print (tool_visibility)
+    print (visibility_code)
 
     #Dependencies
     if not 'tool_dependencies' in kwargs:
@@ -3302,7 +3305,7 @@ def workflows_add(request, **kwargs):
             first = w.workflows.filter(visibility=str(VisibilityOptions.PRIVATE_CODE)).first()
             if first:
                 return fail(f'Cannot convert this Workflow to public. It contains the private workflow {first}')
-                ### TEST 217_concvert_from_private_to_public_workflow_containing_private_wf
+                ### TEST 217_convert_from_private_to_public_workflow_containing_private_wf
 
         # Are we converting from public to private?
         if w.visibility == str(VisibilityOptions.PUBLIC_CODE) and workflow_visibility == VisibilityOptions.PRIVATE_NAME:
@@ -3310,7 +3313,7 @@ def workflows_add(request, **kwargs):
             first = w.workflows_using_me.filter(visibility=str(VisibilityOptions.PUBLIC_CODE)).first()
             if first:
                 return fail(f'Cannot convert this Workflow to private. It is contained in the public workflow {first}')
-                ### TEST 217_convert_wf_from_public_to_private_that_contains_public_wf
+                ### TEST 217_convert_wf_from_public_to_private_that_is_contained_in_public_wf
 
 
         # Basic sanity check. We shouldn't be able to edit a workflow which is not a draft..

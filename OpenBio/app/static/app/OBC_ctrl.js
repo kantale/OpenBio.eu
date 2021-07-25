@@ -142,6 +142,16 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         $scope.references_button_process_doi_activated = true;
 
+        $scope.visibility_options = [{
+            id: 1,
+            label: 'Public',
+            values: { name: 'public' }
+        }, {
+            id: 2,
+            label: 'Private',
+            values: { name: 'private' }
+        }];
+
         $scope.get_init_data();
 
     };
@@ -1091,7 +1101,19 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.tools_info_success_message = '';
                 $scope.tools_info_error_message = '';
                 $scope.tools_info_draft = data['draft'];
-                $scope.tools_visibility = data['visibility'];
+
+                //Set visibility
+                if (data['visibility'] == 'public') {
+                    $scope.tools_visibility = $scope.visibility_options[0];
+                }
+                else if (data['visibility'] == 'private') {
+                    $scope.tools_visibility = $scope.visibility_options[1];
+                }
+                else {
+                    // Somehow we need to throw exception here
+                    console.log('Invalid visibility')
+                    console.log(data['visibility']);
+                }
 
                 //Set chip data
                 window.OBCUI.set_chip_data('toolChips', data['tool_keywords']);
@@ -1342,13 +1364,18 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             }
         });
 
+        // Set tools visibility to public
+        $scope.tools_visibility = $scope.visibility_options[0];
 
         //console.log('$scope.os_choices:');
         //console.log($scope.os_choices);
         //console.log('$scope.tool_os_choices:');
         //console.log($scope.tool_os_choices);
         //$('#tool_os_choices_select').formSelect();
-        $timeout(function(){$('#tool_os_choices_select').formSelect();}, 100);
+        $timeout(function(){
+            $('#tool_os_choices_select').formSelect();
+            $('#toolVisibility').formSelect();
+        }, 100);
 
         //Delete all chip
         window.OBCUI.delete_all_chip_data('toolChips');
@@ -1491,6 +1518,13 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.workflow_website = '';
         $scope.workflow_description = '';
 
+        //Set workflows visibility to public
+        $scope.workflows_visibility = $scope.visibility_options[0];
+        $timeout(function(){
+            $('#workflowVisibility').formSelect();
+        }, 100);
+
+
         //Clear keyword chips
         window.OBCUI.delete_all_chip_data('workflowChips');
         window.OBCUI.chip_enable('workflowChips');
@@ -1591,7 +1625,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 'tool_installation_commands': tool_installation_editor.getValue(),
                 'tool_validation_commands': tool_validation_editor.getValue(),
                 'tool_edit_state' : $scope.tools_info_edit_state, // Are we editing this tool ?
-                'tool_visibility': $("#toolVisibility").val()
+                'tool_visibility': $scope.tools_visibility.values.name // $("#toolVisibility").val()
             },
             function(data) {
                 $scope.tools_info_success_message = 'Tool/Data successfully saved';
@@ -1629,7 +1663,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.tools_info_edit_state = false;
 
                 //Set visibility
-                $scope.tools_visibility = $("#toolVisibility").val();
+                //$scope.tools_visibility = $("#toolVisibility").val();
 
                 //EXPERIMENTAL. UPDATE SEARCH RESULTS
                 $scope.all_search_2();
@@ -3504,7 +3538,14 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.workflow_score = data['workflow_score']; // For upvotes / downvotes
                 $scope.workflow_voted = data['workflow_voted']; //Check if this workflow is voted from the user 
                 $scope.workflows_info_draft = data['draft'];
-                $scope.workflows_visibility = data['visibility'];
+
+                //Set visibility
+                if (data['visibility'] == 'public') {
+                    $scope.workflows_visibility = $scope.visibility_options[0];
+                }
+                else if (data['visibility'] == 'private') {
+                    $scope.workflows_visibility = $scope.visibility_options[1];
+                }
 
                 // Load the graph. TODO: WHAT HAPPENS WHEN WE CLICK TO NODE? IT IS NOT REGISTERED
                 window.initializeTree();
@@ -4403,7 +4444,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 workflow_keywords: window.OBCUI.get_chip_data('workflowChips'),
                 workflow_json : cy.json(),
                 workflow_edit_state : $scope.workflows_info_edit_state, // Are we editing this tool ?
-                workflow_visibility: $("#workflowVisibility").val()
+                workflow_visibility: $scope.workflows_visibility.values.name //$("#workflowVisibility").val()
             },
             function(data) {
                 $scope.workflow_info_created_at = data['created_at'];
@@ -4437,7 +4478,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.workflows_info_edit_state = false;
 
                 //Set visibility 
-                $scope.workflows_visibility = $("#workflowVisibility").val();
+                //$scope.workflows_visibility = $("#workflowVisibility").val();
 
                 //Close STEP accordion
                 M.Collapsible.getInstance($('#editWorkflowAccordion')).close();

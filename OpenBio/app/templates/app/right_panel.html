@@ -15,8 +15,7 @@
         <div style="margin: 20px;">
             <div class="left-align">
                 <span class="red lighten-2 draft tooltipped" style="margin-left: 10px;" data-position="left" data-tooltip="This tool is not finalized. It might change in the future!" ng-show="tools_info_draft">DRAFT</span>
-                <span class="grey darken-1 draft tooltipped" style="text-transform: uppercase;" data-position="left" data-tooltip="This tool can be viewed by everyone" ng-show="tools_visibility == 'public'"><span ng-bind="tools_visibility"></span></span>
-                <span class="grey darken-1 draft tooltipped" style="text-transform: uppercase;" data-position="left" data-tooltip="This tool can only be viewed by you" ng-show="tools_visibility == 'private'"><span ng-bind="tools_visibility"></span></span>
+                <span class="grey darken-1 draft" style="text-transform: uppercase;" data-position="left" ng-show="!tools_info_editable"><span ng-bind="tools_visibility.label"></span></span>
                 <div style="overflow: auto;">
                     <div class="box upDownVoteBoxTitle" ng-show="!tools_info_editable">
                         <div class="upvoteDiv upDownvoteDivTitle" ng-class="{'active': tool_voted['up']}"><i class="material-icons" style="font-size: 1.64rem;" ng-click="updownvote_tool_workflow('tool', true)">arrow_upward</i></div>
@@ -116,9 +115,7 @@
                                     <label for="generalVersion">Version</label>
                                 </div>
                                 <div class="input-field col s12 m4 grid-s12-m4-l4">
-                                    <select id="toolVisibility">
-                                      <option value="public" ng-selected="tools_visibility == 'public'">Public</option>
-                                      <option value="private" ng-selected="tools_visibility == 'private'">Private</option>
+                                    <select id="toolVisibility" ng-model='tools_visibility' ng-options="item as item.label for item in visibility_options track by item.id">
                                     </select>
                                     <label>Visibility</label>
                                 </div>
@@ -446,8 +443,7 @@
         <div style="margin: 20px;">
             <div class="left-align">
                 <span class="red lighten-2 draft tooltipped" style="margin-left: 10px;" data-position="left" data-tooltip="This workflow is not finalized. It might change in the future!" ng-show="workflows_info_draft">DRAFT</span>
-                <span class="grey darken-1 draft tooltipped" style="text-transform: uppercase;" data-position="left" data-tooltip="This workflow can be viewed by everyone" ng-show="workflows_visibility == 'public'"><span ng-bind="workflows_visibility"></span></span>
-                <span class="grey darken-1 draft tooltipped" style="text-transform: uppercase;" data-position="left" data-tooltip="This workflow can only be viewed by you" ng-show="workflows_visibility == 'private'"><span ng-bind="workflows_visibility"></span></span>
+                <span class="grey darken-1 draft" style="text-transform: uppercase;" data-position="left" ng-show="!workflows_info_editable"><span ng-bind="workflows_visibility.values.name"></span></span>
                 <div style="overflow: auto; margin-bottom: 5px;">
                     <div class="box upDownVoteBoxTitle" ng-show="!workflows_info_editable">
                         <div class="upvoteDiv upDownvoteDivTitle" ng-class="{'active': workflow_voted['up']}"><i class="material-icons" style="font-size: 1.64rem;" ng-click="updownvote_tool_workflow('workflow', true)">arrow_upward</i></div>
@@ -549,9 +545,7 @@
                                     <label for="generalWorkflowName" required>Name</label>
                                 </div>
                                 <div class="input-field col s12 m6 grid-s12-m6-l6">
-                                    <select id="workflowVisibility">
-                                      <option value="public" ng-selected="workflows_visibility == 'public'">Public</option>
-                                      <option value="private" ng-selected="workflows_visibility == 'private'">Private</option>
+                                    <select id="workflowVisibility" ng-model='workflows_visibility' ng-options="item as item.label for item in visibility_options track by item.id">
                                     </select>
                                     <label>Visibility</label>
                                 </div>
