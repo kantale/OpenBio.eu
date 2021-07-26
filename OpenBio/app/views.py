@@ -2130,9 +2130,6 @@ def tools_add(request, **kwargs):
     if type(visibility_code) is str:
         return fail(visibility_code)
 
-    print (tool_visibility)
-    print (visibility_code)
-
     #Dependencies
     if not 'tool_dependencies' in kwargs:
         return fail('Error 8777')
@@ -2146,9 +2143,7 @@ def tools_add(request, **kwargs):
         for tool_dependencies_object in tool_dependencies_objects:
             if tool_dependencies_object.visibility != str(VisibilityOptions.PUBLIC_CODE):
                 return fail(f'This tool depends from the private tool: {tool_dependencies_object}. Cannot create a public tool with private dependencies.')
-                ### TEST 217_create_public_tool_with_private_dependency
-
-
+                ### TEST 217_create_public_tool_with_private_dependency PYT: test_217_create_public_tool_with_private_dependency()
 
     upvoted = False
     downvoted = False
@@ -2182,13 +2177,13 @@ def tools_add(request, **kwargs):
             first = tool.dependencies_related.filter(visibility=str(VisibilityOptions.PUBLIC_CODE)).first()
             if first:
                 return fail(f'Cannot make this tool private. Tool {tool} depends from this tool and is public.')
-                ### TEST  217_convert_from_public_to_private_tool_that_is_a_dependency_to_public_tool 
+                ### TEST  217_convert_from_public_to_private_tool_that_is_a_dependency_to_public_tool PYT: test_217_convert_from_public_to_private_tool_that_is_a_dependency_to_public_tool
 
             # Make sure that there isn't any public workflow that contains this tool
             first = Workflow.objects.filter(tools__in = [tool], visibility=str(VisibilityOptions.PUBLIC_CODE)).first()
             if first:
                 return fail(f'Cannot make this tool private. Workflow {first} contains this Tool and is public.')
-                ### TEST 217_convert_from_public_to_private_tool_that_exists_in_public_wf
+                ### TEST 217_convert_from_public_to_private_tool_that_exists_in_public_wf PYT: test_217_convert_from_public_to_private_tool_that_exists_in_public_wf
 
         #Are we converting from private to public?
         if tool.visibility == str(VisibilityOptions.PRIVATE_CODE) and tool_visibility == VisibilityOptions.PUBLIC_NAME:
@@ -2198,7 +2193,7 @@ def tools_add(request, **kwargs):
             if first:
                 return fail(f'Cannot make this tool public. It depends from the private tool: {first}')
                 # Actually we never end up here. Check:
-                ### TEST 217_convert_from_private_to_public_tool_has_a_private_dependency
+                ### TEST 217_convert_from_private_to_public_tool_has_a_private_dependency PYT: test_217_convert_from_private_to_public_tool_has_a_private_dependency
 
         # Check that the user who created this tool is the one who deletes it!
         if tool.obc_user != obc_user:
@@ -3197,8 +3192,10 @@ def workflows_add(request, **kwargs):
         return fail(visibility_code)
 
     workflow = kwargs.get('workflow_json', '')
-    #print ('Workflow from angular:')
-    #print (simplejson.dumps(workflow, indent=4))
+
+    if g['TEST']:
+        print ('Workflow from angular:')
+        print (simplejson.dumps(workflow, indent=4))
 
     if not workflow:
         return fail ('workflows json object is empty') # This should never happen!
@@ -3214,7 +3211,7 @@ def workflows_add(request, **kwargs):
         for tool in tools:
             if tool.visibility != str(VisibilityOptions.PUBLIC_CODE):
                 return fail(f'This public workflow contains the private tool: {tool}. Public workflows cannot include private tools.')
-                ### TEST 217_create_public_wf_containing_private_tool 
+                ### TEST 217_create_public_wf_containing_private_tool  PYT: test_217_create_public_wf_containing_private_tool 
 
     # Compute next_edit
     if workflow_edit_state:
@@ -3254,7 +3251,7 @@ def workflows_add(request, **kwargs):
         for w in workflows:
             if w.visibility != str(VisibilityOptions.PUBLIC_CODE):
                 return fail(f'This public workflow contains the private workflow: {w}. Public workflows cannot include private workflows.')
-                ### TEST 217_create_public_wf_containing_private_wf 
+                ### TEST SEL: 217_create_public_wf_containing_private_wf . PYT: test_217_create_public_wf_containing_private_wf
 
     # Check main_step
     main_counter = check_workflow_step_main(workflow, {'name':workflow_info_name, 'edit': next_edit })
@@ -3299,13 +3296,13 @@ def workflows_add(request, **kwargs):
             first = w.tools.filter(visibility=str(VisibilityOptions.PRIVATE_CODE)).first()
             if first:
                 return fail(f'Cannot convert this Workflow to public. It contains the private tool {first}')
-                ### TEST 217_convert_from_private_to_public_workflow_containing_private_tool
+                ### TEST 217_convert_from_private_to_public_workflow_containing_private_tool PYT: test_217_convert_from_private_to_public_workflow_containing_private_tool
 
             # Does this workflow contain an private workflow?
             first = w.workflows.filter(visibility=str(VisibilityOptions.PRIVATE_CODE)).first()
             if first:
                 return fail(f'Cannot convert this Workflow to public. It contains the private workflow {first}')
-                ### TEST 217_convert_from_private_to_public_workflow_containing_private_wf
+                ### TEST 217_convert_from_private_to_public_workflow_containing_private_wf PYT: test_217_convert_from_private_to_public_workflow_containing_private_tool
 
         # Are we converting from public to private?
         if w.visibility == str(VisibilityOptions.PUBLIC_CODE) and workflow_visibility == VisibilityOptions.PRIVATE_NAME:
@@ -3313,7 +3310,7 @@ def workflows_add(request, **kwargs):
             first = w.workflows_using_me.filter(visibility=str(VisibilityOptions.PUBLIC_CODE)).first()
             if first:
                 return fail(f'Cannot convert this Workflow to private. It is contained in the public workflow {first}')
-                ### TEST 217_convert_wf_from_public_to_private_that_is_contained_in_public_wf
+                ### TEST 217_convert_wf_from_public_to_private_that_is_contained_in_public_wf PYT: test_217_convert_wf_from_public_to_private_that_is_contained_in_public_wf
 
 
         # Basic sanity check. We shouldn't be able to edit a workflow which is not a draft..
