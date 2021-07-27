@@ -1162,6 +1162,17 @@ By selecting to download a workflow in Nextflow format a file named: workflow.nf
 nextflow run workflow.nf
 ```
 
+# Public / Private Research Objects
+Tools/Data and Workflows can be either public or private. You can set this "visibility" option through the user interface upon creating or editing a Tool/Data or Workflow (ROs = Research Objects). The semantics of this private / public setting are:
+* Public ROs are visible to all users including anonymous users.
+* Private ROs are visible only to the users that created them.
+* A public Tool/Data cannot have a Private tool as a dependency.
+* A private Tool/Data cannot be a dependency to a public Tool/Data.
+* A private Tool/Data cannot take part in a public Workflow.
+* A private Workflow cannot take part in a public Workflow.
+* You can change the visibility status from public to private and vice versa as long as you are not violating the above restrictions. 
+* Comments in private ROs are not accessible to users others than the creators of these ROs. 
+
 
 # Executing a Workflow
 You can execute a Workflow directly from OpenBio.eu. To do that you need to install the "OpenBio Execution Environment" (OEE) to a computer of your own. That means that the actual execution happens to the computer that you have installed the OEE. The "OpenBio Execution Environment" is comprised by tree components:
@@ -1343,6 +1354,8 @@ Workflows in OpenBio can be public or private. In order to get a private workflo
 ```bash
 curl -H 'Accept: application/json' -H 'Authorization: Token 11203cc7c93f32a9a0b0e9961177a41f4fe833d3'  "https://www.openbio.eu/platform/rest/workflows/w/1/?workflow_id=xyz&format=json"
 ```
+
+You can get your access token by visiting your profile page. 
 
 
 
