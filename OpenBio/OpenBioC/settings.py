@@ -93,7 +93,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'social_django',  #  DO NOT FORGET TO: SOCIAL_AUTH_POSTGRES_JSONFIELD = True 
+    'social_django',  #  DO NOT FORGET TO: SOCIAL_AUTH_POSTGRES_JSONFIELD = True
                       # https://python-social-auth.readthedocs.io/en/latest/configuration/django.html
     'rest_framework',
     'rest_framework.authtoken',
@@ -133,7 +133,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
 
-                # python-social-auth 
+                # python-social-auth
                 'social_django.context_processors.backends',
                 'social_django.context_processors.login_redirect',
             ],
@@ -142,9 +142,9 @@ TEMPLATES = [
 ]
 
 LOGIN_REDIRECT_URL = '/platform/'
-# https://python-social-auth.readthedocs.io/en/latest/configuration/settings.html 
+# https://python-social-auth.readthedocs.io/en/latest/configuration/settings.html
 SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/platform/?orcid=success'
-# SOCIAL_AUTH_LOGIN_ERROR_URL = ...  # TODO 
+# SOCIAL_AUTH_LOGIN_ERROR_URL = ...  # TODO
 
 WSGI_APPLICATION = 'OpenBioC.wsgi.application'
 
@@ -209,3 +209,13 @@ REST_FRAMEWORK = {
 }
 
 
+# Interface customization
+
+TITLE = 'OpenBio.eu'
+SERVER = 'https://www.openbio.eu'
+EMAIL = 'info@swww.openbio.eu'
+ADMIN = 'kantale@ics.forth.gr' # In case the email fail, use this instead
+TERMS = 'https://www.openbio.eu/static/static/static/docs/terms_privacy/OpenBio_Conditions.pdf' # URL OF TERMS OF USE
+PRIVACY = 'https://www.openbio.eu/static/static/static/docs/terms_privacy/OpenBio_Privacy_Policy.pdf' # URL OF PRIVACY
+FUNDING_LOGOS = True # Show the funding logos?
+TEST = False # Are we testing the views?

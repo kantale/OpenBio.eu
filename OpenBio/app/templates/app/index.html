@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-	<title>OpenBio.eu - Open, Social, Reproducible Science</title>
+	<title>{{TITLE}} - Open, Social, Reproducible Science</title>
 
 	<!-- Global site tag (gtag.js) - Google Analytics -->
 	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144048500-1"></script>
@@ -302,7 +302,7 @@
 		<footer class="footer">
 			<div class="container">
 				<!-- <span class="text-muted">Place sticky footer content here.</span> -->
-				<!-- <img src="/static/app/images/logo23.png" class="rounded float-left" alt="..."> -->
+				{% if FUNDING_LOGOS %}<img src="/static/app/images/logo23.png" class="rounded float-left" alt="...">{% endif %}
 			</div>
 		</footer>
 		{% endcomment %}

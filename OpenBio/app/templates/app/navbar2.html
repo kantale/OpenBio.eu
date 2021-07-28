@@ -7,10 +7,10 @@
             <!-- on large and up screens -->
             <div class="hide-on-med-and-down">
                 <a href="#!" class="brand-logo left">
-                    <!-- <img style="height: 60px;" src="/static/app/images/konstantina/epanek_logo_transparent_x60.png"> -->
+                    {% if FUNDING_LOGOS %}<img style="height: 60px;" src="/static/app/images/konstantina/epanek_logo_transparent_x60.png">{% endif %}
                 </a>
                 <span class="brand-logo center black-text" style="top: -8px;">
-                    <a href="/" style="color:black;">OpenBio.eu</a> <span style="font-size:24px;">(beta)</span>
+                    <a href="/" style="color:black;">{{TITLE}}</a> <span style="font-size:24px;">(beta)</span>
                 </span>
                 <span class="brand-logo center black-text" style="font-size: 14px; top: 20px;">
                     Version: {{version}}
@@ -22,7 +22,7 @@
             <!-- on medium and down screens -->
             <div class="hide-on-large-only">
                 <span class="brand-logo left black-text" style="top: -8px;">
-                    OpenBio.eu <span style="font-size:24px;">(beta)</span>
+                    {{TITLE}} <span style="font-size:24px;">(beta)</span>
                 </span>
                 <span class="brand-logo left black-text" style="font-size: 14px; top: 20px;">
                     Version: {{version}}
@@ -63,8 +63,10 @@
                 <!-- <li ng-show="false"><a href="#!">Settings</a></li> -->
                 <li class="divider"></li>
                 <li><a href="logout/">Logout</a></li>
-                <!-- <li class="divider"></li>
-                <li><img style="height: 63px;" src="/static/app/images/konstantina/epanek_logo_transparent_x60.png"></li> -->
+                {% if FUNDING_LOGOS %}
+                <li class="divider"></li>
+                <li><img style="height: 63px;" src="/static/app/images/konstantina/epanek_logo_transparent_x60.png"></li>
+                {% endif %}
             </ul>
         </div>
     </nav>

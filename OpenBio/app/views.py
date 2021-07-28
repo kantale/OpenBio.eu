@@ -15,7 +15,7 @@ from django.core.mail import send_mail
 
 from django.db.models import Q # https://docs.djangoproject.com/en/2.1/topics/db/queries/#complex-lookups-with-q-objects
 from django.db.models import Max # https://docs.djangoproject.com/en/2.1/topics/db/aggregation/
-from django.db.models import Count # https://stackoverflow.com/questions/7883916/django-filter-the-model-on-manytomany-count 
+from django.db.models import Count # https://stackoverflow.com/questions/7883916/django-filter-the-model-on-manytomany-count
 
 from django.utils import timezone
 #from django.utils.html import escape # https://docs.djangoproject.com/en/2.2/ref/utils/#module-django.utils.html
@@ -23,7 +23,7 @@ from django.views.decorators.csrf import csrf_exempt # https://stackoverflow.com
 
 # Get csrf_token
 # https://stackoverflow.com/questions/3289860/how-can-i-embed-django-csrf-token-straight-into-html
-from django.middleware.csrf import get_token 
+from django.middleware.csrf import get_token
 
 #Import database objects
 from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations, \
@@ -46,7 +46,7 @@ from email.message import EmailMessage
 #import social_core
 from social_core.pipeline.social_auth import social_details
 
-# System imports 
+# System imports
 import io
 import os
 import re
@@ -59,9 +59,9 @@ import hashlib
 import logging # https://docs.djangoproject.com/en/2.1/topics/logging/
 
 from collections import Counter, defaultdict
-import urllib.parse # https://stackoverflow.com/questions/40557606/how-to-url-encode-in-python-3/40557716 
+import urllib.parse # https://stackoverflow.com/questions/40557606/how-to-url-encode-in-python-3/40557716
 
-# Installed packages imports 
+# Installed packages imports
 import simplejson
 from ansi2html import Ansi2HTMLConverter # https://github.com/ralphbean/ansi2html/
 
@@ -83,12 +83,14 @@ logger = logging.getLogger(__name__)
 
 #GLOBAL CONSTANTS
 g = {
-    'SERVER': 'https://www.openbio.eu',
-    'EMAIL': 'info@swww.openbio.eu',
-    'ADMIN': 'kantale@ics.forth.gr', # In case the email fail, use this instead
-    'TERMS': 'https://www.openbio.eu/static/static/static/docs/terms_privacy/OpenBio_Conditions.pdf', # URL OF TERMS OF USE
-    'PRIVACY': 'https://www.openbio.eu/static/static/static/docs/terms_privacy/OpenBio_Privacy_Policy.pdf', # URL OF PRIVACY 
-    'TEST': False, # Are we testing the views ?
+    'TITLE': settings.TITLE,
+    'SERVER': settings.SERVER,
+    'EMAIL': settings.EMAIL,
+    'ADMIN': settings.ADMIN,
+    'TERMS': settings.TERMS,
+    'PRIVACY': settings.PRIVACY,
+    'FUNDING_LOGOS': settings.FUNDING_LOGOS,
+    'TEST': settings.TEST,
 
     'DEFAULT_DEBUG_PORT': 8200,
     'SEARCH_TOOL_TREE_ID': '1',
@@ -114,7 +116,7 @@ g = {
     },
     'instance_setting_not_found_printed': False,
     'ansi2html_converter': Ansi2HTMLConverter(), # https://github.com/ralphbean/ansi2html/
-    'markdown': mistune.Markdown(escape=True), # If you care about performance, it is better to re-use the Markdown instance: 
+    'markdown': mistune.Markdown(escape=True), # If you care about performance, it is better to re-use the Markdown instance:
                                                 # escape=True should be the default option for mistune...
 
 #    'pybtex': {
@@ -123,7 +125,7 @@ g = {
 #        'pybtex_parser': pybtex.database.input.bibtex.Parser()
 #    }
     # materialize js tree icons
-    # https://materializecss.com/icons.html 
+    # https://materializecss.com/icons.html
     'jstree_icons': {
         'tools': 'settings',
         'variables': 'chevron_right', # Tool variables
@@ -141,9 +143,9 @@ g = {
     'create_client_download_report_url': lambda client_url, nice_id : urllib.parse.urljoin(client_url + '/', 'download/{NICE_ID}'.format(NICE_ID=nice_id)),
     'create_client_download_log_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'logs/{NICE_ID}'.format(NICE_ID=nice_id)),
     'create_client_check_status_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'check/id/{NICE_ID}'.format(NICE_ID=nice_id)),
-    'create_client_pause_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'workflow/{NICE_ID}/paused/true'.format(NICE_ID=nice_id)), 
-    'create_client_resume_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'workflow/{NICE_ID}/paused/false'.format(NICE_ID=nice_id)), 
-    'create_client_abort_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'workflow/delete/{NICE_ID}'.format(NICE_ID=nice_id)), 
+    'create_client_pause_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'workflow/{NICE_ID}/paused/true'.format(NICE_ID=nice_id)),
+    'create_client_resume_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'workflow/{NICE_ID}/paused/false'.format(NICE_ID=nice_id)),
+    'create_client_abort_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'workflow/delete/{NICE_ID}'.format(NICE_ID=nice_id)),
     'create_client_airflow_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'admin/airflow/graph?dag_id={NICE_ID}&execution_date='.format(NICE_ID=nice_id)),
 }
 
@@ -170,7 +172,7 @@ def valid_url(url):
 
 def user_is_validated(request):
     '''
-    Is the email of the user validated? 
+    Is the email of the user validated?
     Returns True/False
     '''
 
@@ -239,7 +241,7 @@ def replace_interlinks(text):
         '''
         Create the javascript call
         '''
-        
+
         func_call = '''window.OBCUI.interlink({});'''.format(simplejson.dumps(arguments))
         pattern = '''<a href="javascript:void(0);" onclick='{}'>{}</a>'''.format(func_call, matched_string)
         return pattern
@@ -294,10 +296,10 @@ def replace_interlinks(text):
 
 def markdown(t):
     '''
-    https://github.com/lepture/mistune 
+    https://github.com/lepture/mistune
     '''
     md = g['markdown'](t)
-    # Remove <p> at the start and </p> at the end 
+    # Remove <p> at the start and </p> at the end
     s =  re.search(r'^<p>(.*)</p>\n$', md, re.M | re.S)
     if s:
         ret = s.group(1)
@@ -377,7 +379,7 @@ def datetime_to_str(d):
     '''
     String format
     '''
-    
+
     return d.strftime(g['format_time_string'])
 
 def convert_ansi_to_html(ansi):
@@ -389,12 +391,12 @@ def convert_ansi_to_html(ansi):
 
 def create_uuid_token():
     '''
-    Create a uuid token for email validation 
+    Create a uuid token for email validation
     Length: 32 characters
     '''
     # return str(uuid.uuid4()).split('-')[-1] # Last part: 12 characters
     return str(uuid.uuid4()).replace('-', '') # 32 characters
-    
+
 def uuid_is_valid(uuid_token):
     '''
     https://gist.github.com/ShawnMilo/7777304
@@ -409,7 +411,7 @@ def uuid_is_valid(uuid_token):
 
 def send_mail_smtplib(from_, to, subject, body):
     '''
-    Standard email send function with SMTP 
+    Standard email send function with SMTP
 
     Adjusted from here:
     https://docs.python.org/3/library/email.examples.html
@@ -443,7 +445,7 @@ def create_validation_url(token, port=''):
     http://www.example.com/?param1=7&param2=seven.
 
     FIXME: "platform" should be derived from request.
-    SEE: https://stackoverflow.com/questions/2491605/how-to-get-the-current-url-name-using-django 
+    SEE: https://stackoverflow.com/questions/2491605/how-to-get-the-current-url-name-using-django
     '''
     ret = '{server}{port}/platform/?validation_token={token}'.format(server=g['SERVER'], token=token, port=port)
     return ret
@@ -451,7 +453,7 @@ def create_validation_url(token, port=''):
 
 def create_password_email_url(token, port=''):
     '''
-    See also create_validation_url for FIXME issue 
+    See also create_validation_url for FIXME issue
     '''
 
     ret = '{server}{port}/platform/?password_reset_token={token}'.format(server=g['SERVER'], token=token, port=port)
@@ -495,7 +497,7 @@ The openbio.eu admin team.
 
 def validate_user(token):
     '''
-    Validates a user 
+    Validates a user
     Returns: True/False, message
     '''
 
@@ -509,7 +511,7 @@ def validate_user(token):
             return False, "User's email is already validated"
 
         else:
-            #Validate user    
+            #Validate user
             obc_user.email_validated = True
             #Delete validation token
             obc_user.email_validation_token = None
@@ -560,7 +562,7 @@ def check_password(password):
 def send_validation_email_inner(request, email):
     '''
     Send an email validation email
-    Returns 
+    Returns
     suc, error_message, uuid_token
     '''
 
@@ -568,7 +570,7 @@ def send_validation_email_inner(request, email):
 
     if settings.DEBUG:
         #print ('VALIDATION EMAIL TOKEN:', uuid_token)
-        #print ('URL: http://0.0.0.0:{}/platform/?validation_token={}'.format(request.META['SERVER_PORT'], uuid_token)) 
+        #print ('URL: http://0.0.0.0:{}/platform/?validation_token={}'.format(request.META['SERVER_PORT'], uuid_token))
         return True, '', uuid_token
 
     try:
@@ -630,9 +632,9 @@ def tool_node_jstree(tool):
     The HTML that is node in a jstree that contains a tool
     '''
     return (
-        tool_text_jstree(tool) + 
+        tool_text_jstree(tool) +
         (' <span class="red lighten-3">DRAFT</span>' if tool.draft else '') +
-        jstree_icon_html('tools') + 
+        jstree_icon_html('tools') +
         (jstree_icon_html('private') if tool.visibility == str(VisibilityOptions.PRIVATE_CODE) else '')
     )
 
@@ -648,9 +650,9 @@ def workflow_node_jstree(workflow):
     The HTML that is node in a jstree that contains a workflow
     '''
     return (
-        workflow_text_jstree(workflow) + 
-        (' <span class="red lighten-3">DRAFT</span>' if workflow.draft else '') + 
-        jstree_icon_html('workflows') + 
+        workflow_text_jstree(workflow) +
+        (' <span class="red lighten-3">DRAFT</span>' if workflow.draft else '') +
+        jstree_icon_html('workflows') +
         (jstree_icon_html('private') if workflow.visibility == str(VisibilityOptions.PRIVATE_CODE) else '')
     )
 
@@ -665,7 +667,7 @@ def tool_id_jstree(tool, id_):
     The JS tree tool id
     Return a JSON string so that it can have many fields
     '''
-    #return tool_text_jstree(tool) + '/' + str(id_) 
+    #return tool_text_jstree(tool) + '/' + str(id_)
     return simplejson.dumps([tool.name, tool.version, str(tool.edit), str(id_)])
 
 def tool_id_cytoscape(tool):
@@ -745,9 +747,9 @@ def report_id_jstree(report, id_):
 
 def tool_variable_node_jstree(variable):
     '''
-    The JSTree variable html 
+    The JSTree variable html
     '''
-    return '{}:{}'.format(variable.name, variable.description) + jstree_icon_html('variables')   
+    return '{}:{}'.format(variable.name, variable.description) + jstree_icon_html('variables')
 
 def tool_variable_id_jstree(variable, tool, id_):
     '''
@@ -758,8 +760,8 @@ def tool_variable_id_jstree(variable, tool, id_):
 
     #return variable.name + '/' + variable.value + '/' + variable.description + '/' + str(id_)
     return simplejson.dumps([
-        variable.name, variable.value, variable.description, 
-        str(id_), 
+        variable.name, variable.value, variable.description,
+        str(id_),
         tool.name, tool.version, tool.edit])
 
 def tool_get_dependencies_internal(tool, include_as_root=False):
@@ -790,10 +792,10 @@ def tool_build_dependencies_jstree(tool_dependencies, add_variables=False, add_i
     Build JS TREE from tool_dependencies
 
     add_variables:  Also add tool/data variables
-    add_installation_commands: All installation_commands + validation_commands + os_choices 
+    add_installation_commands: All installation_commands + validation_commands + os_choices
 
-    ATTENTION: THIS IS NOT GENERIC!!! 
-    IT uses g['DEPENDENCY_TOOL_TREE_ID']. 
+    ATTENTION: THIS IS NOT GENERIC!!!
+    IT uses g['DEPENDENCY_TOOL_TREE_ID'].
     '''
 
     tool_dependencies_jstree = []
@@ -810,8 +812,8 @@ def tool_build_dependencies_jstree(tool_dependencies, add_variables=False, add_i
             'cy_label': tool_label_cytoscape(tool_dependency['dependency']), # Label to show in the cytoscape graph
             'id': tool_id_jstree(tool_dependency['dependency'], g['DEPENDENCY_TOOL_TREE_ID']), # This is a unique id
             'parent': tool_id_jstree(tool_dependency['dependant'], g['DEPENDENCY_TOOL_TREE_ID']) if tool_dependency['dependant'] else '#',
-            'type': 'tool', ### This is redundant with ['data']['type'], but we need it because 
-                            ### The node[0].data.type is checked in $scope.tools_var_jstree_model. 
+            'type': 'tool', ### This is redundant with ['data']['type'], but we need it because
+                            ### The node[0].data.type is checked in $scope.tools_var_jstree_model.
                             ### See also issue #93
 
             'name': tool_dependency['dependency'].name,
@@ -870,7 +872,7 @@ def get_instance_settings():
 
     return g['instance_settings'][this_id]
 
-### USERS 
+### USERS
 
 def get_orcid_data(user):
     '''
@@ -879,11 +881,11 @@ def get_orcid_data(user):
 
     social.extra_data structure:
     {
-        'auth_time': 1618581152, 
-        'id': '0000-0002-0077-7296', 
-        'expires': 631138518, 
-        'refresh_token': '4d039eb0-e7f5-49e4-a2e4-f07ce8c22715', 
-        'access_token': '2a1ad4d3-32f0-45b0-822c-a52295caae15', 
+        'auth_time': 1618581152,
+        'id': '0000-0002-0077-7296',
+        'expires': 631138518,
+        'refresh_token': '4d039eb0-e7f5-49e4-a2e4-f07ce8c22715',
+        'access_token': '2a1ad4d3-32f0-45b0-822c-a52295caae15',
         'token_type': 'bearer'
     }
 
@@ -903,31 +905,31 @@ def get_doi_from_orcid(orcid_id):
     Get an orcid_id and return a set with all DOIs of this user
     '''
     url = f"https://orcid.org/{orcid_id}/worksPage.json?offset=0&sort=date&sortAsc=false&pageSize=1000"
-    
+
     def get_doi_from_externalIdentifier(ei):
         ret = set()
-        
+
         indexes = ['externalIdentifierId', 'url', 'normalized', 'normalizedUrl']
-        
-        
+
+
         for index in indexes:
             if index in ei:
                 if 'value' in ei[index]:
                     ret.add(ei[index]['value'])
-        
+
         #print (ret)
         return ret
-    
+
     def get_doi_from_orcid_object(j):
         ret = set()
-        
+
         if 'groups' in j:
             for group in j['groups']:
-                
+
                 if 'externalIdentifiers' in group:
                     for ei in group['externalIdentifiers']:
                         ret |= get_doi_from_externalIdentifier(ei)
-                
+
                 if 'works' in group:
                     for work in group['works']:
                         if 'workExternalIdentifiers' in work:
@@ -935,7 +937,7 @@ def get_doi_from_orcid(orcid_id):
                                 ret |= get_doi_from_externalIdentifier(wei)
 
         return ret
-            
+
 
     try:
         r = requests.get(url)
@@ -943,9 +945,9 @@ def get_doi_from_orcid(orcid_id):
             raise Exception
     except:
         return None
-    
+
     j = r.json()
-    
+
     doi_set = get_doi_from_orcid_object(j)
     return doi_set
 
@@ -978,7 +980,7 @@ def references_orcid_claim_pressed(request, **kwargs):
     if not doi:
         return fail('This publication does not have a DOI field')
 
-    # Check if this doi exists in user's references 
+    # Check if this doi exists in user's references
     if OBC_user.references.filter(pk=reference.pk).exists():
         return fail('You have already claimed this publication')
 
@@ -1094,7 +1096,7 @@ def profile_issue_access_token(request, **kwargs):
 def users_search_3(request, **kwargs):
     '''
     Get profile info for a single user.
-    This is called from: 
+    This is called from:
     * Click on profile
     * Click on a user node in left panel jstree
     '''
@@ -1148,7 +1150,7 @@ def user_add_client(request, **kwargs):
     if not re.match(g['client_name_regex'], name):
         return fail('Invalid client name (allowed characters, a-z, A-Z, 0-9, _)')
 
-    # Get and validate the client    
+    # Get and validate the client
     client = kwargs.get('client', '')
     if not valid_url(client):
         return fail('URL is invalid')
@@ -1212,7 +1214,7 @@ def user_delete_client(request, **kwargs):
         'profile_clients' : [{'name': client.name, 'client': client.client} for client in obc_user.clients.all()]
     }
 
-    return success(ret)    
+    return success(ret)
 
 
 @has_data
@@ -1314,9 +1316,9 @@ def get_execution_clients_angular(request):
     Angular excepts an empty entry at the end
     '''
 
-    return get_execution_clients(request) + [{'name': '', 'client': ''}]; 
+    return get_execution_clients(request) + [{'name': '', 'client': ''}];
 
-### END OF USERS 
+### END OF USERS
 
 def index(request, **kwargs):
     '''
@@ -1335,8 +1337,10 @@ def index(request, **kwargs):
     context = {}
     context['general_alert_message'] = ''
     context['general_success_message'] = ''
+    context['TITLE'] = g.get('TITLE')
     context['TERMS'] = g.get('TERMS')
     context['PRIVACY'] = g.get('PRIVACY')
+    context['FUNDING_LOGOS'] = g.get('FUNDING_LOGOS')
 
     #print (social_core.pipeline.social_auth.social_details)
     #print (social_details())
@@ -1386,7 +1390,7 @@ def index(request, **kwargs):
         else:
             context['general_alert_message'] = 'Reference {} does not exist'.format(reference_name)
 
-    # user linking 
+    # user linking
     user_username = kwargs.get('user_username', '')
     if user_username:
         if OBC_user.objects.filter(user__username=user_username).exists():
@@ -1423,7 +1427,7 @@ def index(request, **kwargs):
 
 
     # Is this user already logged in?
-    # https://stackoverflow.com/questions/4642596/how-do-i-check-whether-this-user-is-anonymous-or-actually-a-user-on-my-system 
+    # https://stackoverflow.com/questions/4642596/how-do-i-check-whether-this-user-is-anonymous-or-actually-a-user-on-my-system
     if request.user.is_anonymous:
         #print ('User is anonumous')
         username = ''
@@ -1468,7 +1472,7 @@ def index(request, **kwargs):
             context['reset_signup_email'] = obc_user.user.email
         else:
             context['general_alert_message'] = password_reset_check_message
-	
+
     # Show warning when running in default Django port
     port = int(request.META['SERVER_PORT'])
     if settings.DEBUG:
@@ -1477,7 +1481,7 @@ def index(request, **kwargs):
             logger.warning('WARNING: YOU ARE RUNNING IN DEFAULT DJANGO PORT (8000)')
         if port != g['DEFAULT_DEBUG_PORT']:
             logger.warning(f'WARNING: You are not runining on port {g["DEFAULT_DEBUG_PORT"]}')
-    context['debug'] = settings.DEBUG # If this is True, then we include tests.js 
+    context['debug'] = settings.DEBUG # If this is True, then we include tests.js
 
     # Add port information or other insrtance settings on template
     instance_settings = get_instance_settings()
@@ -1531,7 +1535,7 @@ def register(request, **kwargs):
 
     if not 'signup_email' in kwargs:
         return fail('email is required')
-    signup_email = kwargs['signup_email'] # https://www.tecmint.com/setup-postfix-mail-server-in-ubuntu-debian/ 
+    signup_email = kwargs['signup_email'] # https://www.tecmint.com/setup-postfix-mail-server-in-ubuntu-debian/
 
     ##  Do we allow users with the same email address?
     try:
@@ -1545,7 +1549,7 @@ def register(request, **kwargs):
     ## smtplib method
 #    try:
 #        send_mail(
-#            from_=g['EMAIL'], 
+#            from_=g['EMAIL'],
 #            to=signup_email,
 #            subject='[{server}] Please confirm your email'.format(server=g['SERVER']),
 #            body=confirm_email_body(uuid_token, port=request_port_to_url(request)),
@@ -1553,8 +1557,8 @@ def register(request, **kwargs):
 #    except smtplib.SMTPRecipientsRefused:
 #        return fail('Could not sent an email to {}'.format(signup_email))
 #    except Exception as e:
-#        pass ## FIXME 
-    
+#        pass ## FIXME
+
     ## django send_mail
 
     suc, error_message, uuid_token = send_validation_email_inner(request, signup_email)
@@ -1585,9 +1589,9 @@ def reset_password_email(request, **kwargs):
         obc_user = None
 
     if not obc_user:
-        return fail('This email does not belong to any user') # Isn't this a breach of privacy? 
+        return fail('This email does not belong to any user') # Isn't this a breach of privacy?
 
-    # reset_password_email_body 
+    # reset_password_email_body
 
     # Save token
     token = create_uuid_token()
@@ -1613,7 +1617,7 @@ def reset_password_email(request, **kwargs):
         send_mail(
             '[{server}] Reset your password'.format(server=g['SERVER']), # subject
             reset_password_email_body(token, port=request_port_to_url(request)), # body message
-            g['EMAIL'], # from 
+            g['EMAIL'], # from
             [email], # to
         )
     except Exception as e:
@@ -1643,7 +1647,7 @@ def password_reset(request, **kwargs):
     #Change the password
     obc_user = OBC_user.objects.get(password_reset_token=password_reset_token)
     user = obc_user.user
-    user.set_password(password_reset_password) # https://docs.djangoproject.com/en/2.1/topics/auth/default/ 
+    user.set_password(password_reset_password) # https://docs.djangoproject.com/en/2.1/topics/auth/default/
     user.save()
 
     #Invalidate token
@@ -1788,13 +1792,13 @@ def is_visibility_allowed(*, obc_user, ro):
     if obc_user:
         if not is_public:
             return obc_user == ro.obc_user
-        
+
     return is_public
 
 
 def get_visibility_Q_objects(request):
     '''
-    See Issue #217 
+    See Issue #217
     '''
 
     obc_user = get_obc_user(request)
@@ -1809,7 +1813,7 @@ def get_visibility_Q_objects(request):
     # If user is logged in, then return:
     # (All PUBLIC) OR (PRIVATE that belong to me)
     Q3 = Q(Q1 | Q2)
-    
+
     return [Q3]
 
 
@@ -1833,9 +1837,9 @@ def tools_search_2(tools_search_name, tools_search_version, tools_search_edit, *
     # Extend with visibility (private/public) filters
     Qs.extend(get_visibility_Q_objects(request))
 
-    # This applies an AND operator. https://docs.djangoproject.com/en/2.2/topics/db/queries/#complex-lookups-with-q-objects 
+    # This applies an AND operator. https://docs.djangoproject.com/en/2.2/topics/db/queries/#complex-lookups-with-q-objects
     # For the order_by part see issue #120
-    results = Tool.objects.filter(*Qs).order_by('created_at') 
+    results = Tool.objects.filter(*Qs).order_by('created_at')
 
     # { id : 'ajson1', parent : '#', text : 'KARAPIPERIM', state: { opened: true} }
 
@@ -1884,11 +1888,11 @@ def workflows_search_2(workflows_search_name, workflows_search_edit, *, request)
     if workflows_search_edit:
         Qs.append(Q(edit = int(workflows_search_edit)))
 
-    # Extend with visibility (private/public) filters. 
+    # Extend with visibility (private/public) filters.
     Qs.extend(get_visibility_Q_objects(request))
 
 
-    # For the order_by part see issue #120 
+    # For the order_by part see issue #120
     results = Workflow.objects.filter(*Qs).order_by('created_at')
 
     obc_user = get_obc_user(request)
@@ -1911,7 +1915,7 @@ def workflows_search_2(workflows_search_name, workflows_search_edit, *, request)
             'state': { 'opened': True},
         }
         workflows_search_jstree.append(to_add)
-        
+
 
     ret = {
         'workflows_search_tools_number' : results.count(),
@@ -1992,7 +1996,7 @@ def tools_search_3(request, **kwargs):
         'tool_os_choices': OS_types.get_angular_model([x.os_choices for x in tool.os_choices.all()]),
         'installation_commands': tool.installation_commands,
         'validation_commands': tool.validation_commands,
-        
+
         'validation_status': tool.last_validation.validation_status if tool.last_validation else 'Unvalidated',
         'visibility': VisibilityOptions.VISIBILITY_OPTIONS_CODE_dic[tool.visibility],
         # Show stdout, stderr and error code when the tool is clicked on the tool-search-jstree
@@ -2033,7 +2037,7 @@ def tool_get_dependencies(request, **kwargs):
     tool_name = kwargs.get('tool_name', '')
     tool_version = kwargs.get('tool_version', '')
     tool_edit = int(kwargs.get('tool_edit', -1))
-    what_to_do = kwargs.get('what_to_do', None) 
+    what_to_do = kwargs.get('what_to_do', None)
 
     if not what_to_do:
         return fail('Error 9122')
@@ -2074,7 +2078,7 @@ def validate_toast_button():
 
 def validate_visibility(ro_visibilty):
     '''
-    Get the visibility value from the frontend and validate. 
+    Get the visibility value from the frontend and validate.
     Return the corresponding visibility code from the model
     '''
 
@@ -2098,7 +2102,7 @@ def tools_add(request, **kwargs):
         return fail('Please validate your email to create new tools ' + validate_toast_button())
 
     obc_user = OBC_user.objects.get(user=request.user)
-    
+
     tool_website = kwargs.get('tool_website', '')
     #if not tool_website:
     #    return fail('Website cannot be empty') # Website CAN be empty
@@ -2113,7 +2117,7 @@ def tools_add(request, **kwargs):
 
     tool_description_html = markdown(tool_description)
 
-    tools_search_name = kwargs.get('tools_search_name', '') 
+    tools_search_name = kwargs.get('tools_search_name', '')
     if not tools_search_name:
         return fail('Invalid name')
 
@@ -2134,7 +2138,7 @@ def tools_add(request, **kwargs):
     if not 'tool_dependencies' in kwargs:
         return fail('Error 8777')
     tool_dependencies = kwargs['tool_dependencies']
-    
+
     # FIXME! What if a dependency is deleted???
     tool_dependencies_objects = [Tool.objects.get(name=t['name'], version=t['version'], edit=int(t['edit'])) for t in tool_dependencies]
 
@@ -2198,7 +2202,7 @@ def tools_add(request, **kwargs):
         # Check that the user who created this tool is the one who deletes it!
         if tool.obc_user != obc_user:
             return fail('Error 8717') # This is strange.. The user who edits this tool is not the one who created it???
-        
+
         # Store a reference to the comment
         comment = tool.comment
 
@@ -2248,8 +2252,8 @@ def tools_add(request, **kwargs):
     else:
         upvotes = 0
         downvotes = 0
- 
-    #os_type Update 
+
+    #os_type Update
     tool_os_choices = kwargs.get('tool_os_choices',[])
     if not tool_os_choices:
         return fail('Please select at least one operating system')
@@ -2258,7 +2262,7 @@ def tools_add(request, **kwargs):
     #print (tool_os_choices)
 
     # If we are editing this tool, set the same edit number
-    # Otherwise get the maximum edit    
+    # Otherwise get the maximum edit
     if tool_edit_state:
         next_edit = tools_search_edit
     else:
@@ -2281,8 +2285,8 @@ def tools_add(request, **kwargs):
 
     else:
         pass # Do nothing
-    
-    #Installation/Validation commands 
+
+    #Installation/Validation commands
     try:
         tool_installation_commands = kwargs['tool_installation_commands']
     except KeyError:
@@ -2308,7 +2312,7 @@ def tools_add(request, **kwargs):
 
     #Create new tool
     new_tool = Tool(
-        obc_user= obc_user, 
+        obc_user= obc_user,
         name = tools_search_name,
         version=tools_search_version,
         edit=next_edit,
@@ -2321,7 +2325,7 @@ def tools_add(request, **kwargs):
         validation_commands=tool_validation_commands,
         upvotes = upvotes,
         downvotes = downvotes,
-        draft = True, # By defaut all new tools are draft 
+        draft = True, # By defaut all new tools are draft
         visibility = visibility_code,
         last_validation=None,
     )
@@ -2335,7 +2339,7 @@ def tools_add(request, **kwargs):
         new_tool.created_at = tool_created_at
         new_tool.save()
 
-    #Add dependencies 
+    #Add dependencies
     if tool_dependencies_objects:
         new_tool.dependencies.add(*tool_dependencies_objects)
         new_tool.save()
@@ -2408,12 +2412,12 @@ def tools_add(request, **kwargs):
     new_tool.save()
 
     ret = {
-        'description_html': tool_description_html, 
+        'description_html': tool_description_html,
         'edit': next_edit,
         'created_at': datetime_to_str(new_tool.created_at),
 
         'tool_pk': new_tool.pk, # Used in comments
-        'tool_thread': qa_create_thread(new_tool.comment, obc_user), # Tool comment thread 
+        'tool_thread': qa_create_thread(new_tool.comment, obc_user), # Tool comment thread
         'score': upvotes-downvotes,
         'voted': {'up': upvoted, 'down': downvoted},
     }
@@ -2460,7 +2464,7 @@ class WorkflowJSON:
 
     def __build_workflow_belongto(self, graph):
         '''
-        Create dictionaries: 
+        Create dictionaries:
         self.belongto
         Keys: workflow tuple (name, edit)
         Value: The workflow element where this workflow belongs to
@@ -2469,12 +2473,12 @@ class WorkflowJSON:
         Keys: workflow tuple
         Value: The workflow element
         '''
-        
-        
+
+
         all_workflows = list(self.__iter_workflows(graph))
 
         workflow_nodes = {workflow_element['data']['id'] : workflow_element for workflow_element in all_workflows}
-            
+
         belongto = {}
         for workflow_element in all_workflows:
             workflow_key = workflow_element['data']['id']
@@ -2521,7 +2525,7 @@ class WorkflowJSON:
 
             for target_id in edges['s'][tool_id]:
                 target_node = all_nodes[target_id]
-                
+
                 if not target_node['data']['type'] == 'tool':
                     continue
 
@@ -2554,7 +2558,7 @@ class WorkflowJSON:
         }
 
         this_tool_cytoscape_node = tool_node_cytoscape(tool)
-        workflow['elements']['nodes'].append(this_tool_cytoscape_node)       
+        workflow['elements']['nodes'].append(this_tool_cytoscape_node)
 
         # FIXME !!! DUPLICATE CODE
         root_tool_all_dependencies = tool_get_dependencies_internal(tool, include_as_root=False)
@@ -2602,7 +2606,7 @@ class WorkflowJSON:
         Returns a set
         '''
 
-        ret = {element['data']['id'] for element in graph['elements']['nodes'] 
+        ret = {element['data']['id'] for element in graph['elements']['nodes']
             if self.__node_belongs_to_a_workflow(element, workflow_node, workflow_nodes)}
         ret.add(workflow_node['data']['id']) # Add the workflow node as well
 
@@ -2614,7 +2618,7 @@ class WorkflowJSON:
         '''
 
         # Determine which edges should be removed
-        edge_ids_to_remove = set() 
+        edge_ids_to_remove = set()
         for edge in graph['elements']['edges']:
             source_id = edge['data']['source']
             target_id = edge['data']['target']
@@ -2626,7 +2630,7 @@ class WorkflowJSON:
             if source_id_in and target_id_in:
                 edge_ids_to_remove.add(edge_id)
                 continue
-            
+
             # This is an edge from inside to outside
             # Also, on the new workflow, the inside node does not exist!
             # Se we are removing the edge. This might render the workflow useless, but not corrupted!
@@ -2676,7 +2680,7 @@ class WorkflowJSON:
                     continue
 
                 if not node['data']['belongto']:
-                    continue # Do not connect the root workflow 
+                    continue # Do not connect the root workflow
 
                 this_workflow = Workflow.objects.get(name=node['data']['name'], edit=node['data']['edit'])
                 if not workflow_using_me_workflow.filter(pk=this_workflow.pk).exists():
@@ -2726,7 +2730,7 @@ class WorkflowJSON:
             graph = simplejson.loads(workflow_using_me.workflow)
             belongto, workflow_nodes = self.__build_workflow_belongto(graph)
 
-            # Get the workflow that the workflow that we want to update belongs to 
+            # Get the workflow that the workflow that we want to update belongs to
             belongto_root = belongto[self.key]
             #print ('   belongto_root: ', belongto_root)
 
@@ -2804,7 +2808,7 @@ class WorkflowJSON:
             tool_node = all_nodes[self.key]
             tool_node_belongto = belongto[self.key]
 
-            # Use download_tool() does the same task. The problem is that it works directly with the UI. 
+            # Use download_tool() does the same task. The problem is that it works directly with the UI.
             # We want to construct a cytoscape graph from the database object
 
             # Get a set of the node ids that depend from this tool
@@ -2912,7 +2916,7 @@ def ro_finalize_delete(request, **kwargs):
             draft_dependencies = [t for t in tool_get_dependencies_internal(tool, include_as_root=False) if t['dependency'].draft]
             if draft_dependencies:
                 return fail('This tool cannot be finalized. It depends from {} draft tool(s). For example: {}'.format(len(draft_dependencies), str(draft_dependencies[0]['dependency'])))
-            
+
             tool.draft = False
             tool.save()
 
@@ -2924,7 +2928,7 @@ def ro_finalize_delete(request, **kwargs):
             dependendants = Tool.objects.filter(dependencies__in=[tool])
             if dependendants.count():
                 return fail('This tool cannot be deleted. There are {} tool(s) that depend on this tool. For example: {}'.format(dependendants.count(), dependendants.first()))
-            
+
             # Is there any workflow that contains this tool?
             w = Workflow.objects.filter(tools__in=[tool])
             if w.count():
@@ -3028,7 +3032,7 @@ def create_workflow_edge_id(source_id, target_id):
 
 
         /*
-        * Create a "unique" id for an edge 
+        * Create a "unique" id for an edge
         */
         function create_workflow_edge_id(source_id, target_id) {
             return source_id + '..' + target_id;
@@ -3203,7 +3207,7 @@ def workflows_add(request, **kwargs):
     if not workflow['elements']:
         return fail('workflow graph cannot be empty')
 
-    # Get all tools that are used in this workflow except the ones that are disconnected 
+    # Get all tools that are used in this workflow except the ones that are disconnected
     tool_nodes = [x for x in workflow['elements']['nodes'] if (x['data']['type'] == 'tool') and (not x['data']['disconnected'])]
     tools = [Tool.objects.get(name=x['data']['name'], version=x['data']['version'], edit=x['data']['edit']) for x in tool_nodes]
     # If this is a public workflow make sure that it does not include any private tool
@@ -3211,12 +3215,12 @@ def workflows_add(request, **kwargs):
         for tool in tools:
             if tool.visibility != str(VisibilityOptions.PUBLIC_CODE):
                 return fail(f'This public workflow contains the private tool: {tool}. Public workflows cannot include private tools.')
-                ### TEST 217_create_public_wf_containing_private_tool  PYT: test_217_create_public_wf_containing_private_tool 
+                ### TEST 217_create_public_wf_containing_private_tool  PYT: test_217_create_public_wf_containing_private_tool
 
     # Compute next_edit
     if workflow_edit_state:
         try:
-            # workflow_info_edit comes from client. 
+            # workflow_info_edit comes from client.
             workflow_info_edit = int(kwargs.get('workflow_info_edit', ''))
         except ValueError:
             return fail('Error 4878')
@@ -3239,9 +3243,9 @@ def workflows_add(request, **kwargs):
 
     # Remove self workflow and workflows that are disconnected
     workflow_nodes = [
-        {'name': x['data']['name'], 'edit': x['data']['edit']} 
-        for x in workflow_nodes if 
-            (not (x['data']['name'] == workflow_info_name and x['data']['edit'] == next_edit)) and (not x['data']['disconnected'])  
+        {'name': x['data']['name'], 'edit': x['data']['edit']}
+        for x in workflow_nodes if
+            (not (x['data']['name'] == workflow_info_name and x['data']['edit'] == next_edit)) and (not x['data']['disconnected'])
         ]
     # Get workflow database objects
     workflows = [Workflow.objects.get(**x) for x in workflow_nodes]
@@ -3266,7 +3270,7 @@ def workflows_add(request, **kwargs):
             return fail('Edit Summary cannot be empty')
         workflow_forked_from = Workflow.objects.get(name=workflow_info_forked_from['name'], edit=workflow_info_forked_from['edit'])
     else:
-        pass # Do nothing 
+        pass # Do nothing
 
     # Check workflow website
     workflow_website = kwargs.get('workflow_website', '')
@@ -3370,7 +3374,7 @@ def workflows_add(request, **kwargs):
 
 
     new_workflow = Workflow(
-        obc_user=obc_user, 
+        obc_user=obc_user,
         name = workflow_info_name,
         edit = next_edit,
         website = workflow_website,
@@ -3386,7 +3390,7 @@ def workflows_add(request, **kwargs):
         upvotes = upvotes,
         downvotes = downvotes,
         visibility = visibility_code,
-        draft = True, # We always save new workflows as draft. 
+        draft = True, # We always save new workflows as draft.
     )
 
     #Save it
@@ -3397,7 +3401,7 @@ def workflows_add(request, **kwargs):
         new_workflow.created_at = workflow_created_at
         new_workflow.save()
 
-    # Add tools 
+    # Add tools
     if tools:
         new_workflow.tools.add(*tools)
         new_workflow.save()
@@ -3461,14 +3465,14 @@ def workflows_add(request, **kwargs):
 
 
     ret = {
-        'description_html': workflow_description_html, 
+        'description_html': workflow_description_html,
         'edit': next_edit,
         'created_at': datetime_to_str(new_workflow.created_at),
         'score': upvotes-downvotes,
         'voted': {'up': upvoted, 'down': downvoted},
 
         'workflow_pk': new_workflow.pk, # Used in comments
-        'workflow_thread': qa_create_thread(new_workflow.comment, obc_user), # Tool comment thread 
+        'workflow_thread': qa_create_thread(new_workflow.comment, obc_user), # Tool comment thread
     }
 
     return success(ret)
@@ -3521,7 +3525,7 @@ def workflows_search_3(request, **kwargs):
         'changes': workflow.changes,
         'visibility': VisibilityOptions.VISIBILITY_OPTIONS_CODE_dic[workflow.visibility],
         'workflow_pk': workflow.pk, # Used in comments (QAs)
-        'workflow_thread': qa_create_thread(workflow.comment, obc_user), # Workflow comment thread 
+        'workflow_thread': qa_create_thread(workflow.comment, obc_user), # Workflow comment thread
         'workflow_score': workflow.upvotes - workflow.downvotes,
         'workflow_voted': workflow_voted,
         'workflow_comment_id': workflow.comment.pk, # Used to create a permalink to the comments
@@ -3704,7 +3708,7 @@ def download_tool(request, **kwargs):
     # build all tool nodes for dependency tools
     all_ids = set()
     all_dependencies_str = []
-    
+
     for root_tool_obj in root_tool_objects:
         # This is a first level dependency
         root_tool_node = tool_node_cytoscape(root_tool_obj)
@@ -3755,17 +3759,17 @@ def download_workflow(request, **kwargs):
 
     workflow_arg = kwargs['workflow']
 
-    # These are the options fetched from the UI. Check ui.js : window.OBCUI.get_workflow_options 
+    # These are the options fetched from the UI. Check ui.js : window.OBCUI.get_workflow_options
     #    OR
     # The options fetched from the REST API . See rest_views.py : input_parameters
-    workflow_options_arg = kwargs['workflow_options'] 
+    workflow_options_arg = kwargs['workflow_options']
 
     download_type = kwargs['download_type'] # For a full list of types see below . if download_type == ...
-    workflow_info_editable = kwargs['workflow_info_editable'] # IS this workflow saved or not ? . TRUE: NOT SAVED 
+    workflow_info_editable = kwargs['workflow_info_editable'] # IS this workflow saved or not ? . TRUE: NOT SAVED
     workflow_id = kwargs.get('workflow_id')
     workflow_obc_client = kwargs.get('obc_client', False)
     do_url_quote = kwargs.get('do_url_quote', True) # See rest_views.py
-    return_bytes = kwargs.get('return_bytes', False) # See rest_views.py 
+    return_bytes = kwargs.get('return_bytes', False) # See rest_views.py
 
 
     #print ('Name:', workflow_arg['name'])
@@ -3773,7 +3777,7 @@ def download_workflow(request, **kwargs):
     #print ('editable:', workflow_info_editable)
 
     if workflow_info_editable:
-        # This workflow has not been saved! 
+        # This workflow has not been saved!
         workflow = kwargs.get('workflow_json', '')
         workflow_name = workflow_arg.get('name', '')
         if not workflow_name:
@@ -3800,15 +3804,15 @@ def download_workflow(request, **kwargs):
         workflow_cy = kwargs['workflow_cy']
     #print (workflow_cy)
 
-    # Create a new Report object 
+    # Create a new Report object
     if (not user_is_validated(request)) or (not workflow) or (workflow.draft):
         '''
         If :
-            user is anonymous or 
-            with non-validated email or 
-            not saved workflow or 
+            user is anonymous or
+            with non-validated email or
+            not saved workflow or
             this is a tool run (workflow is None) or
-            workflow is draft 
+            workflow is draft
         then:
             we do not create a report!
         '''
@@ -3840,7 +3844,7 @@ def download_workflow(request, **kwargs):
         'nice_id': nice_id,
     }
     #output_object = simplejson.dumps(output_object) # .replace('#', 'aa')
-    
+
     #output_object = escape(simplejson.dumps(output_object))
 
     #print ('output_object')
@@ -3876,7 +3880,7 @@ def download_workflow(request, **kwargs):
 
         if do_url_quote:
             output_object = urllib.parse.quote(output_object)
-        
+
         ret['output_object'] = output_object
 
     except OBC_Executor_Exception as e:
@@ -3963,14 +3967,14 @@ def run_workflow(request, **kwargs):
     #print ('callback:', data_to_submit['callback'])
 
     '''
-    
+
 
     '''
 
     '''
 curl --header "Content-Type: application/json" \
   --request GET \
-  http://139.91.190.239:5000/cfa52d9df5a24345d9f740395e4e69e4/check/id/test   
+  http://139.91.190.239:5000/cfa52d9df5a24345d9f740395e4e69e4/check/id/test
 
 
 
@@ -3987,7 +3991,7 @@ curl --header "Content-Type: application/json" \
     if not r.ok:
         #r.raise_for_status()
         return fail('Could not send to URL: {} . Error code: {}'.format(run_url, r.status_code))
-    try: 
+    try:
         data_from_client = r.json()
     except Exception as e: # Ideally we should do here: except json.decoder.JSONDecodeError as e: but we would have to import json with simp[lejson..]
         return fail('Could not parse JSON data from Execution Client.')
@@ -4016,10 +4020,10 @@ curl --header "Content-Type: application/json" \
 
     # All seem to be ok. Create a report
     report = Report(
-        obc_user=obc_user, 
-        workflow = workflow, 
+        obc_user=obc_user,
+        workflow = workflow,
         nice_id = nice_id,
-        client=client, 
+        client=client,
         visualization_url=visualization_url,
         monitor_url = monitor_url,
         client_status='SUBMITTED')
@@ -4061,7 +4065,7 @@ def report(request, **kwargs):
 
     #Get the ReportToken
     try:
-        old_report_token = ReportToken.objects.get(token=token) 
+        old_report_token = ReportToken.objects.get(token=token)
     except ObjectDoesNotExist as e:
         return fail('Could not find entry to this token')
 
@@ -4075,7 +4079,7 @@ def report(request, **kwargs):
     # Get the report
     report_obj = old_report_token.report_related.first()
 
-    # Save the new status and return a new token 
+    # Save the new status and return a new token
     new_report_token = ReportToken(status=status_received, active=True) # Duplicate code
     new_report_token.save()
     report_obj.tokens.add(new_report_token)
@@ -4122,7 +4126,7 @@ def tool_info_validation_queued(request, **kwargs):
 
     payload = kwargs['payload']
 
-    assert payload['status'] == 'Queued' 
+    assert payload['status'] == 'Queued'
     tool = Tool.objects.get(**payload['tool'])
     this_id = payload['id']
 
@@ -4165,11 +4169,11 @@ def callback(request, **kwargs):
     if not 'id' in payload:
         return fail('id was not found on payload')
     this_id = payload['id']
-    # Get the stdout stdderr and errorcode 
+    # Get the stdout stdderr and errorcode
 
     stdout = payload.get('stdout', None)
     stderr = payload.get('stderr', None)
-    errcode = payload.get('errcode', None)    
+    errcode = payload.get('errcode', None)
 
     #print(stdout)
     # Get the tool referring to this task_id
@@ -4178,7 +4182,7 @@ def callback(request, **kwargs):
         return fail(f'Could not find tool with task_id={this_id}')
 
     # Create new ToolValidations
-    # If stdout is emty , stderr and errcode are empty 
+    # If stdout is emty , stderr and errcode are empty
     # If status is Queued or Running set this three None
     tv = ToolValidations(tool=tool, task_id=this_id, validation_status=status, stdout= stdout, stderr= stderr, errcode= errcode)
     tv.save()
@@ -4193,13 +4197,13 @@ def callback(request, **kwargs):
 
 def tools_show_stdout(request, tools_info_name, tools_info_version, tools_info_edit):
     '''
-    URL : 
+    URL :
     path(r'tool_stdout/[\\w]+/[\\w\\.]+/[\\d]+/', views.tools_show_stdout), # Show stdout of tool
     '''
     #print (tools_info_name, tools_info_version, tools_info_edit)
     tool_repr = Tool.get_repr(tools_info_name, tools_info_version, tools_info_edit)
 
-    try: 
+    try:
         tool = Tool.objects.get(name=tools_info_name, version=tools_info_version, edit=int(tools_info_edit))
     except ObjectDoesNotExist as e:
         return fail(f'Could not find tool: {tool_repr}')
@@ -4226,7 +4230,7 @@ def reports_search_2(main_search, request):
     In contrary to other *_search_2 , we only allow to show reports that belong to the login user!
     '''
 
-    # Return empty results if user is anonymous or not validated 
+    # Return empty results if user is anonymous or not validated
     if request.user.is_anonymous or (not user_is_validated(request)):
         return {
             'main_search_reports_number': 0,
@@ -4243,8 +4247,8 @@ def reports_search_2(main_search, request):
     user_Q = Q(obc_user = obc_user)
 
     # We do not want reports that have only one tokens which is "unused"
-    results = Report.objects.annotate(num_tokens=Count('tokens')).filter( 
-        user_Q & (nice_id_Q | workflow_Q | username_Q) & (~(not_unused&count_1)) 
+    results = Report.objects.annotate(num_tokens=Count('tokens')).filter(
+        user_Q & (nice_id_Q | workflow_Q | username_Q) & (~(not_unused&count_1))
     )
 
     # BUILD TREE
@@ -4308,7 +4312,7 @@ def reports_search_3(request, **kwargs):
     tokens = [{
         'status': token.status,
         'created_at': datetime_to_str(token.created_at),
-        'token': str(token.token), 
+        'token': str(token.token),
         #'node_anim_id': create_node_anim_id(token.status), # the parameter passed to nodeAnimation
         'node_anim_params': ReportToken.parse_response_status(token.status), # the parameter passed to nodeAnimation_public
     } for token in report.tokens.all().order_by('created_at') if token.status != ReportToken.UNUSED]
@@ -4383,7 +4387,7 @@ def reports_refresh(request, **kwargs):
         #print ('PAUSE URL:')
         #print (url)
     elif report_workflow_action == 3:
-        # Resume 
+        # Resume
         url = g['create_client_resume_url'](client_url, nice_id)
         #print ('RESUME URL:')
         #print (url)
@@ -4402,7 +4406,7 @@ def reports_refresh(request, **kwargs):
 
     if not r.ok:
         return fail('Could not send to URL: {} . Error code: {}'.format(client_url, r.status_code))
-    
+
     data_from_client = r.json()
     #print ('Data from client:')
     #print (data_from_client)
@@ -4483,7 +4487,7 @@ def reports_refresh(request, **kwargs):
         report_url = g['create_client_download_report_url'](client_url, nice_id)
     if status in ['SUCCESS', 'FAILED']:
         log_url = g['create_client_download_log_url'](client_url, nice_id)
-    
+
     report.url = report_url
     report.log_url = log_url
 
@@ -4497,17 +4501,17 @@ def reports_refresh(request, **kwargs):
 
     return success(ret)
 
-### END OF REPORTS 
+### END OF REPORTS
 
-### REFERENCES 
+### REFERENCES
 
 
 def bibtex_to_html(content):
     '''
     Convert bibtex to html
-    Adapted from: http://pybtex-docutils.readthedocs.io/en/latest/quickstart.html#overview 
+    Adapted from: http://pybtex-docutils.readthedocs.io/en/latest/quickstart.html#overview
     '''
-    
+
     # Ideally we could have these variables set only once,
     # But it is not allowed to have multiuple entries.
     pybtex_style = pybtex.plugin.find_plugin('pybtex.style.formatting', 'plain')()
@@ -4837,7 +4841,7 @@ def qa_search_2(main_search, *, request):
 @has_data
 def references_search_3(request, **kwargs):
     '''
-    Fetch the data for a unique reference 
+    Fetch the data for a unique reference
     '''
 
     name = kwargs.get('name', '')
@@ -4849,7 +4853,7 @@ def references_search_3(request, **kwargs):
     # Has this reference been claimed by the user ?
     obc_user = get_obc_user(request)
     claimed = bool(
-            obc_user and 
+            obc_user and
             reference.doi and
             obc_user.references.filter(pk=reference.pk).exists()
     )
@@ -4878,9 +4882,9 @@ def references_search_3(request, **kwargs):
 
     return success(ret)
 
-### END OF REFERENCES 
+### END OF REFERENCES
 
-### SEARCH 
+### SEARCH
 
 @has_data
 def all_search_2(request, **kwargs):
@@ -4966,7 +4970,7 @@ def all_search_2(request, **kwargs):
 
 ### END OF SEARCH
 
-### Q&A 
+### Q&A
 
 @has_data
 def qa_add_1(request, **kwargs):
@@ -4992,7 +4996,7 @@ def qa_add_1(request, **kwargs):
 
     #Create a new comment
     comment = Comment(
-        obc_user=OBC_user.objects.get(user=user), 
+        obc_user=OBC_user.objects.get(user=user),
         comment=qa_comment,
         comment_html = qa_comment_html,
         title=qa_title,
@@ -5201,7 +5205,7 @@ def gen_qa_add_comment(request, **kwargs):
     if not user_is_validated(request):
         return fail('Please validate your email to add a new comment ' + validate_toast_button());
 
-    comment_pk = kwargs['comment_pk'] 
+    comment_pk = kwargs['comment_pk']
     object_pk = kwargs['object_pk']
     qa_comment = kwargs['qa_comment']
     qa_opinion = kwargs['qa_opinion']
@@ -5272,10 +5276,10 @@ def updownvote_comment(request, **kwargs):
     comment_id = int(kwargs['comment_id'])
     upvote = kwargs['upvote']
     assert upvote in [True, False]
-    
+
     # Get the comment
     comment = Comment.objects.get(pk=comment_id)
-    
+
     # Get the user
     obc_user = OBC_user.objects.get(user=request.user)
 
