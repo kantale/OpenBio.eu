@@ -1,6 +1,6 @@
 
-# Deployment notes on Ubuntu 
-These are some rough notes on how to deploy openbio.eu on a server. Hopefully we will create a Dockerfile out of this. 
+# Deployment notes on Ubuntu
+These are some rough notes on how to deploy openbio.eu on a server. Hopefully we will create a Dockerfile out of this.
 
 
 Current system info:
@@ -17,15 +17,15 @@ Linux ____ 4.4.0-131-generic ____ x86_64 x86_64 x86_64 GNU/Linux
 
 
 ### Install Linux packages
-``` 
+```
 sudo apt-get update
 sudo apt-get install unzip apache2 apache2-dev gcc libpq-dev postgresql postgresql-contrib
 ```
 
 ### Install Anaconda
 ```
-wget https://repo.anaconda.com/archive/Anaconda3-2019.03-Linux-x86_64.sh 
-bash Anaconda3-2019.03-Linux-x86_64.sh 
+wget https://repo.anaconda.com/archive/Anaconda3-2019.03-Linux-x86_64.sh
+bash Anaconda3-2019.03-Linux-x86_64.sh
 ```
 
 Answer no to the following question:
@@ -60,7 +60,7 @@ logout
 ### Install python packages for openbio.eu
 (Make sure that the conda obc_prod_python environment is activated)
 ```
-pip install --upgrade  -r requirements.txt 
+pip install --upgrade  -r OpenBio/requirements.txt
 ```
 
 ### Clone and configure openbio.eu
@@ -68,8 +68,8 @@ pip install --upgrade  -r requirements.txt
 cd ~
 git clone https://github.com/kantale/OpenBioC  obc_production
 cd ~/obc_production/OpenBioC
-python manage.py makemigrations app 
-python manage.py migrate 
+python manage.py makemigrations app
+python manage.py migrate
 python manage.py migrate admin
 
 
@@ -102,7 +102,7 @@ POSTGRESQL_PARAMS = {
 mkdir ~mod_wsgi
 cd ~mod_wsgi/
 wget https://github.com/GrahamDumpleton/mod_wsgi/archive/4.6.5.tar.gz
-tar zxvf 4.6.5.tar.gz 
+tar zxvf 4.6.5.tar.gz
 cd mod_wsgi-4.6.5
 # MAKE SURE obc_production environment is activated
 ./configure --with-python=/home/akanterakis/anaconda3/envs/obc_production_python/bin/python
@@ -190,8 +190,8 @@ source activate python_obc
 
 Install python packages:
 ```
-pip install Django==2.1.5 simplejson pybtex mistune requests ansi2html  
-pip install bashlex # https://github.com/idank/bashlex , python bash parser 
+pip install Django==2.1.5 simplejson pybtex mistune requests ansi2html
+pip install bashlex # https://github.com/idank/bashlex , python bash parser
 pip install djangorestframework
 ```
 
@@ -215,17 +215,17 @@ python manage.py migrate
 
 Start server
 ```
-python manage.py runserver 
+python manage.py runserver
 ```
 
-# Deployment notes on Windows 
+# Deployment notes on Windows
 
-1. [Install anaconda / conda for windows](https://docs.conda.io/projects/conda/en/latest/user-guide/install/windows.html) 
+1. [Install anaconda / conda for windows](https://docs.conda.io/projects/conda/en/latest/user-guide/install/windows.html)
 2. [Install git for windows](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-3. Clone this repository: ```git clone https://github.com/kantale/OpenBioC``` 
-4. Create conda virtual environment: ```conda create -n obc_python python=3.7``` 
+3. Clone this repository: ```git clone https://github.com/kantale/OpenBioC```
+4. Create conda virtual environment: ```conda create -n obc_python python=3.7```
 5. Activate the environment: ```conda activate obc_python```
-6. install python packages ```pip install -r requirements.txt```
+6. install python packages ```pip install -r OpenBio/requirements.txt```
 7. Initialize database: ```cd OpenBioC/OpenBioC``` :
 
 ```
@@ -234,5 +234,5 @@ python manage.py migrate
 ```
 
 8. start the django service ```python manage.py runserver```
-9. Get your browser to: 127.0.0.1:8080/platform 
+9. Get your browser to: 127.0.0.1:8080/platform
 
