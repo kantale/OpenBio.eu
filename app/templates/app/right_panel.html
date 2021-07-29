@@ -42,7 +42,7 @@
                 </div>
                 <!-- Buttons -->
                 <div class="row right-align">
-                    <a class="btn tooltipped" data-position="bottom" data-tooltip="Edit" style="margin-bottom:2px" 
+                    <a class="btn tooltipped" data-position="bottom" data-tooltip="Edit" style="margin-bottom:2px"
                         ng-show="tools_info_draft && tool_info_username==username && !tools_info_editable"
                         ng-click="tool_edit_pressed()">Edit</a>
                     <a class="btn tooltipped" data-position="bottom" data-tooltip="Finalize" style="margin-bottom:2px"
@@ -62,7 +62,7 @@
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fork" ng-click="tool_info_fork_pressed()" ng-show="!tools_info_editable"
                         ng-class="{'disabled': !username}"><i class="material-icons">call_split</i></a>
-                    
+
 
                     <!-- Run Dropdown -->
                     <!--FEATURE ABANDONED #221
@@ -83,7 +83,7 @@
                         <li><a ng-click="tool_info_download_pressed('CWLZIP')">CWL zip</a></li>
                         <li><a ng-click="tool_info_download_pressed('AIRFLOW')">Airflow</a></li>
                     </ul>
-                    --> 
+                    -->
 
                 </div>
             </div>
@@ -102,7 +102,7 @@
                         <form class="col s12" ng-show="tools_info_editable">
                             <div class="row">
                                 <div class="input-field col s12 m4 grid-s12-m4-l4">
-                                    <input id="generalName" type="text" class="validate tooltipped" 
+                                    <input id="generalName" type="text" class="validate tooltipped"
                                         data-tooltip="Name of the tool or dataset. Available characters: a-z, A-Z, 0-9, _"
                                         ng-model="tools_info_name"
                                         ng-disabled="tools_info_forked_from || tools_info_edit_state">
@@ -120,7 +120,7 @@
                                     <label>Visibility</label>
                                 </div>
                                 <div class="input-field col s12 grid-s12-m12-l12">
-                                    <input id="generalWebsite" type="text" class="validate tooltipped" 
+                                    <input id="generalWebsite" type="text" class="validate tooltipped"
                                         data-tooltip="Optional. Websites should start from http://, https:// or ftp:// "
                                         ng-model="tool_website">
                                     <label for="generalWebsite">Website</label>
@@ -266,7 +266,7 @@
                                 tree="tools_var_jstree" ng-show="tools_var_jstree_id_show"></div>
                         </div>
                         <div class="row left-align" ng-show="!tools_info_editable">
-                            Operating Systems: <!-- <span ng-bind="tool_os_choices.name"></span>  ### here --> 
+                            Operating Systems: <!-- <span ng-bind="tool_os_choices.name"></span>  ### here -->
                             <div ng-repeat="tool_os_choice in tool_os_choices"><span ng-bind="tool_os_choice.name"></span></div>
                         </div>
                         <!-- adding values to use it for dockerfile-->
@@ -282,7 +282,7 @@
                                         <option value="stretch">Debian 9 (Stretch)</option>
                                         <option value="buster">Debian 10 (Buster)</option>
                                     </optgroup>
-                                </select> 
+                                </select>
                                 <select id="tool_os_choices_select" ng-model="tool_os_choices"
                                     ng-options="os.name group by os.group for os in os_choices"></select>
                                 <label>Select Operating System</label>
@@ -521,7 +521,7 @@
                     </ul>
                 </div>
                 <div class="left-align" style="margin-top: 5px; margin-bottom: 5px;">
-                    See <a href="https://github.com/kantale/OpenBioC/tree/master/Documentation" target="_blank">Documentation</a> on how to execute a workflow
+                    See <a href="https://kantale.github.io/OpenBio.eu/" target="_blank">Documentation</a> on how to execute a workflow
                 </div>
             </div>
 
@@ -665,7 +665,7 @@
                                         ng-show="!workflows_step_main">No</span>
                                 </div>
                                 <div class="row col s12" id="workflow_step_editor"></div>
-                                <!-- 
+                                <!--
                                     <div class="input-field col s12">
                                         <textarea id="editWorkflowDescription"
                                             class="validate materialize-textarea" ng-model="workflows_step_description"></textarea>
@@ -719,7 +719,7 @@
                                                     ng-readonly="(!$last) || (!workflows_info_editable)">
                                             </td>
 
-                                            <!-- Old switch 
+                                            <!-- Old switch
                                             <td class="switch">
                                                 <label>
                                                     IN
@@ -741,14 +741,14 @@
                                                     <span class="switch-selection"></span>
                                                 </div>
                                             </td>
-                                            
+
                                             <td>
                                                 <!--add: ng-if="$last" removed  , remove: (!$first) removed
                                                 -->
                                                 <a class="waves-effect waves-light btn-small tooltipped green darken-1"
                                                     style="padding-left: 7px; padding-right:7px" data-position="bottom"
                                                     data-tooltip="Add new variable"
-                                                    ng-if="$last && x.name && x.description && workflows_info_editable" 
+                                                    ng-if="$last && x.name && x.description && workflows_info_editable"
                                                     ng-click="workflow_step_add_input_output()"><i
                                                         class="material-icons">add</i></a>
                                             </td>
@@ -856,7 +856,7 @@
                     <div style="float: left;">
                         <span style="margin: 0px;">
                             <h5 style="margin: 0px; margin-bottom: 2px;"><span>Workflow: </span><a class="cursorPointer" ng-click="interlink({type: 'w', name: report_workflow_name, edit:report_workflow_edit})">w/<span ng-bind="report_workflow_name"></span>/<span ng-bind="report_workflow_edit"></span></a></h5>
-                            <h5 style="margin: 0px;"><span>Run: </span><span ng-bind="report_workflow_run"></span></h5>                            
+                            <h5 style="margin: 0px;"><span>Run: </span><span ng-bind="report_workflow_run"></span></h5>
                         </span>
                         <small class="form-text text-muted">
                             <a class="cursorPointer" ng-click="interlink({type: 'u', username: report_username})">u/<span ng-bind="report_username"></span></a>, created at: <span ng-bind="report_created_at"></span>
@@ -878,7 +878,7 @@
 
                 <!-- RESUME BUTTON -->
                 <a class="btn tooltipped" data-position="bottom" data-tooltip="Resume" style="margin-bottom:2px" ng-show="(username == report_username) && (report_client_status == 'PAUSED')" ng-click="report_refresh(3, true)">Resume</a>
-                
+
                 <!-- DELETE BUTTON -->
                 <a class="btn tooltipped" data-position="bottom" data-tooltip="Delete" style="margin-bottom:2px" ng-show="username == report_username" ng-click="report_refresh(4, false)">Delete</a>
             </div>
@@ -896,7 +896,7 @@
                  <div ng-show="true">
                     {% verbatim %}
                     <div ng-show="report_visualization_url"><strong>Moninor Execution: </strong><a ng-href="{{report_visualization_url}}"><span ng-bind="report_visualization_url"></span></a></div><br>
-                    <div ng-show="report_monitor_url"><strong>Monitor Resources: </strong><a ng-href="{{report_monitor_url}}"><span ng-bind="report_monitor_url"></span></a></div><br>                    
+                    <div ng-show="report_monitor_url"><strong>Monitor Resources: </strong><a ng-href="{{report_monitor_url}}"><span ng-bind="report_monitor_url"></span></a></div><br>
                     {% endverbatim %}
                 </div>
                 <div ng-show="report_client_status == 'SUCCESS' || report_client_status == 'FAILED'">
@@ -904,7 +904,7 @@
                     <div ng-show="report_url"><strong>Report: </strong><a ng-href="{{report_url}}"><span ng-bind="report_url"></span></a></div><br>
                     <div ng-show="report_log_url"><strong>Logs: </strong><a ng-href="{{report_log_url}}"><span ng-bind="report_log_url"></span></a></div>
                     {% endverbatim %}
-                </div> 
+                </div>
                 <div ng-show="report_client_status == 'SUBMITTED' || report_client_status == 'PAUSE_SUBMITTED' || report_client_status == 'RESUME_SUBMITTED' ">
                     <strong>Current status: </strong><span ng-bind="report_client_status"></span><button ng-click="report_refresh(1, true)">Refresh</button>
                 </div>
@@ -921,7 +921,7 @@
                 <!-- --------------------------------------------------------------------------------------- -->
                 <!-- ------------------------------------ General ------------------------------------------ -->
                 <!-- --------------------------------------------------------------------------------------- -->
-                
+
                 <!--
                 <li id="reportsGeneral">
                     <div class="collapsible-header">
@@ -966,8 +966,8 @@
                             </div>
                         </form>
                     </div>
-                </li>		
-				
+                </li>
+
                 <div class="row">
                     <div id="cyrep"></div>
                 </div>
@@ -1159,8 +1159,8 @@
                                 <!-- ng-href="{{ trust_url(references_url) }}" -->
                                 <div class="row left-align">
                                     <div class="col s12 font13">URL</div>
-                                    <div class="col s12"><a 
-                                        ng-href="{{ references_url }}" 
+                                    <div class="col s12"><a
+                                        ng-href="{{ references_url }}"
                                         target="_blank"><span ng-bind="references_url"></span></a>
                                     </div>
                                 </div>
@@ -1307,7 +1307,7 @@
                                 {% verbatim %}
                                 <div class="row left-align">
                                     <div class="col s12 font13">Website</div>
-                                    <div class="col s12"><a 
+                                    <div class="col s12"><a
                                             ng-href="{{user_website}}"
                                             target="_blank"><span ng-bind="user_website"></span></a></div>
                                 </div>
@@ -1449,12 +1449,12 @@
                             <label><input type="radio" ng-model="qa_comment_opinion" value="agree"/><span>Agree</span></label>
                             <label><input type="radio" ng-model="qa_comment_opinion" value="disagree"/><span>Disagree</span></label>
                         </div>
-                                        
+
                         <a class="waves-effect waves-light btn-small" href=""
                             ng-click="qa_comment_save_button_pressed()">Save</a>
                         <a class="waves-effect waves-light btn-small" href=""
                             ng-click="qa_comment_cancel_button_pressed()">Cancel</a>
- 
+
 
 
 
@@ -1732,5 +1732,5 @@
     </div>
 
 
-    
+
 </div>
