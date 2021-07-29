@@ -23,7 +23,7 @@ container:
 	docker build -f Dockerfile -t $(IMAGE_TAG) .
 
 container-push:
-	docker buildx build --platform linux/amd64,linux/arm64 --push -f Dockerfile -t $(IMAGE_TAG) .
+	docker buildx build --platform linux/amd64 --push -f Dockerfile -t $(IMAGE_TAG) .
 
 release:
 	if git tag -l | grep "^v${VERSION}$$"; then echo "Version ${VERSION} already tagged"; exit 1; fi
