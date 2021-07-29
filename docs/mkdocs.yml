@@ -1,0 +1,4 @@
+site_name: OpenBio.eu documentation
+nav:
+    - Home: index.md
+theme: readthedocs

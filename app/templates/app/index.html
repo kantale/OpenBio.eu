@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>{{TITLE}} - Open, Social, Reproducible Science</title>
+
+	<!-- Global site tag (gtag.js) - Google Analytics -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144048500-1"></script>
+	<script>
+	  window.dataLayer = window.dataLayer || [];
+	  function gtag(){dataLayer.push(arguments);}
+	  gtag('js', new Date());
+
+	  gtag('config', 'UA-144048500-1');
+	</script>
+
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<script type="text/javascript">
+		window.CSRF_TOKEN = "{{ csrf_token }}";
+		window.username = "{{ username }}";
+		window.profile_ORCID = {% if profile_ORCID %} "{{ profile_ORCID }}"; {% else %} null;{% endif %}
+		window.general_alert_message = {% autoescape off %}"{{ general_alert_message }}"{% endautoescape %};
+		window.general_success_message = {% autoescape off %}"{{ general_success_message }}"{% endautoescape %};
+		window.password_reset_token = "{{ password_reset_token }}";
+		window.reset_signup_username = "{{ reset_signup_username }}";
+		window.reset_signup_email = "{{ reset_signup_email }}";
+		window.user_is_validated =  {% if user_is_validated %}true;{% else %}false;{% endif %}
+		window.init_interlink_args = {{ init_interlink_args | safe }};
+		window.OBC_PORT = {{ port }};
+		window.OBC_CONTROLLER_URL = "{{controller_url}}";
+		window.OBC_OS_CHOICES = {{ os_choices | safe }};
+		window.profile_clients = {{ profile_clients | safe}};
+		window.menu = null;
+		window.input_menu = null;
+		window.orcid_success = {% if orcid_success %}true;{% else %}false;{% endif %}
+	</script>
+
+	<script src="/static/app/jquery-3.3.1.min.js"></script>
+
+	<!--
+	<script src="/static/app/jquery-2.1.1/jquery-2.1.1.min.js"></script>
+	-->
+
+
+	<!-- Google Icon Font. REMOVED FROM HERE SO WOULDN'T RELY ON EXTERNAL RESOURCES
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	-->
+	<link rel="stylesheet" href="/static/app/material-design-icons-3.0.1/iconfont/material-icons.css">
+
+	<!-- Materialize CSS-->
+	<link type="text/css" rel="stylesheet" href="/static/app/materialize/css/materialize.min.css"
+		media="screen,projection" />
+
+	<!-- Animate CSS FIXME: Add animate as external dependency-->
+	<link rel="stylesheet" href="/static/app/konstantina/css/animate-v3.7.0.css">
+
+	<!-- Custom CSS -->
+	<link rel="stylesheet" href="/static/app/konstantina/css/style.css">
+
+	<!-- FOR DRAGGABLE
+	<script src="/static/app/jquery-ui-1.12.1.custom/jquery-ui.min.js" type="text/javascript" charset="utf-8"></script>
+	<link rel="stylesheet" href="/static/app/jquery-ui-1.12.1.custom/jquery-ui.min.css" type="text/css"/>
+	-->
+
+	<!--
+	<link rel="stylesheet" href="/static/app/jQuery-contextMenu-2.7.0/dist/jquery.contextMenu.min.css" type="text/css"/>
+	<script src="/static/app/jQuery-contextMenu-2.7.0/dist/jquery.contextMenu.min.js" type="text/javascript" charset="utf-8"></script>
+	-->
+
+	<!-- This is version 4.0 -->
+	<!--
+	<link rel="stylesheet" href="/static/app/css/bootstrap.min.css" type="text/css"/>
+	<script defer src="/static/app/js/bootstrap.min.js"></script>
+	-->
+
+
+
+	<!--
+	<link rel="stylesheet" href="/static/app/bootstrap-3.3.7/dist/css/bootstrap.min.css" type="text/css"/>
+	<script defer src="/static/app/bootstrap-3.3.7/dist/js/bootstrap.min.js"></script>
+	-->
+
+	<!-- For Glyphicons -->
+	<!-- NOT USED
+	<link rel="stylesheet" href="/static/app/fontawesome/font-awesome-4.7.0/css/font-awesome.min.css" type="text/css" />
+	-->
+
+	<!-- This is version 1.7.2 -->
+	<script src="/static/app/angular.min.js"></script>
+
+	<!-- For Select Perhaps we never use it!-->
+	<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/3.4.5/select2.css">  -->
+	<link rel="stylesheet" href="/static/app/select2-3.4.5/select2.css">
+
+	<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.8.5/css/selectize.default.css"> -->
+	<link rel="stylesheet" href="/static/app/selectize.js-0.8.5/dist/css/selectize.default.css">
+
+	<script src='/static/app/bower-angular-sanitize-1.7.2/angular-sanitize.min.js'></script>
+
+	<link rel="stylesheet" href="/static/app/ui-select-0.19.8/dist/select.min.css" type="text/css" />
+	<!-- https://angular-ui.github.io/ui-select/ -->
+	<script src='/static/app/ui-select-0.19.8/dist/select.min.js'></script>
+
+
+	<!--
+	<script src="/static/app/angular.1.3.2/angular.min.js"></script>
+	-->
+
+	<!-- 1.7.2 unminified
+	<script src="/static/app/angular.js"></script>
+	-->
+
+	<!--
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
+	-->
+
+
+	<link rel="stylesheet" href="/static/app/jstree-3.3.5/dist/themes/default/style.min.css" type="text/css" />
+	<script src="/static/app/jstree-3.3.5/dist/jstree.min.js"></script>
+
+
+	<!--
+	<link rel="stylesheet" href="/static/app/jstree-3.2.1/dist/themes/default-dark/style.min.css" type="text/css"/>
+	<script src="/static/app/jstree-3.2.1/dist/jstree.min.js"></script>
+	-->
+
+	<!--
+	<link rel="stylesheet" href="/static/app/jstree-3.0.8/dist/themes/default-dark/style.min.css" type="text/css"/>
+	<script src="/static/app/jstree-3.0.8/dist/jstree.min.js"></script>
+	-->
+
+	<script src="/static/app/ngJsTree-0.0.10/dist/ngJsTree.min.js"></script>
+
+	<!--
+	<script src="/static/app/ngJsTree-0.0.10/dist/ngJsTree.js"></script>
+	-->
+
+
+	<!--
+	<link rel="stylesheet" href="/static/app/angular-ui-tree-2.22.6/dist/angular-ui-tree.min.css">
+	<script type="text/javascript" src="/static/app/angular-ui-tree-2.22.6/dist/angular-ui-tree.min.js"></script>
+	-->
+
+	<!--
+	<script type="text/javascript" src="/static/app/angular-tree-control-0.2.28/angular-tree-control.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/app/angular-tree-control-0.2.28/css/tree-control.css">
+	-->
+
+
+	<link rel="stylesheet" href="/static/app/OBC.css" type="text/css" />
+	<script src="/static/app/ace-builds-1.4.1/src-min-noconflict/ace.js" type="text/javascript"
+		charset="utf-8"></script>
+	<script src="/static/app/ace-builds-1.4.1/src-min-noconflict/ext-language_tools.js" type="text/javascript"
+		charset="utf-8"></script>
+
+
+	<!--
+	<script src="/static/app/d3.v4.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="/static/app/WebCola-3.3.8/WebCola/cola.min.js" type="text/javascript" charset="utf-8"></script>
+	-->
+
+	<!-- cytoscape 3.4.0 -->
+	<script src="/static/app/cytoscape.js-3.4.0/dist/cytoscape.min.js" type="text/javascript" charset="utf-8"></script>
+
+	<!--cytoscape tooltip -->
+	<script src="/static/app/popper.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="/static/app/cytoscape.js-popper-1.0.4/cytoscape-popper.js" type="text/javascript"
+		charset="utf-8"></script>
+	<script src="/static/app/tippy.min.js" type="text/javascript" charset="utf-8"></script>
+	<!--cytoscape tooltip css-->
+	<link rel="stylesheet" href="/static/app/tippy.css" />
+	<link rel="stylesheet" href="/static/app/custom_tippy.css" />
+
+	<!-- cytoscape menu -->
+	<script src="/static/app/cytoscape.js-cxtmenu-3.0.2/cytoscape-cxtmenu.js" type="text/javascript"
+		charset="utf-8"></script>
+
+	<!-- cytoscape 3.4.2
+	<script src="/static/app/cytoscape.js-3.4.2/dist/cytoscape.min.js" type="text/javascript" charset="utf-8"></script>
+	-->
+
+	<!-- timeline  vis-4.21.0 -->
+	<script src="/static/app/vis.min.js" type="text/javascript" charset="utf-8"></script>
+	<link rel="stylesheet" href="/static/app/vis.min.css" />
+
+	<!-- dagre 0.7.4 -->
+	<script src="/static/app/dagre-0.7.4/dist/dagre.min.js"> </script>
+	<script src="/static/app/cytoscape-dagre.js"></script>
+
+	<!-- Discourse js -->
+	<script src="/static/app/discourse.js"></script>
+
+	<!-- Pell js 1.0.6 Discourse graph Editor -->
+	<link rel="stylesheet" type="text/css" href="/static/app/pell-1.0.6/dist/pell.min.css">
+
+
+</head>
+
+<body>
+
+
+	<div id="angular_div" ng-app="OBC_app" ng-controller="OBC_ctrl" ng-init="init()">
+		<a id='hiddena' download="" href="" ng-show='false'></a>
+
+		{% include "app/navbar2.html" %}
+		<!-- Sign In Form -->
+		<!-- Sign Up Form -->
+
+		<div class="splitter-container" ng-show="main_container_show">
+
+			<!-- --- LEFT PANEL / left_panel.html -->
+			{% include "app/left_panel.html" %}
+
+
+			<!-- --- RIGHT PANEL / right_panel.html -->
+			{% include "app/right_panel.html" %}
+
+
+		</div>
+
+		<div ng-show="profile_container_show">
+
+			<!-- PROFILE!! -->
+			{% include "app/profile.html" %}
+
+			<!-- <a href ng-click="profile_save_pressed()">SAVE</a> -->
+
+		</div>
+
+		<!-- Documentation.html -->
+
+		<div ng-show="documentation_container_show">
+			{% include "app/documentation.html" %}
+		</div>
+
+		{% comment %}
+			{# include "app/navbar.html" #}
+			<!-- AK version -->
+			{# include "app/navbar_default.html" #}
+		{% endcomment %}
+
+
+		<!-- <div class="container py-5" ng-show="show_login"> -->
+			{% include "app/deleteModal.html" %}
+		<!-- </div> -->
+		{% comment %}
+		<div class="container py-5" ng-show="show_login">
+			{% include "app/login.html" %}
+		</div>
+
+		<div class="container py-5" ng-show="show_signup">
+			{% include "app/signup.html" %}
+		</div>
+
+		<div class="container py-5" ng-show="general_success_message">
+			{% include "app/general_success_message.html" %}
+		</div>
+
+		<div class="container py-5" ng-show="general_alert_message">
+			{% include "app/general_alert_message.html" %}
+		</div>
+
+		<div class="container py-5" ng-show="show_reset_password_email">
+			{% include "app/reset_password_email.html" %}
+		</div>
+
+		<div class="container py-5" ng-show="show_password_reset">
+			{% include "app/password_reset.html" %}
+		</div>
+
+		<div class="container" ng-show="show_user_profile">
+			{% include "app/user_profile.html" %}
+		</div>
+
+		<div class="container" ng-show="show_tools">
+			{% include "app/tools.html" %}
+		</div>
+		{% endcomment %}
+
+		{% comment %}
+		<!-- https://github.com/angular-ui/ui-select/wiki/ui-select-match -->
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					aaa
+					<ui-select ng-model="saa" theme="select2" close-on-select="true" style="width: 200px;">
+						<ui-select-match>{{saa}}</ui-select-match>
+						<ui-select-choices repeat="item in saa_items">
+							<!--  track by item.id -->
+							<span ng-bind="item"></span>
+						</ui-select-choices>
+					</ui-select>
+					bbb
+				</div>
+			</div>
+		</div>
+		{% endcomment %}
+
+		{% comment %}
+		LOGO FOOTER
+		<footer class="footer">
+			<div class="container">
+				<!-- <span class="text-muted">Place sticky footer content here.</span> -->
+				{% if FUNDING_LOGOS %}<img src="/static/app/images/logo23.png" class="rounded float-left" alt="...">{% endif %}
+			</div>
+		</footer>
+		{% endcomment %}
+
+		<!-- Modal Structure -->
+		<div id="editor-modal" class="modal">
+			<div class="modal-content">
+				<h4 id="modal-title"></h4>
+				<div class="input-field">
+					<div id="editor" class="pell"></div>
+					<p>Type: <b id="node-type"></b></p>
+					<div id="comment-type-radio-buttons">
+						<label><input name="comment-type-radio" id="solution-radio" type="radio"/><span>Solution</span></label>
+						<label><input name="comment-type-radio" id="note-radio" type="radio"/><span>Note</span></label>
+						<label><input name="comment-type-radio" id="position-in-favor-radio" type="radio"/><span>Agree</span></label>
+						<label><input name="comment-type-radio" id="position-against-radio" type="radio"/><span>Disagree</span></label>
+					</div>
+					<p>User: <b id="node-author"></b></p>
+					<p>Date: <b id="editor-date">30/01/2019</b></p>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<a href="#!" class="modal-close waves-effect waves-green btn-flat" onclick="saveNodeTextChanges()">Save</a>
+				<a href="#!" class="modal-close waves-effect waves-green btn-flat" onclick="cancelNodeTextChanges()">Cancel</a>
+			</div>
+		</div>
+	</div> <!-- angular controler -->
+
+    <!-- tippy popup for cydisc cytoscape discourse -->
+    <div id="tippy-popup" style="display: none;">
+      <span class="fa fa-user fa-2x"></span>
+      <br>
+      User: <b><p id="tippy-author-name"></p></b>
+      Text: <p id="tippy-text"></p>
+      Date: <p id="tippy-date">15/02/2019</p>
+    </div>
+
+
+	<script type="text/javascript" src="/static/app/OBC.js" charset="utf-8"></script>
+
+	<script type="text/javascript" src="/static/app/materialize/js/materialize.min.js"></script>
+	<script type="text/javascript" src="/static/app/konstantina/js/ui.js"></script>
+	{% if debug %}<script type="text/javascript" src="/static/app/tests.js"></script>{% endif %}
+	<script type="text/javascript" src="/static/app/OBC_app.js"></script>
+	<script type="text/javascript" src="/static/app/OBC_ctrl.js"></script>
+	<script type="text/javascript">
+
+		angular.element(document).ready(function () {
+			$('select').formSelect();
+			$('.modal').modal();
+		});
+	</script>
+	<script src="/static/app/pell-1.0.6/dist/pell.min.js"></script>
+	<script type="text/javascript">
+		var editor = window.editor = pell.init({
+			element: document.getElementById('editor'),
+			onChange: function (html) {
+			},
+			defaultParagraphSeparator: 'div',
+			styleWithCSS: false,
+			actions: [
+				'bold',
+				'underline',
+				'italic',
+				'heading1',
+				'heading2',
+				'olist',
+				'ulist',
+				'link',
+				'code',
+				'line',
+				'paragraph',
+				'quote'
+			],
+
+			classes: {
+				actionbar: 'pell-actionbar',
+				button: 'pell-button',
+				content: 'pell-content',
+				selected: 'pell-button-selected'
+			}
+		});
+		editor.content.innerHTML = '';
+	</script>
+</body>
+
+</html>
