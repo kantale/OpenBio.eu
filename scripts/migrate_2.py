@@ -6,7 +6,7 @@ Change the Cytoscape IDS of steps, inputs, outputs
 
 import os
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'OpenBioC.settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'OpenBio.settings'
 import django
 django.setup()
 
@@ -84,7 +84,7 @@ def do_1():
 					edge['data']['source'] = new_source_id
 					edge['data']['target'] = new_target_id
 					edge['data']['id'] = new_edge_id
-			
+
 				node['data']['id'] = new_node_id
 
 			if node_type == 'step':

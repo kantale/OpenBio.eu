@@ -3,7 +3,7 @@ import os
 import json
 import requests
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'OpenBioC.settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'OpenBio.settings'
 
 import django
 django.setup()
@@ -40,13 +40,13 @@ def get_access_token():
       response = decode_response(app.views.create_user_access_token(u))
       return response['profile_access_token']
 
-def create_tool(*, 
-      name, 
-      version="1", 
-      visibility='public', 
-      dependencies=None, 
-      edit=False, 
-      edit_number=None, 
+def create_tool(*,
+      name,
+      version="1",
+      visibility='public',
+      dependencies=None,
+      edit=False,
+      edit_number=None,
       assert_success=True,
    ):
    '''
@@ -87,17 +87,17 @@ def create_tool(*,
    print (ret)
    return ret
 
-def create_workflow(*, 
-      name, 
-      visibility='public', 
-      includes_workflows=None, 
+def create_workflow(*,
+      name,
+      visibility='public',
+      includes_workflows=None,
       includes_tools = None,
       edit_number = None,
       edit=False,
    ):
 
    with open('tests/empty_workflow.json') as f:
-      workflow = json.load(f) 
+      workflow = json.load(f)
 
    if includes_workflows:
       for inc_workflow in includes_workflows:
@@ -115,7 +115,7 @@ def create_workflow(*,
 
    d = {
       'workflow_info_name': name,
-      'workflow_info_forked_from': {}, # 
+      'workflow_info_forked_from': {}, #
       'workflow_edit_state': edit,
       'workflow_visibility': visibility,
       'workflow_json': workflow,
@@ -195,7 +195,7 @@ def API(*, workflow=None, assert_not_ok=False, access_token=None):
 
    if assert_not_ok:
       assert r.status_code != requests.codes.ok
-      return 
+      return
    else:
       assert r.status_code == requests.codes.ok
    text = r.text

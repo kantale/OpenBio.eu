@@ -4,7 +4,7 @@ Set zero all upvotes / downvotes
 
 import os
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'OpenBioC.settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'OpenBio.settings'
 import django
 django.setup()
 
