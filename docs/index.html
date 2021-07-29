@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="None">
+  
+  
+  <link rel="shortcut icon" href="img/favicon.ico">
+  <title>OpenBio.eu documentation</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="css/theme.css" />
+  <link rel="stylesheet" href="css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Home";
+    var mkdocs_page_input_path = "index.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="js/jquery-2.1.1.min.js" defer></script>
+  <script src="js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href="." class="icon icon-home"> OpenBio.eu documentation</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="./search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href=".">Home</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#before-we-start">Before we start</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#outlook-of-openbioeu">Outlook of OpenBio.eu</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#toolsdata">Tools/Data</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#downloading-a-tooldata">Downloading a Tool/Data</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#tooldata-variables">Tool/Data Variables</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#tooldata-dependencies">Tool/Data dependencies</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#the-obc_tool_path-and-obc_data_path-variables">The ${OBC_TOOL_PATH} and ${OBC_DATA_PATH} variables</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#finalizing-and-forking-tooldata">Finalizing and Forking tool/data</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#deleting-a-tooldata">Deleting a Tool/Data</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#workflows">Workflows</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#creating-and-calling-steps">Creating and Calling Steps</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#workflows-in-workflows">Workflows in Workflows</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#inputoutput-parameters-of-workflows">Input/Output Parameters of Workflows</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#readingwriting-inputoutput-variable-between-workflows">Reading/Writing Input/Output variable between workflows</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#adding-toolsdata-in-workflows">Adding Tools/Data in workflows</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#the-obc_work_path-variable">The ${OBC_WORK_PATH} variable</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#finalizing-a-workflow">Finalizing a workflow</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#disconnecting-a-tooldata-or-a-workflow">Disconnecting a Tool/Data or a Workflow</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#worfklow-graph-node-semantics">Worfklow graph, node semantics</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href=".">OpenBio.eu documentation</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Home</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+
+          <div role="main">
+            <div class="section">
+              
+                <p><strong>SECURITY WARNING: Always execute the downloaded scripts in a sandboxed environment! There is absolutely no guarantee regarding the security and safety of these scripts. Openbio.eu does not take any responsibility on damages caused by the execution of scripts provided by the platform.</strong></p>
+<h1 id="introduction">Introduction</h1>
+<p>This is an incomplete documentation of the platform.</p>
+<p><a href="https://www.openbio.eu">OpenBio.eu</a> is an environment for open and collaborative science. On OpenBio you can search, create, store, use, share and comment Tools and Workflows that take part in open scientific experiments. This is the documentation of OpenBio but it is written like a tutorial. Maybe in the future we will offer both in two separate documents. Most of this tutorial and examples assume that you have created an account and that you have verified your email.</p>
+<h2 id="before-we-start">Before we start</h2>
+<p>Before we move on to create our new Tool or Dataset you need to know a few crucial things about the platform. What makes openbio.eu different from other platforms?</p>
+<ol>
+<li>
+<p><strong>OpenBio.eu is able to "run" objects.</strong>
+There are many repositories that store tools, data and workflows.  Examples are <a href="https://bio.tools/">bio.tools</a>, <a href="https://osf.io/">osf.io</a> and <a href="https://omictools.com/">omictools</a>. These repositories offer very rich description and annotation of these objects, but they lack one crucial abilitiy: to actually run this object (i.e. tool, workflow) on a computer that you have access to. OpenBio.eu is a repository of research objects that focus on this ability.Therefore, when you add or edit a new tool, data or workflow you need to provide explicit instruction of how to install the tool, download the data or execute the workflow. </p>
+</li>
+<li>
+<p><strong>OpenBio.eu's language for object installation/download/execution description is Bash.</strong>
+Since you need to provide explicit instructions of how to install a tool, download data or execute a workflow, we need a computer language to do so. We chose <a href="https://www.gnu.org/software/bash/">Bash</a>. Some people will find Bash, difficult or outdated. Nevertheless Bash is the defacto glue language of the <a href="https://en.wikipedia.org/wiki/Unix-like">*nix universe</a>. Bash is present by default in OSx and even <a href="https://docs.microsoft.com/en-us/windows/wsl/install-win10">Windows 10 supports it natively</a>. By hosting our code in Bash we make sure that it is directly executable in as many as possible environments. </p>
+</li>
+</ol>
+<p>Also: <strong>Hosting code in Bash does not mean that other languages are excluded</strong>. 
+   On the contrary, Bash was chosen because it is easy to link together different languages, programs, other scripts and logic in a common script.</p>
+<ol>
+<li><strong>In OpenBio.eu Tools and Data are the same type of objects.</strong>
+Most Workflow Management Systems and Open Science environments distinguish Tools from Data. Users have to declare different properties for each, store them in different tables etc. OpenBio.eu does not make this distinction. Tool and Data are exactly the same type of objects, this is why on the remaining of this text, we will refer to these as "Tools/Data".</li>
+</ol>
+<p>But why is that? Semantically and in the context of a Workflow Management System, Tools and Data do not actually have any differences! Tools have dependencies but data are useless without the presence of other data. We need commands to download, configure, compile and install tools but data need to be downloaded and most of the times they also need to be decompressed, pre-processed and installed. Also it is very common tools and data to co-exist in a dependency tree of other tools and data. </p>
+<h2 id="outlook-of-openbioeu">Outlook of OpenBio.eu</h2>
+<p>First of all OpenBio.eu is a <a href="https://en.wikipedia.org/wiki/Single-page_application">Single-page application</a>. You might have already noticed this. Interacting with openbio.eu does not change the links shown in your browser. So techically there isn't any "front page". When entering OpenBio.eu what you see is:</p>
+<p><img alt="img" src="screenshots/screen_1.png" /></p>
+<p>The screen is divided in two parts. The left part is a search panel for various objects. The right panel displays these objects and is also a space for editing and.. experimentation.</p>
+<p>Let's start with the first item on the left panel which is Tools/Data.</p>
+<h2 id="toolsdata">Tools/Data</h2>
+<p>Click the green '+' button on the Tools/Data row of the left panel to create a new Tool/Data. 
+Something like this will show up:
+<img alt="img" src="screenshots/screen_2.png" /></p>
+<p>Set a name of your tool (or dataset) and a version. Available characters are <code>a-z</code>, <code>A-Z</code>, <code>0-9</code> and <code>_</code> for both fields. For the purpose of this tutorial let's assume that you entered <code>my_tool</code> as name and "1" as version.  </p>
+<p>Other fields are:
+* Website (Optional). This needs to be a valid URL.
+* Description (Obligatory). You can use markdown and you can also preview your edits. For the purpose of this tutorial let's assume you entered "<code>An example tool</code>".
+* Keywords (Optional)</p>
+<p>Now save the tool/data by pressing the disc icon. Your tool/data is now saved. This is what you will see:</p>
+<p><img alt="img" src="screenshots/screen_3.png" /></p>
+<p>Let's focus on the <code>my_tool/1/1</code> part (the last digit might be different in your case). What is this?</p>
+<p>Each Tool/Data has a unique ID in openbio.eu. This unique ID is comprised by three parts:
+* The name that you have declared.
+* The version that you have declared. 
+* A number provided by the system, called "edit". This number is derived so that the Name/Version/Edit of this tool/data is unique. </p>
+<p><strong>In OpenBio.eu we refer to a unique tool with the following schema: <code>&lt;Name&gt;/&lt;Version&gt;/&lt;Edit&gt;</code>. For example: <code>my_tool/1/1</code>. This can be interpreted as "tool named my_tool version 1, edit 1".</strong></p>
+<p>Here is the philosophy behind this naming/ID-ing scheme. In a repository of scientific objects, we want to store Tools/Data. Tools and Data have names and they also have versions (for Data they might also be called "releases"). An example is <a href="https://github.com/samtools/samtools/releases/tag/1.8">Samtools version 1.8</a> and <a href="ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/">1000 Genomes Project data release 20130502</a>. In most scientific Tool/Data repositories these have a unique string based ID. For example could be called "Samtools" or "1000 Genomes Project", but that wouldn't identify precisely the research object at least not for reproducubility standards. Versions need to be part of the names. Then we face another problem which is that OpenBio.eu is a crowdsourced environment where you can name your Tool/Data however you like. This means that under the name/version Samtools/1.9 you can include Bash commands that download 1000 Genomes Project data (or anything else..). The solution here is to let anyone choose whatever name/version they like, but add on the ID of the Tool/Data a number (edit) that is provided by the system. That way we can have Samtools/1.8/1 created from user A and Samtools/1.8/2 created from user B. These two can be two completely unrelated Tool/Data objects. We should also let other users show preferences on which Tool/Data is better. This is possible with updvotes and downvotes that we describe later.</p>
+<h3 id="downloading-a-tooldata">Downloading a Tool/Data</h3>
+<p>To actually download and run the commands that install and validate a tool you need first to create a workflow with it. This process will be explained in detail later in the manual. 
+For now you can click the green "+" icon on the left panel next to "Workflows". Enter the name "test" in the "Name" input field and add something in the "Description". Next on the search bar on the left panel enter "my_tool". The tool appears in the Tools/Data section. Now you can drag and drop the <code>my_tool/1/1</code> icon in the workflow panel in the right part of the screen. Next click "Save" to save this workflow.</p>
+<p>On the "Download" dropdown on this Workflow, select "BASH executable". A file named <code>bash.sh</code> get's downloaded. As you might have guessed you can actually execute this file. If you don't know how, there are many online resources to help you on that (just google: run .sh file). Before executing it, you should read carefully the following:</p>
+<p><strong>Always execute scripts that you have downloaded from openbio.eu (or from anywhere on the Internet..) in a <a href="https://en.wikipedia.org/wiki/Sandbox_%28computer_security%29">sandboxed environment</a>. If you don't know what that is then DO NOT RUN IT! OpenBio.eu takes absolutely no liability on damages caused by executing scripts downloaded from openbio.eu.</strong></p>
+<p>Now, assuming that you moved the downloaded script in a sandboxed environment, one way to run it is with:</p>
+<pre><code class="language-bash">bash bash.sh
+</code></pre>
+<p>The output is:</p>
+<pre><code>OBC: Workflow name: test
+OBC: Workflow edit: 1
+OBC: Workflow report: None
+OBC: INSTALLING TOOL: my_tool/1/1
+OBC: INSTALLATION OF TOOL: my_tool/1/1 . COMPLETED
+OBC: VALIDATING THE INSTALLATION OF THE TOOL: my_tool/1/1
+OBC: VALIDATION FOR TOOL: my_tool/1/1 FAILED
+OBC: CALLING STEP: step__main__root__None    CALLER: main
+OBC: Output Variables:
+</code></pre>
+<p>Let's break this down. When you download a tool a new Workflow is created (we will see more on Workflows, later). Workflows have a name and an edit (similar to Tools/Data having a name a version and an edit). Since here you downloaded a Tool/Data and not a Workflow, a dummy workflow is created that has the name "root" and edit 0. Also the execution of a Workflow creates a "Report" (more on this later as well..). The interesting part is:</p>
+<pre><code>OBC: INSTALLING TOOL: my_tool/1/1
+OBC: INSTALLATION OF TOOL: my_tool/1/1 . COMPLETED
+</code></pre>
+<p><code>OBC</code>  stands for "OpenBio-C" which is the name of the project. Everything that is printed that is OpenBio.eu specific, has the "OBC" suffix so that you can filter this out easily. Initially the script tries to Install the tool by running the "Installation commands" of the tool. The line <code>OBC: INSTALLATION OF TOOL: my_tool/1/1 . COMPLETED</code> tell us, that the execution of the "Installation commands" has finished. Then it moves to the the execution of the "Validation commands":</p>
+<pre><code>OBC: VALIDATING THE INSTALLATION OF THE TOOL: my_tool/1/1
+OBC: VALIDATION FOR TOOL: my_tool/1/1 FAILED
+</code></pre>
+<p>Here we notice that the "Validation commands" have failed! Why is that?</p>
+<p>Let's move back to the platform. On the left part of the platform, on the search input, we can search for <code>my_tool</code>. The one created by you appears:</p>
+<p><img alt="img" src="screenshots/screen_4.png" /></p>
+<p>On the items that appear, click the one that you created before (i.e. <code>my_tool/1/1</code>). Now on the right panel unfold the "Installation" commands. There you will notice two Bash editors, the one titled "Installation Commands" and the other is called "Validation Commands":</p>
+<p><img alt="img" src="screenshots/screen_5.png" /></p>
+<p><strong>Installation Commands</strong> are Bash commands that install this tool/data. For example here you can include commands that download, compile and install a tool or download, decompress and pre-process a dataset.</p>
+<p><strong>Validation Commands</strong> are Bash commands that validate that this tool/data has been installed correctly. For example here you can add commands that check if the tool can be executed with some simple input or check if the data has the expected <a href="https://en.wikipedia.org/wiki/Checksum">checksum</a>. </p>
+<p>Here we notice that initially <code>Installation Commands</code> are empty whereas <code>Validation Commands</code> contain an <code>exit 1</code>. The exit code of the <code>Installation Commands</code> is not checked. The exit code of the <code>Validation Commands</code> is checked. On your scripts you should add logic on the <code>Validation Commands</code> so that if the installation of a tool/data cannot be validated, then an <code>exit 1</code> (or exit with any non-zero number) should be executed. </p>
+<p>As it is right now, the <code>Installation Commands</code> and the <code>Validation Commands</code> cannot be edited. To do so click on the <code>EDIT</code> button on the top of the page. Upon pressing "EDIT" you will notice that many elements on the page became editable. One of these is the <code>Installation Commands</code> and the <code>Validation Commands</code>. Change the <code>Installation Commands</code> so that it includes the command:</p>
+<pre><code class="language-bash">echo &quot;installing tool my_tool&quot;
+</code></pre>
+<p>And change the <code>Validation Commands</code> so that it will always exits 0 (this is actually a bad practice, always do some actual checks before exiting with 0).</p>
+<pre><code class="language-bash">exit 0
+</code></pre>
+<p>The environment should look like this:</p>
+<p><img alt="img" src="screenshots/screen_6.png" /></p>
+<p>Now press "SAVE" again, then Download the "BASH executable" as before and run the <code>bash.sh</code> again in a sandboxed environment. Now you will notice that the validation status has changed to <code>SUCCEEDED</code>:</p>
+<pre><code>OBC: Workflow name: test
+OBC: Workflow edit: 1
+OBC: Workflow report: None
+OBC: INSTALLING TOOL: my_tool/1/1
+installing tool my_tool
+OBC: INSTALLATION OF TOOL: my_tool/1/1 . COMPLETED
+OBC: VALIDATING THE INSTALLATION OF THE TOOL: my_tool/1/1
+OBC: VALIDATION FOR TOOL: my_tool/1/1 SUCCEEDED
+OBC: CALLING STEP: step__main__root__None    CALLER: main
+Output Variables:
+</code></pre>
+<p>Also notice the output of the "Istallation Commands": <code>installing tool my_tool</code>. </p>
+<p>So far we have shown that OpenBio.eu is a repository of "downloadable" Tool/Data where each one has Installation and Validation commands in Bash language. The next part is to demonstrate the use of tool/data variables.</p>
+<h3 id="tooldata-variables">Tool/Data Variables</h3>
+<p>When you have installed a Tool/Data you need to let other scripts know where these tools/data are. Apart from the installation path of the Tool/Data there might be other pieces of information that you want to share with other tools/data or with other workflows. This piece of information can be stored in the Tool/Data Variables section. Each Tool/Data variable has a name, a value and a description. </p>
+<p>Let's edit again the my_tool Tool/Data. Click the "EDIT" button, unfold the "Installation" panel and go to the bottom of this panel. There, add a variable with the name: <code>var_1</code> , value <code>hello world</code> and description: <code>my first variable</code>. Click SAVE. This is what it should look like:</p>
+<p><img alt="img" src="screenshots/screen_7.png" /></p>
+<p>Now download again the BASH Executable, and run it. The output should be:</p>
+<pre><code>Workflow name: root
+Workflow edit: 0
+Workflow report: None
+OBC: INSTALLING TOOL: my_tool/1/1
+installing tool my_tool
+OBC: INSTALLATION OF TOOL: my_tool/1/1 . COMPLETED
+OBC: VALIDATING THE INSTALLATION OF THE TOOL: my_tool/1/1
+OBC: VALIDATION FOR TOOL: my_tool/1/1 SUCCEEDED
+OBC: SET my_tool__1__1__var_1=&quot;hello world&quot;   &lt;-- my first variable 
+OBC: CALLING STEP: step__main__root__None    CALLER: main
+Output Variables:
+</code></pre>
+<p>Notice that after validating the tool, it sets the variable named <code>my_tool__1__1__var_1</code> the value <code>hello world</code>. The name of the variable (<code>my_tool__1__1__var_1</code>) can be interpreted as "variable named var_1 of the tool my_tool with version 1 and edit 1".</p>
+<h3 id="tooldata-dependencies">Tool/Data dependencies</h3>
+<p>Suppose that the we have another tool/data which depends from my_tool. Let's call this tool/data 'another_tool' and assume version 1. Since in OpenBio.eu we <em>have to</em> insert the installation / validation Bash commands, we also <em>have to</em> declare the dependencies of this tool/data. Click the '+' button on Tools/Data and add <code>another_tool</code> as name and <code>1</code> as version. Also unfold the 'Dependencies panel'</p>
+<p>Next, enter <code>my_tool</code> on the search text field on the left and locate the item on the results that you created before. Now drag and drop this item in the Dependencies panel (red border):</p>
+<p><img alt="img" src="screenshots/screen_8.png" />  </p>
+<p>This is how you declare Tool/Data dependencies in OpenBio.eu. It is important to note that during the installation of Tool/Data <code>another_tool</code>, the <code>my_tool</code> will be installed first. Also the variables of <code>my_tool</code> are accessible in the Installation and Validation Commands of <code>another_tool</code>. To use them, simply select them from the tree that appears above the Bash editors and drop them in the Bash editors:</p>
+<p><img alt="img" src="screenshots/screen_9.png" /></p>
+<p>Ta see what has happened we can add some dummy Installation and Validation Commands and we can also add a variable in <code>another_tool</code>. For example add the following in the Installation commands:</p>
+<pre><code class="language-bash">echo &quot;Installing another_tool&quot;
+echo &quot;The value of tool var_1 from my_tool/1/1 is:&quot;
+echo &quot;${my_tool__1__1__var_1}&quot;
+</code></pre>
+<p>And the following in the Validation Commands:</p>
+<pre><code class="language-bash">echo &quot;validating another_tool&quot;
+exit 0
+</code></pre>
+<p>We can also add a variable named <code>var_2</code>. Now the data on <code>another_tool</code> should look like this: </p>
+<p><img alt="img" src="screenshots/screen_10.png" /></p>
+<p>Now Save <code>my_tool\1\1</code>. The workfow <code>test\1</code> has been also changed since it includes the tool <code>my_tool\1\1</code>. Go to the <code>test\1</code> workflow, Download the "Bash Executable", and run it. You will see something like this:</p>
+<pre><code>OBC: Workflow name: test
+OBC: Workflow edit: 1
+OBC: Workflow report: None
+OBC: INSTALLING TOOL: my_tool/1/1
+installing tool my_tool
+OBC: INSTALLATION OF TOOL: my_tool/1/1 . COMPLETED
+OBC: VALIDATING THE INSTALLATION OF THE TOOL: my_tool/1/1
+OBC: VALIDATION FOR TOOL: my_tool/1/1 SUCCEEDED
+OBC: SET my_tool__1__1__var_1=&quot;hello world&quot;   &lt;-- my first variable 
+OBC: INSTALLING TOOL: another_tool/1/1
+Installing another_tool
+The value of tool var_1 from my_tool/1/1 is:
+hello world
+OBC: INSTALLATION OF TOOL: another_tool/1/1 . COMPLETED
+OBC: VALIDATING THE INSTALLATION OF THE TOOL: another_tool/1/1
+validating another_tool
+OBC: VALIDATION FOR TOOL: another_tool/1/1 SUCCEEDED
+OBC: SET another_tool__1__1__var_2=&quot;hello from another tool&quot;   &lt;-- my second var 
+OBC: CALLING STEP: step__main__root__None    CALLER: main
+OBC: Output Variables:
+</code></pre>
+<p>Here we notice a few things:
+* <code>my_tool</code> was installed and validated before <code>another_tool</code>. This is because <code>my_tool</code> is a dependency to <code>another_tool</code>.
+* During the installation of <code>another_tool</code>, the value of the variable var_1 from my_tool/1/1 is printed. Generally, all tool/data variables, are accessible from any tool/data that is installed after them. </p>
+<h3 id="the-obc_tool_path-and-obc_data_path-variables">The ${OBC_TOOL_PATH} and ${OBC_DATA_PATH} variables</h3>
+<p>On your installation scripts, you are encouraged to use the <code>${OBC_TOOL_PATH}</code> variable as the root path of all the installed tools of OpenBio.eu. For example when you want to download a file, decompress an archive or install a tool you are encouraged to do this in a directoty that lies under <code>${OBC_TOOL_PATH}</code>. For example you can do:</p>
+<pre><code class="language-bash">MY_TOOL_PATH=${OBC_TOOL_PATH}/my_tool
+mkdir ${MY_PATH}
+wget -O ${MY_TOOL_PATH}/tool.tgz http://www.example.com/tool.tgz
+</code></pre>
+<p>By confirming to this, you can let other users define the desired location they want to install the OpenBio.eu tools. They can do this by simply exporting the variable ${OBC_TOOL_PATH} on bash. Similarly you are encouraged to use the variable ${OBC_DATA_PATH} to define the location of the data downloaded from Bash scripts in OpenBio.eu. These variables can be used as values in the Tool/Data variables. For Example:</p>
+<p><img alt="img" src="screenshots/screen_11.png" /></p>
+<p>Notice the value of variable <code>INSTALLATION_PATH</code> that includes the <code>${OBC_TOOL_PATH}</code> variable. Now we can define the value of ${OBC_TOOL_PATH} and then run the bash.sh script. The output is (some lines were removed for brevity):</p>
+<pre><code>#&gt; export OBC_TOOL_PATH=/my/precious/location
+#&gt; bash bash.sh 
+The installation path is: /my/precious/location/another_tool
+OBC: SET another_tool__1__1__var_2=&quot;hello from another tool&quot;   &lt;-- my second var 
+OBC: SET another_tool__1__1__INSTALLATION_PATH=&quot;/my/precious/location/another_tool&quot;   &lt;-- installation path 
+</code></pre>
+<h3 id="finalizing-and-forking-tooldata">Finalizing and Forking tool/data</h3>
+<p>You may have noticed that so far you can save and edit a Tool/Data as many times as you want. Of course only the creator of a Tool/Data is allowed to edit it. This functionality has two side effects:</p>
+<ul>
+<li>Allowing to make changes to a Tool/Data, strips out the "reproducibility" of these objects. What if an experiment is based on a Data and the creator decides to change the installation instructions? This might affect the reproducibility of the experiment. </li>
+<li>Allowing only the creator to edit a Tool/Data strips out the crowdsourcing ability. What if a user wants to make an edit to the tool/data of another user?</li>
+</ul>
+<p>To battle these issues, we employ two mechanisms. The first is the "Finalizing". By Finalizing a Tool/Data you permanently "freeze" this object from changes. You cannot edit a Tool/Data that has been finalized. Also Tool/Data that have not been finalized are labelled as <strong>DRAFT</strong>. It is a good practice to Finalize your Tool/Data after thorough testing. DRAFT Tool/Data should not be used in "serious" analysis since computational reproducibility is not guaranteed. The philosophy behind the "Finalizing" mechanism is to test and experiment with DRAFT tools/data, but once these object are ready to be used as independent components in public scientific pipelines, then they should be finalized.  </p>
+<p>The second mechanism is "forking". By forking a Tool/Data you can create an indentical Tool/Data object that is owned by you. Every forked Tool/Data is by default in a "draft" stage. Both Draft and Finalized Tools/Data can be forked. Let's see how it looks. Select the tool named <code>another_tool</code> that you created before. You can do that by entering <code>another_tool/1</code> in the search box on the left panel. From all the items that appear under the Tools/Data section, select the one created by you (or anything else that you like and you want to fork..). Once you click this item, a card with the details of this Tool/Data appears on the right. Now click the "Fork" button which is the rightmost button on the top of this card. Now the card becomes editable and you can make whatever changes you like. On this card there is an "Edit Summary" field that is obligatory. Here you should briefly describe the changes that you made from the original object. Once you complete with these changes you can save the new object. This is what it looks like:</p>
+<p><img alt="img" src="screenshots/screen_12.png" /></p>
+<p>There are a few things to notice here:
+* On the left side of the platform, where the search results appear, you can see that there is a new Tool/Data object named <code>another_tool/1/2</code>. This object is "under" the <code>another_tool/1/1</code>. <strong>Search results appear as a tree of objects. Parent-Child nodes mean that Childs where forked from Parenst</strong>.
+* The platform assigned a new "edit" number to the newly created Tool/Data. Remember that each Tool/Data has a unique ID which is comprised by three parts. A "name", a "version" and an "edit". Although the user sets the "name" and the "version", the "edit" is assigned by the platform. The new object that was created by forking <code>another_tool/1/1</code> has the same name and the same version, but different edit. This is also shown on the top of the right panel which states "forked from t/another_tool/1/1". Again the edit numbers might be different in your case.</p>
+<h3 id="deleting-a-tooldata">Deleting a Tool/Data</h3>
+<p>Deleting Tool/Data is possible if:
+* You own (have created) this Tool/Data.
+* The Tool/Dats is in Draft stage
+* There isn't any Tool/Data that uses this Tool as a dependency.
+* There isn't any workflow that uses this Tool.</p>
+<p>The deletion is permanent from the database and there is no action to restore it. </p>
+<h2 id="workflows">Workflows</h2>
+<p><a href="https://en.wikipedia.org/wiki/Scientific_workflow_system">Scientific Workflow Management Systems (SWMS)</a> have been around for many decades. <a href="https://github.com/pditommaso/awesome-pipeline">This awesome list</a> contains hundreds of frameworks, libraries, platforms, languages, etc for managing and organizing tools and data into pipelines. OpenBio.eu is not exactly "Yet another SWMS". The purpose of OpenBio.eu is not to teach you "the correct language", or "data model" or "abstraction" in order to create scientific pipelines. The purpose is to help you create, publish and share your pipeline in whatever language / model / SWMS you like. There is only one prerequisite. The pipeline should be able to be expressed somehow in Bash. For example if your pipeline is a python script that runs with:</p>
+<pre><code class="language-bash">python my_awesome_pipeline.py --input input_file --output output_file
+</code></pre>
+<p>This is good enough for OpenBio.eu since this is valid Bash. But if the pipeline requires a GUI (Graphical User Interface), then chances are that OpenBio.eu is not for you. </p>
+<p>Now let's start. On the left part of the platform click the green "+" button on "Workflows" section. This is what you will see:</p>
+<p><img alt="img" src="screenshots/screen_13.png" /></p>
+<p>Add a name to the workflow i.e. <code>my_workflow</code> and also add a description  (i.e. "my first workflow"). These two fields are obligatory. On the description you can use markdown. By default a new Workflow in OpenBio contains a single "step" which is called "main_step". On the workflow graph click the node "main_step". The Step editor below unfolds. Now you can edit this step. Enter: <code>echo "Hello from my_workflow"</code> and click "UPDATE". Save this new workflow by clicking on the "Save" icon which is the rightmost on the top of this card. With the Workflow saved the platform should look like this:</p>
+<p><img alt="img" src="screenshots/screen_14.png" /></p>
+<p>The most important part here is that the name of the workflow appears as <code>my_workflow/1</code>. This is because a unique ID of a workflow is comprised by two parts:
+* A "name" provided by the user
+* A number called "edit" provided from the platform.</p>
+<p>The naming/ID-ing scheme is exactly the same as with Tools/Data. The only difference is that Workflows do not have versions. The idea here is that Tools/Data are items that get "fetched" (i.e. downloaded) from the Internet. They have versions that are maintained externally (outside OpenBio.eu), hence the "version" is part of the identity of a Tool/Data. On the other hand, Workflows are sets of Tool/Data, plus the logic that combines them for the purpose of an analysis. Workflows are merely constructs that exist only in OpenBio.eu this is why they don't have "version". Nevertheless they do have an edit, so it is possible to have multiple Workflows with the same name. </p>
+<p>Now, let's download and run this workflow. Select "BASH Executable" from the "Downlood" dropdown. A file named "bash.sh" gets donloaded. Run this as before (i.e. with <code>bash bash.sh</code>). The output should be:</p>
+<pre><code>OBC: Workflow name: my_workflow
+OBC: Workflow edit: 1
+OBC: Workflow report: None
+OBC: CALLING STEP: step__main_step__my_workflow__1    CALLER: main
+Hello from my_workflow
+OBC: Output Variables:
+</code></pre>
+<p>Notice that unlike before, when we run a Tool/Data object, it shows the Workflow name and Workflow edit. The "report" part will be explained later. Let's break the line: <code>OBC: CALLING STEP: step__main_step__my_workflow__1    CALLER: main</code>:
+* OBC: Stands for OpenBio-C (the name of the project). 
+* <code>step__main_step__my_workflow__1</code> Means that we are executing the step called "main_step" that belongs to the workflow <code>my_workflow/1</code>. 
+* <code>CALLER: main</code> means that this step is the "main" step, and it is not called from another step.</p>
+<p>The output <code>Hello from my_workflow</code> is the output from the command <code>echo "Hello from my_workflow"</code> that you entered in the main_step earlier. </p>
+<h3 id="creating-and-calling-steps">Creating and Calling Steps</h3>
+<p>Let's add a new step at the Workflow. First click the "EDIT" button on the <code>my_workflow/1</code> workflow. Click in the "Step" section, add the name "new_step" and add the following Bash commands:</p>
+<pre><code class="language-bash">echo &quot;Hello from new_step&quot;
+</code></pre>
+<p>This is what it should look like:</p>
+<p><img alt="img" src="screenshots/screen_15.png" /></p>
+<p>Now press the "ADD" button. A new node has been added on the workflow that represents the new step:</p>
+<p><img alt="img" src="screenshots/screen_16.png" /></p>
+<p>Although we have added a new step, we haven't declared how to call it. Let's alter the workflow so that the step <code>main_step</code> calls the step <code>new_step</code>. Click on the <code>main_step</code> node. The Bash editor for the <code>main_step</code> opens. Then you can change the Bash commands from:</p>
+<pre><code class="language-bash">echo &quot;Hello from my_workflow&quot;
+</code></pre>
+<p>to:</p>
+<pre><code class="language-bash">echo &quot;Hello from my_workflow&quot;
+step__new_step__root__null
+</code></pre>
+<p>But what does the <code>step__new_step__root__null</code> mean? This actually means "call the step <code>new_step</code> that belongs to the root workflow". We will see later that workflows can contain other workflows. Also workflows have steps. A step in a workflow can have the same name with another step in another workflow. Therefore when you call a step you need to declare to which workflow this step belongs. Also <code>root_null</code> is the name of the main workflow, or else the workflow that is being edited right now. Now press the "UPDATE" button to update the <code>main_step</code>. The workflow has been changed and an edge from step <code>main_step</code> to step <code>new_step</code> has been added:</p>
+<p><img alt="img" src="screenshots/screen_17.png" /></p>
+<p>Now we can save these edits (press the save button on top-right), download the workflow (press Download--&gt;Bash Executable) and run the file that gets downloaded (with <code>bash bash.sh</code>). The output is:</p>
+<pre><code>OBC: Workflow name: my_workflow
+OBC: Workflow edit: 1
+OBC: Workflow report: None
+OBC: CALLING STEP: step__main_step__my_workflow__1    CALLER: main
+Hello from my_workflow
+OBC: CALLING STEP: step__new_step__my_workflow__1    CALLER: main_step__my_workflow__1
+Hello from new_step
+OBC: Output Variables:
+</code></pre>
+<p>Notice that the first step called is the <code>main_step</code> that prints <code>Hello from my_workflow</code>. Then this step calls <code>new_step</code> that prints <code>Hello from new_step</code>. Now it is time to discuss one of the main features of OpenBio.eu and why OpenBio is <strong>not</strong> a typical Workflow Management System:</p>
+<p><strong>In OpenBio.eu steps are called from other steps. Or else in OpenBio.eu you do not define step order, instead you define step logic.</strong> In most Workflow Management Systems like <a href="https://galaxyproject.org/">Galaxy</a>, <a href="https://www.nextflow.io/">Nextflow</a> and <a href="http://www.taverna.org.uk/download/workbench/2-5/bioinformatics/">Taverna</a> a user has to define two things: The first is steps and the second is Workflows. Steps (or <em>Processes</em> in Nextflow, <em>Tools</em> in Galaxy, <em>Services</em> in Taverna, ...) are independent execution components that can take part in one or many analyses. A workflow is a combination of Steps. A workflow usually defines the order in which the steps have to be executed. This abstraction is fine and has been used for decades in scientific computing. This abstraction is good because it serves a useful isolation between the execution (steps) and the execution flow (Workflow). </p>
+<p>There is though a fundamental difference between this abstraction and the typical abstraction used in computer programming. In programming, "steps call other steps" as in "functions call other functions". In programming, you do not use different language syntax to differentiate between the things that can be called (steps) and the things that call them (workflows). In contrast, everything you do in programming "sits" inside a function. This function can call or be called by other functions. Yet in typical Workflow Management Systems, you cannot "call" a step from another step (unless you do something hack-ish like run the workflow execution engine from inside the step). Even worse, in WMS it is difficult (if not possible) to use  fundamental programming constructs like conditional executions (if.. else..) and iterations (for.. while..). </p>
+<p>In OpenBio.eu, steps belong to workflows. <strong>BUT</strong> you do not "call" workflows. You call steps. Then.. how did we run <code>my_workflow</code> which is a workflow? Every workflow has one (and only one) <em>main</em> step. When you download a workflow and you execute it, what you actually execute is the main step of this workflow. This is like the main function in <a href="https://en.cppreference.com/w/cpp/language/main_function">c/c++</a>, <a href="https://docs.oracle.com/en/java/javase/13/docs/api/jdk.compiler/com/sun/tools/javac/Main.html">java</a> or the <code>if __name__ == '__main__':</code> <a href="https://stackoverflow.com/questions/419163/what-does-if-name-main-do">logic in python</a>. So, OpenBio.eu <strong>does not</strong> have any algorithm to determine the execution order of steps. It simply calls the main step of the workflow and lets.. Bash take it from there. From a step you can call other steps that belong to any workflow. You can even call.. yourself. Also, you can use any Bash construct (if, while, for, ...) to control flow, so conditional execution and iteration is natively supported. Main steps have a red border color on the graph. Also, there is a "main" checkbox in the step editing panel, so that you can change which step is main. If more than one steps have been defined as main, or none, an error will appear upon trying to save the workflow.</p>
+<p>The whole point of OpenBio.eu project is to offer a Workflow Management System that has the flexibility of a programming language, does not require installation in your computer to run it, and does not forcing you a new DSL (Domain Specific Language). The following chapters will illuminate more this philosophy. </p>
+<h3 id="workflows-in-workflows">Workflows in Workflows</h3>
+<p>Create a new workflow and name it "another_workflow". Click the node with the main_step and edit the Bash commands. Add:</p>
+<pre><code class="language-bash">echo &quot;hello from another_workflow&quot;
+</code></pre>
+<p>Click "Update" on this step and save this workflow. Now enter <code>my_workflow</code> on the search input on the left panel and select the workflow that you created before. Then click the Edit button. Here, we want to include the <code>another_workflow</code> into <code>my_workflow</code>. To do that enter <code>another_workflow</code> on the search input of the left panel and locate the <code>another_workflow/1</code> object that you created before. Drag and Drop this workflow on the graph of <code>my_workflow</code>:</p>
+<p><img alt="img" src="screenshots/screen_18.png" /></p>
+<p>The result should be:</p>
+<p><img alt="img" src="screenshots/screen_19.png" /></p>
+<p><strong>Note: The rendering of the graph might be different on your browser. You might have to move around the <code>another_workflow/1</code> node so that the graph in your broswer looks exactly like the one in this example.</strong></p>
+<p>Let's explore a bit the semantics of this graph. Octagons represent Workflows. Red Octagon means that this workflow is in draft stage. The "root" workflow sits on the top of the graph and its name is <code>my_workflow/1</code>. There are three items that belong to this workflow: (1) the step <code>new_step</code>, (2) the step <code>main_step</code> and (3) the workflow <code>another_workflow/1</code>. This is why there are tree dotted edges from the <code>my_workflow/1</code> node. Dotted edges mean "contain". From these steps, step <code>main_step</code> calls <code>new_step</code>. This is why there is a normal edge from <code>main_step</code> to <code>new_step</code>. Also <code>main_step</code> that belongs to <code>my_workflow/1</code> has a red border, meaning that this is the main_step of <em>this</em> workflow (the one that you are editing right now). Workflow <code>another_workflow/1</code> has one item. This is the step <code>main_step</code> node on the bottom of the graph. This node has a black border meaning that this is the main step of the workflow that it belongs to. Remember that a workflow can have one and only one main step. When you are importing a workflow into another workflow, the main step of the imported workflow stops from being main. Nevertheless, it is shown on the graph (the black border) that it "used to be the main step". This is to help you identify which step calls the rest on this workflow.</p>
+<p>So although we have imported <code>another_workflow/1</code> we do not call any of its steps. Let's edit new_step and call the main_step of <code>another_workflow/1</code>. Click the node "new_step" and on the Bash editor write: "step". The following auto-completion menu appears:</p>
+<p><img alt="img" src="screenshots/screen_20.png" /></p>
+<p>This menu helps you to choose a step. Available options are: step <code>new_step</code> of the root workflow, step <code>main_step</code> of the root workflow and step <code>main_step</code> of the <code>another_workflow/1</code> workflow. Select the last (<code>step/main_step/another_workflow/1</code>). Then click "UPDATE". Now the workflow becomes:</p>
+<p><img alt="img" src="screenshots/screen_21.png" /></p>
+<p>Save the workflow. We can Download (Button DOWNLOAD--&gt;Bash Exutable) and run (<code>bash bash.sh</code>) this workflow. The output of this execution appears:</p>
+<pre><code>OBC: Workflow name: my_workflow
+OBC: Workflow edit: 1
+OBC: Workflow report: None
+OBC: CALLING STEP: step__main_step__my_workflow__1    CALLER: main
+Hello from my_workflow
+OBC: CALLING STEP: step__new_step__my_workflow__1    CALLER: main_step__my_workflow__1
+Hello from new_step
+OBC: CALLING STEP: step__main_step__another_workflow__1    CALLER: new_step__my_workflow__1
+hello from another_workflow
+OBC: Output Variables:
+</code></pre>
+<p>Here you see that the execution order is defined from the order of which each step is calling other steps. </p>
+<h3 id="inputoutput-parameters-of-workflows">Input/Output Parameters of Workflows</h3>
+<p>So far you might be wondering: How do I pass input values to a workflow and how do I get the output? You can define input/output variables through the user interface. For example, edit <code>my_workflow/1</code> and unfold the Inputs/Outputs panel. Then, add an input variable with the name <code>threshold</code> and an output variable with the name <code>result</code>. Also add any description you like. It should look like this:</p>
+<p><img alt="img" src="screenshots/screen_22.png" /></p>
+<p>Input and Output variables are visible also in the workflow graph:</p>
+<p><img alt="img" src="screenshots/screen_23.png" /></p>
+<p>Input variables are rectangles with round corners and green border. Output variables are rectanges with round corners and red border.</p>
+<p>Input and output variables behave similar to tool variables. They are Bash variables that can be accessed in any part of the workflow. For example let's read the value of the threshold and print it. This can be done by any step of the workflow. We can do that from <code>main_step</code> of <code>my_workflow/1</code>. Click this node and edit the Bash commands. On any part you can type "input". An autocomplete menu appears that shows all the input nodes:</p>
+<p><img alt="img" src="screenshots/screen_24.png" /></p>
+<p>The only option is: <code>input/threshold/root</code> or else the input node named <code>threshold</code> that belongs to the root workflow. Choose this and this node is entered in the Bash editor as a Bash variable. Here we will make some additional edits on the Bash editor so that the script prints the value of <code>input/threshold/root</code>. Change the Bash commands so that it reads like:</p>
+<pre><code class="language-bash">echo &quot;Hello from my_workflow&quot;
+echo &quot;Input Threshold is: ${input__threshold__root__null}&quot;
+step__new_step__my_workflow__1
+</code></pre>
+<p>Press "UPDATE" on the step editor. The graph now has become something like this:</p>
+<p><img alt="img" src="screenshots/screen_25.png" /> </p>
+<p>Note the new edge from the input node <code>threshold</code> to step node <code>main_step</code>. Save the workflow (pres the save icon), download (DOWNLOAD--&gt;Bash Executable) and run the workflow (<code>bash bash.sh</code>). You will notice that the execution stops and prompts for a value for the input parameter <code>threshold</code>:</p>
+<pre><code>OBC: Workflow name: my_workflow
+OBC: Workflow edit: 1
+OBC: Workflow report: None
+OBC: Input parameter: input__threshold__my_workflow__1 (Input threshold value) has not been set by any step. Enter value: 
+input__threshold__my_workflow__1=
+</code></pre>
+<p>Or else: "I couldn't get a value for the input parameter named <code>threshold</code> that belongs to <code>my_workflow/1</code>". To continue, enter a value (i.e. <code>4.5</code>) and press Enter. Now the output is:</p>
+<pre><code>OBC: Workflow name: my_workflow
+OBC: Workflow edit: 1
+OBC: Workflow report: None
+OBC: The following input commands have not been set by any step. Please define input values:
+OBC: Input parameter: input__threshold__my_workflow__1 (Input threshold value) has not been set. Enter value: 4.5
+OBC: CALLING STEP: step__main_step__my_workflow__1    CALLER: main
+Hello from my_workflow
+Input Threshold is: 4.5
+OBC: CALLING STEP: step__new_step__my_workflow__1    CALLER: main_step__my_workflow__1
+Hello from new_step
+OBC: CALLING STEP: step__main_step__another_workflow__1    CALLER: new_step__my_workflow__1
+hello from another_workflow
+OBC: Output Variables:
+OBC: output__result__my_workflow__1 = 
+</code></pre>
+<p>What's new here is that the workflow has a an input parameter. OpenBio.eu checks first to see if this parameter has been set by any step. Since we haven't set a value to this parameter from any step (we are only reading this value), it prompts the user for a value. Halting script execution to prompt for an input value is perhaps an inconvenient way to get parameter inputs. You can also set the value of this parameter from the command line. Run:</p>
+<pre><code class="language-bash">bash bash.sh --input__threshold__my_workflow__1=4.5
+</code></pre>
+<p>The script now doesn't halt to get a value for <code>input__threshold__my_workflow__1</code>. </p>
+<p>What about <em>output</em> variables? You may have noticed that the output variable named <code>results</code> that we defined before did not get any value from any step. This is why we see the line: <code>OBC: output__result__my_workflow__1 =</code> on the output of <code>bash.sh</code>. Let's change that. Edit again the workflow <code>my_workflow/1</code> (press the EDIT button), click the <code>new_step</code> and on the BASH editor type: <code>output</code>. You will see the following autocomplete menu:</p>
+<p><img alt="img" src="screenshots/screen_26.png" /></p>
+<p>The only output variable is the one named "results" and belongs to the root workflow. Edit the Bash commands of this step so that it looks like this.</p>
+<pre><code class="language-bash">echo &quot;Hello from new_step&quot;
+step__main_step__another_workflow__1
+output__result__root__null=120
+</code></pre>
+<p>Press "UPDATE" on this step. The workflow graph now looks like this:</p>
+<p><img alt="img" src="screenshots/screen_27.png" /></p>
+<p>Notice that a new edge has been created connecting step <code>new_step</code> with the output node <code>results</code>. If we save, download and run the workflow with:</p>
+<pre><code class="language-bash">bash bash.sh --input__threshold__my_workflow__1=4.5
+</code></pre>
+<p>The output will be:</p>
+<pre><code>OBC: Workflow name: my_workflow
+OBC: Workflow edit: 1
+OBC: Workflow report: None
+OBC: CALLING STEP: step__main_step__my_workflow__1    CALLER: main
+Hello from my_workflow
+Input Threshold is: 4.5
+OBC: CALLING STEP: step__new_step__my_workflow__1    CALLER: main_step__my_workflow__1
+Hello from new_step
+OBC: CALLING STEP: step__main_step__another_workflow__1    CALLER: new_step__my_workflow__1
+hello from another_workflow
+OBC: Output Variables:
+OBC: output__result__my_workflow__1 = 120
+</code></pre>
+<p>The difference here is that the values of the output variables are printed at the end.</p>
+<h3 id="readingwriting-inputoutput-variable-between-workflows">Reading/Writing Input/Output variable between workflows</h3>
+<p>The input/output variables in OpenBio.eu have a different meaning than that of typical Workflow Management Systems. Let's break it down a bit. Assume a workflow that has the following steps:</p>
+<pre><code>- Step A has input input K and output M
+- Step B has input M and output L
+- Step C has input L and output N
+</code></pre>
+<p>With this information it is easy to figure out that the workflow structure should be: A --&gt; B --&gt; C. Actually most WMS do exactly this. The execution order of steps is determined by matching the output of step S<sup>1</sup> to the input of step S<sup>2</sup>. If they match then the step S<sup>1</sup> should run before S<sup>2</sup> and this is usually shown in Workflow graphs as S<sup>1</sup> --&gt; S<sup>2</sup>. </p>
+<p>As we mentioned before, OpenBio.eu takes a different stance in determining step order. The step creator mentions explicitly which step to call. Therefore the step order is not determined <em>implicitly</em> by input/output variables but <em>explicitly</em> by call statements. Therefore in OpenBio.eu the same workflow should be written (in pseudocode, this is not Bash) as:</p>
+<pre><code>M = Step_A(K)
+L = Step_B(M)
+N = Step_C(L)
+</code></pre>
+<p>Notice how this form is more intuitive, especially if you have basic programming knowledge in any language. To summarise:</p>
+<p><strong>In typical WMS, input/outputs are used to determine execution order. In OpenBio.eu input/output variables behave like function arguments (inputs) and return statements (outputs). Execution order is defined explicitly by the user.</strong> </p>
+<p>Of course every approach has its own merits. What is best is up to you to decide, but let's experiment a bit with this idea. Remember that <code>my_workflow/1</code> has an input called <code>threshold</code>. Suppose that we want to build a workflow that will contain the workflow <code>my_workflow/1</code> and will always use the value 5.5 on the <code>threshold</code> input variable. Or else we want to <em>call</em> <code>my_workflow/1</code> with <code>threshold=5.5</code> from another workflow. Create the workflow <code>constant_threshold</code> and add on the graph the workflow <code>my_workflow/1</code>. To do that, search <code>my_workflow/1</code> on the left panel, locate this workflow object and drag and drop it on the graph of the right panel. Click the <code>main_step</code> node that belongs to the <code>constant_workflow/1</code> and add the following Bash commands:</p>
+<pre><code class="language-bash">input__threshold__my_workflow__1=5.5 # Setting the input value 
+step__main_step__my_workflow__1 # Calling the step main_step of the workflow my_workflow/1
+</code></pre>
+<p>Practically here we set the input value of the workflow <code>my_workflow/1</code> to 5.5 and then we call it. Press UPDATE, the workflow now looks like this:</p>
+<p><img alt="img" src="screenshots/screen_28.png" /> </p>
+<p>If we save, download and run the workflow, the output is:</p>
+<pre><code>OBC: Workflow name: constant_threshold
+OBC: Workflow edit: 1
+OBC: Workflow report: None
+OBC: CALLING STEP: step__main_step__constant_threshold__1    CALLER: main
+OBC: CALLING STEP: step__main_step__my_workflow__1    CALLER: main_step__constant_threshold__1
+Hello from my_workflow
+Input Threshold is: 5.5
+OBC: CALLING STEP: step__new_step__my_workflow__1    CALLER: main_step__my_workflow__1
+Hello from new_step
+OBC: CALLING STEP: step__main_step__another_workflow__1    CALLER: new_step__my_workflow__1
+hello from another_workflow
+OBC: Output Variables:
+</code></pre>
+<p>Notice that, when executing the <code>bash.sh</code> script, we don't have to provide a value of the input variable <code>threshold</code> of the <code>my_workflow/1</code> workflow. This input is set from the step <code>main_step</code> of the <code>constant_threshold/1</code> workflow. Practically we <em>called</em> a workflow after setting its input value. </p>
+<p>Let's see another example. Create a workflow with the name <code>A</code>, that has an input <code>K</code> and an output <code>M</code>. Add the following Bash command on the <code>main_step</code>:</p>
+<pre><code class="language-bash">output__M__A__1=$(expr ${input__K__A__1} + 3) # M = K + 3
+</code></pre>
+<p>Create another workflow with the name <code>B</code>, that has an input <code>M</code> and an output <code>L</code>. Add the following commands on the <code>main_step</code>:</p>
+<pre><code class="language-bash">output__L__B__1=$(expr ${input__M__B__1} \* 5) # # L = M * 5 
+</code></pre>
+<p>Create another workflow with the name <code>C</code>, that has an input <code>L</code> and an output <code>N</code>. Add the following commands on the <code>main_step</code>:</p>
+<pre><code class="language-bash">output__N__C__1=$(expr ${input__L__C__1} - 2) # N = L - 2
+</code></pre>
+<p>These three workflows, each contains a single step. The step performs a simple mathematical operation on the input variable and saves the output on the output variable. Now we can combine these three workflows in a forth workflow. Create a workflow with the name <code>combine</code>. For each of one of the workflows <code>A</code>, <code>B</code>, <code>C</code>, locate them via search on the left panel and drag and drop them on the graph of the <code>combine</code> workflow. On the <code>combine</code> workflow add a input variable <code>K</code> and an output variable <code>N</code>. Finally, On the main_step of the <code>combine</code> workflow add the following Bash commands:</p>
+<pre><code class="language-bash">input__K__A__1=${input__K__combine__1} # Set the input of the A workflow as the input of the root workflow
+step__main_step__A__1 # Call main_step of the A workflow
+input__M__B__1=${output__M__A__1} # Set the input of the B workflow as the output of the A workflow
+step__main_step__B__1 # Call main_step of the B workflow
+input__L__C__1=${output__L__B__1} # Set the input of the C workflow as the output of the B workflow
+step__main_step__C__1 # Call main_step of the C workflow
+output__N__combine__1=${output__N__C__1} # Set the output of the root workflow as the output of the C workflow
+</code></pre>
+<p>The workflow looks like this:</p>
+<p><img alt="img" src="screenshots/screen_29.png" /></p>
+<p>Actually here we have "chained" three workflows. In pseudocode, what we have done is:</p>
+<pre><code>K : input
+
+M = step_a(K) # Calls M = K + 3
+L = step_b(M) # Calls L = M * 5 
+N = step_c(L) # Calls N = L - 2
+
+N: output
+</code></pre>
+<p>If we save, download and run this workflow with:</p>
+<pre><code class="language-bash">bash bash.sh  --input__K__combine__1=2
+</code></pre>
+<p>the output will be:</p>
+<pre><code class="language-bash">OBC: Workflow name: combine
+OBC: Workflow edit: 1
+OBC: Workflow report: None
+OBC: CALLING STEP: step__main_step__combine__1    CALLER: main
+OBC: CALLING STEP: step__main_step__A__1    CALLER: main_step__combine__1
+OBC: CALLING STEP: step__main_step__B__1    CALLER: main_step__combine__1
+OBC: CALLING STEP: step__main_step__C__1    CALLER: main_step__combine__1
+OBC: Output Variables:
+OBC: output__N__combine__1 = 23
+</code></pre>
+<p>The output is 23 since the input is 2 and we applied the pseudocode presented above. To recap, in OpenBio.eu the user has to explicitly set (1) the input/output of each step and (2) define which steps call which. To illiustrate how this is different from other Workflow Management Systems let's take a look from <a href="https://www.commonwl.org/user_guide/21-1st-workflow/index.html">this workflow from Common Workflow Language tutorial</a>:</p>
+<pre><code>#!/usr/bin/env cwl-runner
+
+cwlVersion: v1.0
+class: Workflow
+inputs:
+  tarball: File
+  name_of_file_to_extract: string
+
+outputs:
+  compiled_class:
+    type: File
+    outputSource: compile/classfile
+
+steps:
+  untar:
+    run: tar-param.cwl
+    in:
+      tarfile: tarball
+      extractfile: name_of_file_to_extract
+    out: [extracted_file]
+
+  compile:
+    run: arguments.cwl
+    in:
+      src: untar/extracted_file
+    out: [classfile]
+</code></pre>
+<p>What is described here is a workflow that has two inputs (<code>tarball</code>, <code>name_of_file_to_extract</code>) and one output <code>compile/classfile</code>. The workflow has two steps: 
+* Step <code>untar</code> has inputs <code>tarball</code>, <code>name_of_file_to_extract</code> and output <code>extracted_file</code>.
+* Step <code>compile</code> has input <code>extracted_file</code> and output <code>compile/classfile</code>.</p>
+<p>Notice that nowhere in this description is mentioned which step will run first and which second. This is implied from input/output variables. Here it is trivial to deduce that step <code>untar</code> will run first and step <code>compile</code> will run second. Yet in complex workflows the resolution of execution order requires special algorithms. Also sometimes this complexity makes workflow editing and maintaining a difficult and error-prone procedure. In Computer Science terminology, OpenBio.eu is an effort to bring workflows closer to the <a href="https://en.wikipedia.org/wiki/Structured_programming">structured programming</a> paradigm as opposed to the <a href="https://en.wikipedia.org/wiki/Flow-based_programming">flow-based programming</a> paradigm that are mostly modeled today.</p>
+<h3 id="adding-toolsdata-in-workflows">Adding Tools/Data in workflows</h3>
+<p>Adding Tools/Data in workflows is easy as adding other Workflows. For example let's locate the workflow <code>my_workflow/1</code> that we have created in the previous steps on the left panel. Select it and then press "EDIT". Now on the left panel, locate the tool <code>another_tool/1</code>. Drag and drop <code>another_tool/1</code> to the graph of <code>my_workflow/1</code>. The graph should look like this:</p>
+<p><img alt="img" src="screenshots/screen_30.png" /></p>
+<p>Notice that the graph has two additional nodes: <code>another_tool/1/1</code> and <code>my_tool/1/1</code>. Both are red rectangles with round edges. Round rectagles are nodes that represent tools/data. Red means that these tools/data are in draft stage. Notice also that there is edge from <code>another_tool/1/1</code> to <code>my_tool/1/1</code>. This means that <code>another_tool/1/1</code> depends from <code>my_tool/1/1</code>. Save the workflow, download it and run it with:</p>
+<pre><code class="language-bash">bash bash.sh --input__threshold__my_workflow__1=4.5
+</code></pre>
+<p>The output is:</p>
+<pre><code>OBC: Workflow name: my_workflow
+OBC: Workflow edit: 1
+OBC: Workflow report: None
+OBC: INSTALLING TOOL: my_tool/1/1
+installing tool my_tool
+OBC: INSTALLATION OF TOOL: my_tool/1/1 . COMPLETED
+OBC: VALIDATING THE INSTALLATION OF THE TOOL: my_tool/1/1
+OBC: VALIDATION FOR TOOL: my_tool/1/1 SUCCEEDED
+OBC: SET my_tool__1__1__var_1=&quot;hello world&quot;   &lt;-- my first variable 
+OBC: INSTALLING TOOL: another_tool/1/1
+Installing another_tool
+The value of tool var_1 from my_tool/1/1 is:
+hello world
+The installation path is: /another_tool
+OBC: INSTALLATION OF TOOL: another_tool/1/1 . COMPLETED
+OBC: VALIDATING THE INSTALLATION OF THE TOOL: another_tool/1/1
+validating another_tool
+OBC: VALIDATION FOR TOOL: another_tool/1/1 SUCCEEDED
+OBC: SET another_tool__1__1__var_2=&quot;hello from another tool&quot;   &lt;-- my second var 
+OBC: SET another_tool__1__1__INSTALLATION_PATH=&quot;/another_tool&quot;   &lt;-- installation path 
+OBC: CALLING STEP: step__main_step__my_workflow__1    CALLER: main
+Hello from my_workflow
+Input Threshold is: 4.5
+OBC: CALLING STEP: step__new_step__my_workflow__1    CALLER: main_step__my_workflow__1
+Hello from new_step
+OBC: CALLING STEP: step__main_step__another_workflow__1    CALLER: new_step__my_workflow__1
+hello from another_workflow
+OBC: Output Variables:
+OBC: output__result__my_workflow__1 = 120
+</code></pre>
+<p>The important thing to notice here is that the installation and validation Bash commands of the tools/data that take part in a workflow are execute <em>before</em> the Bash commands of any step. Or else, first we install tools/data and then we execute the rest parts of a workflow. Remember also that the tool <code>another_tool/1/1</code> has a variable named <code>INSTALLATION_PATH</code>. We can access this variable at any step of the worfklow. For example, edit the workflow <code>my_workflow/1</code>, click on the step node <code>main_step</code> of this workflow and at the Bash editor, at any part type: "input" the following autocomplete menu appears:</p>
+<p><img alt="img" src="screenshots/screen_31.png" /></p>
+<p>This is to help you locate the variable of a Tool/Data that you want to use. Select the <code>INSTALLATION_PATH</code> variable and print it. The Bash commands should look like this:</p>
+<pre><code class="language-bash">echo &quot;Hello from my_workflow&quot;
+echo &quot;Input Threshold is: ${input__threshold__my_workflow__1}&quot;
+step__new_step__my_workflow__1
+
+echo &quot;The value of INSTALLATION_PATH variable of another_tool/1/1 is:&quot;
+echo ${another_tool__1__1__INSTALLATION_PATH}
+</code></pre>
+<p>Press UPDATE and then save the workflow. The workflow now looks like this:</p>
+<p><img alt="img" src="screenshots/screen_32.png" /></p>
+<p>Notice the new edge from the <code>main_step</code> of <code>my_workflow/1</code> to the tool <code>another_tool/1/1</code>. Or else, this step is using the tool <code>another_tool/1/1</code>. Save the workflow, download it and run it with:</p>
+<pre><code class="language-bash">export OBC_TOOL_PATH=my/favorite/path
+bash bash.sh --input__threshold__my_workflow__1=4.5
+</code></pre>
+<p>The output is:</p>
+<pre><code>OBC: Workflow name: my_workflow
+OBC: Workflow edit: 1
+OBC: Workflow report: None
+OBC: INSTALLING TOOL: my_tool/1/1
+installing tool my_tool
+OBC: INSTALLATION OF TOOL: my_tool/1/1 . COMPLETED
+OBC: VALIDATING THE INSTALLATION OF THE TOOL: my_tool/1/1
+OBC: VALIDATION FOR TOOL: my_tool/1/1 SUCCEEDED
+OBC: SET my_tool__1__1__var_1=&quot;hello world&quot;   &lt;-- my first variable 
+OBC: INSTALLING TOOL: another_tool/1/1
+Installing another_tool
+The value of tool var_1 from my_tool/1/1 is:
+hello world
+The installation path is: my/favorite/path/another_tool
+OBC: INSTALLATION OF TOOL: another_tool/1/1 . COMPLETED
+OBC: VALIDATING THE INSTALLATION OF THE TOOL: another_tool/1/1
+validating another_tool
+OBC: VALIDATION FOR TOOL: another_tool/1/1 SUCCEEDED
+OBC: SET another_tool__1__1__var_2=&quot;hello from another tool&quot;   &lt;-- my second var 
+OBC: SET another_tool__1__1__INSTALLATION_PATH=&quot;my/favorite/path/another_tool&quot;   &lt;-- installation path 
+OBC: CALLING STEP: step__main_step__my_workflow__1    CALLER: main
+Hello from my_workflow
+Input Threshold is: 4.5
+OBC: CALLING STEP: step__new_step__my_workflow__1    CALLER: main_step__my_workflow__1
+Hello from new_step
+OBC: CALLING STEP: step__main_step__another_workflow__1    CALLER: new_step__my_workflow__1
+hello from another_workflow
+The value of INSTALLATION_PATH variable of another_tool/1/1 is:
+my/favorite/path/another_tool
+OBC: Output Variables:
+OBC: output__result__my_workflow__1 = 120
+</code></pre>
+<p>Notice the output:</p>
+<pre><code>The value of INSTALLATION_PATH variable of another_tool/1/1 is:
+my/favorite/path/another_tool
+</code></pre>
+<p>This is printed from the <code>main_step</code> of <code>my_workflow/1</code>. You might wonder why it is printed under the line <code>hello from another_workflow</code>. Remember that the lines:</p>
+<pre><code class="language-bash">echo &quot;The value of INSTALLATION_PATH variable of another_tool/1/1 is:&quot;
+echo ${another_tool__1__1__INSTALLATION_PATH}
+</code></pre>
+<p>are <em>after</em> the line:</p>
+<pre><code class="language-bash">step__new_step__my_workflow__1
+</code></pre>
+<p>so OpenBio.eu first calls <code>new_step</code> from <code>my_workflow/1</code> and then prints the value of the <code>INSTALLATION_PATH</code> variable.</p>
+<p>Also open the workflow <code>constant_threshold/1</code>. You will notice that the graph has changed!</p>
+<p><img alt="img" src="screenshots/screen_33.png" /></p>
+<p>Both <code>another_tool/1/1</code> and <code>my_tool/1/1</code> have been entered in the graph. But if we didn't edit <code>constant_threshold/1</code>, how the graph was chaged? Workflow <code>constant_threshold/1</code> contains workflow <code>my_workflow/1</code> and we changed <code>my_workflow/1</code> by adding these two tools. Hence, <code>constant_threshold/1</code> also has changed. Remember that only draft workflows and tools/data can be changed. So if your pipeline contains only finalized entities, it is guaranteed that it will not change in the future. </p>
+<h3 id="the-obc_work_path-variable">The ${OBC_WORK_PATH} variable</h3>
+<p>Similar to variables <code>OBC_TOOL_PATH</code> and <code>OBC_DATA_PATH</code>, you can use the <code>OBC_WORK_PATH</code>. OpenBio.eu expects that this Bash variable has been set externally in you environment. You are encouraged to use this variable to refer on the path that is used during the analysis. For example to store you temporary data or your final results. </p>
+<h3 id="finalizing-a-workflow">Finalizing a workflow</h3>
+<p>If you try to finalize the <code>constant_threshold/1</code> workflow you will receive an error: <code>This workflow cannot be finalized. It contains 2 draft workflow(s). For example: another_workflow/1</code>. A finalized workflow cannot be changed, so it cannot contain a draft workflow or a draft tool/data. So first finalize the draft components of a workflow and then finalize the workflow. To finalize a workflow click the "FINALIZE" button on the top of the page.</p>
+<h3 id="disconnecting-a-tooldata-or-a-workflow">Disconnecting a Tool/Data or a Workflow</h3>
+<p>You might have noticed that workflows in OpenBio.eu are dynamicly edited. Multiple users can take part on editing different parts of a workflow. For example let's say that you are creating a workflow. In this workflow you have imported a Tools/Data or Workflows created by other users and these imported elements are in draft stage. Every change that happens on these imported elements are automatically applied on your workflow. Importing draft elements from other users means that changes on these elements are also affecting your workflow. Sometimes this behaviour is desired but sometimes it isn't. For example when you are co-editing workflows with a peer of users that you trust, this behaviour is desired. On the other hand you might have created a workflow with elements from other users, you have tested this workflow and you are happy with how it behaves. Yet, you cannot use this workflow for reproducible science since the elements of this workflow can change anytime from other users, thus its behaviour might change in the future. On that case you can edit your workflow and <em>disconnect</em> an imported Tool/Data or Workflow. By disconnecting a Tool/Data or a Workflow, you are simply stating that you do not desire any changes that happen on these elements to affect your workflow any more. A disconnected Tool/Data or Workflow is a persistent and immutable object and exists only in your workflow. No other user can change them. To perform this action right click a Tool/Data or Workflow from a workflow graph and from the menu that appears choose "Disconnect". A modal appears that asks you if you are sure since you cannot undo this action. If you press "Yes", then the disconnected elements (Tool/Data or Workflows) are turned blue. If you disconnect a Workflow, then all other Workflows, Tool/Data that belong to this workflow are also disconnected. If you disconnect a Tool/Data all other Tool/Data that are dependencies of this Tool/Data are also disconnected. </p>
+<p>For example here:</p>
+<p><img alt="img" src="screenshots/screen_34.png" /></p>
+<p>We have disconnected the workflow <code>my_workflow/1</code> from the workflow <code>constant_threshold/1</code>. All Tool/Data and Workflow elements that belong to <code>my_workflow/1</code> have turned to blue. </p>
+<h3 id="worfklow-graph-node-semantics">Worfklow graph, node semantics</h3>
+<p>Here we list the different types of nodes on the workflow graph:
+* Red Octagon: a fraft Workflow
+* Blue Octagon: a disconnected Workflow
+* Grey Octagon: A finalized workflow
+* Green Circle: Step
+* Green Circle with RED Border: A main step
+* Green Circle with BLACK Border: A step that it is main in a sub-workflow 
+* Red Round Rectangle: A draft tool
+* Blue Round Rectangle: A disconnected tool
+* Grey Round Rectangle: A finalized tool
+* Grey Round Rectangle with green border: A workflow input
+* Grey Round Rectangle with red border: A workflow output</p>
+<h1 id="parallel-execution">Parallel execution</h1>
+<p>The <code>PARALLEL</code> command is included in every generated script. With this command you can run steps in parallel. There are two ways to use this command.</p>
+<h2 id="running-multiple-steps-in-parallel">Running multiple steps in parallel</h2>
+<p>So far all the executions that we have describe, run in a sequential order. When a step calls another step, this happens sequentially. For example, assume that there are four steps in a workflow: <code>S1</code>, <code>S2</code>, <code>S3</code>, <code>S4</code>. Each one of these performs a simple echo command for example: <code>echo "S1"</code> for S1 and on:
+Let's call these steps in order:</p>
+<pre><code class="language-bash">step__S1__parallel_test__1
+step__S2__parallel_test__1
+step__S3__parallel_test__1
+step__S4__parallel_test__1
+</code></pre>
+<p>The pipeline looks like this:</p>
+<p><img alt="img" src="screenshots/screen_35.png" /></p>
+<p>If we save, download and execute this pipeline the output will be:</p>
+<pre><code>OBC: CALLING STEP: step__main_step__parallel_test__1    CALLER: main
+OBC: CALLING STEP: step__S1__parallel_test__1    CALLER: step__main_step__parallel_test__1
+S1
+OBC: CALLING STEP: step__S2__parallel_test__1    CALLER: step__main_step__parallel_test__1
+S2
+OBC: CALLING STEP: step__S3__parallel_test__1    CALLER: step__main_step__parallel_test__1
+S3
+OBC: CALLING STEP: step__S4__parallel_test__1    CALLER: step__main_step__parallel_test__1
+S4
+</code></pre>
+<p>The execution workflow can be written as:</p>
+<pre><code>   S1
+   |
+   S2
+   |
+   S3
+   |
+   S4
+</code></pre>
+<p>But what if we want to run steps 2 and 3 in parallel? To do that, we can use the <code>PARALLEL</code> command. The syntax is:</p>
+<pre><code>PARALLEL STEP_NAME_1 STEP_NAME_2 ...
+</code></pre>
+<p>The <code>PARALLEL</code> commands takes as input the names of an arbitrary number of steps and runs them in parallel. For example let's change the BASH commands of the step: <code>main_step</code>:</p>
+<pre><code class="language-bash">step__S1__parallel_test__1
+PARALLEL step__S2__parallel_test__1 step__S3__parallel_test__1
+step__S4__parallel_test__1
+</code></pre>
+<p>Now the order of execution will be: first <code>step__S2__parallel_test__1</code> runs, then the steps <code>step__S2__parallel_test__1</code> and <code>step__S3__parallel_test__1</code> run in parallel. After both these steps finish, the step step__S4__parallel_test__1 starts to run. To validate this, save, download and run this workflow multiple times. In some runs you will notice that the output is:</p>
+<pre><code class="language-bash">OBC: CALLING STEP: step__main_step__parallel_test__1    CALLER: main
+OBC: CALLING STEP: step__S1__parallel_test__1    CALLER: step__main_step__parallel_test__1
+S1
+OBC: CALLING STEP: step__S3__parallel_test__1    CALLER: step__main_step__parallel_test__1
+S3
+OBC: CALLING STEP: step__S2__parallel_test__1    CALLER: step__main_step__parallel_test__1
+S2
+OBC: CALLING STEP: step__S4__parallel_test__1    CALLER: step__main_step__parallel_test__1
+S4
+</code></pre>
+<p>Notice here that the "S3" is printed before the "S2". The execution workflow now is:</p>
+<pre><code>   S1
+  /  \ 
+S2    S3
+  \  /
+   S4
+</code></pre>
+<h2 id="running-the-same-step-in-parallel-with-different-variables">Running the same step in parallel with different variables.</h2>
+<p>Let's assume that that we want to run a step multiple times in parallel and for each run we want the step to have a different set of parameters. For this purpose, the <code>PARALLEL</code> command can be used with the following syntax:</p>
+<pre><code class="language-bash">VARIABLE_WITH_PARAMETERS=&quot;
+VAR_1,VAR_2,VAR_3,...
+VALUE_11,VALUE_12,VALUE_13,...
+VALUE_21,VALUE_22,VALUE_23,...
+VALUE_31,VALUE_32,VALUE_33,...
+VALUE_41,VALUE_42,VALUE_43,...
+VALUE_51,VALUE_52,VALUE_53,...
+...
+&quot;
+
+PARALLEL step_name &quot;${VARIABLE_WITH_PARAMETERS}&quot;
+</code></pre>
+<p><strong>IMPORTANT: The double quotes (") in "${VARIABLE_WITH_PARAMETERS}" are necessary for this syntax to work</strong></p>
+<p>This command will run the step <code>step_name</code> as many times as the lines in the CSV data that is defined in the <code>VARIABLE_WITH_PARAMETERS</code> variable. The CSV data should be comma separated and the data should have a header. The first run will have the parameters:</p>
+<pre><code>VAR_1=VALUE_11
+VAR_2=VALUE_12
+VAR_3=VALUE_13
+</code></pre>
+<p>the second run will have the parameters:</p>
+<pre><code>VAR_1=VALUE_21
+VAR_2=VALUE_22
+VAR_3=VALUE_23
+</code></pre>
+<p>the third run:</p>
+<pre><code>VAR_1=VALUE_31
+VAR_2=VALUE_32
+VAR_3=VALUE_33
+</code></pre>
+<p>and so on..</p>
+<p>For example let's create the following workflow:</p>
+<p><img alt="img" src="screenshots/screen_36.png" /></p>
+<p>This pipeline contains a step called <code>complex_task</code> that contains the commands:</p>
+<pre><code class="language-bash">echo &quot;Input values PAR1=${PAR1}   PAR2=${PAR2} started&quot;
+sleep 3
+echo &quot;Input values PAR1=${PAR1}   PAR2=${PAR2} finished&quot;
+</code></pre>
+<p>and the <code>main_step</code> contains the commands:</p>
+<pre><code class="language-bash">VARIABLES=&quot;
+PAR1,PAR2
+1,2
+10,20
+100,200
+&quot;
+PARALLEL step__complex_task__PARALLEL_test_2__1 &quot;${VARIABLES}&quot;
+</code></pre>
+<p>If we save, download and execute the workflow, the output will be:</p>
+<pre><code>OBC: CALLING STEP: step__main_step__PARALLEL_test_2__1    CALLER: main
+OBC: CALLING STEP: step__complex_task__PARALLEL_test_2__1    CALLER: step__main_step__PARALLEL_test_2__1
+Input values PAR1=1   PAR2=2 started
+OBC: CALLING STEP: step__complex_task__PARALLEL_test_2__1    CALLER: step__main_step__PARALLEL_test_2__1
+Input values PAR1=10   PAR2=20 started
+OBC: CALLING STEP: step__complex_task__PARALLEL_test_2__1    CALLER: step__main_step__PARALLEL_test_2__1
+Input values PAR1=100   PAR2=200 started
+Input values PAR1=1   PAR2=2 finished
+Input values PAR1=10   PAR2=20 finished
+Input values PAR1=100   PAR2=200 finished
+</code></pre>
+<p>As you notice the step <code>complex_task</code> run 3 times in parallel, each with different set of parameters. </p>
+<h1 id="downloading-a-workflow">Downloading a Workflow</h1>
+<p>We have already seen that on every Tool/Data and on every Workflow there is a "DOWNLOAD" button. We have already used the <code>BASH</code> option in order to download a Tool/Data/Workflow as a standalone bash script. Here we will explore all the other options.</p>
+<h2 id="download-a-workflow-in-cwl-format">Download a Workflow in CWL format.</h2>
+<p>CWL (<a href="https://www.commonwl.org/">Common Workflow Language</a>) is one of the most known formats for workflow description. OpenBio exports workflows in CWL. To examine this ability, first let's create a workflow named <code>parallel/1</code> that has an input named <code>parameter</code> and an output named <code>result</code>. The workflow will have the following steps:</p>
+<p>step: <code>main_step</code>:</p>
+<pre><code class="language-bash">echo &quot;Input is: ${input__parameter__parallel__1}&quot;
+
+PARAMS=&quot;
+A,B
+1,2
+3,4
+5,6
+&quot;
+
+PARALLEL step__complex_task__parallel__1 &quot;${PARAMS}&quot;
+
+output__result__parallel__1=42
+</code></pre>
+<p>step: <code>complex_task</code>:</p>
+<pre><code class="language-bash">echo &quot;complex task: A=${A}   B=${B}&quot;
+
+PARALLEL step__subtask_1__parallel__1 step__subtask_2__parallel__1
+
+</code></pre>
+<p>step: <code>subtask_1</code>:</p>
+<pre><code class="language-bash">echo &quot;subtask_1: A=${A}&quot;
+</code></pre>
+<p>step: <code>subtask_2</code></p>
+<pre><code class="language-bash">echo &quot;subtask_2: B=${B}&quot;
+</code></pre>
+<p>Notice that this workflow uses both different types of <code>PARALLEL</code> syntax presented before. The workflow should look like this:</p>
+<p><img alt="img" src="screenshots/screen_37.png" /></p>
+<p>Now we can download the workflow in CWL format either in zip or in .tar.gz compression. If we download and decompress the workflow we will notice that it contains a lot of files. The <code>inputs.yml</code> is a file in <a href="https://en.wikipedia.org/wiki/YAML">YAML format</a> and contains the input parameters of the workflow. The contents are:</p>
+<pre><code># OBC_TOOL_PATH: &quot;&quot; # Please set this environment variable
+# OBC_DATA_PATH: &quot;&quot; # Please set this environment variable
+# OBC_WORK_PATH: &quot;&quot; # Please set this environment variable
+
+# Please set this input parameter! 
+# input__parameter__parallel__1: &quot;&quot; # Input parameter
+</code></pre>
+<p>The <code>OBC_TOOL_PATH</code>, <code>OBC_DATA_PATH</code>, <code>OBC_WORK_PATH</code> are the environment variables that have been presented before. The <code>input__parameter__parallel__1</code> is the input parameter with the name <code>parameter</code> of the workflow. Set the OBC_* variables with the desired path in your system and the <code>input__parameter__parallel__1</code> with a random constant. An example could be:</p>
+<pre><code>OBC_WORK_PATH: &quot;/myfavorite_path/WORK&quot;
+OBC_DATA_PATH: &quot;/myfavorite_path/DATA&quot;
+OBC_TOOL_PATH: &quot;/myfavorite_path/TOOL&quot;
+
+# Please set this input parameter!
+input__parameter__parallel__1: &quot;hello&quot; # Input parameter
+</code></pre>
+<p>Notice that the paths in the OBC_* variables should exist! You can execute this workflow with any environment that supports CWL files. For example we can install <a href="https://github.com/common-workflow-language/cwltool">cwltool</a> and run the command:</p>
+<pre><code class="language-bash">cwl-runner workflow.cwl inputs.yml 
+</code></pre>
+<p>After a long output you will see the result:</p>
+<pre><code>INFO [workflow ] completed success
+{
+    &quot;output__result__parallel__1&quot;: &quot;42&quot;
+}
+INFO Final process status is success
+(
+</code></pre>
+<p>At this points you might be wondering why there are so many steps in this workflow. To examine this we can visualize the execution flow graph of the workflow. Run the following command:</p>
+<pre><code class="language-bash">cwl-runner --print-dot workflow.cwl inputs.yml  
+</code></pre>
+<p>This will generate the execution flow of the workflow in <a href="https://en.wikipedia.org/wiki/DOT_%28graph_description_language%29">dot format</a> </p>
+<pre><code class="language-dot">digraph {compound=true
+&quot;workflow.cwl#step__subtask_2__parallel__1__1&quot; [label=&quot;step__subtask_2__parallel__1__1&quot;]
+&quot;workflow.cwl#step__complex_task__parallel__1__4&quot; [label=&quot;step__complex_task__parallel__1__4&quot;]
+&quot;workflow.cwl#step__complex_task__parallel__1__5&quot; [label=&quot;step__complex_task__parallel__1__5&quot;]
+&quot;workflow.cwl#step__complex_task__parallel__1__2&quot; [label=&quot;step__complex_task__parallel__1__2&quot;]
+&quot;workflow.cwl#step__main_step__parallel__1__2&quot; [label=&quot;step__main_step__parallel__1__2&quot;]
+&quot;workflow.cwl#step__subtask_1__parallel__1__2&quot; [label=&quot;step__subtask_1__parallel__1__2&quot;]
+&quot;workflow.cwl#step__subtask_2__parallel__1__2&quot; [label=&quot;step__subtask_2__parallel__1__2&quot;]
+&quot;workflow.cwl#OBC_CWL_FINAL&quot; [label=&quot;OBC_CWL_FINAL&quot;]
+&quot;workflow.cwl#step__complex_task__parallel__1__1&quot; [label=&quot;step__complex_task__parallel__1__1&quot;]
+&quot;workflow.cwl#step__complex_task__parallel__1__3&quot; [label=&quot;step__complex_task__parallel__1__3&quot;]
+&quot;workflow.cwl#step__subtask_1__parallel__1__1&quot; [label=&quot;step__subtask_1__parallel__1__1&quot;]
+&quot;workflow.cwl#step__subtask_1__parallel__1__3&quot; [label=&quot;step__subtask_1__parallel__1__3&quot;]
+&quot;workflow.cwl#OBC_CWL_INIT&quot; [label=&quot;OBC_CWL_INIT&quot;]
+&quot;workflow.cwl#step__complex_task__parallel__1__6&quot; [label=&quot;step__complex_task__parallel__1__6&quot;]
+&quot;workflow.cwl#step__subtask_2__parallel__1__3&quot; [label=&quot;step__subtask_2__parallel__1__3&quot;]
+&quot;workflow.cwl#step__main_step__parallel__1__1&quot; [label=&quot;step__main_step__parallel__1__1&quot;]
+&quot;workflow.cwl#step__complex_task__parallel__1__1&quot; -&gt; &quot;workflow.cwl#step__subtask_1__parallel__1__1&quot; []
+&quot;workflow.cwl#step__subtask_1__parallel__1__2&quot; -&gt; &quot;workflow.cwl#step__complex_task__parallel__1__4&quot; []
+&quot;workflow.cwl#step__complex_task__parallel__1__6&quot; -&gt; &quot;workflow.cwl#step__main_step__parallel__1__2&quot; []
+&quot;workflow.cwl#OBC_CWL_INIT&quot; -&gt; &quot;workflow.cwl#step__main_step__parallel__1__1&quot; []
+&quot;workflow.cwl#step__complex_task__parallel__1__3&quot; -&gt; &quot;workflow.cwl#step__subtask_1__parallel__1__2&quot; []
+&quot;workflow.cwl#step__main_step__parallel__1__2&quot; -&gt; &quot;workflow.cwl#OBC_CWL_FINAL&quot; []
+&quot;workflow.cwl#step__subtask_1__parallel__1__3&quot; -&gt; &quot;workflow.cwl#step__complex_task__parallel__1__6&quot; []
+&quot;workflow.cwl#step__main_step__parallel__1__1&quot; -&gt; &quot;workflow.cwl#step__complex_task__parallel__1__3&quot; []
+&quot;workflow.cwl#step__complex_task__parallel__1__2&quot; -&gt; &quot;workflow.cwl#step__main_step__parallel__1__2&quot; []
+&quot;workflow.cwl#step__main_step__parallel__1__1&quot; -&gt; &quot;workflow.cwl#step__complex_task__parallel__1__5&quot; []
+&quot;workflow.cwl#step__complex_task__parallel__1__4&quot; -&gt; &quot;workflow.cwl#step__main_step__parallel__1__2&quot; []
+&quot;workflow.cwl#step__subtask_1__parallel__1__1&quot; -&gt; &quot;workflow.cwl#step__complex_task__parallel__1__2&quot; []
+&quot;workflow.cwl#step__main_step__parallel__1__1&quot; -&gt; &quot;workflow.cwl#step__complex_task__parallel__1__1&quot; []
+&quot;workflow.cwl#step__complex_task__parallel__1__3&quot; -&gt; &quot;workflow.cwl#step__subtask_2__parallel__1__2&quot; []
+&quot;workflow.cwl#step__subtask_2__parallel__1__1&quot; -&gt; &quot;workflow.cwl#step__complex_task__parallel__1__2&quot; []
+&quot;workflow.cwl#step__subtask_2__parallel__1__3&quot; -&gt; &quot;workflow.cwl#step__complex_task__parallel__1__6&quot; []
+&quot;workflow.cwl#step__complex_task__parallel__1__5&quot; -&gt; &quot;workflow.cwl#step__subtask_1__parallel__1__3&quot; []
+&quot;workflow.cwl#step__complex_task__parallel__1__5&quot; -&gt; &quot;workflow.cwl#step__subtask_2__parallel__1__3&quot; []
+&quot;workflow.cwl#step__complex_task__parallel__1__1&quot; -&gt; &quot;workflow.cwl#step__subtask_2__parallel__1__1&quot; []
+&quot;workflow.cwl#step__subtask_2__parallel__1__2&quot; -&gt; &quot;workflow.cwl#step__complex_task__parallel__1__4&quot; []
+}
+</code></pre>
+<p>We can visualize the graph either by using the dot tool:</p>
+<pre><code class="language-bash">dot -Tpng graph.dot &gt; graph.png 
+</code></pre>
+<p>Or by simply copy-pasting the graph in the amazing <a href="https://dreampuf.github.io/GraphvizOnline">GraphvizOnline</a> tool. The graph is:</p>
+<p><img alt="img" src="screenshots/graph.png" /></p>
+<p>If you inspect the graph you will notice that every parallel execution has been split in a different step. The parallel steps then are merged in a single step. The workflow lies between a <code>OBC_CWL_INIT</code> step and a <code>OBC_CWL_FINAL</code> step. Basically, the <code>OBC_CWL_INIT</code> step sets the input parameters and the <code>OBC_CWL_FINAL</code> collects the output parameters. If you inspect the .cwl and .sh generated files you can get many insights regarding this split. </p>
+<h2 id="downloading-a-workflow-in-nextflow-format">Downloading a workflow in <a href="https://www.nextflow.io/">Nextflow</a> format.</h2>
+<p>By selecting to download a workflow in Nextflow format a file named: workflow.nf gets downloaded. You can run this with:</p>
+<pre><code class="language-bash">nextflow run workflow.nf
+</code></pre>
+<h1 id="public-private-research-objects">Public / Private Research Objects</h1>
+<p>Tools/Data and Workflows can be either public or private. You can set this "visibility" option through the user interface upon creating or editing a Tool/Data or Workflow (ROs = Research Objects). The semantics of this private / public setting are:
+* Public ROs are visible to all users including anonymous users.
+* Private ROs are visible only to the users that created them.
+* A public Tool/Data cannot have a Private tool as a dependency.
+* A private Tool/Data cannot be a dependency to a public Tool/Data.
+* A private Tool/Data cannot take part in a public Workflow.
+* A private Workflow cannot take part in a public Workflow.
+* You can change the visibility status from public to private and vice versa as long as you are not violating the above restrictions. 
+* Comments in private ROs are not accessible to users others than the creators of these ROs. </p>
+<h1 id="executing-a-workflow">Executing a Workflow</h1>
+<p>You can execute a Workflow directly from OpenBio.eu. To do that you need to install the "OpenBio Execution Environment" (OEE) to a computer of your own. That means that the actual execution happens to the computer that you have installed the OEE. The "OpenBio Execution Environment" is comprised by tree components:
+* A resource manager. This is a framework that monitors the resources (memory, CPU, hard disk, bandwidth) that are used by the OEE. We use <a href="https://www.netdata.cloud/">netdata</a> for this purpose. 
+* An execution manager. This is a framework that monitors the progress of the workflow. It provides a visual indication of which steps are currently running, it gives access to the logs and it allows you to pause/restart the workflow. Currently we are using <a href="https://airflow.apache.org/">airflow</a> for this purpose, although we are planning to support multiple environments in the future (priorities are <a href="https://www.nextflow.io/">nextflow</a> and <a href="https://galaxyproject.org/">galaxy</a>).<br />
+* The "OpenBio client". This is a client that uses <a href="https://flask.palletsprojects.com/en/1.1.x/">flask</a>. This client acts as the mediator between the OpenBio.eu website and the rest of the components. When you click the "RUN" button in OpenBio.eu, the site communicates with this client, the client aqcuires the workflow and submits it to airflow. It also performs some secondary jobs like providing the resource manager and execution manager URLs to the server and deleting the workflows when requested. </p>
+<p>Both three components are installed in separate virtualized containers through <a href="https://www.docker.com/">docker</a>. This means:
+* The workflow that is executed <strong>does not have access to any file in your system</strong>. Even if malicious code is somehow injected in the workflow, it will not have access to files in your system and it will not be able to permanently make any changes. 
+* The software installed is completely isolated with the rest of your system. The installation will not alter any of your existing libraries or software.
+* The workflow will use the resources of <strong>your</strong> computer, therefore its execution time depends on them.</p>
+<h2 id="installation">Installation</h2>
+<p><a href="https://github.com/kantale/OpenBioC_Execution">The source of the OpenBio Execution Envirnment is here</a>. To install it download <a href="https://github.com/kantale/OpenBioC_Execution/blob/master/obc_scripts/install.sh">the install script</a> and run it with:</p>
+<pre><code class="language-bash">bash install.sh
+</code></pre>
+<p>The script attempts to also install docker and <a href="https://docs.docker.com/compose/">docker-compose</a> in your system if they are not already installed. If docker and docker-compose are already installed and require sudo access you will have to run the script with:</p>
+<pre><code class="language-bash">sudo bash install.sh
+</code></pre>
+<p>After installation you will see a message like this:</p>
+<pre><code>
+
+ Successful installation 
+
+
+ Netdata url : http://52.58.167.29:19998/ff508b0b0283078ce6aea8d55e7e059c
+**IMPORTANT**
+
+    Copy this link below in OpenBioC Settings to confirm the connection: 
+
+http://52.58.167.29:5000/236f1e291a052b4f8c4ebd395e7e059c
+
+    The executor already running on your system. If you like to kill the service simply run:
+        $ docker-compose -f /home/root/obc_executor_main down
+        or, if you like to make some changes on docker-compose.yml or on airflow.cfg file:
+        $ cd /home/root/obc_executor_main  
+
+
+</code></pre>
+<p>Next step is to insert the link that appears last (in this case: <code>http://52.58.167.29:5000/236f1e291a052b4f8c4ebd395e7e059</code>), in OpenBio.eu. To do that login in OpenBio.eu, and on the upper-right side of the page where it shows your username click on the dropdown and select <code>Profile</code>. On the bottom of the page there is a section called: <code>Execution Environment</code>:</p>
+<p><img alt="img" src="screenshots/screen_38.png" /></p>
+<p>On this section you can insert this link and associate it with a name (i.e. <code>my_cluster</code>):</p>
+<p><img alt="img" src="screenshots/screen_39.png" /></p>
+<p><strong>Important: Anyone with this link can submit workflows in this computer. Do not share this link.</strong> Different accounts in OpenBio can share the same link and submit workflows in the same Execution Environment. </p>
+<h2 id="using-the-run-button">Using the RUN button</h2>
+<p>After submitting at least one OEE in OpenBio, you can submit workflows directly for execution. For example we can submit the Workflow presented in the previous chapter (regarding CWL output). This workflow is accessible here: https://www.openbio.eu/platform/w/parallel/1. First notice that this workflow has an input parameter (called <code>parameter</code>). We can set a value to this input parameter (although this is not obligatory). To do that, right click on the <code>parameter</code> node in the graph and select <code>Set</code>. An input dialog appears, where you can set a value:</p>
+<p><img alt="img" src="screenshots/screen_40.png" /></p>
+<p>Now if we press the "RUN" button on the top, a dropdown appears with all OEEs that you have submitted. Select the one where you want this workflow to be submitted for execution. If everything goes well you will see two messages:</p>
+<pre><code>Please wait while the workflow is submitted for execution..
+Workflow submitted for execution with a Report id: kge7p
+</code></pre>
+<p>The last message means that a new report has been generated. In OpenBio.eu a <em>Report</em> is an object that represents a Workflow that has been submitted for execution. Reports carry information regarding the execution status of the Workflow. A Report has an ID that contains 5 random letters, in this case <code>kge7p</code>. <strong>Only the creator of a Report has access to this Report</strong>. To access the details of this report you can enter this ID on the search input. On the <code>Reports</code> section on the left panel you can see that a new item has been generated:</p>
+<p><img alt="img" src="screenshots/screen_41.png" /></p>
+<p>If you click it, you can access all information regarding this report:</p>
+<p><img alt="img" src="screenshots/screen_43.png" /></p>
+<p>The <code>MONITOR EXECUTION</code> is a link to the execution manager (currently: airflow). For example the airflow DAG (Directed Acyclic Graph) representation of this Workflow is:</p>
+<p><img alt="img" src="screenshots/screen_42.png" /></p>
+<p>Notice how this graph is the same with the <a href="screenshots/graph.png">DOT graph generated from CWL</a>.</p>
+<p>The <code>MONITOR RESOURCES</code> is a link to the resource manager (currently: netdata). It might look like this:</p>
+<p><img alt="img" src="screenshots/screen_44.png" /></p>
+<p>After execution you can have access to the generated logs and to the HTML report that the workflow creates by default. You can also delete a report. </p>
+<h2 id="bash-script">BASH script</h2>
+<p>The BASH script is a directly executable file. Assuming the BASH script filename is bash_7Lt2o.sh and you are in a BASH shell you can type:</p>
+<pre><code class="language-bash">bash script_7Lt2o.sh
+</code></pre>
+<h2 id="json">JSON</h2>
+<p>This method will download a file workflow.json that contains all the information required to execute the workflow in a local environment. In order to execute it, you need to convert this file into an executable BASH script. To do this, you need to download the file <a href="https://github.com/kantale/OpenBioC/blob/master/OpenBioC/ExecutionEnvironment/executor.py">executor.py</a>. This file requires <a href="https://www.python.org/downloads/">python 3</a> and has no other dependencies. After you have downloaded this file, you can run the command:</p>
+<pre><code class="language-bash">python executor.py -W workflow.json
+</code></pre>
+<p>This will generate the file: <code>script.sh</code> that you can execute as described above. Both methods will print some information regarding the attempted execution: </p>
+<pre><code>Workflow Name: myworkflow
+Edit: 1
+Report: 7Lt2o
+</code></pre>
+<p>This information contains the name (i.e. <code>myworkflow</code>), edit (i.e. <code>1</code>) and the id of the generated Report (i.e. <code>7Lt2o</code>). During the execution, the script attempts to inform the server (by default: openbio.eu) on the execution status. To access this information simply search for the Report id (i.e. <code>7Lt2o</code>) on the main search. Then you can click the relevant report that appears.</p>
+<p><strong>Important:</strong> If you have downloaded as an unregistered user, or it is a Tool/Data, or the Workflow is in draft stage, then the execution will not generate a report.</p>
+<p><strong>Troubleshooting:</strong> In environments where curl cannot validate the SSL certificate of openbio.eu, you can pass the option <code>--insecure</code> to <code>executor.py</code></p>
+<h1 id="api">API</h1>
+<p>The API is currently under heavy development. </p>
+<p>The main endpoint of the REST api is at: https://openbio.eu/platform/rest/</p>
+<h2 id="request-a-workflow">Request A Workflow</h2>
+<p>The GET parameters to request a workflow are:</p>
+<p><code>https://openbio.eu/platform/rest/workflows/&lt;workflow_name&gt;/&lt;workflow_edit&gt;/?workflow_id=&lt;workflow_id&gt;&amp;format=&lt;format&gt;&amp;&lt;input_parameter_1&gt;=&lt;value_1&gt;&amp;&lt;input_parameter_2&gt;=&lt;value_2&gt;</code></p>
+<ul>
+<li><code>workflow_name</code> : The name of a workflow.</li>
+<li><code>workflow_edit</code> : The edit of a workflow</li>
+<li><code>workflow_id</code> : Some workflow management systems, need to have a unique id in the workflow representation. <a href="https://airflow.apache.org/docs/stable/tutorial.html#instantiate-a-dag">An example is airflow</a> that expects to have a <code>dag_id</code> value. This field can take any string. Also, this is optional, if you don't set this, then the <code>workflow_id</code> will be: <code>&lt;workflow_name&gt;__&lt;workflow_edit&gt;</code></li>
+<li><code>input_parameter_1</code>: The name of an input parameter of a workflow</li>
+<li><code>value_1</code>: The value of the input parameter.</li>
+<li><code>format</code>. The format of the workflow. So far accepted values are:</li>
+<li><code>json</code>: A json representation of the workflow</li>
+<li><code>bash</code>: A directly executable bash version of the workflow</li>
+<li><code>airflow</code>: An <a href="https://airflow.apache.org">airflow</a> representation of the workflow that uses the <a href="https://airflow.apache.org/docs/stable/howto/operator/bash.html">BashOperator</a>. </li>
+<li><code>cwltargz</code>: The workflow in <a href="https://www.commonwl.org/">CWL</a> format (current v. 1.0). Since this representation is split in many files it returns a tar gzip file. Uncompress it with : <code>tar zxvf workflow.tar.gz</code>. </li>
+<li><code>cwlzip</code>: Some as above but returns a singe zip file. </li>
+</ul>
+<p>If the chosen format is not a binary file: (<code>json</code>, <code>bash</code>, <code>airflow</code>), then the result is a JSON object. This object contains the following fields:</p>
+<pre><code class="language-json">{
+    &quot;success&quot;: true,
+    &quot;name&quot;: &quot;test&quot;,
+    &quot;edit&quot;: 1,
+    &quot;format&quot;: &quot;BASH&quot;,
+    &quot;workflow&quot;: &quot;...&quot;
+}
+</code></pre>
+<p>The workflow is on the <code>workflow</code> field of the returned JSON object.</p>
+<p>The return object of the REST API can be one of the following:
+* A binary file if the format is <code>cwltargz</code>, <code>cwlzip</code>
+* Text in HTML format if the format is not a binary file (default Django-REST API html format)
+* Text in JSON format if the format is not a binary file and the header <code>Accept: application/json</code> exists in the request. 
+* Text in plain text format if the format is not a binary file and the header <code>Accept: application/text</code> exists in the request. 
+   * <strong>IMPORTANT</strong> if the format is <code>"bash"</code> and the <code>Accept: application/text</code> is present then the REST API will fetch an executable BASH file. It will not contain additional information shown above such as <code>success</code>, <code>name</code>, <code>edit</code>. </p>
+<p>For example you can do:</p>
+<pre><code>curl -H 'Accept: application/json' &quot;https://openbio.eu/platform/rest/workflows/hapmap3_pca/1/?workflow_id=xyz&amp;format=json&quot; 
+</code></pre>
+<pre><code>curl -H 'Accept: application/text' &quot;https://openbio.eu/platform/rest/workflows/hapmap3_pca/1/?workflow_id=xyz&amp;format=bash&quot; 
+</code></pre>
+<p>If the chosen format is a binary file (<code>cwltargz</code>, <code>cwlzip</code>), then the REST-API directly downloads a file with filename: <code>workflow.tar.gz</code> or <code>workflow.zip</code> depending on the requested format. For example you can do:</p>
+<pre><code>curl &quot;https://openbio.eu/platform/rest/workflows/hapmap3_pca/1/?workflow_id=xyz&amp;format=cwltargz&quot; -o workflow.tar.gz
+</code></pre>
+<h2 id="access-credentials">Access credentials</h2>
+<p>Workflows in OpenBio can be public or private. In order to get a private workflow through the API you need to provide a valid access token. For example the following command requests the workflow <code>w/1</code> assuming that a user has the access token: <code>11203cc7c93f32a9a0b0e9961177a41f4fe833d3</code>.</p>
+<pre><code class="language-bash">curl -H 'Accept: application/json' -H 'Authorization: Token 11203cc7c93f32a9a0b0e9961177a41f4fe833d3'  &quot;https://www.openbio.eu/platform/rest/workflows/w/1/?workflow_id=xyz&amp;format=json&quot;
+</code></pre>
+<p>You can get your access token by visiting your profile page. </p>
+              
+            </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+  </span>
+</div>
+    <script>var base_url = '.';</script>
+    <script src="js/theme_extra.js" defer></script>
+    <script src="js/theme.js" defer></script>
+      <script src="search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
+
+<!--
+MkDocs version : 1.2.2
+Build Date UTC : 2021-07-29 11:06:09.895708+00:00
+-->
