@@ -27,5 +27,5 @@ container-push:
 
 release:
 	if git tag -l | grep "^v${VERSION}$$"; then echo "Version ${VERSION} already tagged"; exit 1; fi
-	git tag ${VERSION}
+	git tag v${VERSION}
 	# git push --tags
