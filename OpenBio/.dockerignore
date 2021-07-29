@@ -3,4 +3,5 @@
 **/*.pyc
 **/__pycache__/
 venv/
+docs/site/
 db.sqlite3
