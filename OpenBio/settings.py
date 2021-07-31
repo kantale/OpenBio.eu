@@ -11,60 +11,6 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
-import sys
-
-
-try:
-    from .obc_private import external_app_dirs
-    for directory in external_app_dirs:
-        # https://stackoverflow.com/questions/3948356/how-to-keep-all-my-django-applications-in-specific-folder
-        # directories to other apps
-        sys.path.insert(0, directory)
-except ImportError:
-    pass
-
-try:
-    from .obc_private import INSTALLED_APPS_EXTRA
-except ImportError:
-    INSTALLED_APPS_EXTRA = []
-
-try:
-	from .obc_private import ALLOWED_HOSTS
-except ImportError:
-	ALLOWED_HOSTS = ['0.0.0.0', 'localhost', '127.0.0.1','139.91.81.103','139.91.190.239','192.168.1.13']
-
-try:
-	from .obc_private import SECRET_KEY
-except ImportError:
-	SECRET_KEY = '!!!!!!!!!!!!!!!thisisnotasecretkey!!!!!!!!!!!!!!!!'
-
-if 'thisisnotasecretkey' in SECRET_KEY:
-	print ('WARNING: SECRET KEY IS NOT SET!!')
-
-try:
-	from .obc_private import POSTGRESQL_PARAMS
-except ImportError:
-	POSTGRESQL_PARAMS = None
-
-try:
-	from .obc_private import DEBUG
-except ImportError:
-	DEBUG = True
-
-try:
-	from .obc_private import STATIC_ROOT
-except ImportError:
-	pass
-
-try:
-    from .obc_private import SOCIAL_AUTH_ORCID_KEY, SOCIAL_AUTH_ORCID_SECRET
-    #from .obc_private import SOCIAL_AUTH_ORCID_SANDBOX_KEY, SOCIAL_AUTH_ORCID_SANDBOX_SECRET
-except ImportError:
-    SOCIAL_AUTH_ORCID_KEY='APP-XXXYYYZZZ'
-    SOCIAL_AUTH_ORCID_SECRET='XXXYYYZZZ'
-    #SOCIAL_AUTH_ORCID_SANDBOX_KEY='APP-XXXYYYZZZ'
-    #SOCIAL_AUTH_ORCID_SANDBOX_SECRET='XXXYYYZZZ'
-
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -75,12 +21,15 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = 'm0tm#+tfuz280_^5yi(thruaz0hts$f(=knb!pk3m7%@8nh776'
+SECRET_KEY = '!!!!!!!!!!!!!!!thisisnotasecretkey!!!!!!!!!!!!!!!!'
+
+# if 'thisisnotasecretkey' in SECRET_KEY:
+#     print ('WARNING: SECRET KEY IS NOT SET!!')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-#DEBUG = True
+DEBUG = True
 
-#ALLOWED_HOSTS = ['0.0.0.0']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -99,7 +48,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
 
     'app',
-] + INSTALLED_APPS_EXTRA
+]
 
 
 AUTHENTICATION_BACKENDS = (
@@ -146,19 +95,20 @@ LOGIN_REDIRECT_URL = '/platform/'
 SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/platform/?orcid=success'
 # SOCIAL_AUTH_LOGIN_ERROR_URL = ...  # TODO
 
+SOCIAL_AUTH_ORCID_KEY='APP-XXXYYYZZZ'
+SOCIAL_AUTH_ORCID_SECRET='XXXYYYZZZ'
+
 WSGI_APPLICATION = 'OpenBio.wsgi.application'
 
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
-SQLITE3_PARAMS = {
-	'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-}
-
 DATABASES = {
-    'default': POSTGRESQL_PARAMS if POSTGRESQL_PARAMS else SQLITE3_PARAMS
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
 }
 
 
@@ -213,7 +163,7 @@ REST_FRAMEWORK = {
 
 TITLE = 'OpenBio.eu'
 SERVER = 'https://www.openbio.eu'
-EMAIL = 'info@swww.openbio.eu'
+EMAIL = 'info@www.openbio.eu'
 ADMIN = 'kantale@ics.forth.gr' # In case the email fail, use this instead
 TERMS = 'https://www.openbio.eu/static/static/static/docs/terms_privacy/OpenBio_Conditions.pdf' # URL OF TERMS OF USE
 PRIVACY = 'https://www.openbio.eu/static/static/static/docs/terms_privacy/OpenBio_Privacy_Policy.pdf' # URL OF PRIVACY
