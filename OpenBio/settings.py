@@ -213,7 +213,7 @@ REST_FRAMEWORK = {
 
 TITLE = 'OpenBio.eu'
 SERVER = 'https://www.openbio.eu'
-EMAIL = 'info@swww.openbio.eu'
+EMAIL = 'info@www.openbio.eu'
 ADMIN = 'kantale@ics.forth.gr' # In case the email fail, use this instead
 TERMS = 'https://www.openbio.eu/static/static/static/docs/terms_privacy/OpenBio_Conditions.pdf' # URL OF TERMS OF USE
 PRIVACY = 'https://www.openbio.eu/static/static/static/docs/terms_privacy/OpenBio_Privacy_Policy.pdf' # URL OF PRIVACY
