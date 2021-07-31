@@ -15,8 +15,8 @@ develop:
 	if [[ -z "$${VIRTUAL_ENV}" ]]; then \
 		source venv/bin/activate; \
 		pip install -r requirements.txt; \
-		python manage.py migrate --run-syncdb \
-		python manage.py runserver 0.0.0.0:8200 \
+		python manage.py migrate --run-syncdb; \
+		python manage.py runserver 0.0.0.0:8200; \
 	fi
 
 container:
