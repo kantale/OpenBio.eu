@@ -33,6 +33,10 @@ undeploy-local:
 	helm uninstall openbio --namespace default
 
 develop:
+	# Install npm dependencies
+	npm install --prefix app/static/app
+	npm run get-material-icons --prefix app/static/app 
+	npm run fix-ace --prefix app/static/app 
 	# Create the Python environment and prepare the application
 	if [[ ! -d venv ]]; then python3 -m venv venv; fi
 	if [[ -z "$${VIRTUAL_ENV}" ]]; then \
