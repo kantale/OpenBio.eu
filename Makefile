@@ -5,9 +5,32 @@ REGISTRY_NAME?=kantale
 VERSION=$(shell cat app/views.py | grep "^__version__ =" | cut -d\' -f2)
 IMAGE_TAG=$(REGISTRY_NAME)/openbio:$(VERSION)
 
-.PHONY: all develop container container-push release
+CHART_DIR=./chart/openbio
+
+.PHONY: all deploy-local undeploy-local develop container container-push release
 
 all: container
+
+deploy-local:
+	# Create directory for database
+	mkdir -p psql
+	helm list -q | grep openbio || \
+	helm install openbio $(CHART_DIR) --namespace default \
+	--set image="$(IMAGE_TAG)" \
+	--set openbio.databaseHostPath="$(PWD)/psql" \
+	--set openbio.djangoSecret='!!!!!!!!!!!!!!!thisisasecretkey!!!!!!!!!!!!!!!!' \
+	--set openbio.djangoDebug="1" \
+	--set openbio.title="OpenBio test" \
+	--set openbio.serverURL="http://127.0.0.1:8200" \
+	--set openbio.fromEmail="test@example.com" \
+	--set openbio.adminEmail="admin@example.com" \
+	--set openbio.termsURL="" \
+	--set openbio.privacyURL="" \
+	--set openbio.showFundingLogos="false" \
+	--set openbio.serviceType="LoadBalancer"
+
+undeploy-local:
+	helm uninstall openbio --namespace default
 
 develop:
 	# Create the Python environment and prepare the application

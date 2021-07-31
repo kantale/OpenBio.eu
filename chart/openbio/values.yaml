@@ -1,0 +1,27 @@
+# Container image to use.
+image:
+
+openbio:
+  # REQUIRED: The volume to use for the database.
+  databaseVolumeClaim:
+  # REQUIRED: The host path to use for the database, when no existing volume claim is set.
+  databaseHostPath:
+
+  # Secret for Django. Use a random string of 50 characters (a default will be generated if empty).
+  djangoSecret:
+  # Set Django debug flag.
+  djangoDebug: False
+
+  # OpenBio settings.
+  title: OpenBio.eu
+  serverURL: https://www.openbio.eu
+  fromEmail: info@www.openbio.eu
+  adminEmail: kantale@ics.forth.gr
+  termsURL: https://www.openbio.eu/static/static/static/docs/terms_privacy/OpenBio_Conditions.pdf
+  privacyURL: https://www.openbio.eu/static/static/static/docs/terms_privacy/OpenBio_Privacy_Policy.pdf
+  showFundingLogos: true
+
+  # Deployment options.
+  serviceType: ClusterIP
+  ingressEnabled: false
+  ingressURL:

@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ .Release.Name }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+data:
+  obc_private.py: |
+    from .settings import *
+
+    SECRET_KEY = {{ default (randAlphaNum 50) .Values.openbio.djangoSecret | quote }}
+    DEBUG = {{- if .Values.openbio.djangoDebug }} True {{- else }} False {{- end }}
+
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'openbio',
+            'USER': 'openbio',
+            'HOST': '127.0.0.1',
+            'PORT': 5432
+         }
+    }
+
+    TITLE = {{ .Values.openbio.title | quote }}
+    SERVER = {{ .Values.openbio.serverURL | quote }}
+    EMAIL = {{ .Values.openbio.fromEmail | quote }}
+    ADMIN = {{ .Values.openbio.adminEmail | quote }}
+    TERMS = {{ .Values.openbio.termsURL | quote }}
+    PRIVACY = {{ .Values.openbio.privacyURL | quote }}
+    FUNDING_LOGOS = {{- if .Values.openbio.showFundingLogos }} True {{- else }} False {{- end }}

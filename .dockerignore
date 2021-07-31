@@ -4,4 +4,5 @@
 **/__pycache__/
 venv/
 docs/site/
+psql/
 db.sqlite3
