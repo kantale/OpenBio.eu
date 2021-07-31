@@ -34,13 +34,6 @@ Main features include:
 ## For Developers
 We will be very happy to accept Pull Requests. The project does not have any active development or contribution guidelines at the moment.
 
-## How to build
-```bash
-npm install --prefix app/static/app
-npm run get-material-icons --prefix app/static/app 
-npm run fix-ace --prefix app/static/app 
-```
-
 ## Contributors
 Main developer is [Alexandros Kanterakis](https://www.ics.forth.gr/cbml/index_main.php?l=e&c=730) [mail](mailto:alexandros.kanterakis@gmail.com), [twitter](https://www.twitter.com/kanterakis). For a complete list of current contributors see [CONTRIBUTORS.md](CONTRIBUTORS.md)
 

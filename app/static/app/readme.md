@@ -1,2 +1,2 @@
-The javascript dependencies of this project are listed in the [package.json](package.json).
+The javascript dependencies of this project are listed in [package.json](package.json).
 
