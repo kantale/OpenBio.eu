@@ -1939,7 +1939,7 @@ def tools_search_3(request, **kwargs):
     obc_user = get_obc_user(request)
 
     if not is_visibility_allowed(obc_user=obc_user, ro=tool):
-        return fail(f'This tool is private.')
+        return fail('This tool is private.')
 
     #Get the dependencies of this tool and build a JSTREE
     tool_dependencies_jstree = []

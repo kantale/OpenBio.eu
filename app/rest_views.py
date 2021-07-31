@@ -29,8 +29,8 @@ import urllib.parse
 #    serializer_class = ToolSerializer
 
 # from rest_framework.authtoken.models import Token
-# curl -H 'Accept: application/json' "http://0.0.0.0:8200/platform/rest/workflows/w/2/?workflow_id=xyz&format=json" 
-# curl -H 'Accept: application/json' -H 'Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b'  "http://0.0.0.0:8200/platform/rest/workflows/w/2/?workflow_id=xyz&format=json" 
+# curl -H 'Accept: application/json' "http://0.0.0.0:8200/platform/rest/workflows/w/2/?workflow_id=xyz&format=json"
+# curl -H 'Accept: application/json' -H 'Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b'  "http://0.0.0.0:8200/platform/rest/workflows/w/2/?workflow_id=xyz&format=json"
 # curl -H 'Accept: application/json' -H 'Authorization: Token 11203cc7c93f32a9a0b0e9961177a41f4fe833d3'  "http://0.0.0.0:8200/platform/rest/workflows/w/2/?workflow_id=xyz&format=json"
 # curl -H 'Accept: application/json' -H 'Authorization: Token 228d6d31ff985bfb5a264e2db889afaf9493f182'  "http://0.0.0.0:8200/platform/rest/workflows/w/2/?workflow_id=xyz&format=json"
 
@@ -163,7 +163,7 @@ class WorkflowSerializerDAG(serializers.BaseSerializer):
         # instance is the workflow object
         args = {
             'workflow': {'name': instance.name, 'edit': instance.edit},
-            'workflow_info_editable': False, # This workflow is saved 
+            'workflow_info_editable': False, # This workflow is saved
             'download_type': self.format_,
             'workflow_id': self.workflow_id,
             'obc_client': True, # Declare that we need an airflow DAG explicitly for the OBC client
@@ -205,7 +205,7 @@ class WorkflowSerializerDAG(serializers.BaseSerializer):
 def workflow_name(request, workflow_name):
     if request.method == 'GET':
         workflows = Workflow.objects.filter(name=workflow_name)
-        serializer = WorkflowSerializer(workflows, many=True)
+        serializer = WorkflowSerializerDAG(workflows, many=True)
         return Response(serializer.data)
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
@@ -216,7 +216,7 @@ def workflow_name(request, workflow_name):
 @renderer_classes([BinaryRenderer_TARGZ, BinaryRenderer_ZIP, JSONRenderer, CustomBrowsableAPIRenderer, PlainTextRenderer]) #  , JSONRenderer, CustomBrowsableAPIRenderer, BrowsableAPIRenderer
 def workflow_complete(request, workflow_name, workflow_edit):
     '''
-    Called from urls.py 
+    Called from urls.py
     '''
 
     if request.method == 'GET':
@@ -240,16 +240,16 @@ def workflow_complete(request, workflow_name, workflow_edit):
         if not is_visibility_allowed(obc_user=obc_user, ro=workflow):
             return Response({'success': False, 'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        # Support input parameters in GET parameters Issue 196 
+        # Support input parameters in GET parameters Issue 196
         # /?input__inp__test__2=aaaaa
-        # Example : http://0.0.0.0:8200/platform/rest/workflows/test/2/?format=BASH&input__inp__test__2=aaaa 
+        # Example : http://0.0.0.0:8200/platform/rest/workflows/test/2/?format=BASH&input__inp__test__2=aaaa
         input_parameters = {}
         for input_name, input_value in request.GET.items():
             if re.match(r'input__([\w]+)__([\w]+)__([\d])', input_name):
                 input_parameters[input_name] = input_value
 
 
-        
+
         serializer = WorkflowSerializerDAG(workflow, many=False)
         serializer.set_request(request)
         serializer.set_workflow_id(workflow_id)

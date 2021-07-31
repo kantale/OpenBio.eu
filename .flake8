@@ -1,0 +1,3 @@
+[flake8]
+ignore = E1, E2, E302, E303, E305, E402, E501, E7, W, F401, F841
+exclude = .git, __pycache__, docs, venv
