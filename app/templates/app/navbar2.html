@@ -35,7 +35,14 @@
                 <!-- <li><a class="black-text" href ng-click="navbar_home_clicked()">Home</a></li> -->
                 <!-- <li><a class="black-text" ng-click="documenation_navbar_clicked()">Documentation</a></li> -->
                 <li><a class="black-text" href="https://kantale.github.io/OpenBio.eu/" target="_blank">Documentation</a></li>
-                <li ng-show="!username"><a href="#signModal" id="signInBtn" class="modal-trigger black-text" ng-click="navbar_signup_pressed()">Sign in</a></li> <!-- href="#signModal" -->
+                {% if LOGIN_BACKEND %}
+                <li ng-show="!username"><a href="{% url 'social:begin' backend=LOGIN_BACKEND %}" id="signInBtn" class="modal-trigger black-text">Log in</a></li>
+                {% else %}
+                <li ng-show="!username"><a href="#signModal" id="signInBtn" class="modal-trigger black-text" ng-click="navbar_signup_pressed()">Sign in</a></li>
+                {% endif %}
+
+
+
                 <li ng-show="username">
                     <a class="dropdown-trigger valign-wrapper black-text" href="#" data-target="profile">
                         <img class="circle responsive-img imgAvatar" alt="Avatar">
@@ -56,7 +63,14 @@
             <ul class="sidenav" id="mobile-nav">
                 <!-- <li ng-show="false"><a href="#">Home</a></li> -->
                 <li ng-click="documenation_navbar_clicked()"><a>Documentation</a></li>
+
+                {% if LOGIN_BACKEND %}
+                <li ng-show="!username"><a id="signInBtn" href="{% url 'social:begin' backend=LOGIN_BACKEND %}" class="modal-trigger">Log in</a></li>
+                {% else %}
                 <li ng-show="!username"><a id="signInBtn" href="#signModal" class="modal-trigger" ng-click="navbar_signup_pressed()">Sign in</a></li>
+                {% endif %}
+
+
                 <li ng-show="username"><a href ng-click="navbar_profile_clicked()">Profile</a></li>
                 <!-- <li ng-show="false"><a href="#!">Inbox</a></li> -->
                 <!-- <li ng-show="false"><a href="#!">Notifications</a></li> -->

@@ -98,6 +98,9 @@ SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/platform/?orcid=success'
 SOCIAL_AUTH_ORCID_KEY='APP-XXXYYYZZZ'
 SOCIAL_AUTH_ORCID_SECRET='XXXYYYZZZ'
 
+# If set, do not show "sign up" button, but "log in" with specific backend
+LOGIN_BACKEND = ''
+
 WSGI_APPLICATION = 'OpenBio.wsgi.application'
 
 

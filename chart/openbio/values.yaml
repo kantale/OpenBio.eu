@@ -21,6 +21,9 @@ openbio:
   privacyURL: https://www.openbio.eu/static/static/static/docs/terms_privacy/OpenBio_Privacy_Policy.pdf
   showFundingLogos: true
 
+  # Extra settings (Python code).
+  extraSettings:
+
   # Deployment options.
   serviceType: ClusterIP
   ingressEnabled: false

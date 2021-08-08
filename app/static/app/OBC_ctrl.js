@@ -955,7 +955,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         // Show toad is orcid success 
         if (window.orcid_success) {
-            $scope.toast('Successfully connected with ORCID', 'success');
+            $scope.toast(window.orcid_success, 'success');
         }
         
         $scope.init_search_results();

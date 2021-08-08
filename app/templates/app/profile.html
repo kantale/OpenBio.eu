@@ -70,13 +70,13 @@
                                                     <div style="border-bottom: 1px solid #9e9e9e;">
                                                         <!-- use this link for orcid sandbox <a href="/platform/login/orcid-sandbox/" -->
                                                         
-                                                        {% verbatim %}                                                    
+                                                                                                            
                                                         <label><img alt="ORCID logo" src="/static/app/images/orcid_16x16.png" width="16" height="16" style="margin-bottom: -3px; "> ORCID iD</label>
-                                                        <a ng-href="{{ profile_ORCID_url }}" target="_blank"><span ng-bind="profile_ORCID" ng-show="profile_ORCID" style="font-size: 16px; display: block; margin: 4px 0px 12px 0px;">0000-0000-00000-0000</span></a>
+                                                        {% verbatim %}<a ng-href="{{ profile_ORCID_url }}" target="_blank"><span ng-bind="profile_ORCID" ng-show="profile_ORCID" style="font-size: 16px; display: block; margin: 4px 0px 12px 0px;">0000-0000-00000-0000</span></a>{% endverbatim %}
                                                         <span ng-show="!profile_ORCID" style="font-size: 16px; display: block; margin: 4px 0px 12px 0px;">Not associated with ORCID</span>
-                                                        <a href="/platform/login/orcid/" class="waves-effect waves-teal btn right tooltipped" data-position="bottom" data-tooltip="Associate with ORCID" style="margin-top: -42px; width: auto;" ng-show="!profile_ORCID">Associate</a>
+                                                        <a href='{% url "social:begin" "orcid" %}' class="waves-effect waves-teal btn right tooltipped" data-position="bottom" data-tooltip="Associate with ORCID" style="margin-top: -42px; width: auto;" ng-show="!profile_ORCID">Associate</a>
                                                         <a class="waves-effect waves-teal btn right tooltipped" data-position="bottom" data-tooltip="Disassociate with ORCID" style="margin-top: -42px; width: auto;" ng-click="profile_orcid_disconnect_pressed()" ng-show="profile_ORCID">Disassociate</a>
-                                                        {% endverbatim %}
+                                                        
                                                     </div>
 
 

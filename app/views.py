@@ -83,6 +83,7 @@ logger = logging.getLogger(__name__)
 
 #GLOBAL CONSTANTS
 g = {
+    'LOGIN_BACKEND': settings.LOGIN_BACKEND,
     'TITLE': settings.TITLE,
     'SERVER': settings.SERVER,
     'EMAIL': settings.EMAIL,
@@ -1327,20 +1328,41 @@ def index(request, **kwargs):
     #print ('kwargs')
     #print (kwargs)
 
-    # Is this a redirect from ORCID?
-
-    orcid_success = False
-    if request.method == 'GET':
-        if request.GET.get('orcid', '') == 'success':
-            orcid_success = True
-
     context = {}
+    context['profile_ORCID'] = None
+
+    # Is this a redirect from Django Social Auth?
+    orcid_success = ''
+    if (request.method == 'GET' and
+        request.GET.get('orcid', '') == 'success' and
+        not request.user.is_anonymous):
+        # We are redirected from social auth
+
+        # Is it provided by ORCID ?
+        profile_ORCID = get_orcid_data(request.user)
+        if profile_ORCID:
+            context['profile_ORCID'] = profile_ORCID
+            orcid_success = 'Successfully linked your account with ORCID'
+        else:
+            # Is it provided by another plugin ?
+            # Is this user logging in or Signing up??
+            if OBC_user.objects.filter(user=request.user).exists():
+                # Logging in. Do nothing
+                orcid_success = 'Successfully logged in'
+            else:
+                # Signing up. This user does not have a OBC_user object. Create it!
+                create_obc_user(user=request.user, email_validation_token=None)
+                orcid_success = 'Successfully signed up'
+
+
     context['general_alert_message'] = ''
     context['general_success_message'] = ''
+    context['LOGIN_BACKEND'] = g.get('LOGIN_BACKEND')
     context['TITLE'] = g.get('TITLE')
     context['TERMS'] = g.get('TERMS')
     context['PRIVACY'] = g.get('PRIVACY')
     context['FUNDING_LOGOS'] = g.get('FUNDING_LOGOS')
+
 
     #print (social_core.pipeline.social_auth.social_details)
     #print (social_details())
@@ -1441,10 +1463,8 @@ def index(request, **kwargs):
     context['reset_signup_email'] = ''
 
     # Get orcid_id
-    if username:
+    if username and not context['profile_ORCID']:
         context['profile_ORCID'] = get_orcid_data(request.user)
-    else:
-        context['profile_ORCID'] = None
 
     #Check for GET variables
     GET = request.GET
@@ -1501,6 +1521,16 @@ def index(request, **kwargs):
     context['version'] = __version__
 
     return render(request, 'app/index.html', context)
+
+
+def create_obc_user(*, user, email_validation_token):
+    '''
+    '''
+    #If we are running in DEBUG, then new users are validated. If we set this to False then we need a send mail service to testing platform
+    #In production new users are not validated by default
+
+    obc_user = OBC_user(user=user, email_validated=bool(settings.DEBUG), email_validation_token=email_validation_token)
+    obc_user.save()
 
 @has_data
 def register(request, **kwargs):
@@ -1569,11 +1599,7 @@ def register(request, **kwargs):
     user = User.objects.create_user(signup_username, signup_email, signup_password, last_login=now()) # https://stackoverflow.com/questions/33683619/null-value-in-column-last-login-violates-not-null-constraint/42502311
 
     #Create OBC_user
-    #If we are running in DEBUG, then new users are validated. If we set this to False then we need a send mail service to testing platform
-    #In production new users are not validated by default
-    obc_user = OBC_user(user=user, email_validated=bool(settings.DEBUG), email_validation_token=uuid_token)
-    obc_user.save()
-
+    create_obc_user(user=user, email_validation_token=uuid_token)
 
     return success()
 

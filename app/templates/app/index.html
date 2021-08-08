@@ -32,7 +32,7 @@
 		window.profile_clients = {{ profile_clients | safe}};
 		window.menu = null;
 		window.input_menu = null;
-		window.orcid_success = {% if orcid_success %}true;{% else %}false;{% endif %}
+		window.orcid_success = "{{orcid_success}}";
 	</script>
 
 	<script src="/static/app/node_modules/jquery/dist/jquery.min.js"></script>

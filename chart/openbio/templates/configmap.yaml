@@ -29,3 +29,7 @@ data:
     TERMS = {{ .Values.openbio.termsURL | quote }}
     PRIVACY = {{ .Values.openbio.privacyURL | quote }}
     FUNDING_LOGOS = {{- if .Values.openbio.showFundingLogos }} True {{- else }} False {{- end }}
+
+    {{- if .Values.openbio.extraSettings }}
+    {{- .Values.openbio.extraSettings | nindent 4 }}
+    {{- end }}
