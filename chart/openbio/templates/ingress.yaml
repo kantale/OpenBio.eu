@@ -17,7 +17,8 @@ spec:
   - host: {{ (split ":" ($ingressURL | urlParse).host)._0 }}
     http:
       paths:
-      - path: /platform
+      - path: /
+        pathType: Prefix
         backend:
           serviceName: {{ .Release.Name }}
           servicePort: 8200
