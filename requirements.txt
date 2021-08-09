@@ -43,7 +43,7 @@ packaging==19.1
 pathlib2==2.3.5
 pluggy==0.12.0
 prov==1.5.1
-psycopg2-binary==2.9.1
+psycopg2-binary==2.8.6
 py==1.10.0
 pyasn1==0.4.8
 pybtex==0.22.2
