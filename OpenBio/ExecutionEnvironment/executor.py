@@ -2933,6 +2933,13 @@ spec:
 
         return argo
 
+class ArgoExecutor2(BaseExecutor):
+    def build(self, output, output_format='argo2', workflow_id=None, obc_client=False):
+        return 'test'
+
+
+
+
 
 class NextflowExecutor(BaseExecutor):
     '''
@@ -3353,6 +3360,10 @@ def create_bash_script(workflow_object, server, output_format, workflow_id=None,
     elif output_format in ['argo']:
         w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
         e = ArgoExecutor(w)
+        return e.build(output=None, output_format='argo', workflow_id=workflow_id, obc_client=obc_client)
+    elif output_format in ['argo2']:
+        w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
+        e = ArgoExecutor2(w)
         return e.build(output=None, output_format='argo', workflow_id=workflow_id, obc_client=obc_client)
     elif output_format in ['nextflow']:
         w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)

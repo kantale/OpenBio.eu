@@ -3866,6 +3866,8 @@ def download_workflow(request, **kwargs):
             output_object = create_bash_script(output_object, server_url, 'airflow', workflow_id=workflow_id, obc_client=workflow_obc_client)
         elif download_type == 'ARGO':
             output_object = create_bash_script(output_object, server_url, 'argo', workflow_id=workflow_id, obc_client=workflow_obc_client)
+        elif download_type == 'ARGO2':
+            output_object = create_bash_script(output_object, server_url, 'argo2', workflow_id=workflow_id, obc_client=workflow_obc_client)
         elif download_type == 'NEXTFLOW':
             output_object = create_bash_script(output_object, server_url, 'nextflow', workflow_id=workflow_id, obc_client=workflow_obc_client)
         elif download_type == 'SNAKEMAKE':
