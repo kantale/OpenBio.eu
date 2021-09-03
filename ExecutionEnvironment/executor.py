@@ -527,6 +527,9 @@ class Workflow:
         # It also contains the variables of the tool that is the key
         self.tool_variables = {self.get_tool_dash_id(tool, no_dots=True):self.get_tool_dependent_variables(tool, include_this_tool=True) for tool in self.tool_iterator()} 
 
+        # Create a dictionary. Keys are tool variable ids . Values are the tools in which they belong.
+        self.tool_variables_ids = {self.get_tool_bash_variable(tool, tool_variable['name']):tool for tool in self.tool_iterator() for tool_variable in tool['variables']}
+
         # Create a dictionary. Keys are step ids. Values are tool objects
         self.step_ids = {step['id']:step for step in self.step_iterator()}
 
@@ -1287,7 +1290,7 @@ class Workflow:
 
             return recursive(command, 1)
 
-        def save_variables(bash, read_from, save_to, input_tool_variables, input_workflow_variables):
+        def save_variables(*, bash, read_from, save_to, input_tool_variables, input_workflow_variables):
             '''
             read_from is either None or __VARS_sh (no dot)
             '''
@@ -1388,9 +1391,9 @@ class Workflow:
             return []
 
 
-        def create_json(bash, step, step_breaked_id, is_last, output_variables):
+        def create_json(*, bash, step, step_breaked_id, is_last, output_variables):
             '''
-            Create a json file with the output variables
+            Create a json file with the output variables at the end of the bash script
             We do not actually have to pass the intermediate VAR_SH name in the json.. We do not read it.. Maybe we will correct this in the future
             We read the VAR_SH from command line
             '''
@@ -1501,6 +1504,7 @@ ENDOFFILE
 
                 this_is_a_parallel_call_1 = False
                 this_is_a_parallel_call_2 = False
+                this_is_a_tool_invocation = False
 
                 level_tuple = get_level(main_command, calling_steps)
                 if level_tuple:
@@ -1549,7 +1553,55 @@ ENDOFFILE
                         this_is_a_parallel_call_2 = True
                         pos = (main_command.parts[0].pos[0], main_command.parts[-1].pos[1])
 
-                if not (this_is_a_parallel_call_1 or this_is_a_parallel_call_2):
+
+                # Check if this command is a call to a tool
+                if (
+                    not step.get("artificial_tool_step") and # If this step is an artificial step, do not go into infinite recursion
+                    hasattr(main_command, 'parts') and
+                    len(main_command.parts) > 0 and 
+                    hasattr(main_command.parts[0], 'parts') and
+                    len(main_command.parts[0].parts) > 0 and
+                    main_command.parts[0].parts[0].kind == 'parameter' and
+                    main_command.parts[0].parts[0].value in self.tool_variables_ids # Belongs in tool variables
+                ):
+                    this_is_a_tool_invocation = True
+                    positions = [part.pos for part in main_command.parts]
+                    pos = (positions[0][0], positions[-1][1])
+                    this_var = main_command.parts[0].parts[0].value
+                    tool_to_call = self.tool_variables_ids[this_var]
+                    tool_to_call_id = self.get_tool_dash_id(tool_to_call)
+                    #print (bash_to_parse[pos[0]:pos[1]])
+
+                    #print (json.dumps(step, indent=4))
+                    # Create am artificial step to call
+                    artificial_tool_step = {
+                        "id": "step__RANDOM__w__1",
+                        "name": "RANDOM",
+                        "label": "RANDOM",
+                        "type": "step",
+                        "bash": '\n' + bash_to_parse[pos[0]:pos[1]] + '\n',
+                        "main": False,
+                        "sub_main": False,
+                        "tools": [
+                            "t__1__1__2"
+                        ],
+                        "steps": [],
+                        "inputs": [],
+                        "outputs": [],
+                        "belongto": {
+                            "name": "w",
+                            "edit": 1
+                        },
+                        "inputs_reads": [],
+                        "inputs_sets": [],
+                        "outputs_sets": [],
+                        "outputs_reads": [],
+                        "artificial_tool_step": True,
+                    }
+
+
+
+                if not (this_is_a_parallel_call_1 or this_is_a_parallel_call_2 or this_is_a_tool_invocation):
                     # We are looking for a command with a single part (function call)
                     if not len(main_command.parts) == 1:
                         continue
@@ -1566,7 +1618,7 @@ ENDOFFILE
 
                     pos = main_command.parts[0].pos
 
-                #This is a calling step!
+                #This is a calling step OR a tool invocation step!
                 found_call = True
                 
                 part_before_step_call = bash_to_parse[start: pos[0]]
@@ -1578,13 +1630,21 @@ ENDOFFILE
                 input_workflow_variables = [var for var in step['inputs_reads'] + step['outputs_reads'] if var in part_before_step_call]
                 output_workflow_variables = [var for var in step['inputs_sets'] + step['outputs_sets'] if var in part_before_step_call]
 
+                
                 yield {
                     'bash': create_json(
-                        save_variables(part_before_step_call, None, save_to, input_tool_variables, input_workflow_variables), 
-                        step, 
-                        step_counter[step['id']], 
-                        False,
-                        output_workflow_variables) ,
+                        bash = save_variables(
+                            bash = part_before_step_call, 
+                            read_from = None, 
+                            save_to = save_to, 
+                            input_tool_variables = input_tool_variables, 
+                            input_workflow_variables = input_workflow_variables,
+                        ), 
+                        step = step, 
+                        step_breaked_id = step_counter[step['id']], 
+                        is_last = False,
+                        output_variables = output_workflow_variables
+                        ),
                     'id': step['id'],
                     'count': step_counter[step['id']],
                     'step_inter_id': step_inter_id,
@@ -1602,11 +1662,15 @@ ENDOFFILE
                     step_to_call_id = parallel_call['step']
                 elif this_is_a_parallel_call_2:
                     step_to_call_id = None
+                elif this_is_a_tool_invocation:
+                    step_to_call_id = None
                 else:
                     step_to_call_id = bash_to_parse[pos[0]:pos[1]]
                 
                 if step_to_call_id:
                     step_to_call = self.step_ids[step_to_call_id]
+                elif this_is_a_tool_invocation:
+                    step_to_call = artificial_tool_step
                 else:
                     step_to_call = None
 
@@ -1642,13 +1706,20 @@ ENDOFFILE
             save_to_nodot = '{}__{}__VARS_sh'.format(step['id'], step_counter[step['id']])
             input_workflow_variables = [var for var in step['inputs_reads'] + step['outputs_reads'] if var in part_after_step_call]
             output_workflow_variables = [var for var in step['inputs_sets'] + step['outputs_sets'] if var in part_after_step_call]
+
             yield {
                 'bash' : create_json(
-                    save_variables(part_after_step_call, None, save_to, input_tool_variables, input_workflow_variables), 
-                    step, 
-                    step_counter[step['id']], 
-                    True,
-                    output_workflow_variables),
+                    bash = save_variables(
+                        bash = part_after_step_call, 
+                        read_from = None, 
+                        save_to = save_to, 
+                        input_tool_variables = input_tool_variables, 
+                        input_workflow_variables = input_workflow_variables,
+                    ), 
+                    step = step, 
+                    step_breaked_id = step_counter[step['id']], 
+                    is_last = True,
+                    output_variables = output_workflow_variables),
                 'id': step['id'],
                 'count': step_counter[step['id']],
                 'step_inter_id': step_inter_id,
@@ -1656,7 +1727,6 @@ ENDOFFILE
                 'input_variables': input_workflow_variables,
                 'output_variables': output_workflow_variables,
                 'run_after': run_afters + run_after,
-
             }
 
         return break_down_step_recursive(self.root_step)
@@ -2854,7 +2924,7 @@ spec:
 
 
         argo = self.WORKFLOW_TEMPLATE.format(
-            WORKFLOW_NAME = ArgoExecutor.argo_workflow_id(workflow_id if workflow_id else self.workflow.root_workflow_id),
+            WORKFLOW_NAME = ArgoExecutor.argo_workflow_id(workflow_id if workflow_id else self.workflow.root_workflow_id).replace('_', '-').lower(),
             SCRIPTS = '\n'.join(init_bash_scripts + tool_bash_scripts + step_bash_scripts + final_bash_scripts),
             DAGS = ''.join(dags)
         )
@@ -2862,6 +2932,13 @@ spec:
         #print (argo)
 
         return argo
+
+class ArgoExecutor2(BaseExecutor):
+    def build(self, output, output_format='argo2', workflow_id=None, obc_client=False):
+        return 'test'
+
+
+
 
 
 class NextflowExecutor(BaseExecutor):
@@ -3283,6 +3360,10 @@ def create_bash_script(workflow_object, server, output_format, workflow_id=None,
     elif output_format in ['argo']:
         w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
         e = ArgoExecutor(w)
+        return e.build(output=None, output_format='argo', workflow_id=workflow_id, obc_client=obc_client)
+    elif output_format in ['argo2']:
+        w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
+        e = ArgoExecutor2(w)
         return e.build(output=None, output_format='argo', workflow_id=workflow_id, obc_client=obc_client)
     elif output_format in ['nextflow']:
         w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
