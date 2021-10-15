@@ -1685,6 +1685,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     /*
     * Tool in draft mode --> EDIT button --> pressed 
     * tool edit tool . edit pressed 
+    * Note: Ideally this function should look like workflow_edit_pressed and it should call tool_info_fork_pressed
     */
     $scope.tool_edit_pressed = function() {
         $scope.tools_info_editable = true;
@@ -1698,6 +1699,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         }
         // Visibility select form update field
         $('#toolVisibility').formSelect();
+
+        // Enable chip edit
+        window.OBCUI.chip_enable('toolChips'); // Enable them
     };
 
     /*
@@ -1888,7 +1892,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         // Enable chip edit
         window.OBCUI.chip_enable('toolChips'); // Enable them
 
-        // Every fork os a draft
+        // Every fork is a draft
         $scope.tools_info_draft = true;
     };
 
