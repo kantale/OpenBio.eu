@@ -3085,11 +3085,16 @@ def create_workflow_id(workflow):
     return workflow['name'] + '__' + str(workflow['edit'])
 
 
-def set_edit_to_cytoscape_json(cy, edit, workflow_info_name):
+def set_edit_to_cytoscape_json(cy, edit, workflow_info_name, *, 
+        workflow_description,
+        workflow_website,
+        workflow_keywords,
+    ):
     '''
     Perform the following tasks:
     * Set the edit number of the workflow to all nodes/edges
     * Change the id of the root workflow from "root" to workflow_info_name
+    * Set workflow description
     '''
 
     # Get the root workflow node
@@ -3102,6 +3107,15 @@ def set_edit_to_cytoscape_json(cy, edit, workflow_info_name):
 
     # Set the label value
     new_worfklow_node[0]['data']['label'] = workflow_label_cytoscape(None, workflow_info_name, edit)
+
+    # Set workflow description
+    new_worfklow_node[0]['data']['description'] = workflow_description
+
+    # Set workflow website 
+    new_worfklow_node[0]['data']['website'] = workflow_website
+
+    # Set workflow keywords
+    new_worfklow_node[0]['data']['keywords'] = workflow_keywords
 
     belongto = {
         'name': workflow_info_name,
@@ -3261,8 +3275,33 @@ def workflows_add(request, **kwargs):
             max_edit = workflow_all.aggregate(Max('edit'))
             next_edit = max_edit['edit__max'] + 1
 
+    # Check workflow website
+    workflow_website = kwargs.get('workflow_website', '')
+    if workflow_website:
+        if not valid_url(workflow_website):
+            return fail('website is not a valid URL')
+
+    # Check workflow description
+    workflow_description = kwargs.get('workflow_description', '')
+    if not workflow_description.strip():
+        return fail('Description cannot be empty')
+
+    workflow_description_html = markdown(workflow_description)
+
+    # Get keywords
+    try:
+        keywords = [Keyword.objects.get_or_create(keyword=keyword)[0] for keyword in kwargs['workflow_keywords']]
+    except KeyError:
+        return fail('Error 4882')
+
+
     #Change the edit value in the cytoscape json object
-    set_edit_to_cytoscape_json(workflow, next_edit, workflow_info_name)
+    set_edit_to_cytoscape_json(workflow, next_edit, workflow_info_name, 
+        workflow_description = workflow_description,
+        workflow_website = workflow_website,
+        workflow_keywords = keywords,
+
+    )
 
     # Get all workflows that are used in this workflow
     workflow_nodes = [x for x in workflow['elements']['nodes'] if x['data']['type'] == 'workflow']
@@ -3298,18 +3337,6 @@ def workflows_add(request, **kwargs):
     else:
         pass # Do nothing
 
-    # Check workflow website
-    workflow_website = kwargs.get('workflow_website', '')
-    if workflow_website:
-        if not valid_url(workflow_website):
-            return fail('website is not a valid URL')
-
-    # Check workflow description
-    workflow_description = kwargs.get('workflow_description', '')
-    if not workflow_description.strip():
-        return fail('Description cannot be empty')
-
-    workflow_description_html = markdown(workflow_description)
 
     if workflow_edit_state:
         # We are editing this workflow
@@ -3438,10 +3465,6 @@ def workflows_add(request, **kwargs):
         new_workflow.save()
 
     # Add keywords
-    try:
-        keywords = [Keyword.objects.get_or_create(keyword=keyword)[0] for keyword in kwargs['workflow_keywords']]
-    except KeyError:
-        return fail('Error 4882')
     new_workflow.keywords.add(*keywords)
     new_workflow.save();
 
@@ -3783,7 +3806,7 @@ def download_workflow(request, **kwargs):
     Note: Everyone can download a workflow!
     '''
 
-    workflow_arg = kwargs['workflow']
+    workflow_arg = kwargs['workflow'] # For example: {'name': 'test', 'edit': 1} 
 
     # These are the options fetched from the UI. Check ui.js : window.OBCUI.get_workflow_options
     #    OR
@@ -3802,25 +3825,7 @@ def download_workflow(request, **kwargs):
     #print ('Edit:', workflow_arg['edit'])
     #print ('editable:', workflow_info_editable)
 
-    if workflow_info_editable:
-        # This workflow has not been saved!
-        workflow = kwargs.get('workflow_json', '')
-        workflow_name = workflow_arg.get('name', '')
-        if not workflow_name:
-            workflow_name = 'W'
-        workflow_edit = 0
-        set_edit_to_cytoscape_json(workflow, workflow_edit, workflow_name)
-
-        main_counter = check_workflow_step_main(workflow, {'name':workflow_name, 'edit': workflow_edit})
-        if main_counter == 0:
-            return fail('Could not find main step. One step needs to be declared as "main"')
-        if main_counter > 1:
-            return fail('Error 49188') # This should never happen
-
-        workflow_cy = workflow
-        workflow = None
-
-    elif workflow_arg:
+    if workflow_arg:
         # This is a workflow saved
         workflow = Workflow.objects.get(**workflow_arg)
         workflow_cy = simplejson.loads(workflow.workflow)

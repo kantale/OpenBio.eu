@@ -1,4 +1,16 @@
 
+'''
+Run all tests:
+pytest tests 
+
+Run a specific test and show output:
+pytest tests -s -k "test_new"
+
+Run a specidic test and do not show output
+pytest tests -k "test_new"
+
+'''
+
 import os
 import json
 import requests
@@ -176,7 +188,7 @@ def delete_tool(tool):
    return ret
 
 
-def API(*, workflow=None, assert_not_ok=False, access_token=None):
+def API(*, workflow=None, assert_not_ok=False, access_token=None, format_='bash'):
    '''
    curl -H 'Accept: application/text' "http://0.0.0.0:8200/platform/rest/workflows/w1/1/?workflow_id=xyz&format=bash"
    '''
@@ -188,7 +200,7 @@ def API(*, workflow=None, assert_not_ok=False, access_token=None):
       headers['Authorization'] = f'Token {access_token}'
 
    if workflow:
-      params = (('workflow_id', 'xyz'), ('format', 'bash'))
+      params = (('workflow_id', 'xyz'), ('format', format_))
       url = 'http://0.0.0.0:8200/platform/rest/workflows/{name}/{edit}'.format(name=workflow['name'], edit=workflow['edit'])
 
    r = requests.get(url, params=params, headers=headers)
@@ -198,10 +210,15 @@ def API(*, workflow=None, assert_not_ok=False, access_token=None):
       return
    else:
       assert r.status_code == requests.codes.ok
-   text = r.text
-   assert type(text) is str
 
-   return text
+   if format_ != 'json':
+
+     text = r.text
+     assert type(text) is str
+
+     return text
+
+   return r.json()
 
 
 def create_workflow_node(*, name, edit, draft=True):
@@ -367,6 +384,16 @@ def create_workflow_tool_edge(*, name, version, edit):
    }
 
 
+def get_root_node_from_workflow(workflow):
+    nodes = workflow['workflow']['workflow']['elements']['nodes']
+    for node in nodes:
+        if node['data']['type'] == 'workflow' and node['data']['belongto'] is None:
+            root_node = node
+            break
+    else:
+        assert False
+
+    return root_node
 
 
 ######################## TESTS ######################
@@ -494,6 +521,20 @@ def test_217_convert_from_public_to_private_tool_that_is_a_dependency_to_public_
 
    delete_tool(t2)
    delete_tool(t1)
+
+
+def test_225():  # test_225():
+    w1 = create_workflow(name='w1', visibility='public')
+
+    r = API(workflow = w1, format_='json')
+
+    root_node = get_root_node_from_workflow(r)
+    assert 'description' in root_node['data']
+    assert 'website' in root_node['data']
+    assert 'keywords' in root_node['data']
+    assert  type(root_node['data']['keywords']) is list
+
+    delete_workflow(w1)
 
 
 #############################################################
