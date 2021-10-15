@@ -1280,6 +1280,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     /*
     * Create new tool button pressed.
     * All checks are ok.
+    * is_new : if true the + clicked. If false then "UNSAVED" clicked
     */
     $scope.tools_plus_button_clicked = function(is_new) {
 
@@ -1316,13 +1317,15 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         $scope.set_tools_info_editable(true);
         $scope.tools_info_draft = true;
-        $scope.tools_info_edit_state = false;
 
         if (!is_new) {
             //This is not a new tool. So.. left values unchanged.
             return;
         }
 
+        //This is a new tool. Initialize all values
+
+        $scope.tools_info_edit_state = false;
         //$scope.tools_info_editable = true;
         $scope.tool_info_created_at = null;
         $scope.tools_info_forked_from = null;
