@@ -31,7 +31,7 @@ from django.test.client import RequestFactory
 import app.views
 app.views.g['TEST'] = True
 
-from app.models import Tool, OBC_user, VisibilityOptions
+from app.models import Tool, Workflow, OBC_user, VisibilityOptions
 
 rf = RequestFactory()
 
@@ -55,7 +55,10 @@ def get_access_token():
 def create_tool(*,
       name,
       version="1",
+      description="test",
+      website='http://www.example.com',
       visibility='public',
+      keywords = None,
       dependencies=None,
       edit=False,
       edit_number=None,
@@ -66,7 +69,8 @@ def create_tool(*,
    '''
 
    d = {
-      'tool_description': 'test',
+      'tool_description': description,
+      'tool_website': website,
       'tools_search_name': name,
       'tools_search_version': version,
       'tool_edit_state': edit,
@@ -76,7 +80,7 @@ def create_tool(*,
       'tool_installation_commands': '1234',
       'tool_validation_commands': '1234',
       'tool_variables': [], # 'x['name'] and x['value'] and x['description']'
-      'tool_keywords': [],
+      'tool_keywords': keywords if keywords else [],
    }
 
    if edit:
@@ -95,8 +99,11 @@ def create_tool(*,
 
    ret['name'] = name
    ret['version'] = version
+   ret['description'] = description
+   ret['website'] = website
+   ret['keywords'] = keywords
 
-   print (ret)
+   #print (ret)
    return ret
 
 def create_workflow(*,
@@ -120,8 +127,9 @@ def create_workflow(*,
 
    if includes_tools:
       for inc_tool in includes_tools:
-         workflow['elements']['nodes'].append(create_tool_node(name=inc_tool['name'], version=inc_tool['version'], edit=inc_tool['edit']))
-         workflow['elements']['edges'].append(create_workflow_tool_edge(name=inc_tool['name'], version=inc_tool['version'], edit=inc_tool['edit']))
+
+         workflow['elements']['nodes'].append(create_tool_node(inc_tool))
+         workflow['elements']['edges'].append(create_workflow_tool_edge(inc_tool))
 
    #print (json.dumps(workflow))
 
@@ -145,7 +153,7 @@ def create_workflow(*,
    response = app.views.workflows_add(r)
    ret = decode_response(response)
    ret['name'] = name
-   print (ret)
+   #print (ret)
    return ret
 
 def delete_workflow(workflow):
@@ -187,6 +195,11 @@ def delete_tool(tool):
    print (ret)
    return ret
 
+def delete_all_workflows(name):
+  Workflow.objects.filter(name=name).delete()
+
+def delete_all_tools(name):
+  Tool.objects.filter(name=name).delete()
 
 def API(*, workflow=None, assert_not_ok=False, access_token=None, format_='bash'):
    '''
@@ -221,13 +234,16 @@ def API(*, workflow=None, assert_not_ok=False, access_token=None, format_='bash'
    return r.json()
 
 
-def create_workflow_node(*, name, edit, draft=True):
+def create_workflow_node(*, name, edit, description="test", website="", keywords=None, draft=True):
    return {
              "data": {
                  "id": f"{name}__{edit}",
                  "name": name,
                  "edit": int(edit),
                  "label": f"{name}/{edit}",
+                 "description": description,
+                 "website": website,
+                 "keywords": keywords if keywords else [],
                  "type": "workflow",
                  "draft": draft,
                  "disconnected": False,
@@ -249,15 +265,18 @@ def create_workflow_node(*, name, edit, draft=True):
              "classes": ""
          }
 
-def create_tool_node(*, name, version, edit):
+def create_tool_node(tool):
    return {
     "data": {
-        "id": f"{name}__{version}__{edit}__2",
-        "text": f"{name}/{version}/{edit}",
-        "label": f"{name}/{version}/{edit}",
-        "name": name,
-        "version": str(version),
-        "edit": int(edit),
+        "id": f"{tool['name']}__{tool['version']}__{tool['edit']}__2",
+        "text": f"{tool['name']}/{tool['version']}/{tool['edit']}",
+        "label": f"{tool['name']}/{tool['version']}/{tool['edit']}",
+        "name": tool['name'],
+        "version": str(tool['version']),
+        "edit": int(tool['edit']),
+        "description": tool['description'],
+        "website": tool['website'],
+        "keywords": tool['keywords'] if tool['keywords'] else [],
         "type": "tool",
         "installation_commands": "# Insert the BASH commands that install this tool\n# You can use these environment variables: \n# ${OBC_TOOL_PATH}: path to tools directory \n# ${OBC_DATA_PATH}: path to data directory\n\n",
         "validation_commands": "# Insert the BASH commands that confirm that this tool is correctly installed\n# In success, this script should return 0 exit code.\n# A non-zero exit code, means failure to validate installation.\n\nexit 1\n",
@@ -362,12 +381,12 @@ def create_workflow_workflow_edge(*, name, edit):
        "classes": ""
    }
 
-def create_workflow_tool_edge(*, name, version, edit):
+def create_workflow_tool_edge(tool):
    return {
        "data": {
            "source": "root__null",
-           "target": f"{name}__{version}__{edit}__2",
-           "id": f"root__null..{name}__{version}__{edit}__2",
+           "target": f"{tool['name']}__{tool['version']}__{tool['edit']}__2",
+           "id": f"root__null..{tool['name']}__{tool['version']}__{tool['edit']}__2",
            "edgebelongto": "true"
        },
        "position": {
@@ -394,6 +413,10 @@ def get_root_node_from_workflow(workflow):
         assert False
 
     return root_node
+
+def get_tool_nodes_from_workflow(workflow):
+    nodes = workflow['workflow']['workflow']['elements']['nodes']
+    return [node for node in nodes if node['data']['type'] == 'tool']  
 
 
 ######################## TESTS ######################
@@ -523,18 +546,55 @@ def test_217_convert_from_public_to_private_tool_that_is_a_dependency_to_public_
    delete_tool(t1)
 
 
-def test_225():  # test_225():
-    w1 = create_workflow(name='w1', visibility='public')
+def assert_workflow_node(workfow_node):
+  assert 'description' in workfow_node['data']
+  assert 'website' in workfow_node['data']
+  assert 'keywords' in workfow_node['data']
+  assert  type(workfow_node['data']['keywords']) is list
 
-    r = API(workflow = w1, format_='json')
 
-    root_node = get_root_node_from_workflow(r)
-    assert 'description' in root_node['data']
-    assert 'website' in root_node['data']
-    assert 'keywords' in root_node['data']
-    assert  type(root_node['data']['keywords']) is list
+def assert_tool_node(tool_node):
+  assert 'description' in tool_node['data']
+  assert 'website' in tool_node['data']
+  assert 'keywords' in tool_node['data']
+  assert  type(tool_node['data']['keywords']) is list
 
-    delete_workflow(w1)
+
+
+def test_225_1():  
+  '''
+  Create workflow
+  '''
+
+  delete_all_workflows('w1')
+  w1 = create_workflow(name='w1', visibility='public')
+
+  r = API(workflow = w1, format_='json')
+
+  root_node = get_root_node_from_workflow(r)
+  assert_workflow_node(root_node)
+  delete_workflow(w1)
+
+
+def test_225_2():
+  '''
+  Create tool in workflow
+  '''
+
+  delete_all_tools('t1')
+  delete_all_workflows('w1')
+
+  t1 = create_tool(name='t1', version="1") # , keywords=['aaa', 'bbb'])
+  w1 = create_workflow(name='w1', includes_tools=[t1])
+
+  r = API(workflow=w1, format_='json')
+  root_node = get_root_node_from_workflow(r)
+  tool_nodes = get_tool_nodes_from_workflow(r)
+  assert_workflow_node(root_node)
+  assert_tool_node(tool_nodes[0])
+
+  delete_workflow(w1)
+  delete_tool(t1)
 
 
 #############################################################
@@ -543,7 +603,9 @@ def t():
    '''
    Test the tester
    '''
+   print ('Running t() ...')
 
-   test_217_convert_from_public_to_private_tool_that_is_a_dependency_to_public_tool()
+   test_225_2()
+
 
 

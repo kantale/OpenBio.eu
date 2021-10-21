@@ -1622,7 +1622,7 @@ window.onload = function () {
         };
 
         /*
-		*
+		* Called from buildTree 
         * parse data from openbioc to meet the cytoscape.js requirements
         * Create cytoscape nodes and edges
         * incomingData: List of nodes to add
@@ -1680,6 +1680,9 @@ window.onload = function () {
                                 label: d.cy_label, 
                                 name: d.name, 
                                 version: d.version, 
+                                description: d.description,
+                                website: d.website,
+                                keywords: d.keywords,
                                 edit: d.edit, 
                                 type: d.type, 
                                 installation_commands: d.installation_commands,
@@ -1706,6 +1709,9 @@ window.onload = function () {
                                 label: d.cy_label, 
                                 name: d.name, 
                                 version: d.version, 
+                                description: d.description,
+                                website: d.website,
+                                keywords: d.keywords,
                                 edit: d.edit, 
                                 type: d.type, 
                                 installation_commands: d.installation_commands,
@@ -1732,7 +1738,21 @@ window.onload = function () {
                     //TODO add root feature (different than tools): wfroot:yes
                     var this_workflow_id = window.OBCUI.create_workflow_id(d);
 
-                    var myNode = { data: { id: this_workflow_id, name: d.name, edit: d.edit, label: create_workflow_label(d), type: 'workflow', draft: d.draft, disconnected: d.disconnected, belongto: this_node_wf_belong_to } };
+                    var myNode = { data: { 
+                        id: this_workflow_id, 
+                        name: d.name, 
+                        edit: d.edit, 
+                        description: d.description,
+                        website: d.website,
+                        keywords: d.keywords,
+                        label: create_workflow_label(d), 
+                        type: 'workflow', 
+                        draft: d.draft, 
+                        disconnected: 
+                        d.disconnected, 
+                        belongto: this_node_wf_belong_to 
+                    } };
+
                     myNodes.push(myNode);
                     myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_workflow_id, id: window.OBCUI.create_workflow_edge_id(this_node_wf_belong_to_id, this_workflow_id), edgebelongto: 'true' } });
 					
@@ -2918,11 +2938,11 @@ window.onload = function () {
             //close successors of tool
             cy.$('node[type="tool"][root="yes"]').successors().targets().style("display", "none");
 
-        }
+        };
 
 
 		/**
-		** This function updates the workflow so that the can be forked: root edit changes to null
+		** This function updates the workflow so that it can be forked: root edit changes to null
 		** fork workflow , workflow fork 
 		**/
         window.forkWorkflow = function () {

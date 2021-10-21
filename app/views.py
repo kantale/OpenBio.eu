@@ -829,6 +829,11 @@ def tool_build_dependencies_jstree(tool_dependencies, add_variables=False, add_i
             to_append['os_choices'] = [choice.os_choices for choice in tool_dependency['dependency'].os_choices.all()]
             to_append['dependencies'] = [str(t) for t in tool_dependency['dependency'].dependencies.all()]
 
+            # https://github.com/kantale/OpenBio.eu/issues/225
+            to_append['description'] = tool_dependency['dependency'].description
+            to_append['website'] = tool_dependency['dependency'].website
+            to_append['keywords'] = [k.keyword for k in tool_dependency['dependency'].keywords.all()]
+
         tool_dependencies_jstree.append(to_append)
 
         # Add the variables of this tool
@@ -2057,7 +2062,7 @@ def tool_get_dependencies(request, **kwargs):
     OR from a stop event from search jstree to cytoscape graph
 
     what_to_do == 1: drag and drop FROM SEARCH TREE TO DEPENDENCY TREE
-    what_to_do == 2: dran and drop FROM SEARCH TREE TO CYTOSCAPE CYWORKFLOW DIV
+    what_to_do == 2: drag and drop FROM SEARCH TREE TO CYTOSCAPE CYWORKFLOW DIV
     '''
 
     tool_name = kwargs.get('tool_name', '')
@@ -2117,6 +2122,7 @@ def tools_add(request, **kwargs):
     '''
     Add a new tool
     tool add tool save tool . Create tool tools add
+    tool edit tool
 
     * names and version is searched case insensitive
     '''
@@ -3299,8 +3305,7 @@ def workflows_add(request, **kwargs):
     set_edit_to_cytoscape_json(workflow, next_edit, workflow_info_name, 
         workflow_description = workflow_description,
         workflow_website = workflow_website,
-        workflow_keywords = keywords,
-
+        workflow_keywords = kwargs['workflow_keywords'],
     )
 
     # Get all workflows that are used in this workflow
@@ -3589,6 +3594,8 @@ def workflows_search_3(request, **kwargs):
 
 def workflow_node_cytoscape(workflow, name='root', edit=0):
     '''
+    DEPRECATED. Only called from download_tool which is deprecated
+
     Create a cytoscape workflow node
     Normally it should take a database workflow object and create a cytoscape node
     Now it just creates a root workflow cytoscape node
@@ -3612,6 +3619,7 @@ def workflow_node_cytoscape(workflow, name='root', edit=0):
 
 def tool_node_cytoscape(tool, tool_depending_from_me=None):
     '''
+
     Create a cytoscape tool node
     tool: A database object tool node
     tool_depending_from_me: If i was added as a dependency, this should be the tool that depends from me. FIXME: REMOVE THIS
@@ -3627,6 +3635,9 @@ def tool_node_cytoscape(tool, tool_depending_from_me=None):
                 'id': tool_id_cytoscape(tool),
                 'label': tool_label_cytoscape(tool),
                 'name': tool.name,
+                'description': tool.description,
+                'website': tool.website,
+                'keywords': [k.keyword for k in tool.keywords.all()],
                 'root': 'yes' if tool_depending_from_me else 'no', # Not used in executor. 'yes/no' should be True/False for Christ sake! FIXME
                 'text': tool_label_cytoscape(tool),
                 'type': 'tool',
@@ -3649,6 +3660,9 @@ def tool_node_cytoscape(tool, tool_depending_from_me=None):
                 'id': tool_id_cytoscape(tool),
                 'label': tool_label_cytoscape(tool),
                 'name': tool['name'],
+                'description': tool['description'],
+                'website': tool['website'],
+                'keywords': tool['keywords'],
                 'root' : 'yes' if tool_depending_from_me else 'no', # Not used in executor,
                 'text': tool_label_cytoscape(tool),
                 'type': 'tool',
@@ -3713,6 +3727,8 @@ def edge_cytoscape(source, target):
 @has_data
 def download_tool(request, **kwargs):
     '''
+    DEPRECATED . Not actually used. Tools get downloaded only in the context of a workflow
+
     Create a cytoscape workflow that installs a given tool.
     Kind of a "fake" workflow that the only thing that it does is install a tool (and its dependencies)
     It is called by download_workflow when the user selects to "download" a tool instead of a workflow

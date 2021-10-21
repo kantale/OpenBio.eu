@@ -2242,7 +2242,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * Get the dependencies of this tool
     * This is called from ui.js
     * what_to_do == 1: drag and drop FROM SEARCH TREE TO DEPENDENCY TREE
-    * what_to_do == 2: dran and drop FROM SEARCH TREE TO CYTOSCAPE CYWORKFLOW DIV
+    * what_to_do == 2: drag and drop FROM SEARCH TREE TO CYTOSCAPE CYWORKFLOW DIV
     */
     $scope.tool_get_dependencies = function(tool, what_to_do) {
 
