@@ -5058,6 +5058,7 @@ def qa_add_1(request, **kwargs):
     ret = {
         'id': comment.pk,
         'comment_html': qa_comment_html,
+        'qa_created_at': datetime_to_str(comment.created_at), # Issue 223
     }
 
     return success(ret)
