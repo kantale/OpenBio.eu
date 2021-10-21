@@ -636,6 +636,12 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.show_sign_up = true;
         $scope.show_reset_password = false;
 
+        // Clear the singnup fields. Issue: 224 
+        $scope.signup_username = '';
+        $scope.signup_password = '';
+        $scope.signup_confirm_password = '';
+        $scope.signup_email = '';
+
         $('#signUpForm').animateCss('fadeIn', function () {});
     };
 
