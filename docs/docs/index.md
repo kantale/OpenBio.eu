@@ -11,7 +11,7 @@ This is an incomplete documentation of the platform.
 Before we move on to create our new Tool or Dataset you need to know a few crucial things about the platform. What makes openbio.eu different from other platforms?
 
 1. **OpenBio.eu is able to "run" objects.**
-There are many repositories that store tools, data and workflows.  Examples are [bio.tools](https://bio.tools/), [osf.io](https://osf.io/) and [omictools](https://omictools.com/). These repositories offer very rich description and annotation of these objects, but they lack one crucial abilitiy: to actually run this object (i.e. tool, workflow) on a computer that you have access to. OpenBio.eu is a repository of research objects that focus on this ability.Therefore, when you add or edit a new tool, data or workflow you need to provide explicit instruction of how to install the tool, download the data or execute the workflow. 
+There are many repositories that store tools, data and workflows.  Examples are [bio.tools](https://bio.tools/), [osf.io](https://osf.io/) and [omictools](https://omictools.com/). These repositories offer very rich description and annotation of these objects, but they lack one crucial ability: to actually run this object (i.e. tool, workflow) on a computer that you have access to. OpenBio.eu is a repository of research objects that focus on this ability.Therefore, when you add or edit a new tool, data or workflow you need to provide explicit instruction of how to install the tool, download the data or execute the workflow. 
 
 2. **OpenBio.eu's language for object installation/download/execution description is Bash.**
 Since you need to provide explicit instructions of how to install a tool, download data or execute a workflow, we need a computer language to do so. We chose [Bash](https://www.gnu.org/software/bash/). Some people will find Bash, difficult or outdated. Nevertheless Bash is the defacto glue language of the [\*nix universe](https://en.wikipedia.org/wiki/Unix-like). Bash is present by default in OSx and even [Windows 10 supports it natively](https://docs.microsoft.com/en-us/windows/wsl/install-win10). By hosting our code in Bash we make sure that it is directly executable in as many as possible environments. 
@@ -25,7 +25,7 @@ Most Workflow Management Systems and Open Science environments distinguish Tools
    But why is that? Semantically and in the context of a Workflow Management System, Tools and Data do not actually have any differences! Tools have dependencies but data are useless without the presence of other data. We need commands to download, configure, compile and install tools but data need to be downloaded and most of the times they also need to be decompressed, pre-processed and installed. Also it is very common tools and data to co-exist in a dependency tree of other tools and data. 
 
 ## Outlook of OpenBio.eu
-First of all OpenBio.eu is a [Single-page application](https://en.wikipedia.org/wiki/Single-page_application). You might have already noticed this. Interacting with openbio.eu does not change the links shown in your browser. So techically there isn't any "front page". When entering OpenBio.eu what you see is:
+First of all OpenBio.eu is a [Single-page application](https://en.wikipedia.org/wiki/Single-page_application). You might have already noticed this. Interacting with openbio.eu does not change the links shown in your browser. So technically there isn't any "front page". When entering OpenBio.eu what you see is:
 
 ![img](screenshots/screen_1.png)
 
@@ -58,14 +58,14 @@ Each Tool/Data has a unique ID in openbio.eu. This unique ID is comprised by thr
 
 **In OpenBio.eu we refer to a unique tool with the following schema: ```<Name>/<Version>/<Edit>```. For example: ```my_tool/1/1```. This can be interpreted as "tool named my_tool version 1, edit 1".**
 
-Here is the philosophy behind this naming/ID-ing scheme. In a repository of scientific objects, we want to store Tools/Data. Tools and Data have names and they also have versions (for Data they might also be called "releases"). An example is [Samtools version 1.8](https://github.com/samtools/samtools/releases/tag/1.8) and [1000 Genomes Project data release 20130502](ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/). In most scientific Tool/Data repositories these have a unique string based ID. For example could be called "Samtools" or "1000 Genomes Project", but that wouldn't identify precisely the research object at least not for reproducubility standards. Versions need to be part of the names. Then we face another problem which is that OpenBio.eu is a crowdsourced environment where you can name your Tool/Data however you like. This means that under the name/version Samtools/1.9 you can include Bash commands that download 1000 Genomes Project data (or anything else..). The solution here is to let anyone choose whatever name/version they like, but add on the ID of the Tool/Data a number (edit) that is provided by the system. That way we can have Samtools/1.8/1 created from user A and Samtools/1.8/2 created from user B. These two can be two completely unrelated Tool/Data objects. We should also let other users show preferences on which Tool/Data is better. This is possible with updvotes and downvotes that we describe later.
+Here is the philosophy behind this naming/ID-ing scheme. In a repository of scientific objects, we want to store Tools/Data. Tools and Data have names and they also have versions (for Data they might also be called "releases"). An example is [Samtools version 1.8](https://github.com/samtools/samtools/releases/tag/1.8) and [1000 Genomes Project data release 20130502](ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/). In most scientific Tool/Data repositories these have a unique string based ID. For example could be called "Samtools" or "1000 Genomes Project", but that wouldn't identify precisely the research object at least not for reproducibility standards. Versions need to be part of the names. Then we face another problem which is that OpenBio.eu is a crowdsourced environment where you can name your Tool/Data however you like. This means that under the name/version Samtools/1.9 you can include Bash commands that download 1000 Genomes Project data (or anything else..). The solution here is to let anyone choose whatever name/version they like, but add on the ID of the Tool/Data a number (edit) that is provided by the system. That way we can have Samtools/1.8/1 created from user A and Samtools/1.8/2 created from user B. These two can be two completely unrelated Tool/Data objects. We should also let other users show preferences on which Tool/Data is better. This is possible with upvotes and downvotes that we describe later.
 
 
 ### Downloading a Tool/Data 
 To actually download and run the commands that install and validate a tool you need first to create a workflow with it. This process will be explained in detail later in the manual. 
 For now you can click the green "+" icon on the left panel next to "Workflows". Enter the name "test" in the "Name" input field and add something in the "Description". Next on the search bar on the left panel enter "my_tool". The tool appears in the Tools/Data section. Now you can drag and drop the `my_tool/1/1` icon in the workflow panel in the right part of the screen. Next click "Save" to save this workflow.
 
-On the "Download" dropdown on this Workflow, select "BASH executable". A file named ```bash.sh``` get's downloaded. As you might have guessed you can actually execute this file. If you don't know how, there are many online resources to help you on that (just google: run .sh file). Before executing it, you should read carefully the following:
+On the "Download" dropdown on this Workflow, select "BASH executable". A file named ```bash.sh``` gets downloaded. As you might have guessed you can actually execute this file. If you don't know how, there are many online resources to help you on that (just google: run .sh file). Before executing it, you should read carefully the following:
 
 **Always execute scripts that you have downloaded from openbio.eu (or from anywhere on the Internet..) in a [sandboxed environment](https://en.wikipedia.org/wiki/Sandbox_%28computer_security%29). If you don't know what that is then DO NOT RUN IT! OpenBio.eu takes absolutely no liability on damages caused by executing scripts downloaded from openbio.eu.**
 
@@ -148,9 +148,9 @@ OBC: CALLING STEP: step__main__root__None    CALLER: main
 Output Variables:
 ```
 
-Also notice the output of the "Istallation Commands": ```installing tool my_tool```. 
+Also notice the output of the "Installation Commands": ```installing tool my_tool```. 
 
-So far we have shown that OpenBio.eu is a repository of "downloadable" Tool/Data where each one has Installation and Validation commands in Bash language. The next part is to demonstrate the use of tool/data variables.
+So far we have shown that OpenBio.eu is a repository of "download-able" Tool/Data where each one has Installation and Validation commands in Bash language. The next part is to demonstrate the use of tool/data variables.
 
 ### Tool/Data Variables 
 When you have installed a Tool/Data you need to let other scripts know where these tools/data are. Apart from the installation path of the Tool/Data there might be other pieces of information that you want to share with other tools/data or with other workflows. This piece of information can be stored in the Tool/Data Variables section. Each Tool/Data variable has a name, a value and a description. 
@@ -264,14 +264,14 @@ You may have noticed that so far you can save and edit a Tool/Data as many times
 * Allowing to make changes to a Tool/Data, strips out the "reproducibility" of these objects. What if an experiment is based on a Data and the creator decides to change the installation instructions? This might affect the reproducibility of the experiment. 
 * Allowing only the creator to edit a Tool/Data strips out the crowdsourcing ability. What if a user wants to make an edit to the tool/data of another user?
 
-To battle these issues, we employ two mechanisms. The first is the "Finalizing". By Finalizing a Tool/Data you permanently "freeze" this object from changes. You cannot edit a Tool/Data that has been finalized. Also Tool/Data that have not been finalized are labelled as **DRAFT**. It is a good practice to Finalize your Tool/Data after thorough testing. DRAFT Tool/Data should not be used in "serious" analysis since computational reproducibility is not guaranteed. The philosophy behind the "Finalizing" mechanism is to test and experiment with DRAFT tools/data, but once these object are ready to be used as independent components in public scientific pipelines, then they should be finalized.  
+To battle these issues, we employ two mechanisms. The first is the "Finalizing". By Finalizing a Tool/Data you permanently "freeze" this object from changes. You cannot edit a Tool/Data that has been finalized. Also Tool/Data that have not been finalized are labeled as **DRAFT**. It is a good practice to Finalize your Tool/Data after thorough testing. DRAFT Tool/Data should not be used in "serious" analysis since computational reproducibility is not guaranteed. The philosophy behind the "Finalizing" mechanism is to test and experiment with DRAFT tools/data, but once these object are ready to be used as independent components in public scientific pipelines, then they should be finalized.  
 
-The second mechanism is "forking". By forking a Tool/Data you can create an indentical Tool/Data object that is owned by you. Every forked Tool/Data is by default in a "draft" stage. Both Draft and Finalized Tools/Data can be forked. Let's see how it looks. Select the tool named ```another_tool``` that you created before. You can do that by entering ```another_tool/1``` in the search box on the left panel. From all the items that appear under the Tools/Data section, select the one created by you (or anything else that you like and you want to fork..). Once you click this item, a card with the details of this Tool/Data appears on the right. Now click the "Fork" button which is the rightmost button on the top of this card. Now the card becomes editable and you can make whatever changes you like. On this card there is an "Edit Summary" field that is obligatory. Here you should briefly describe the changes that you made from the original object. Once you complete with these changes you can save the new object. This is what it looks like:
+The second mechanism is "forking". By forking a Tool/Data you can create an identical Tool/Data object that is owned by you. Every forked Tool/Data is by default in a "draft" stage. Both Draft and Finalized Tools/Data can be forked. Let's see how it looks. Select the tool named ```another_tool``` that you created before. You can do that by entering ```another_tool/1``` in the search box on the left panel. From all the items that appear under the Tools/Data section, select the one created by you (or anything else that you like and you want to fork..). Once you click this item, a card with the details of this Tool/Data appears on the right. Now click the "Fork" button which is the rightmost button on the top of this card. Now the card becomes editable and you can make whatever changes you like. On this card there is an "Edit Summary" field that is obligatory. Here you should briefly describe the changes that you made from the original object. Once you complete with these changes you can save the new object. This is what it looks like:
 
 ![img](screenshots/screen_12.png)
 
 There are a few things to notice here:
-* On the left side of the platform, where the search results appear, you can see that there is a new Tool/Data object named ```another_tool/1/2```. This object is "under" the ```another_tool/1/1```. **Search results appear as a tree of objects. Parent-Child nodes mean that Childs where forked from Parenst**.
+* On the left side of the platform, where the search results appear, you can see that there is a new Tool/Data object named ```another_tool/1/2```. This object is "under" the ```another_tool/1/1```. **Search results appear as a tree of objects. Parent-Child nodes mean that Children where forked from Parents**.
 * The platform assigned a new "edit" number to the newly created Tool/Data. Remember that each Tool/Data has a unique ID which is comprised by three parts. A "name", a "version" and an "edit". Although the user sets the "name" and the "version", the "edit" is assigned by the platform. The new object that was created by forking ```another_tool/1/1``` has the same name and the same version, but different edit. This is also shown on the top of the right panel which states "forked from t/another_tool/1/1". Again the edit numbers might be different in your case.
 
 ### Deleting a Tool/Data 
@@ -306,7 +306,7 @@ The most important part here is that the name of the workflow appears as ```my_w
 
 The naming/ID-ing scheme is exactly the same as with Tools/Data. The only difference is that Workflows do not have versions. The idea here is that Tools/Data are items that get "fetched" (i.e. downloaded) from the Internet. They have versions that are maintained externally (outside OpenBio.eu), hence the "version" is part of the identity of a Tool/Data. On the other hand, Workflows are sets of Tool/Data, plus the logic that combines them for the purpose of an analysis. Workflows are merely constructs that exist only in OpenBio.eu this is why they don't have "version". Nevertheless they do have an edit, so it is possible to have multiple Workflows with the same name. 
 
-Now, let's download and run this workflow. Select "BASH Executable" from the "Downlood" dropdown. A file named "bash.sh" gets donloaded. Run this as before (i.e. with ```bash bash.sh```). The output should be:
+Now, let's download and run this workflow. Select "BASH Executable" from the "Download" dropdown. A file named "bash.sh" gets downloaded. Run this as before (i.e. with ```bash bash.sh```). The output should be:
 
 ```
 OBC: Workflow name: my_workflow
@@ -406,7 +406,7 @@ This menu helps you to choose a step. Available options are: step ```new_step```
 
 ![img](screenshots/screen_21.png)
 
-Save the workflow. We can Download (Button DOWNLOAD-->Bash Exutable) and run (```bash bash.sh```) this workflow. The output of this execution appears:
+Save the workflow. We can Download (Button DOWNLOAD-->Bash Executable) and run (```bash bash.sh```) this workflow. The output of this execution appears:
 
 ```
 OBC: Workflow name: my_workflow
@@ -487,7 +487,7 @@ bash bash.sh --input__threshold__my_workflow__1=4.5
 
 The script now doesn't halt to get a value for ```input__threshold__my_workflow__1```. 
 
-What about *output* variables? You may have noticed that the output variable named ```results``` that we defined before did not get any value from any step. This is why we see the line: ```OBC: output__result__my_workflow__1 = ``` on the output of ```bash.sh```. Let's change that. Edit again the workflow ```my_workflow/1``` (press the EDIT button), click the ```new_step``` and on the BASH editor type: ```output```. You will see the following autocomplete menu:
+What about *output* variables? You may have noticed that the output variable named ```results``` that we defined before did not get any value from any step. This is why we see the line: ```OBC: output__result__my_workflow__1 = ``` on the output of ```bash.sh```. Let's change that. Edit again the workflow ```my_workflow/1``` (press the EDIT button), click the ```new_step``` and on the BASH editor type: ```output```. You will see the following auto-complete menu:
 
 ![img](screenshots/screen_26.png)
 
@@ -648,7 +648,7 @@ OBC: Output Variables:
 OBC: output__N__combine__1 = 23
 ```
 
-The output is 23 since the input is 2 and we applied the pseudocode presented above. To recap, in OpenBio.eu the user has to explicitly set (1) the input/output of each step and (2) define which steps call which. To illiustrate how this is different from other Workflow Management Systems let's take a look from [this workflow from Common Workflow Language tutorial](https://www.commonwl.org/user_guide/21-1st-workflow/index.html):
+The output is 23 since the input is 2 and we applied the pseudocode presented above. To recap, in OpenBio.eu the user has to explicitly set (1) the input/output of each step and (2) define which steps call which. To illustrate how this is different from other Workflow Management Systems let's take a look from [this workflow from Common Workflow Language tutorial](https://www.commonwl.org/user_guide/21-1st-workflow/index.html):
 
 ```
 #!/usr/bin/env cwl-runner
@@ -731,7 +731,7 @@ OBC: Output Variables:
 OBC: output__result__my_workflow__1 = 120
 ```
 
-The important thing to notice here is that the installation and validation Bash commands of the tools/data that take part in a workflow are execute *before* the Bash commands of any step. Or else, first we install tools/data and then we execute the rest parts of a workflow. Remember also that the tool ```another_tool/1/1``` has a variable named ```INSTALLATION_PATH```. We can access this variable at any step of the worfklow. For example, edit the workflow ```my_workflow/1```, click on the step node ```main_step``` of this workflow and at the Bash editor, at any part type: "input" the following autocomplete menu appears:
+The important thing to notice here is that the installation and validation Bash commands of the tools/data that take part in a workflow are execute *before* the Bash commands of any step. Or else, first we install tools/data and then we execute the rest parts of a workflow. Remember also that the tool ```another_tool/1/1``` has a variable named ```INSTALLATION_PATH```. We can access this variable at any step of the workflow. For example, edit the workflow ```my_workflow/1```, click on the step node ```main_step``` of this workflow and at the Bash editor, at any part type: "input" the following auto-complete menu appears:
 
 ![img](screenshots/screen_31.png)
 
@@ -827,7 +827,7 @@ Similar to variables ```OBC_TOOL_PATH``` and ```OBC_DATA_PATH```, you can use th
 If you try to finalize the ```constant_threshold/1``` workflow you will receive an error: ```This workflow cannot be finalized. It contains 2 draft workflow(s). For example: another_workflow/1```. A finalized workflow cannot be changed, so it cannot contain a draft workflow or a draft tool/data. So first finalize the draft components of a workflow and then finalize the workflow. To finalize a workflow click the "FINALIZE" button on the top of the page.
 
 ### Disconnecting a Tool/Data or a Workflow
-You might have noticed that workflows in OpenBio.eu are dynamicly edited. Multiple users can take part on editing different parts of a workflow. For example let's say that you are creating a workflow. In this workflow you have imported a Tools/Data or Workflows created by other users and these imported elements are in draft stage. Every change that happens on these imported elements are automatically applied on your workflow. Importing draft elements from other users means that changes on these elements are also affecting your workflow. Sometimes this behaviour is desired but sometimes it isn't. For example when you are co-editing workflows with a peer of users that you trust, this behaviour is desired. On the other hand you might have created a workflow with elements from other users, you have tested this workflow and you are happy with how it behaves. Yet, you cannot use this workflow for reproducible science since the elements of this workflow can change anytime from other users, thus its behaviour might change in the future. On that case you can edit your workflow and *disconnect* an imported Tool/Data or Workflow. By disconnecting a Tool/Data or a Workflow, you are simply stating that you do not desire any changes that happen on these elements to affect your workflow any more. A disconnected Tool/Data or Workflow is a persistent and immutable object and exists only in your workflow. No other user can change them. To perform this action right click a Tool/Data or Workflow from a workflow graph and from the menu that appears choose "Disconnect". A modal appears that asks you if you are sure since you cannot undo this action. If you press "Yes", then the disconnected elements (Tool/Data or Workflows) are turned blue. If you disconnect a Workflow, then all other Workflows, Tool/Data that belong to this workflow are also disconnected. If you disconnect a Tool/Data all other Tool/Data that are dependencies of this Tool/Data are also disconnected. 
+You might have noticed that workflows in OpenBio.eu are dynamically edited. Multiple users can take part on editing different parts of a workflow. For example let's say that you are creating a workflow. In this workflow you have imported a Tools/Data or Workflows created by other users and these imported elements are in draft stage. Every change that happens on these imported elements are automatically applied on your workflow. Importing draft elements from other users means that changes on these elements are also affecting your workflow. Sometimes this behaviour is desired but sometimes it isn't. For example when you are co-editing workflows with a peer of users that you trust, this behaviour is desired. On the other hand you might have created a workflow with elements from other users, you have tested this workflow and you are happy with how it behaves. Yet, you cannot use this workflow for reproducible science since the elements of this workflow can change anytime from other users, thus its behaviour might change in the future. On that case you can edit your workflow and *disconnect* an imported Tool/Data or Workflow. By disconnecting a Tool/Data or a Workflow, you are simply stating that you do not desire any changes that happen on these elements to affect your workflow any more. A disconnected Tool/Data or Workflow is a persistent and immutable object and exists only in your workflow. No other user can change them. To perform this action right click a Tool/Data or Workflow from a workflow graph and from the menu that appears choose "Disconnect". A modal appears that asks you if you are sure since you cannot undo this action. If you press "Yes", then the disconnected elements (Tool/Data or Workflows) are turned blue. If you disconnect a Workflow, then all other Workflows, Tool/Data that belong to this workflow are also disconnected. If you disconnect a Tool/Data all other Tool/Data that are dependencies of this Tool/Data are also disconnected. 
 
 For example here:
 
@@ -1013,6 +1013,27 @@ Input values PAR1=100   PAR2=200 finished
 
 As you notice the step ```complex_task``` run 3 times in parallel, each with different set of parameters. 
 
+# Public / Private Research Objects
+Tools/Data and Workflows can be either public or private. You can set this "visibility" option through the user interface upon creating or editing a Tool/Data or Workflow (ROs = Research Objects). The semantics of this private / public setting are:
+* Public ROs are visible to all users including anonymous users.
+* Private ROs are visible only to the users that created them.
+* A public Tool/Data cannot have a Private tool as a dependency.
+* A private Tool/Data cannot be a dependency to a public Tool/Data.
+* A private Tool/Data cannot take part in a public Workflow.
+* A private Workflow cannot take part in a public Workflow.
+* You can change the visibility status from public to private and vice versa as long as you are not violating the above restrictions. 
+* Comments in private ROs are not accessible to users others than the creators of these ROs. 
+
+# Setting input values for workflows
+Before Downloading or Running a workflow you can set values to its input parameters. These are called `arguments`. Through the web interface you can right click an input node and select 'Set':
+
+![img](screenshots/screen_45.png)
+
+There you can set a value. Some notes:
+* When downloading or Running this worklfow (see next sections), these values will be used as input parameters. 
+* These parameters are always strings. You may have to explicitly convert them to any other type. 
+
+
 # Downloading a Workflow
 We have already seen that on every Tool/Data and on every Workflow there is a "DOWNLOAD" button. We have already used the ```BASH``` option in order to download a Tool/Data/Workflow as a standalone bash script. Here we will explore all the other options.
 
@@ -1162,23 +1183,12 @@ By selecting to download a workflow in Nextflow format a file named: workflow.nf
 nextflow run workflow.nf
 ```
 
-# Public / Private Research Objects
-Tools/Data and Workflows can be either public or private. You can set this "visibility" option through the user interface upon creating or editing a Tool/Data or Workflow (ROs = Research Objects). The semantics of this private / public setting are:
-* Public ROs are visible to all users including anonymous users.
-* Private ROs are visible only to the users that created them.
-* A public Tool/Data cannot have a Private tool as a dependency.
-* A private Tool/Data cannot be a dependency to a public Tool/Data.
-* A private Tool/Data cannot take part in a public Workflow.
-* A private Workflow cannot take part in a public Workflow.
-* You can change the visibility status from public to private and vice versa as long as you are not violating the above restrictions. 
-* Comments in private ROs are not accessible to users others than the creators of these ROs. 
-
 
 # Executing a Workflow
 You can execute a Workflow directly from OpenBio.eu. To do that you need to install the "OpenBio Execution Environment" (OEE) to a computer of your own. That means that the actual execution happens to the computer that you have installed the OEE. The "OpenBio Execution Environment" is comprised by tree components:
 * A resource manager. This is a framework that monitors the resources (memory, CPU, hard disk, bandwidth) that are used by the OEE. We use [netdata](https://www.netdata.cloud/) for this purpose. 
 * An execution manager. This is a framework that monitors the progress of the workflow. It provides a visual indication of which steps are currently running, it gives access to the logs and it allows you to pause/restart the workflow. Currently we are using [airflow](https://airflow.apache.org/) for this purpose, although we are planning to support multiple environments in the future (priorities are [nextflow](https://www.nextflow.io/) and [galaxy](https://galaxyproject.org/)).  
-* The "OpenBio client". This is a client that uses [flask](https://flask.palletsprojects.com/en/1.1.x/). This client acts as the mediator between the OpenBio.eu website and the rest of the components. When you click the "RUN" button in OpenBio.eu, the site communicates with this client, the client aqcuires the workflow and submits it to airflow. It also performs some secondary jobs like providing the resource manager and execution manager URLs to the server and deleting the workflows when requested. 
+* The "OpenBio client". This is a client that uses [flask](https://flask.palletsprojects.com/en/1.1.x/). This client acts as the mediator between the OpenBio.eu website and the rest of the components. When you click the "RUN" button in OpenBio.eu, the site communicates with this client, the client acquires the workflow and submits it to airflow. It also performs some secondary jobs like providing the resource manager and execution manager URLs to the server and deleting the workflows when requested. 
 
 Both three components are installed in separate virtualized containers through [docker](https://www.docker.com/). This means:
 * The workflow that is executed **does not have access to any file in your system**. Even if malicious code is somehow injected in the workflow, it will not have access to files in your system and it will not be able to permanently make any changes. 
@@ -1186,7 +1196,7 @@ Both three components are installed in separate virtualized containers through [
 * The workflow will use the resources of **your** computer, therefore its execution time depends on them.
 
 ## Installation 
-[The source of the OpenBio Execution Envirnment is here](https://github.com/kantale/OpenBioC_Execution). To install it download [the install script](https://github.com/kantale/OpenBioC_Execution/blob/master/obc_scripts/install.sh) and run it with:
+[The source of the OpenBio Execution Environment is here](https://github.com/kantale/OpenBioC_Execution). To install it download [the install script](https://github.com/kantale/OpenBioC_Execution/blob/master/obc_scripts/install.sh) and run it with:
 
 ```bash
 bash install.sh
@@ -1269,7 +1279,7 @@ bash script_7Lt2o.sh
 ```
 
 ## JSON
-This method will download a file workflow.json that contains all the information required to execute the workflow in a local environment. In order to execute it, you need to convert this file into an executable BASH script. To do this, you need to download the file [executor.py](https://github.com/kantale/OpenBioC/blob/master/OpenBioC/ExecutionEnvironment/executor.py). This file requires [python 3](https://www.python.org/downloads/) and has no other dependencies. After you have downloaded this file, you can run the command:
+This method will download a file workflow.json that contains all the information required to execute the workflow in a local environment. In order to execute it, you need to convert this file into an executable BASH script. To do this, you need to download the file [executor.py](https://github.com/kantale/OpenBio.eu/blob/master/ExecutionEnvironment/executor.py). This file requires [python 3](https://www.python.org/downloads/) and has no other dependencies. After you have downloaded this file, you can run the command:
 
 ```bash
 python executor.py -W workflow.json
@@ -1356,6 +1366,94 @@ curl -H 'Accept: application/json' -H 'Authorization: Token 11203cc7c93f32a9a0b0
 ```
 
 You can get your access token by visiting your profile page. 
+
+# OpenBio.eu data model
+One of the formats in which a workflow can be downloaded is JSON. In more detail the root keys of the JSON format are the following:
+
+* ```arguments```: The arguments of the workflow (See section: "Setting input values for workflows")
+   * This is a dictionary. Keys are in the format ```input__<NAME_OF_PARAMETER>__<NAME_OF_WORKFLOW>__<EDIT_OF_WORKFLOW>```. This is the id of the input node in the cytoscape graph (see below). Values are the values that the user inserted.
+* ```workflow```: The cytoscape graph of the workflow (see below for a detailed explanation)
+* ```token```: The report access token (experimental feature which is not described in this documentation yet)
+* ```nice_id```: The id of the generated report (experimental feature which is not described in this documentation yet)
+
+
+The value in the `workflow` key is compatible with the [cytoscape json format](https://js.cytoscape.org/#notation/elements-json). OpenBio stores all additional information in the `data` key of all elements (nodes and edges) of cytoscape graphs. Specifically:
+* `elements` : Contains the following keys
+   * `nodes`: Contains a list with the nodes of the graph. See below.
+   * `edges`: Contains a list with the edges of the graph. See below.
+* `style`: Contains the styling of the nodes and elements. 
+* `data`: This is always empty
+* `zoomingEnabled`, `userZoomingEnabled`, `zoom`, `minZoom`, `maxZoom`, `panningEnabled`, `userPanningEnabled`, `pan`, `boxSelectionEnabled`, `renderer`. These keys are left unchanged from cytoscape. It contains rendering parameters for the graph as it was when the workflow was fetched. 
+
+
+## Node elements
+The node elements in the graph (location workflow --> elements --> nodes in the JSON file) are dictionaries which all contain a key named `data`. This `data` contains the following keys (in alphabetical order):
+* `bash`: For step nodes only. The bash commands of this step.
+* `belongto`: The workflow to which this element belongs to. Some notes:
+   * For the root workflow this value is `null`.
+   * For all other elements this is a dictionary with the following keys:
+      * `name`: The name of the workflow to which it belongs.
+      * `edit`: The edit (integer) of the workflow to which it belongs.
+* `dep_id`: For tool nodes only. If this tool is a dependency of another tool in the workflow, it contains the ID of this tool. Otherwise it contains the string: `'#'`. This field is purely for visualization reasons and developers should not used it to get the semantics of the workflow. The reason is that this field contains at most one Tool. Yet, a tool might be the dependency of more than one tools. In this case this field contains only the first tool. Developers should use the `dependencies` field to get reliably get the dependency graph of a tool.    
+* `dependencies`: For tool nodes only. A list of the labels of the tools that this tool depends from. Attention! it contains the **labels** of the tools, not the IDs of the tools.
+* `description`: For Tools, Workflows, Inputs and Outputs. The user provided description of this object. For Tools and Workflows it may contain markdown.
+* `disconnected`: For Tools and Workflow only. `True` if this object is disconnected from its parent workflow, `False` otherwise. If this is the root workflow, then this is always `False`.
+* `draft`: For Tools and Workflows only. `True` if the object is in `DRAFT` stage, `False` otherwise.
+* `edit`: For Tools and Workflows only. This is the edit number of the object (int)
+* `foldit`. For Tools nodes only. `True` if this node can be hidden if clicked or not. In cytoscape, tool dependencies can be hidden (folded) if a tool gets clicked. This makes sense only in the UI. 
+* `id`: The unique id for the node in the graph. Its values is:
+   * For workflows: `<NAME_OF_WORKFLOW>__<EDIT_OF_WORKFLOW>`
+   * For steps: `step__<NAME_OF_STEP>__<NAME_OF_WORKFLOW>__<EDIT_OF_WORKFLOW>`
+   * For inputs: `input__<NAME_OF_INPUT>__<NAME_OF_WORKFLOW>__<EDIT_OF_WORKFLOW>`
+* `installation_commands`: For tools nodes only. The Bash installation commands of this tool.
+* `inputs`: For steps nodes only. A list of the IDs of the input nodes that are read from this step. 
+* `keywords`: For Tools and Workflows. This is list of the user probided keywords.
+* `label`: The label that appears in the cytoscape graph for this node. Its value depending on the node type is:
+   * For workflows: `<NAME_OF_WORKFLOW>/<EDIT_OF_WORKFLOW>`
+   * For steps: `NAME_OF_STEP`
+   * For inputs: `NAME_OF_INPUT`
+* `main`: For steps nodes only. `True` if this is the main step of the root workflow, `False` otherwise. 
+* `name`: All workflow nodes regardless type have a name. 
+* `os_choices`: For tool nodes only. A list of the OSs that the user selected as suitable for this tool.
+* `outputs`: For steps nodes only. a list of this IDs of the output nodes that are set from this step.
+* `steps`: For steps nodes only. A list of the IDs of the step nodes that are called from this step.
+* `sub_main`: For steps that do not belong to the root workflow. `True` if this is the main step of the workflow which it belongs to, `False` otherwise. If this step belongs to the root workflow, then this is `False`.
+* `tools`: For steps node only. A list of the IDs of the tool nodes that are called (or used) from this step 
+* `type`: Depending on the type of node this can be one of: `workflow`, `step`, `input`, `output`, `tool`.
+* `validation_commands`: For Tool nodes only. The bash commands that validate the installation of this tool. 
+* `variables`: For Tool nodes only. A list with the variables of this tool. Each variable is a dictionary with the following fields:
+   * `name`: The name of the variable
+   * `description`: The description of the variable
+   * `value`: The value of the variable
+   * `type`: This is always `variable`.
+* `website`: For Tools and Workflows. The user provided website of this object. 
+
+
+Apart from the `data` field each node has the following fields which are cytoscape specific and used only for visualization: `position`, `group`, `removed`, `selected`, `selectable`, `locked`, `grabbable`, `pannable` `classes`.
+
+## Edge elements
+As with nodes, each edge contains a `data` field which is a dictionary with the following fields:
+* `source`: The ID of the source node 
+* `target`: The ID of the target node
+* `id`: This is: `<SOURCE_ID>..<TARGET_ID>`
+* `edgebelongto`. `True` if this edge signifies that an element belongs to a workflow, `False` otherwise. Edges in an OpenBio.eu workflow graph can signify one of the following things:
+   * An element belongs to a WF.
+   * An tool depends from a tool.
+   * A step calls a step.
+   * A step calls a tool.
+   * A step reads the value from an input node. 
+   * A step sets the value to an output node.
+
+The first category "holds the workflow together" as it links workflow nodes with "inside elements" (i.e. tools, steps). The other types of edges has a special semantic and show some type of function. The value of the `edgebelongto` is `True` only if the edge belongs to the first category.
+
+
+
+
+
+
+
+
+
 
 
 
