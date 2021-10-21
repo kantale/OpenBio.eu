@@ -1024,16 +1024,6 @@ Tools/Data and Workflows can be either public or private. You can set this "visi
 * You can change the visibility status from public to private and vice versa as long as you are not violating the above restrictions. 
 * Comments in private ROs are not accessible to users others than the creators of these ROs. 
 
-# Setting input values for workflows
-Before Downloading or Running a workflow you can set values to its input parameters. These are called `arguments`. Through the web interface you can right click an input node and select 'Set':
-
-![img](screenshots/screen_45.png)
-
-There you can set a value. Some notes:
-* When downloading or Running this worklfow (see next sections), these values will be used as input parameters. 
-* These parameters are always strings. You may have to explicitly convert them to any other type. 
-
-
 # Downloading a Workflow
 We have already seen that on every Tool/Data and on every Workflow there is a "DOWNLOAD" button. We have already used the ```BASH``` option in order to download a Tool/Data/Workflow as a standalone bash script. Here we will explore all the other options.
 
@@ -1445,6 +1435,10 @@ As with nodes, each edge contains a `data` field which is a dictionary with the 
    * A step sets the value to an output node.
 
 The first category "holds the workflow together" as it links workflow nodes with "inside elements" (i.e. tools, steps). The other types of edges has a special semantic and show some type of function. The value of the `edgebelongto` is `True` only if the edge belongs to the first category.
+
+
+As with nodes apart from the `data` field, all edges have the following fields which are cytoscape specific:
+`position`, `group`, `removed`, `selected`,  `selectable`, `locked`, `grabbable`, `pannable`,  `classes`.
 
 
 
