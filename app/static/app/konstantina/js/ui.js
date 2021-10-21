@@ -1854,130 +1854,126 @@ window.onload = function () {
             });
 
 
-        }
+        };
 		
 		
-			/* 
-            * Function for creating tooltip on node hover.
-			*
-            */
-            var makeTippy = function (node, text) {
-				
-                return tippy(node.popperRef(), {
-                    content: function () {
-                        var div = document.createElement('div');
-						var belongto = " - ";
-                        var type = node._private.data.type;
+		/* 
+        * Function for creating tooltip on node hover.
+		*
+        */
+        var makeTippy = function (node, text) {
+            return tippy(node.popperRef(), {
+                content: function () {
+                    var div = document.createElement('div');
+					var belongto = " - ";
+                    var type = node._private.data.type;
 
-                        var innerHTML = 'type: ' + type;
+                    var innerHTML = 'type: ' + type;
 
-                        
+                    if (type == 'workflow') {
+                        innerHTML += '<br>name: ' + node._private.data.name;
+                        innerHTML += '<br>edit: ' + node._private.data.edit;
+                        innerHTML += '<br>status: ' + (node._private.data.disconnected ? 'disconnected' : (node._private.data.draft ? 'draft' : 'normal'));
+                    }
+                    else if (type == 'tool') {
+                        innerHTML += '<br>name: ' + node._private.data.name;
+                        innerHTML += '<br>edit: ' + node._private.data.edit;
+                        innerHTML += '<br>version: ' + node._private.data.version;
+                        innerHTML += '<br>status: ' + (node._private.data.disconnected ? 'disconnected' : (node._private.data.draft ? 'draft' : 'normal'));
+                    }
+                    else {
+                        innerHTML += '<br>name: ' + node._private.data.label;
+                    }
 
-                        if (type == 'workflow') {
-                            innerHTML += '<br>name: ' + node._private.data.name;
-                            innerHTML += '<br>edit: ' + node._private.data.edit;
-                            innerHTML += '<br>status: ' + (node._private.data.disconnected ? 'disconnected' : (node._private.data.draft ? 'draft' : 'normal'));
-                        }
-
-                        else if (type == 'tool') {
-                            innerHTML += '<br>name: ' + node._private.data.name;
-                            innerHTML += '<br>edit: ' + node._private.data.edit;
-                            innerHTML += '<br>version: ' + node._private.data.version;
-                            innerHTML += '<br>status: ' + (node._private.data.disconnected ? 'disconnected' : (node._private.data.draft ? 'draft' : 'normal'));
-                        }
-                        else {
-                            innerHTML += '<br>name: ' + node._private.data.label;
-                        }
-
-                        if (node._private.data.belongto !== null) {
-                            innerHTML += '<br>belongs to: ' + node._private.data.belongto.name + '/' + node._private.data.belongto.edit;
-                        }
+                    if (node._private.data.belongto !== null) {
+                        innerHTML += '<br>belongs to: ' + node._private.data.belongto.name + '/' + node._private.data.belongto.edit;
+                    }
 						
-                        div.innerHTML = innerHTML; 
-						div.style.zIndex = "-1000000000000000000000000";	
-                        return div;
-                    },
-                    trigger: 'manual',
-                    arrow: true,
-                    placement: 'right',
-                    hideOnClick: false,
-                    multiple: true,
-                    //followCursor: true,
-                    //theme: 'light', 
-                    sticky: true
-                });
-            };
+                    div.innerHTML = innerHTML; 
+					div.style.zIndex = "-1000000000000000000000000";	
+                    return div;
+                },
+                trigger: 'manual',
+                arrow: true,
+                placement: 'right',
+                hideOnClick: false,
+                multiple: true,
+                //followCursor: true,
+                //theme: 'light', 
+                sticky: true
+            });
+        };
 
 
 
-			/* 
-            * Function for creating tooltip for setting input node value.
-            */
-            var makeEditTippy = function (node, text) {
+		/* 
+        * Function for creating tooltip for setting input node value.
+        */
+        var makeEditTippy = function (node, text) {
+			
+			editTippy = tippy(node.popperRef(), {
 				
-				editTippy = tippy(node.popperRef(), {
-					
-                    	content: function () {
-								var div = document.createElement('div');
-                                div.setAttribute("id", "tippy_div_" + node._private.data.id);
-								div.innerHTML = 
-												'<button type="button" class="close">×</button><br>'+  // onclick='+alert($(this).parent());+'
-												node._private.data.description+ '<br>'+
-												'Add Value For '+ node._private.data.name+' : <br>'+
-												'<input type="text" id="tippy_text_'+node._private.data.id+'" name="Add Value"><br>'	+
-												'<button id="tippy_button_'+node._private.data.id+'" class="btn btn-click">set</button>'		
-												
-								div.style.width = "200px";
-								div.style.height = "140px";
-								div.style.color = "black"; //font color
-								div.style.position= "relative";
-								//div.style.zIndex = "10000000000";					
-								return div;
-						},
+                	content: function () {
+							var div = document.createElement('div');
+                            div.setAttribute("id", "tippy_div_" + node._private.data.id);
+							div.innerHTML = 
+											'<button type="button" class="close">×</button><br>'+  // onclick='+alert($(this).parent());+'
+											node._private.data.description+ '<br>'+
+											'Add Value For '+ node._private.data.name+' : <br>'+
+											'<input type="text" id="tippy_text_'+node._private.data.id+'" name="Add Value"><br>'	+
+											'<button id="tippy_button_'+node._private.data.id+'" class="btn btn-click">set</button>'		
+											
+							div.style.width = "200px";
+							div.style.height = "140px";
+							div.style.color = "black"; //font color
+							div.style.position= "relative";
+							//div.style.zIndex = "10000000000";					
+							return div;
+					},
 
-						onShown: function(){
-								//$('.btn-click').off("click").on("click", function(){
-								/* code for SET button */
-								$('#tippy_button_' + node._private.data.id).off("click").on("click", function(){
-									//alert( document.getElementById(this.id.replace('tippy_button_', 'tippy_text_')).value);
-									// tippy should be destroyed
-									var value = document.getElementById('tippy_text_'+node._private.data.id).value;
-									node.data('value', value);
-									node.data('label', node._private.data.name+'='+value);
-									//$(this).parent().fadeOut('slow', function(c){});
-								   // $('#tippy_edit_div_' + node._private.data.id).remove();
-									
-									//destroy tippy
-									editTippy.destroy(editTippy.popper);	
-									
-								});
+					onShown: function(){
+							//$('.btn-click').off("click").on("click", function(){
+							/* code for SET button */
+							$('#tippy_button_' + node._private.data.id).off("click").on("click", function(){
+								//alert( document.getElementById(this.id.replace('tippy_button_', 'tippy_text_')).value);
+								// tippy should be destroyed
+								var value = document.getElementById('tippy_text_'+node._private.data.id).value;
+								node.data('value', value);
+								node.data('label', node._private.data.name+'='+value);
+								//$(this).parent().fadeOut('slow', function(c){});
+							   // $('#tippy_edit_div_' + node._private.data.id).remove();
 								
-								/* code for x button */
-								$('.close').on('click', function(c){
-									//destroy tippy
-									editTippy.destroy(editTippy.popper);
-									
-										//$('#tippy_edit_div_' + node._private.data.id).remove();	
-										//$(this).parent().fadeOut('slow', function(c){
-									//});
-								});	
+								//destroy tippy
+								editTippy.destroy(editTippy.popper);	
 								
-						},
-							trigger: 'manual',
-							//arrow: true,
-							placement: 'bottom',
-							interactive: true,	//this should be true for the content to be interactive and clickable
-							hideOnClick: false,
-							multiple: true,
-							followCursor: true,
-							theme: 'light', 
-							//zIndex: 100001,
-							sticky: true
+							});
 							
-				});
-				
-                return editTippy;
-            };
+							/* code for x button */
+							$('.close').on('click', function(c){
+								//destroy tippy
+								editTippy.destroy(editTippy.popper);
+								
+									//$('#tippy_edit_div_' + node._private.data.id).remove();	
+									//$(this).parent().fadeOut('slow', function(c){
+								//});
+							});	
+							
+					},
+						trigger: 'manual',
+						//arrow: true,
+						placement: 'bottom',
+						interactive: true,	//this should be true for the content to be interactive and clickable
+						hideOnClick: false,
+						multiple: true,
+						followCursor: true,
+						theme: 'light', 
+						//zIndex: 100001,
+						sticky: true
+						
+			});
+			
+            return editTippy;
+        };
 			
 		
 		/**
@@ -2058,7 +2054,7 @@ window.onload = function () {
 							
 			}			
 									
-		}	
+		};
 			
 
         /*
@@ -2247,7 +2243,7 @@ window.onload = function () {
             });
 
 	
-        }
+        };
 
 			
 
@@ -2432,7 +2428,7 @@ window.onload = function () {
             //document.querySelector('canvas[data-id="layer2-node"]').style.position = null;
 			document.getElementById("cywf").querySelector('canvas[data-id="layer2-node"]').style.position = null; 
 
-        }
+        };
 		
 		// cy should be initialize so that angular can access it
 		window.initializeTree();
@@ -2529,9 +2525,9 @@ window.onload = function () {
 			
 			return cy_rep;
 			
-		}
+		};
 		
-			//initializeRepTree();
+		//initializeRepTree();
 		
 		
 		/*
@@ -2560,7 +2556,7 @@ window.onload = function () {
             //This removes the attribute: position: 'absolute' from the third layer canvas in cytoscape.	
 			document.getElementById("cyrep").querySelector('canvas[data-id="layer2-node"]').style.position = null;
 	
-        }
+        };
 
         /*
         * status_code : The same declared in models.py: class ReportToken 
@@ -3129,7 +3125,7 @@ window.onload = function () {
 
             window.cy_setup_events();
 
-        }
+        };
 
         /*
         * Called from angular $scope.workflow_info_run_pressed
