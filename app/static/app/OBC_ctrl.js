@@ -5040,6 +5040,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.qa_info_editable = false;
                 $scope.qa_comment_id = data['id'];
                 $scope.qa_comment_html = data['comment_html'];
+                $scope.qa_username = $scope.username; // Issue 223
+                $scope.qa_created_at = data['qa_created_at']; // Issue 223 
+
                 $scope.qa_thread = [];
 
                 //EXPERIMENTAL!!! UPDATE SEARCH RESULTS
