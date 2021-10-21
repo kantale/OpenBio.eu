@@ -1689,7 +1689,7 @@ window.onload = function () {
                                 validation_commands: d.validation_commands,
                                 os_choices: d.os_choices,
                                 dependencies: d.dependencies,
-                                root: 'no', 
+                                foldit: false, 
                                 dep_id: d.dep_id, 
                                 variables: d.variables, 
                                 draft: d.draft, 
@@ -1718,7 +1718,7 @@ window.onload = function () {
                                 validation_commands: d.validation_commands,
                                 os_choices: d.os_choices, 
                                 dependencies: d.dependencies,                              
-                                root: 'yes', 
+                                foldit: true, 
                                 dep_id: d.dep_id, 
                                 variables: d.variables, 
                                 draft: d.draft, 
@@ -2932,7 +2932,7 @@ window.onload = function () {
 
             window.cy_setup_events();
             //close successors of tool
-            cy.$('node[type="tool"][root="yes"]').successors().targets().style("display", "none");
+            cy.$('node[type="tool"][?foldit]').successors().targets().style("display", "none"); // See: https://js.cytoscape.org/#selectors/data
 
         };
 
