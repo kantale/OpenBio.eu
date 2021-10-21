@@ -4046,7 +4046,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                         var source_id = window.OBCUI.create_workflow_id(element.data().belongto);
                         var target_id = element.id();
                         var edge_id = window.OBCUI.create_workflow_edge_id(source_id, target_id);
-                        cy.add([{ group: 'edges', data: { id: edge_id, source: source_id, target: target_id, edgebelongto: 'true' }}]);
+                        cy.add([{ group: 'edges', data: { id: edge_id, source: source_id, target: target_id, edgebelongto: true }}]);
 
                     }
                 });

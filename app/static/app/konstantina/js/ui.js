@@ -1487,7 +1487,7 @@ window.onload = function () {
         */
         window.OBCUI.create_step_calls_step_edge = function(caller_id, callee_id) {
             return { 
-                data: { 'id': window.OBCUI.create_workflow_edge_id(caller_id, callee_id), 'weight': 1, 'source': caller_id, 'target': callee_id } 
+                data: { 'id': window.OBCUI.create_workflow_edge_id(caller_id, callee_id), 'weight': 1, 'source': caller_id, 'target': callee_id, 'edgebelongto': false } 
             };
         };
 
@@ -1499,7 +1499,7 @@ window.onload = function () {
         */ 
         window.OBCUI.create_step_read_input_edge = function(step_id, input_id) {
             return { 
-                data: { 'id': window.OBCUI.create_workflow_edge_id(input_id, step_id), 'weight': 1, 'source': input_id, 'target': step_id }
+                data: { 'id': window.OBCUI.create_workflow_edge_id(input_id, step_id), 'weight': 1, 'source': input_id, 'target': step_id, 'edgebelongto': false }
             };
         };
 
@@ -1647,7 +1647,7 @@ window.onload = function () {
 						var myNode = { data: { id: this_input_output_id, label: d.name, name: d.name, type: d.type, description: d.description, belongto: this_node_wf_belong_to }};
 						myNodes.push(myNode);
 						//Connect with belongto workflow
-						myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_input_output_id, id: window.OBCUI.create_workflow_edge_id(this_node_wf_belong_to_id, this_input_output_id), edgebelongto: 'true' }});
+						myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_input_output_id, id: window.OBCUI.create_workflow_edge_id(this_node_wf_belong_to_id, this_input_output_id), edgebelongto: true }});
                 }
 
 
@@ -1698,7 +1698,8 @@ window.onload = function () {
                             }};
 
 							myNodes.push(myNode);
-							var myEdge = { data: { id: window.OBCUI.create_workflow_edge_id(d.dep_id, d.id), weight: 1, source: d.dep_id, target: d.id } };
+                            // Connect tool with dependant tool
+							var myEdge = { data: { id: window.OBCUI.create_workflow_edge_id(d.dep_id, d.id), weight: 1, source: d.dep_id, target: d.id, edgebelongto: false } };
 							myEdges.push(myEdge);
 
 						} else {
@@ -1727,7 +1728,8 @@ window.onload = function () {
                             } };
 
 							myNodes.push(myNode);
-							myEdges.push({ data: { source: this_node_wf_belong_to_id, target: d.id, id: window.OBCUI.create_workflow_edge_id(this_node_wf_belong_to_id, d.id), edgebelongto: 'true' } });
+                            // Connect tool with workflow
+							myEdges.push({ data: { source: this_node_wf_belong_to_id, target: d.id, id: window.OBCUI.create_workflow_edge_id(this_node_wf_belong_to_id, d.id), edgebelongto: true } });
 						}
 
                 }
@@ -1754,7 +1756,7 @@ window.onload = function () {
                     } };
 
                     myNodes.push(myNode);
-                    myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_workflow_id, id: window.OBCUI.create_workflow_edge_id(this_node_wf_belong_to_id, this_workflow_id), edgebelongto: 'true' } });
+                    myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_workflow_id, id: window.OBCUI.create_workflow_edge_id(this_node_wf_belong_to_id, this_workflow_id), edgebelongto: true } });
 					
                 }
 
@@ -1768,21 +1770,22 @@ window.onload = function () {
                     myNodes.push(myNode);
 
                     //Connect with belong workflow
-                    myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_step_id, id: window.OBCUI.create_workflow_edge_id(this_node_wf_belong_to_id, this_step_id), edgebelongto: 'true' } });
+                    myEdges.push({ data: { source: this_node_wf_belong_to_id, target: this_step_id, id: window.OBCUI.create_workflow_edge_id(this_node_wf_belong_to_id, this_step_id), edgebelongto: true } });
 
-                    //create edges to tools and/or steps
+                    //create edges from step to tools
                     if (typeof d.tools !== "undefined") {
                         //replace special characters
 
                         d.tools.forEach(function (element) {
                             //element = element.replace(/\[/g, '').replace(/]/g, '').replace(/"/g, '').replace(/,/g, '').replace(/ /g, '');
 
-                            var myEdge = { data: { 'id': window.OBCUI.create_workflow_edge_id(this_step_id, element), 'weight': 1, 'source': this_step_id, 'target': element } };
+                            var myEdge = { data: { 'id': window.OBCUI.create_workflow_edge_id(this_step_id, element), 'weight': 1, 'source': this_step_id, 'target': element, 'edgebelongto': false } };
                             myEdges.push(myEdge);
 
                         });
                     }
 
+                    //Create edges from steps to steps
                     if (typeof d.steps !== "undefined") {
                         d.steps.forEach(function (element) {
                             //var myEdge = { data: { 'id': window.OBCUI.create_workflow_edge_id(this_step_id, element), 'weight': 1, 'source': this_step_id, 'target': element } };
@@ -1790,7 +1793,7 @@ window.onload = function () {
                         });
                     }
 
-
+                    //Create edges from steps to inputs
                     if (typeof d.inputs !== "undefined") {
                         d.inputs.forEach(function (element) {
                             myEdges.push(window.OBCUI.create_step_read_input_edge(this_step_id, element));
@@ -1800,9 +1803,10 @@ window.onload = function () {
                         });
                     }
 
+                    //Create edges from steps to outpus
                     if (typeof d.outputs !== "undefined") {
                         d.outputs.forEach(function (element) {
-                            var myEdge = { data: { 'id': window.OBCUI.create_workflow_edge_id(this_step_id, element), 'weight': 1, 'source': this_step_id, 'target': element } };
+                            var myEdge = { data: { 'id': window.OBCUI.create_workflow_edge_id(this_step_id, element), 'weight': 1, 'source': this_step_id, 'target': element, 'edgebelongto': false } };
                             myEdges.push(myEdge);
 
                         });
@@ -2387,7 +2391,7 @@ window.onload = function () {
                         }
                     },
                     {
-                        selector: 'edge[edgebelongto="true"]',
+                        selector: 'edge[?edgebelongto]',
                         "style": {
 							'curve-style': 'bezier',
                             'target-arrow-shape': 'triangle',
