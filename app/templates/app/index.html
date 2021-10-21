@@ -168,7 +168,12 @@
 	<script src="/static/app/node_modules/popper.js/dist/umd/popper.min.js" type="text/javascript" charset="utf-8"></script>
 	<script src="/static/app/node_modules/cytoscape-popper/cytoscape-popper.js" type="text/javascript"
 		charset="utf-8"></script>
-	<script src="/static/app/node_modules/tippy.js/esm/index.all.min.js" type="text/javascript" charset="utf-8"></script>
+	
+	<!--
+	Do not add the esm version of tippy since it cannot import popper. 
+	-->
+	<script  src="/static/app/node_modules/tippy.js/umd/index.all.min.js" type="text/javascript" charset="utf-8"></script>
+
 	<!--cytoscape tooltip css-->
 	<link rel="stylesheet" href="/static/app/node_modules/tippy.js/index.css" />
 	<link rel="stylesheet" href="/static/app/custom_tippy.css" />
