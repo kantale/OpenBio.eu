@@ -8,5 +8,10 @@ The following individuals have also contributed to the development of OpenBio-C
 * Nikos Kanakaris <nikos.kanakaris89@gmail.com>
 * Manos Koutoulakis <koutoulakis_m@outlook.com>
 * Konstantina Pitianou <kwna.pitianou@gmail.com>
+* [Ioannis-Rafail Tzonevrakis](https://github.com/irtzonevrakis) <irt@ics.forth.gr>
+
+
+
+
 
 
