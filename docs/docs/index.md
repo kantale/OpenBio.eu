@@ -1357,7 +1357,7 @@ curl -H 'Accept: application/json' -H 'Authorization: Token 11203cc7c93f32a9a0b0
 
 You can get your access token by visiting your profile page. 
 
-# OpenBio.eu data model
+# OpenBio.eu Workflow data model
 One of the formats in which a workflow can be downloaded is JSON. In more detail the root keys of the JSON format are the following:
 
 * ```arguments```: The arguments of the workflow (See section: "Setting input values for workflows")
@@ -1436,9 +1436,32 @@ As with nodes, each edge contains a `data` field which is a dictionary with the 
 
 The first category "holds the workflow together" as it links workflow nodes with "inside elements" (i.e. tools, steps). The other types of edges has a special semantic and show some type of function. The value of the `edgebelongto` is `True` only if the edge belongs to the first category.
 
+As with nodes apart from the `data` field, all edges have the following fields which are cytoscape specific: `position`, `group`, `removed`, `selected`,  `selectable`, `locked`, `grabbable`, `pannable`,  `classes`.
 
-As with nodes apart from the `data` field, all edges have the following fields which are cytoscape specific:
-`position`, `group`, `removed`, `selected`,  `selectable`, `locked`, `grabbable`, `pannable`,  `classes`.
+# OpenBio Executable Data Model
+* `environment_variables`: Dictionary of environment variables and their corresponding values. These environment variables should be present in every execution node. More importantly the paths that are defined there should also be accessible from all execution nodes.
+* `steps`: Dictionary with the bash commands. Keys are unique IDs for each step. Each step is described with a dictionary with the following keys/values:
+   * `bash`: The bash commands of this step.
+   * `run_after`: A list of IDs of the steps that need to run **before** this step. Or else this step should run **after** these steps. This list is empty for the step that runs first. Basically through the IDs in this field you can easily deduct the [directed acyclic graph](https://en.wikipedia.org/wiki/Directed_acyclic_graph])(DAG) of the workflow. It is important that this is **NOT** the [transitive reduction](https://en.wikipedia.org/wiki/Transitive_reduction) of the DAG. This means that the `run_after` field contains **ALL** the IDs of the steps that have to be run before the step. For example if we have the workflow `A-->B-->C` the `run_after` of `A` is empty, the `run_after` of `B` is `[A]` and the `run_after` of `C` is `[A, B]`. Notice that in the transitive reduction of this DAG the `run_after` of `C` should be `[B]` and not `[A, B]`.
+   * Each step belongs to one of the following categories:
+      * The step with ID `INIT_STEP`: This is the first step that should be run. This step:
+         * Creates the directory: `OBC_REPORT_DIR=${OBC_WORK_PATH}/${OBC_NICE_ID}` . This directory will contain the files that will be included in the report.
+         * Creates the file: `OBC_REPORT_PATH=${OBC_WORK_PATH}/${OBC_NICE_ID}.html`. This file will contain the html with the report. The report will contain html links to the files in the `OBC_REPORT_DIR` directory, 
+         * Creates the file: `${OBC_WORK_PATH}/obc_functions.sh` that should be accessible from all execution nodes. This scripts creates the `REPORT` function. By calling this function in any bash script, the report is updated.
+         * When creating a workflow in any DSL you are advised to create a first step that contains the concatenation of the following (in that order):
+            1. A script that exports the `environment_variables`
+            2. The script included in the `INIT_STEP` step.
+            3. The script included in the `input_parameters` step.
+      * The steps that have IDs with the following format: `ABC__KLM__123` are steps that install the tools that are required for the workflow to run. The `ABC__KLM__123`  ID format refers to the tool with name `ABC`, with version `KLM` and edit `123`. Of course the IDs in the `run_after` field of these steps respect the tool dependencies. These steps perform the following tasks:
+         1. export the `environment_variables`
+         2. Runs the bash scripts that export the parameters of the previous tools. These are tools that were installed before this tool in the pipeline. See below for the `${OBC_WORK_PATH}/<ID>_VARS.sh` files. 
+         3. Run the tool installation commands
+         4. Run the tool validation commands
+         5. Check if the tool validation commands returned any error code (other than 0). 
+         6. Create a file called: `${OBC_WORK_PATH}/<ID>_VARS.sh`. This file is a bash script that when it runs, it exports the parameters of this tool. This script should be called before any other subsequent step, otherwise subsequent steps will not have access to the parameters of this tool. This is taken care within the bash scripts of the subsequent steps (no need to do anything).
+* `input_parameters`: This contains a bash script which creates a file named: `${OBC_WORK_PATH}/{OBC_NIDE_ID}_inputs.sh`. This file  exports the input variables of the workflow to the current environment. It is important that the script `${OBC_WORK_PATH}/{OBC_NIDE_ID}_inputs.sh` should always run before any step otherwise the steps will not have access to the input parameters. Important clarification: The bash script contained in this key (`input_parameters`) should only run once during initialization (most of the times along with the `INIT_STEP`). The bash script that this bash script creates (`${OBC_WORK_PATH}/{OBC_NIDE_ID}_inputs.sh`) should always run before any step.
+
+
 
 
 
