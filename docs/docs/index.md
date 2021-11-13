@@ -1566,13 +1566,7 @@ The JSON representation of the DAG of a workflow has the following fields:
          4. Run the bash script that exports the global bash functions (`obc_functions.sh`)
          5. Creates a tar gzip file with the name `${OBC_WORK_PATH}/${OBC_NICE_ID}.tgz` that contains the HTML of the report and the files that this report includes
          6. echoes the output variables in a JSON format.
-
-
-
-
-
-
-
+* `DAG`. This is the Directed Acyclic Graph of the workflow. It is a dictionary. Keys are the IDs of the steps. Values are lists of the IDs of the steps that should run before the keys (or else the predecessors of the steps that are keys)
 
 
 

@@ -5,6 +5,7 @@ import re
 import csv
 import copy
 import json
+import yaml
 import base64
 import random
 import string
@@ -1850,7 +1851,7 @@ OBCENDOFFILE
 
     def obc_final_step(self, previous_tools, previous_steps_vars):
         # CREATE FINAL OPERATOR
-        # Add all variables from previous tools
+        # Add all variables from previous tools. 
         load_tool_vars = ''
         for tool_filename in previous_tools:
             load_tool_vars += '. {}\n'.format(tool_filename)
@@ -1963,6 +1964,167 @@ OBCENDOFFILE
         if output is None:
             fileIO.flush()
             return fileIO.getvalue()
+
+    def decompose(self,):
+        '''
+        Decomposes the workflow in steps
+        '''
+        self.decomposed = {
+            'environment_variables': {},
+            'steps': {
+
+            },
+        }
+
+        # ENVIRONMENT VARIABLES
+        environment_variables = self.get_environment_variables()
+        for k,v in environment_variables.items():
+            self.decomposed['environment_variables'][k] = v
+        self.decomposed['environment_variables']['OBC_RANDOM_NICE_ID'] = self.workflow.nice_id_global
+        self.decomposed['environment_variables']['OBC_SERVER'] = self.workflow.obc_server
+
+        #print ('ENVIRONMENT VARIABLES:')
+        #print (json.dumps(ret['environment_variables'], indent=4))
+
+
+        # INPUT VARIABLES
+        self.decomposed['input_parameters'] = self.workflow.input_parameter_values
+        #print ('INPUT VARIABLES:')
+        #print (json.dumps(ret['input_parameters'], indent=4))
+
+        # OUTPUT VARIABLES
+        self.decomposed['output_parameters'] = {x['id']: {
+                'description': x['description'],
+                'belongto': x['belongto'],
+            } for x in self.workflow.output_parameters
+        }
+
+        #print ('OUTPUT VARIABLES:')
+        #print (json.dumps(ret['output_parameters'], indent=4))
+
+        # INIT STEP
+        initial_variabes = self.initial_variabes()
+        input_parameters = self.save_input_parameters(from_workflow=True) # touch ${OBC_WORK_PATH}/v5FDK_inputs.sh
+        init_bash = initial_variabes + self.obc_init_step() + input_parameters
+
+        run_afters = {'INIT_STEP': []}
+        self.decomposed['steps']['INIT_STEP'] = {
+            'bash' : init_bash,
+            'run_after': [],
+        }
+
+        #print ('INIT BASH:')
+        #print (init_bash)
+
+        # INPUT PARAMETERS 
+        self.decomposed['input_parameters'] = self.workflow.input_parameter_values
+
+        # TOOL STEPS
+        tool_ids = []
+        previous_tools = []
+        
+
+        for tool_index, tool in enumerate(self.workflow.tool_bash_script_generator()):
+
+            tool_vars_filename = os.path.join('${OBC_WORK_PATH}', Workflow.get_tool_vars_filename(tool))
+            tool_id = self.workflow.get_tool_dash_id(tool, no_dots=True)
+            
+            bash = self.initial_variabes()
+            bash += self.workflow.get_tool_bash_commands(
+                tool=tool, 
+                validation=True, 
+                update_server_status=False,
+                read_variables_from_command_line=False,
+                variables_json_filename=None,
+                variables_sh_filename_read = previous_tools,
+                variables_sh_filename_write = tool_vars_filename,
+            )
+
+            #print (f'TOOL ID: {tool_id}')
+            #print (bash)
+
+            run_afters[tool_id] = ['INIT_STEP'] # All tools run after PROCESSOBCINIT
+            if tool_ids:
+                run_afters[tool_id] += copy.copy(tool_ids)
+                
+            tool_ids.append(tool_id)
+            previous_tools.append(tool_vars_filename)
+
+            self.decomposed['steps'][tool_id] = {
+                'bash': bash,
+                'run_after': run_afters[tool_id],
+            }
+
+        # STEP STEPS!
+        previous_steps_vars = []
+        step_inter_ids = []
+        step_bash_scripts = []
+        all_step_inter_ids = []
+        for step in self.workflow.break_down_step_generator(
+            enable_read_arguments_from_commandline=False,
+            enable_save_variables_to_json=False,
+            enable_save_variables_to_sh=False,
+            ):
+
+            step_id = step['id']
+            count = step['count']
+            bash = step['bash']
+            step_inter_id = '{}__{}'.format(step_id, str(count))
+            all_step_inter_ids.append(step_inter_id)
+            step_inter_ids.append(step_inter_id)
+            step_vars_filename = self.create_step_vars_filename(step_inter_id) # os.path.join('${OBC_WORK_PATH}', step_inter_id + '.sh')
+
+            run_afters[step_inter_id] = ['INIT_STEP'] + tool_ids
+            if step['run_after']:
+                run_afters[step_inter_id] += step['run_after']
+
+            # Add declare. This should be first
+            bash = self.workflow.declare_decorate_bash(bash, step_vars_filename)
+
+            # Add all variables from previous tools
+            load_tool_vars = ''
+            for tool_filename in previous_tools:
+                load_tool_vars += '. {}\n'.format(tool_filename)
+            
+            # Load all variables from previous steps
+            load_step_vars = ''
+            if step['run_after']:
+                for run_after_step in step['run_after']:
+                    load_step_vars += '. {}\n'.format(self.create_step_vars_filename(run_after_step))
+            
+            bash = self.initial_variabes() + load_tool_vars + self.load_file_with_input_parameters() + load_step_vars + self.load_obc_functions_bash + bash
+
+            previous_steps_vars.append(step_vars_filename)
+
+            #print (f'STEP ID {step_inter_id}')
+            #print (bash)
+
+            self.decomposed[step_inter_id] = {
+                'bash': bash,
+                'run_after': run_afters[step_inter_id]
+            }
+
+        # FINAL STEP
+        bash = self.initial_variabes() + self.obc_final_step(previous_tools, previous_steps_vars)     
+        #print ('FINAL_STEP:')
+        #print (bash)
+
+        run_afters['FINAL_STEP'] = ['INIT_STEP'] + tool_ids + all_step_inter_ids 
+        self.decomposed['FINAL_STEP'] = {
+            'bash': bash,
+            'run_after': run_afters['FINAL_STEP'],
+        }
+
+        #print ('===FINAL====')
+        #print (json.dumps(ret, indent=4))
+
+
+        DAG = self.transitive_reduction(run_afters)
+        self.decomposed['DAG'] = {node: list(DAG.predecessors(node)) for node in DAG.nodes()}
+
+#        print ('DAG:')
+#        print (self.decomposed['DAG'])
+        return "test"
 
 
 class LocalExecutor(BaseExecutor):
@@ -2933,12 +3095,158 @@ spec:
 
         return argo
 
+
 class ArgoExecutor2(BaseExecutor):
+    '''
+    Highly experimental...
+    '''
+
+    def create_artifact(self, *, name, path, raw_data):
+        return {
+            'name': name,
+            'path': path,
+            'raw': {
+                'data': raw_data,
+            }
+        }
+
+    def create_template(self, *, name, inputs, container):
+
+        return {
+            'name': name,
+            'inputs': inputs,
+            'container': container,
+        }
+
+    def create_template_dag(self, name, dag):
+        return {
+            'name': name,
+            'dag': dag,
+        }
+
+    def create_input(self, *, artifacts):
+        return {
+            'artifacts': artifacts,
+        }
+
+    def create_container(self, *, image, args):
+        return {
+            'image': image,
+            'args': args
+        }
+
+    def create_task(self, *, name, dependencies, template):
+        return {
+            'name': name,
+            'dependencies': dependencies,
+            'template': template,
+        }
+
+    def create_dag(self, tasks): 
+        return {
+            'tasks': tasks,
+        }
+
+
     def build(self, output, output_format='argo2', workflow_id=None, obc_client=False):
+        self.data = {
+            'metadata': {
+                'generateName': 'workflow-name-',
+            },
+            'spec': {
+                'entrypoint': 'DAG-workflow-name',
+            }
+
+        }
+
+        # {'OBC_WORKFLOW_NAME': 'w', 'OBC_WORKFLOW_EDIT': '1', 'OBC_NICE_ID': 'w__1'}
+        variables = self.get_environment_variables(obc_client=obc_client, workflow_id=workflow_id)
+
+        print ('Variables:')
+        print (variables)
+
+        # Create init step
+        bash = self.obc_init_step()
+        bash += self.save_input_parameters(from_workflow=True)
+        bash = f'''
+#!/bin/bash
+export OBC_WORKFLOW_NAME="{variables['OBC_WORKFLOW_NAME']}"
+export OBC_WORKFLOW_EDIT="{variables['OBC_WORKFLOW_EDIT']}"
+export OBC_NICE_ID="{variables['OBC_NICE_ID']}"
+export OBC_WORK_PATH="/private/openbio"
+{bash}
+        '''
+
+        init_artifact_script = self.create_artifact(
+            name='install-tool1',
+            path = '/tmp/image-for-step1/install-tool1.sh',
+            raw_data=bash,
+        )
+
+        init_artifact_dockerfile = self.create_artifact(
+            name='Dockerfile',
+            path= '/tmp/image-for-step1/Dockerfile',
+            raw_data = '''
+FROM ubuntu:18.04
+ADD . /root/
+WORKDIR /root
+RUN apt-get update
+RUN chmod +x install-tool1.sh && ./install-tool1.sh
+''',
+        )
+
+
+        init_input = self.create_input(artifacts=[init_artifact_script, init_artifact_dockerfile])
+        init_container = self.create_container(
+            image = 'gcr.io/kaniko-project/executor:latest',
+            args = [
+              "--dockerfile=Dockerfile",
+              "--cache=true",
+              "--cache-dir=/private/.kaniko",
+              "--context=dir:///tmp/image-for-step1",
+              "--destination=192.168.1.213:5000/image-for-step1:v5",
+            ]
+        )
+        init_template = self.create_template(
+            name='install-tool1',
+            inputs = init_input,
+            container= init_container,
+        )
+
+
+        ####################
+        init_task = self.create_task(
+            name = 'step-init', # step names should not contain uderscore
+            dependencies = [],
+            template = 'install-tool1',
+        )
+        dag = self.create_dag(tasks = [init_task])
+        dag_template = self.create_template_dag(
+            name='DAG-workflow-name',
+            dag = dag,
+        )
+
+
+        self.data['spec']['templates'] = [init_template, dag_template]
+
+
+        print (bash)
+
+
+        #print (yaml.dump(self.data, indent=4))
+        print (yaml.safe_dump(self.data, indent=4))
+        print ('==========================================')
+
+        print (json.dumps(self.data, indent=4))
+
         return 'test'
 
+class JSONDAGExecutor(BaseExecutor):
+    def build(self, output, output_format='json', workflow_id=None, obc_client=False):
+        
 
-
+        self.decompose()
+        return json.dumps(self.decomposed)
 
 
 class NextflowExecutor(BaseExecutor):
@@ -3315,8 +3623,8 @@ rule {RULE_ID}:
             #successors = list(DAG.successors(node))
 
             rules.append(SnakemakeExecutor.RULE_TEMPLATE.format(
-                RULE_ID=node,
-                INPUT =  SnakemakeExecutor.create_input_output('input',  [self.create_rule_filename(x) for x in predecessors]),
+                RULE_ID = node,
+                INPUT = SnakemakeExecutor.create_input_output('input',  [self.create_rule_filename(x) for x in predecessors]),
                 OUTPUT = SnakemakeExecutor.create_input_output('output',  [self.create_rule_filename(node)]),
                 SHELL = self.create_shell(snakemake_rules[node]['BASH'], node),
             ))
@@ -3349,6 +3657,10 @@ def create_bash_script(workflow_object, server, output_format, workflow_id=None,
         w = Workflow(workflow_object = workflow_object, askinput='BASH', obc_server=server)
         e = LocalExecutor(w)
         return e.build(output=None)
+    elif output_format == 'jsondag':
+        w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
+        e = JSONDAGExecutor(w)
+        return e.build(output=None, output_format='jsondag', workflow_id=workflow_id, obc_client=obc_client)
     elif output_format in ['cwltargz', 'cwlzip']:
         w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
         e = CWLExecutor(w)

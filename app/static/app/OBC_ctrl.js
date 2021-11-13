@@ -4711,9 +4711,15 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     */
     $scope.download_data = function(download_type, data, caller, editable) {
         // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs
-        if (download_type == 'JSON') {
+        if (download_type == 'JSONGRAPH') {
             $("#hiddena").attr({
                 "download" : 'workflow.json',      
+                "href" : "data:," + data['output_object']
+            }).get(0).click();
+        }
+        else if (download_type == 'JSONDAG') {
+            $("#hiddena").attr({
+                "download" : 'workflow_dag.json',      
                 "href" : "data:," + data['output_object']
             }).get(0).click();
         }

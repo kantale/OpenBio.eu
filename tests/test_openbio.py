@@ -596,6 +596,9 @@ def test_225_2():
   delete_workflow(w1)
   delete_tool(t1)
 
+def test_229():
+  t1 = create_tool(name='t1', version="1")
+  delete_tool(t1);
 
 #############################################################
 
@@ -605,7 +608,7 @@ def t():
    '''
    print ('Running t() ...')
 
-   test_225_2()
+   test_229()
 
 
 

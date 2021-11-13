@@ -3905,8 +3905,10 @@ def download_workflow(request, **kwargs):
     server_url = get_server_url(request)
 
     try:
-        if download_type == 'JSON':
+        if download_type == 'JSONGRAPH':
             output_object = simplejson.dumps(output_object)
+        elif download_type == 'JSONDAG':
+            output_object = create_bash_script(output_object, server_url, 'jsondag', workflow_id=workflow_id, obc_client=workflow_obc_client)
         elif download_type == 'BASH':
             output_object = create_bash_script(output_object, server_url, 'sh')
         elif download_type == 'CWLTARGZ':

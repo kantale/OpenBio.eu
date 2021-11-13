@@ -153,7 +153,7 @@ class WorkflowSerializerDAG(serializers.BaseSerializer):
             # Return binary object
             do_url_quote = False
             return_bytes = True
-        elif self.format_ == 'JSON':
+        elif self.format_ in ['JSONGRAPH', 'JSONDAG']:
             do_url_quote = False
             return_bytes = False
         else:
