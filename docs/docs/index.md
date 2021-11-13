@@ -1519,43 +1519,53 @@ This will create the following DAG:
 ![img](screenshots/screen_46.png)
 
 
-* `environment_variables`: Dictionary of environment variables and their corresponding values. These environment variables should be present in every execution node. More importantly the paths that are defined there should also be accessible from all execution nodes.
+Through these examples we notice that describing the workflow in Bash is far more intuitive than describing it in DAGs.
+
+## The JSON format 
+The JSON representation of the DAG of a workflow has the following fields:
+
+* `environment_variables`: Dictionary of environment variables and their corresponding values. These environment variables should be present in every execution node. More importantly the paths that are defined there should also be accessible from all execution nodes. These variables are loaded by default from every step, so usually you don't have to do anything.
+* `input_variables`: This is a dictionary with the names, values and description of the input parameters. Bash commands to propagate these values are included in all bash scripts. The keys are the names of the input parameters. The values are dictionaries with the following keys:
+   * `value`: The input value that has been assigned through the UI (right click in an input node and select the "SET" option)
+   * `description`: The description of this input variable.
+* `output_variables`: This is a dictionary containing the output variables. In contrast to `input_variables` this includes all output variables of this workflow including the output variables of the workflows that it includes. The keys are the IDs of the output parameters. The values are dictionaries with the following keys:
+   * `description`: The description of this output variable
+   * `belongto`: Contains the workflow that this output variables belongs to. This is a dictionary with the following keys:
+      * `name`: The name of the workflow to which this output variable belongs.
+      * `edit`: The edit of the workflow to which this output variable belongs. 
 * `steps`: Dictionary with the bash commands. Keys are unique IDs for each step. Each step is described with a dictionary with the following keys/values:
    * `bash`: The bash commands of this step.
    * `run_after`: A list of IDs of the steps that need to run **before** this step. Or else this step should run **after** these steps. This list is empty for the step that runs first. Basically through the IDs in this field you can easily deduct the [directed acyclic graph](https://en.wikipedia.org/wiki/Directed_acyclic_graph])(DAG) of the workflow. It is important that this is **NOT** the [transitive reduction](https://en.wikipedia.org/wiki/Transitive_reduction) of the DAG. This means that the `run_after` field contains **ALL** the IDs of the steps that have to be run before the step. For example if we have the workflow `A-->B-->C` the `run_after` of `A` is empty, the `run_after` of `B` is `[A]` and the `run_after` of `C` is `[A, B]`. Notice that in the transitive reduction of this DAG the `run_after` of `C` should be `[B]` and not `[A, B]`.
    * Each step belongs to one of the following categories:
       * The step with ID `INIT_STEP`: This is the first step that should be run. This step:
-         * Creates the directory: `OBC_REPORT_DIR=${OBC_WORK_PATH}/${OBC_NICE_ID}` . This directory will contain the files that will be included in the report.
-         * Creates the file: `OBC_REPORT_PATH=${OBC_WORK_PATH}/${OBC_NICE_ID}.html`. This file will contain the html with the report. The report will contain html links to the files in the `OBC_REPORT_DIR` directory, 
-         * Creates the file: `${OBC_WORK_PATH}/obc_functions.sh` that should be accessible from all execution nodes. This scripts creates the `REPORT` function. By calling this function in any bash script, the report is updated.
-         * When creating a workflow in any DSL you are advised to create a first step that contains the concatenation of the following (in that order):
-            1. A script that exports the `environment_variables`
-            2. The script included in the `INIT_STEP` step.
-            3. The script included in the `input_parameters` step.
+         1. Exports the environment variables: `OBC_WORKFLOW_NAME`, `OBC_WORKFLOW_EDIT`, `OBC_NICE_ID`, `OBC_SERVER`.
+         2. Creates the directory: `OBC_REPORT_DIR=${OBC_WORK_PATH}/${OBC_NICE_ID}` . This directory will contain the files that will be included in the report.
+         3. Creates the file: `OBC_REPORT_PATH=${OBC_WORK_PATH}/${OBC_NICE_ID}.html`. This file will contain the html with the report. The report will contain html links to the files in the `OBC_REPORT_DIR` directory, 
+         4. Creates the file: `${OBC_WORK_PATH}/obc_functions.sh` that should be accessible from all execution nodes. This scripts contains the `REPORT` function. By calling this function in any bash script, the report is updated.
+         5. Creates the file `${OBC_WORK_PATH}/<NICE_ID>_inputs.sh`. This script exports the variables with the input parameters of the workflow. This script runs before every step.
       * The steps that have IDs with the following format: `ABC__KLM__123` are steps that install the tools that are required for the workflow to run. The `ABC__KLM__123`  ID format refers to the tool with name `ABC`, with version `KLM` and edit `123`. Of course the IDs in the `run_after` field of these steps respect the tool dependencies. These steps perform the following tasks:
-         1. export the `environment_variables`
+         1. export the environment_variables: `OBC_WORKFLOW_NAME`, `OBC_WORKFLOW_EDIT`, `OBC_NICE_ID` and `OBC_SERVER`. 
          2. Runs the bash scripts that export the parameters of the previous tools. These are tools that were installed before this tool in the pipeline. See below for the `${OBC_WORK_PATH}/<ID>_VARS.sh` files. 
          3. Run the tool installation commands
          4. Run the tool validation commands
          5. Check if the tool validation commands returned any error code (other than 0). 
          6. Create a file called: `${OBC_WORK_PATH}/<ID>_VARS.sh`. This file is a bash script that when it runs, it exports the parameters of this tool. This script should be called before any other subsequent step, otherwise subsequent steps will not have access to the parameters of this tool. This is taken care within the bash scripts of the subsequent steps (no need to do anything).
-      * The steps that have the IDs with the following format: ```step__ABC__KLM__123__456```. These are steps of the workflows. `ABC` is the name of the step in the workflow. `KLM` is the name of the workflow. `123` is the edit of the workflow. `456` indicates the current number of sub-step that this step has been broken into. That is, each step needs to be broken into several 
-
-
-      The bash script of a sub-step performs the following tasks:
-         1. export the `environment_variables`.
+      * The steps that have the IDs with the following format: ```step__ABC__KLM__123__456```. These are steps of the workflows. `ABC` is the name of the step in the workflow. `KLM` is the name of the workflow. `123` is the edit of the workflow. `456` indicates the current number of sub-step that this step has been broken into. Notice in the 1st example that the commands in `step__1` have been broken in two DAG nodes (first and last). Also the commands of the step `step__1` have been broken in three DAG nodes (first, fifth, and last). So in order to DAG-ify a step we need to break it into several DAG nodes. The last digit in the STEP ID indicates the order of this node which contains the commands of the original step that has been broken into. 
+      of this node. The bash script of a sub-step (or else DAG node) performs the following tasks:
+         1. Export the environment_variables: `OBC_WORKFLOW_NAME`, `OBC_WORKFLOW_EDIT`, `OBC_NICE_ID` and `OBC_SERVER`. 
          2. Run the bash scripts that export the parameters of the tools of the workflow.
-         3. Run the bash scripts that export the input values of the workflow (see `input_parameters` below).
-         4. Run the bash scripts that export the variables that have been defined from all the previous sub-steps of this sub-step
-         4. Run the bash commands of this sub-step
-         5. Create a file called `${OBC_WORK_PATH}/<ID>_VARS.sh` with all the variables that have been defined in this sub-step.
-
-
-
-
-
-* `input_parameters`: This contains a bash script which creates a file named: `${OBC_WORK_PATH}/{OBC_NIDE_ID}_inputs.sh`. This file  exports the input variables of the workflow to the current environment. It is important that the script `${OBC_WORK_PATH}/{OBC_NIDE_ID}_inputs.sh` should always run before any step otherwise the steps will not have access to the input parameters. Important clarification: The bash script contained in this key (`input_parameters`) should only run once during initialization (most of the times along with the `INIT_STEP`). The bash script that this bash script creates (`${OBC_WORK_PATH}/{OBC_NIDE_ID}_inputs.sh`) should always run before any step.
-
+         3. Run the bash scripts that export the input values of the workflow (`${OBC_WORK_PATH}/<NICE_ID>_inputs.sh`).
+         4. Run the bash scripts that export the variables that have been defined from all the previous sub-steps of this sub-step in the DAG.
+         5. Run the bash script that exports the global bash functions (`obc_functions.sh`)
+         6. Run the bash commands of this sub-step
+         7. Create a file called `${OBC_WORK_PATH}/<ID>_VARS.sh` with all the variables that have been defined in this sub-step.
+      * The with the ID `FINAL_STEP`. This is the last step that should be run. This step:
+         1. Exports the environment_variables: `OBC_WORKFLOW_NAME`, `OBC_WORKFLOW_EDIT`, `OBC_NICE_ID` and `OBC_SERVER`. 
+         2. Run the bash scripts that export the parameters of the tools of the workflow.
+         3. Run the bash scripts that export the variables that have been defined from all the previous sub-steps of this sub-step in the DAG.
+         4. Run the bash script that exports the global bash functions (`obc_functions.sh`)
+         5. Creates a tar gzip file with the name `${OBC_WORK_PATH}/${OBC_NICE_ID}.tgz` that contains the HTML of the report and the files that this report includes
+         6. echoes the output variables in a JSON format.
 
 
 
