@@ -1470,6 +1470,7 @@ digraph G {
 -->
 
 This will create the following DAG:
+
 ![img](screenshots/screen_45.png)
 
 ## Example 2
@@ -1514,6 +1515,7 @@ digraph G {
 -->
 
 This will create the following DAG:
+
 ![img](screenshots/screen_46.png)
 
 
