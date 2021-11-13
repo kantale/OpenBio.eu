@@ -11,7 +11,7 @@ This is an incomplete documentation of the platform.
 Before we move on to create our new Tool or Dataset you need to know a few crucial things about the platform. What makes openbio.eu different from other platforms?
 
 1. **OpenBio.eu is able to "run" objects.**
-There are many repositories that store tools, data and workflows.  Examples are [bio.tools](https://bio.tools/), [osf.io](https://osf.io/) and [omictools](https://omictools.com/). These repositories offer very rich description and annotation of these objects, but they lack one crucial ability: to actually run this object (i.e. tool, workflow) on a computer that you have access to. OpenBio.eu is a repository of research objects that focus on this ability.Therefore, when you add or edit a new tool, data or workflow you need to provide explicit instruction of how to install the tool, download the data or execute the workflow. 
+There are many repositories that store tools, data and workflows.  Examples are [bio.tools](https://bio.tools/), [osf.io](https://osf.io/) and [omictools](https://omictools.com/). These repositories offer very rich description and annotation of these objects, but they lack one crucial ability: to actually run this object (i.e. tool, workflow) on a computer that you have access to. OpenBio.eu is a repository of research objects that focus on this ability. Therefore, when you add or edit a new tool, data or workflow you need to provide explicit instruction of how to install the tool, download the data or execute the workflow. 
 
 2. **OpenBio.eu's language for object installation/download/execution description is Bash.**
 Since you need to provide explicit instructions of how to install a tool, download data or execute a workflow, we need a computer language to do so. We chose [Bash](https://www.gnu.org/software/bash/). Some people will find Bash, difficult or outdated. Nevertheless Bash is the defacto glue language of the [\*nix universe](https://en.wikipedia.org/wiki/Unix-like). Bash is present by default in OSx and even [Windows 10 supports it natively](https://docs.microsoft.com/en-us/windows/wsl/install-win10). By hosting our code in Bash we make sure that it is directly executable in as many as possible environments. 
@@ -22,7 +22,13 @@ Since you need to provide explicit instructions of how to install a tool, downlo
 3. **In OpenBio.eu Tools and Data are the same type of objects.**
 Most Workflow Management Systems and Open Science environments distinguish Tools from Data. Users have to declare different properties for each, store them in different tables etc. OpenBio.eu does not make this distinction. Tool and Data are exactly the same type of objects, this is why on the remaining of this text, we will refer to these as "Tools/Data".
 
-   But why is that? Semantically and in the context of a Workflow Management System, Tools and Data do not actually have any differences! Tools have dependencies but data are useless without the presence of other data. We need commands to download, configure, compile and install tools but data need to be downloaded and most of the times they also need to be decompressed, pre-processed and installed. Also it is very common tools and data to co-exist in a dependency tree of other tools and data. 
+   But why is that? Semantically and in the context of a Workflow Management System (WFM), Tools and Data do not actually have any differences! Tools have dependencies but data are useless without the presence of other data. We need commands to download, configure, compile and install tools but data need to be downloaded and most of the times they also need to be decompressed, pre-processed and installed. Also it is very common tools and data to co-exist in a dependency tree of other tools and data. 
+
+4. **In OpenBio.eu, workflows are NOT DAGs (although they can be converted to DAGs)** 
+Workflows in OpenBio.eu are written just like any Bash script. Different components, called steps, are called explicitly from other steps with simple Bash function calls. This mechanism will be explained later but we need to make a crucial distinction here. In most existing Workflow Management Systems, workflows are written as [Directed Acyclic Graphs](https://en.wikipedia.org/wiki/Directed_acyclic_graph), or else DAGs. In a DAG you do not explicitly call steps. Instead you declare beforehand the order of step execution by defining which steps are running after which steps. This approach has pros and cons. The positive is that you have a simple data model. Also, you can easily take one part of a DAG and plug it in another part of a DAG to create a new workflow. The negative is that common programming structures like conditional execution and iteration are not supported (some WFMs offer these structures but in hack-y, unnatural way). Also DAG composing is not very intuitive for users that are used to typical programming and most of the times you need to learn a new language (Domain Specific Language, or DSL), which is different for every WMS. As we said earlier, in OpenBio.eu you can write your workflow by using any programming construct (iteration, conditions, ...) that Bash offers. Yet, when executing your workflow you have two options: The first is to run it directly as a Bash script. This will give you the flexibility of Bash but will not give you the.. fanciness of modern WFMs. The second option is to *convert* your workflow to DAG. A converted to DAG workflow can be saved in a variety of modern WFMs like [NextFlow](https://www.nextflow.io/), [SnakeMake](https://snakemake.readthedocs.io/en/stable/), [Argo](https://argoproj.github.io/) and [Airflow](https://airflow.apache.org/). This conversion is done with a rather complex algorithm that performs a [static analysis](https://en.wikipedia.org/wiki/Static_program_analysis) on the Bash script of the workflow, locates all the function calls to other steps, and progressively builds a DAG. Of course this method is not guaranteed to succeed. For example if a step is called inside an iteration it will fail. Nevertheless this gives you an amazing *liberty*: it allows you to compose your workflows in Bash and as long as you do not call other steps inside iterations\* and conditions, you can convert these workflows in DAGs in a variety of existing WMFs formats. So you don't have to learn the DSL of other WFMs, write your workflow in Bash and you are good to go. Moreover you can extract your workflow in a DAG in a JSON format and then build your own converter to the DSL of your choice. This is described here in the chapter *OpenBio.eu Workflow DAG data model*. 
+
+   \*. Iteration is actually supported for certain types of iterations (iterate through constant ranges, like for example all chromosome in the human genome). Check the `PARALLEL` mechanism described below. 
+
 
 ## Outlook of OpenBio.eu
 First of all OpenBio.eu is a [Single-page application](https://en.wikipedia.org/wiki/Single-page_application). You might have already noticed this. Interacting with openbio.eu does not change the links shown in your browser. So technically there isn't any "front page". When entering OpenBio.eu what you see is:
@@ -373,7 +379,7 @@ Notice that the first step called is the ```main_step``` that prints ```Hello fr
 
 **In OpenBio.eu steps are called from other steps. Or else in OpenBio.eu you do not define step order, instead you define step logic.** In most Workflow Management Systems like [Galaxy](https://galaxyproject.org/), [Nextflow](https://www.nextflow.io/) and [Taverna](http://www.taverna.org.uk/download/workbench/2-5/bioinformatics/) a user has to define two things: The first is steps and the second is Workflows. Steps (or *Processes* in Nextflow, *Tools* in Galaxy, *Services* in Taverna, ...) are independent execution components that can take part in one or many analyses. A workflow is a combination of Steps. A workflow usually defines the order in which the steps have to be executed. This abstraction is fine and has been used for decades in scientific computing. This abstraction is good because it serves a useful isolation between the execution (steps) and the execution flow (Workflow). 
 
-There is though a fundamental difference between this abstraction and the typical abstraction used in computer programming. In programming, "steps call other steps" as in "functions call other functions". In programming, you do not use different language syntax to differentiate between the things that can be called (steps) and the things that call them (workflows). In contrast, everything you do in programming "sits" inside a function. This function can call or be called by other functions. Yet in typical Workflow Management Systems, you cannot "call" a step from another step (unless you do something hack-ish like run the workflow execution engine from inside the step). Even worse, in WMS it is difficult (if not possible) to use  fundamental programming constructs like conditional executions (if.. else..) and iterations (for.. while..). 
+There is though a fundamental difference between this abstraction and the typical abstraction used in computer programming. In programming, "steps call other steps" as in "functions call other functions". In programming, you do not use different language syntax to differentiate between the things that can be called (steps) and the things that call them (workflows). In contrast, everything you do in programming "sits" inside a function. This function can call or be called by other functions. Yet in typical Workflow Management Systems, you cannot "call" a step from another step (unless you do something hack-ish like run the workflow execution engine from inside the step). Even worse, in WMS it is difficult (if not possible) to use fundamental programming constructs like conditional executions (if.. else..) and iterations (for.. while..). 
 
 In OpenBio.eu, steps belong to workflows. **BUT** you do not "call" workflows. You call steps. Then.. how did we run ```my_workflow``` which is a workflow? Every workflow has one (and only one) *main* step. When you download a workflow and you execute it, what you actually execute is the main step of this workflow. This is like the main function in [c/c++](https://en.cppreference.com/w/cpp/language/main_function), [java](https://docs.oracle.com/en/java/javase/13/docs/api/jdk.compiler/com/sun/tools/javac/Main.html) or the ```if __name__ == '__main__':``` [logic in python](https://stackoverflow.com/questions/419163/what-does-if-name-main-do). So, OpenBio.eu **does not** have any algorithm to determine the execution order of steps. It simply calls the main step of the workflow and lets.. Bash take it from there. From a step you can call other steps that belong to any workflow. You can even call.. yourself. Also, you can use any Bash construct (if, while, for, ...) to control flow, so conditional execution and iteration is natively supported. Main steps have a red border color on the graph. Also, there is a "main" checkbox in the step editing panel, so that you can change which step is main. If more than one steps have been defined as main, or none, an error will appear upon trying to save the workflow.
 
@@ -1357,8 +1363,8 @@ curl -H 'Accept: application/json' -H 'Authorization: Token 11203cc7c93f32a9a0b0
 
 You can get your access token by visiting your profile page. 
 
-# OpenBio.eu Workflow data model
-One of the formats in which a workflow can be downloaded is JSON. In more detail the root keys of the JSON format are the following:
+# OpenBio.eu Workflow graph data model
+One of the formats in which a workflow can be downloaded is in a JSON format that describes its graph structure. This format describes basically a graph according to the [cytoscape graph specifications](https://js.cytoscape.org/#notation/elements-json) (see below for more details). The graph that is described is the same as the one shown in the user interface when this workflow gets loaded. Below we document all the elements of this JSON format:
 
 * ```arguments```: The arguments of the workflow (See section: "Setting input values for workflows")
    * This is a dictionary. Keys are in the format ```input__<NAME_OF_PARAMETER>__<NAME_OF_WORKFLOW>__<EDIT_OF_WORKFLOW>```. This is the id of the input node in the cytoscape graph (see below). Values are the values that the user inserted.
@@ -1438,7 +1444,13 @@ The first category "holds the workflow together" as it links workflow nodes with
 
 As with nodes apart from the `data` field, all edges have the following fields which are cytoscape specific: `position`, `group`, `removed`, `selected`,  `selectable`, `locked`, `grabbable`, `pannable`,  `classes`.
 
-# OpenBio Executable Data Model
+# OpenBio.eu Workflow DAG data model
+Besides the graph data model, 
+
+ OpenBio Executable Data Model
+
+
+
 * `environment_variables`: Dictionary of environment variables and their corresponding values. These environment variables should be present in every execution node. More importantly the paths that are defined there should also be accessible from all execution nodes.
 * `steps`: Dictionary with the bash commands. Keys are unique IDs for each step. Each step is described with a dictionary with the following keys/values:
    * `bash`: The bash commands of this step.
@@ -1459,6 +1471,21 @@ As with nodes apart from the `data` field, all edges have the following fields w
          4. Run the tool validation commands
          5. Check if the tool validation commands returned any error code (other than 0). 
          6. Create a file called: `${OBC_WORK_PATH}/<ID>_VARS.sh`. This file is a bash script that when it runs, it exports the parameters of this tool. This script should be called before any other subsequent step, otherwise subsequent steps will not have access to the parameters of this tool. This is taken care within the bash scripts of the subsequent steps (no need to do anything).
+      * The steps that have the IDs with the following format: ```step__ABC__KLM__123__456```. These are steps of the workflows. `ABC` is the name of the step in the workflow. `KLM` is the name of the workflow. `123` is the edit of the workflow. `456` indicates the current number of sub-step that this step has been broken into. That is, each step needs to be broken into several 
+
+
+      The bash script of a sub-step performs the following tasks:
+         1. export the `environment_variables`.
+         2. Run the bash scripts that export the parameters of the tools of the workflow.
+         3. Run the bash scripts that export the input values of the workflow (see `input_parameters` below).
+         4. Run the bash scripts that export the variables that have been defined from all the previous sub-steps of this sub-step
+         4. Run the bash commands of this sub-step
+         5. Create a file called `${OBC_WORK_PATH}/<ID>_VARS.sh` with all the variables that have been defined in this sub-step.
+
+
+
+
+
 * `input_parameters`: This contains a bash script which creates a file named: `${OBC_WORK_PATH}/{OBC_NIDE_ID}_inputs.sh`. This file  exports the input variables of the workflow to the current environment. It is important that the script `${OBC_WORK_PATH}/{OBC_NIDE_ID}_inputs.sh` should always run before any step otherwise the steps will not have access to the input parameters. Important clarification: The bash script contained in this key (`input_parameters`) should only run once during initialization (most of the times along with the `INIT_STEP`). The bash script that this bash script creates (`${OBC_WORK_PATH}/{OBC_NIDE_ID}_inputs.sh`) should always run before any step.
 
 
