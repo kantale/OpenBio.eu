@@ -24,10 +24,10 @@ Most Workflow Management Systems and Open Science environments distinguish Tools
 
    But why is that? Semantically and in the context of a Workflow Management System (WFM), Tools and Data do not actually have any differences! Tools have dependencies but data are useless without the presence of other data. We need commands to download, configure, compile and install tools but data need to be downloaded and most of the times they also need to be decompressed, pre-processed and installed. Also it is very common tools and data to co-exist in a dependency tree of other tools and data. 
 
-4. **In OpenBio.eu, workflows are NOT DAGs (although they can be converted to DAGs)** 
+4. **In OpenBio.eu, workflows are NOT DAGs (although they can be converted to DAGs)**. 
 Workflows in OpenBio.eu are written just like any Bash script. Different components, called steps, are called explicitly from other steps with simple Bash function calls. This mechanism will be explained later but we need to make a crucial distinction here. In most existing Workflow Management Systems, workflows are written as [Directed Acyclic Graphs](https://en.wikipedia.org/wiki/Directed_acyclic_graph), or else DAGs. In a DAG you do not explicitly call steps. Instead you declare beforehand the order of step execution by defining which steps are running after which steps. This approach has pros and cons. The positive is that you have a simple data model. Also, you can easily take one part of a DAG and plug it in another part of a DAG to create a new workflow. The negative is that common programming structures like conditional execution and iteration are not supported (some WFMs offer these structures but in hack-y, unnatural way). Also DAG composing is not very intuitive for users that are used to typical programming and most of the times you need to learn a new language (Domain Specific Language, or DSL), which is different for every WMS. As we said earlier, in OpenBio.eu you can write your workflow by using any programming construct (iteration, conditions, ...) that Bash offers. Yet, when executing your workflow you have two options: The first is to run it directly as a Bash script. This will give you the flexibility of Bash but will not give you the.. fanciness of modern WFMs. The second option is to *convert* your workflow to DAG. A converted to DAG workflow can be saved in a variety of modern WFMs like [NextFlow](https://www.nextflow.io/), [SnakeMake](https://snakemake.readthedocs.io/en/stable/), [Argo](https://argoproj.github.io/) and [Airflow](https://airflow.apache.org/). This conversion is done with a rather complex algorithm that performs a [static analysis](https://en.wikipedia.org/wiki/Static_program_analysis) on the Bash script of the workflow, locates all the function calls to other steps, and progressively builds a DAG. Of course this method is not guaranteed to succeed. For example if a step is called inside an iteration it will fail. Nevertheless this gives you an amazing *liberty*: it allows you to compose your workflows in Bash and as long as you do not call other steps inside iterations\* and conditions, you can convert these workflows in DAGs in a variety of existing WMFs formats. So you don't have to learn the DSL of other WFMs, write your workflow in Bash and you are good to go. Moreover you can extract your workflow in a DAG in a JSON format and then build your own converter to the DSL of your choice. This is described here in the chapter *OpenBio.eu Workflow DAG data model*. 
 
-   \*. Iteration is actually supported for certain types of iterations (iterate through constant ranges, like for example all chromosome in the human genome). Check the `PARALLEL` mechanism described below. 
+   \* Iteration is actually supported for certain types of iterations (iterate through constant ranges, like for example all chromosome in the human genome). Check the `PARALLEL` mechanism described below. 
 
 
 ## Outlook of OpenBio.eu
@@ -1445,10 +1445,76 @@ The first category "holds the workflow together" as it links workflow nodes with
 As with nodes apart from the `data` field, all edges have the following fields which are cytoscape specific: `position`, `group`, `removed`, `selected`,  `selectable`, `locked`, `grabbable`, `pannable`,  `classes`.
 
 # OpenBio.eu Workflow DAG data model
-Besides the graph data model, 
+Besides the graph data model, described before, a workflow can be extracted and downloaded in a JSON format that contains the DAG decomposition of the workflow. But how does this work? As we seen before the complete workflow composing of many steps, tools, tool dependencies and other workflows can be exported in a single Bash script. The OpenBio.eu attempts to convert this script to a DAG. In order to do that it needs to break the script in independent components that will compose the nodes in the DAG. To do that OpenBio.eu parses the Bash script with the [bashlex library](https://github.com/idank/bashlex). Then it identifies all bash commands that are actually function calls to other steps. Every function call generated three independent steps: (i) the step that includes the commands before the function call, (ii) the step that includes the commands in the step that is called and (iii) the steps that are included after the function call. This is performed recursively throughout the complete Bash script of the workflow. Below we show some examples.
 
- OpenBio Executable Data Model
+## Example 1
+Assume the following workflow:
 
+**`STEP__1`**:
+```bash
+echo "hello from step 1 before step 2"
+step__2
+echo "hello from step 1 after step 2"
+``` 
+
+**`STEP__2`**:
+```bash
+echo "hello from step 2"
+```
+
+<!--
+digraph G {
+  "hello from step 1 before step 2" -> "hello from step 2";
+  "hello from step 2" -> "hello from step 1 after step 2";
+}
+-->
+
+This will create the following DAG:
+![img](screenshots/screen_45.png)
+
+## Example 2
+Assume the following workflow:
+
+**`STEP__1`**
+```bash
+echo "hello from step 1 before step 2"
+step__2
+echo "hello from step 1 after step 2"
+echo "hello from step 1 before step 4"
+step__4
+echo "hello from step 1 after step 4"
+```
+
+**`STEP__2`**
+```bash
+echo "hello from step 2 before step 3"
+step__3
+echo "hello from step 2 after step 3"
+```
+
+**`STEP__3`**
+```bash
+echo "hello from step 3"
+```
+
+**`STEP__4`**
+```bash
+echo "hello from step 4"
+```
+
+<!--
+digraph G {
+  "hello from step 1 before step 2" -> "hello from step 2 before step 3";
+  "hello from step 2 before step 3" -> "hello from step 3";
+  "hello from step 3" -> "hello from step 2 after step 3";
+  "hello from step 2 after step 3" -> "hello from step 1 after step 2\nhello from step 1 before step 4";
+  "hello from step 1 after step 2\nhello from step 1 before step 4" -> "hello from step 4";
+  "hello from step 4" -> "hello from step 1 after step 4";
+}
+-->
+
+This will create the following DAG:
+![img](screenshots/screen_46.png)
 
 
 * `environment_variables`: Dictionary of environment variables and their corresponding values. These environment variables should be present in every execution node. More importantly the paths that are defined there should also be accessible from all execution nodes.
