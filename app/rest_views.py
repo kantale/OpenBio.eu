@@ -141,6 +141,9 @@ class WorkflowSerializerDAG(serializers.BaseSerializer):
     def set_workflow_input_parameters(self, input_parameters):
         self.input_parameters = input_parameters
 
+    def set_break_down_on_tools(self, break_down_on_tools):
+        self.break_down_on_tools = break_down_on_tools
+
     def to_representation(self, instance):
         '''
         Call run_workflow to get a dag representation of the workflow
@@ -170,6 +173,7 @@ class WorkflowSerializerDAG(serializers.BaseSerializer):
             'workflow_options': self.input_parameters, # Workflow options (input parameters) . An interesting idea is to get them from the REST API. DONE. see #196
             'do_url_quote': do_url_quote, # In case of binary Do not url encode objects . We need the bytes object
             'return_bytes': return_bytes, # Return bytes ?
+            'break_down_on_tools': self.break_down_on_tools, # see executor.py
         }
 
         returned_object = download_workflow(self.request, **args)
@@ -189,7 +193,7 @@ class WorkflowSerializerDAG(serializers.BaseSerializer):
         else:
             output_object = deserialized_content['output_object']
 
-        if self.format_ == 'JSON':
+        if self.format_ in ['JSONGRAPH', 'JSONDAG']:
             output_object = simplejson.loads(output_object)
 
         return {
@@ -224,9 +228,14 @@ def workflow_complete(request, workflow_name, workflow_edit):
         # i.e. /?format=airflow
         format_ = request.query_params.get('format')
         format_ = str(format_).upper()
-        if not format_ in ['JSON', 'BASH', 'CWLTARGZ', 'CWLZIP', 'AIRFLOW']:
+        if not format_ in {'JSONGRAPH', 'JSONDAG', 'BASH', 'CWLTARGZ', 'CWLZIP', 'AIRFLOW', 'SNAKEMAKE', 'NEXTFLOW', 'ARGO'}:
             return Response({'success': False, 'error': 'Unsupported or Undefined format',}, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
+        break_down_on_tools = request.query_params.get('break_down_on_tools')
+        if str(break_down_on_tools).upper() == 'TRUE':
+            break_down_on_tools = True
+        else:
+            break_down_on_tools = False
 
         # /?workflow_id=xyz
         workflow_id = request.query_params.get('workflow_id')
@@ -255,6 +264,7 @@ def workflow_complete(request, workflow_name, workflow_edit):
         serializer.set_workflow_id(workflow_id)
         serializer.set_workflow_format(format_)
         serializer.set_workflow_input_parameters(input_parameters)
+        serializer.set_break_down_on_tools(break_down_on_tools)
 
         filename = None
         if format_ == 'CWLTARGZ':

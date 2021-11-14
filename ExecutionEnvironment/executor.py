@@ -1246,12 +1246,14 @@ class Workflow:
         enable_save_variables_to_json = True,
         enable_save_variables_to_sh = True,
         enable_parallel = False,
+        break_down_on_tools = False,
         ):
         '''
         enable_read_arguments_from_commandline: If true, arguments are read from command line
         enable_save_variables_to_json: If true, variables are saved in json format
         enable_save_variables_to_sh: If True, variables are saved to sh format
         enable_parallel: If True each PARALLEL yields a new step
+        break_down_on_tools: If True, each command that invokes a tool (of the workflow), creates yields a new step
         '''
 
         # First, check for circles in step calls
@@ -1557,6 +1559,7 @@ ENDOFFILE
 
                 # Check if this command is a call to a tool
                 if (
+                    break_down_on_tools and
                     not step.get("artificial_tool_step") and # If this step is an artificial step, do not go into infinite recursion
                     hasattr(main_command, 'parts') and
                     len(main_command.parts) > 0 and 
@@ -1572,27 +1575,30 @@ ENDOFFILE
                     tool_to_call = self.tool_variables_ids[this_var]
                     tool_to_call_id = self.get_tool_dash_id(tool_to_call)
                     #print (bash_to_parse[pos[0]:pos[1]])
-
+                    #print (f'-->{break_down_on_tools}<--')
+                    #print (step['id']) # step__new_step__w__1 
+                    #print (tool_to_call_id) #  t__1__1
                     #print (json.dumps(step, indent=4))
-                    # Create am artificial step to call
+                    # Create an artificial step to call
                     artificial_tool_step = {
-                        "id": "step__RANDOM__w__1",
-                        "name": "RANDOM",
-                        "label": "RANDOM",
+                        "id": step['id'], # "step__RANDOM__w__1",
+                        "name": None, # "RANDOM",
+                        "label": None, # "RANDOM",
                         "type": "step",
                         "bash": '\n' + bash_to_parse[pos[0]:pos[1]] + '\n',
                         "main": False,
                         "sub_main": False,
                         "tools": [
-                            "t__1__1__2"
+                            tool_to_call_id,
                         ],
                         "steps": [],
                         "inputs": [],
                         "outputs": [],
-                        "belongto": {
-                            "name": "w",
-                            "edit": 1
-                        },
+                        #"belongto": {
+                        #    "name": "w",
+                        #    "edit": 1
+                        #},
+                        "belongto": None,
                         "inputs_reads": [],
                         "inputs_sets": [],
                         "outputs_sets": [],
@@ -1965,7 +1971,9 @@ OBCENDOFFILE
             fileIO.flush()
             return fileIO.getvalue()
 
-    def decompose(self,):
+    def decompose(self,
+            break_down_on_tools=False,
+        ):
         '''
         Decomposes the workflow in steps
         '''
@@ -2064,6 +2072,7 @@ OBCENDOFFILE
             enable_read_arguments_from_commandline=False,
             enable_save_variables_to_json=False,
             enable_save_variables_to_sh=False,
+            break_down_on_tools=break_down_on_tools,
             ):
 
             step_id = step['id']
@@ -3242,10 +3251,12 @@ RUN chmod +x install-tool1.sh && ./install-tool1.sh
         return 'test'
 
 class JSONDAGExecutor(BaseExecutor):
-    def build(self, output, output_format='json', workflow_id=None, obc_client=False):
+    def build(self, output, output_format='jsondag', workflow_id=None, obc_client=False, break_down_on_tools=False):
         
 
-        self.decompose()
+        self.decompose(
+            break_down_on_tools=break_down_on_tools,
+        )
         return json.dumps(self.decomposed)
 
 
@@ -3635,12 +3646,13 @@ rule {RULE_ID}:
 
         return snakemake
 
-def create_bash_script(workflow_object, server, output_format, workflow_id=None, obc_client=False):
+def create_bash_script(workflow_object, server, output_format, workflow_id=None, obc_client=False, break_down_on_tools=False):
     '''
     convenient function called by server
     server: the server to report to
     workflow_id: The ID of the workflow. Used in airflow
     obc_client: True/False. Do we have to generate a script for the obc client?
+    break_down_on_tools : See decomposer
     '''
 
     args = type('A', (), {
@@ -3660,7 +3672,7 @@ def create_bash_script(workflow_object, server, output_format, workflow_id=None,
     elif output_format == 'jsondag':
         w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
         e = JSONDAGExecutor(w)
-        return e.build(output=None, output_format='jsondag', workflow_id=workflow_id, obc_client=obc_client)
+        return e.build(output=None, output_format='jsondag', workflow_id=workflow_id, obc_client=obc_client, break_down_on_tools=break_down_on_tools)
     elif output_format in ['cwltargz', 'cwlzip']:
         w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
         e = CWLExecutor(w)

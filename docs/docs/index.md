@@ -1274,7 +1274,7 @@ The BASH script is a directly executable file. Assuming the BASH script filename
 bash script_7Lt2o.sh
 ```
 
-## JSON
+## JSON Graph
 This method will download a file workflow.json that contains all the information required to execute the workflow in a local environment. In order to execute it, you need to convert this file into an executable BASH script. To do this, you need to download the file [executor.py](https://github.com/kantale/OpenBio.eu/blob/master/ExecutionEnvironment/executor.py). This file requires [python 3](https://www.python.org/downloads/) and has no other dependencies. After you have downloaded this file, you can run the command:
 
 ```bash
@@ -1311,13 +1311,18 @@ The GET parameters to request a workflow are:
 * ```input_parameter_1```: The name of an input parameter of a workflow
 * ```value_1```: The value of the input parameter.
 * ```format```. The format of the workflow. So far accepted values are:
-   * ```json```: A json representation of the workflow
+   * `jsongraph`: The graph of the workflow as it is shown in the UI, in JSON format (see chapter: JSON GRAPH).
+   * `jsondag`: The DAG (directed acyclic graph) representation of the workflow in JSON format (see chapter: JSON DAG)
    * ```bash```: A directly executable bash version of the workflow
    * ```airflow```: An [airflow](https://airflow.apache.org) representation of the workflow that uses the [BashOperator](https://airflow.apache.org/docs/stable/howto/operator/bash.html). 
    * ```cwltargz```: The workflow in [CWL](https://www.commonwl.org/) format (current v. 1.0). Since this representation is split in many files it returns a tar gzip file. Uncompress it with : ```tar zxvf workflow.tar.gz```. 
    * ```cwlzip```: Some as above but returns a singe zip file. 
+   * `nextflow`: A representation of the workflow in [nextflow](https://www.nextflow.io/) format.
+   * `snakemake`: A representation of the workflow in [snakemake](https://snakemake.readthedocs.io/en/stable/tutorial/basics.html) format.
+   * `argo`: An experimental representation of the workflow in [Argo](https://argoproj.github.io/).  
+* `break_down_on_tools`: (optional, default: False). Whether to perform split on tool invocation. (see the `break_down_on_tools` chapter) 
 
-If the chosen format is not a binary file: (```json```, ```bash```, ```airflow```), then the result is a JSON object. This object contains the following fields:
+If the chosen format is not a binary file: (`json`, `bash`, `airflow`), then the result is a JSON object. This object contains the following fields:
 ```json
 {
     "success": true,
@@ -1444,7 +1449,7 @@ The first category "holds the workflow together" as it links workflow nodes with
 
 As with nodes apart from the `data` field, all edges have the following fields which are cytoscape specific: `position`, `group`, `removed`, `selected`,  `selectable`, `locked`, `grabbable`, `pannable`,  `classes`.
 
-# OpenBio.eu Workflow DAG data model
+# OpenBio.eu Workflow DAG data model (JSON DAG)
 Besides the graph data model, described before, a workflow can be extracted and downloaded in a JSON format that contains the DAG decomposition of the workflow. But how does this work? As we seen before the complete workflow composing of many steps, tools, tool dependencies and other workflows can be exported in a single Bash script. The OpenBio.eu attempts to convert this script to a DAG. In order to do that it needs to break the script in independent components that will compose the nodes in the DAG. To do that OpenBio.eu parses the Bash script with the [bashlex library](https://github.com/idank/bashlex). Then it identifies all bash commands that are actually function calls to other steps. Every function call generated three independent steps: (i) the step that includes the commands before the function call, (ii) the step that includes the commands in the step that is called and (iii) the steps that are included after the function call. This is performed recursively throughout the complete Bash script of the workflow. Below we show some examples.
 
 ## Example 1
@@ -1518,8 +1523,19 @@ This will create the following DAG:
 
 ![img](screenshots/screen_46.png)
 
-
 Through these examples we notice that describing the workflow in Bash is far more intuitive than describing it in DAGs.
+
+## Breaking workflows in tool executions (the `break_down_on_tools` parameter)
+As we seen before, a breaking is happening when a step is called from another step. By setting `true` the parameter `break_down_on_tools` in the API you can trigger "breakings" in tool executions as well. For example let's assume that a workflow has the tool: `t__1__1` and this tool has a variable that is called `exec` which contains the path to the executable of the tool. Let's also assume that we have the following step: 
+
+**`STEP__1`**
+```bash
+echo "before tool execution"
+${t__1__1__exec} --parameter
+echo "after tool execution"
+```
+
+If we convert to DAG this step, it will result in a graph with a single node. This is because the step does not call other steps. If we set the parameter `break_down_on_tools` to `true`, then the tool execution command (`${t__1__1__exec} --parameter`) will be treated as a step calling command and the resulted DAG will contain 3 nodes (similar to the first example before). But why someone might want to have a different node in the DAG for every tool execution? In cases where the tool is in a different execution environment (for example docker container) this might be very useful. Basically this offers a complete isolation between the tools that are used and the scripts that call them. 
 
 ## The JSON format 
 The JSON representation of the DAG of a workflow has the following fields:

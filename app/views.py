@@ -340,6 +340,7 @@ def has_data(f):
     Decorator that passes AJAX data to a function parameters
     '''
     def wrapper(*args, **kwargs):
+
             request = args[0]
 
             if request.method == 'POST':
@@ -356,8 +357,9 @@ def has_data(f):
                                 kwargs[k] = POST[k]
             elif request.method == 'GET':
                     for k in request.GET:
-                        kwargs[k] = request.GET[k]
-                        #print ("GET: {} == {}".format(k, kwargs[k]))
+                        if not k in kwargs: # Perhaps the function has already been called specifically with a value in kwargs
+                            kwargs[k] = request.GET[k]
+                            #print ("GET: {} == {}".format(k, kwargs[k]))
 
             if g['TEST']:
                 kwargs = {
@@ -3819,7 +3821,7 @@ def download_workflow(request, **kwargs):
 
     kwargs['workflow_cy'] is the cytoscape workflow
 
-    Note: Everyone can download a workflow!
+    Note 1: Everyone can download a workflow!
     '''
 
     workflow_arg = kwargs['workflow'] # For example: {'name': 'test', 'edit': 1} 
@@ -3835,7 +3837,7 @@ def download_workflow(request, **kwargs):
     workflow_obc_client = kwargs.get('obc_client', False)
     do_url_quote = kwargs.get('do_url_quote', True) # See rest_views.py
     return_bytes = kwargs.get('return_bytes', False) # See rest_views.py
-
+    break_down_on_tools = kwargs.get('break_down_on_tools', False) # See executor.py 
 
     #print ('Name:', workflow_arg['name'])
     #print ('Edit:', workflow_arg['edit'])
@@ -3908,7 +3910,7 @@ def download_workflow(request, **kwargs):
         if download_type == 'JSONGRAPH':
             output_object = simplejson.dumps(output_object)
         elif download_type == 'JSONDAG':
-            output_object = create_bash_script(output_object, server_url, 'jsondag', workflow_id=workflow_id, obc_client=workflow_obc_client)
+            output_object = create_bash_script(output_object, server_url, 'jsondag', workflow_id=workflow_id, obc_client=workflow_obc_client, break_down_on_tools=break_down_on_tools)
         elif download_type == 'BASH':
             output_object = create_bash_script(output_object, server_url, 'sh')
         elif download_type == 'CWLTARGZ':
