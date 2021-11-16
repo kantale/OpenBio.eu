@@ -174,6 +174,7 @@ class WorkflowSerializerDAG(serializers.BaseSerializer):
             'do_url_quote': do_url_quote, # In case of binary Do not url encode objects . We need the bytes object
             'return_bytes': return_bytes, # Return bytes ?
             'break_down_on_tools': self.break_down_on_tools, # see executor.py
+            'API': True, # We need to know if download_workflow gets called from the API
         }
 
         returned_object = download_workflow(self.request, **args)

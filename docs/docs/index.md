@@ -1526,7 +1526,7 @@ This will create the following DAG:
 Through these examples we notice that describing the workflow in Bash is far more intuitive than describing it in DAGs.
 
 ## Breaking workflows in tool executions (the `break_down_on_tools` parameter)
-As we seen before, a breaking is happening when a step is called from another step. By setting `true` the parameter `break_down_on_tools` in the API you can trigger "breakings" in tool executions as well. For example let's assume that a workflow has the tool: `t__1__1` and this tool has a variable that is called `exec` which contains the path to the executable of the tool. Let's also assume that we have the following step: 
+As we have seen before, a breaking is happening when a step is called from another step. By setting `true` the parameter `break_down_on_tools` in the API you can trigger "breakings" in tool executions as well. For example let's assume that a workflow has the tool: `t__1__1` and this tool has a variable that is called `exec` which contains the path to the executable of the tool. Let's also assume that we have the following step: 
 
 **`STEP__1`**
 ```bash

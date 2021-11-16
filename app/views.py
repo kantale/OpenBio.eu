@@ -3837,7 +3837,12 @@ def download_workflow(request, **kwargs):
     workflow_obc_client = kwargs.get('obc_client', False)
     do_url_quote = kwargs.get('do_url_quote', True) # See rest_views.py
     return_bytes = kwargs.get('return_bytes', False) # See rest_views.py
-    break_down_on_tools = kwargs.get('break_down_on_tools', False) # See executor.py 
+    coming_from_UI = kwargs.get('UI', False) # WHO CALLED ME?? 
+    coming_from_API = kwargs.get('API', False) # WHO CALLED ME??
+
+    # for break_down_on_tools see executor.py
+    # If we are coming from UI then always break down on tools 
+    break_down_on_tools = kwargs.get('break_down_on_tools', False) or coming_from_UI 
 
     #print ('Name:', workflow_arg['name'])
     #print ('Edit:', workflow_arg['edit'])

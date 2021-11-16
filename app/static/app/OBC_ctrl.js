@@ -4842,7 +4842,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 },
                 'download_type': download_type,
                 'workflow_info_editable': $scope.workflows_info_editable, // Is this workflow saved?
-                'workflow_json' :  $scope.workflows_info_editable ? cy.json() : {} //If this is editable get the cytoscape graph. otherwise we do not need it. 
+                'workflow_json' :  $scope.workflows_info_editable ? cy.json() : {}, //If this is editable get the cytoscape graph. otherwise we do not need it. 
+                'UI': true, // We need to know if we are calling download_workflow from the API or from UI
             },
             function(data) {
                 //console.log('data:');

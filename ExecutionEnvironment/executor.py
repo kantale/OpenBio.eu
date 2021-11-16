@@ -520,6 +520,9 @@ class Workflow:
         # Create a dictionary. Keys are tool slash id. values are tools
         self.tool_slash_id_d = {self.get_tool_slash_id(tool):tool for tool in self.tool_iterator()}
 
+        # Create a dictionary. Keys are tool slash ids. Values are lists of the slash ids of their dependencies
+        self.tool_run_afters = {self.get_tool_dash_id(t, no_dots=True): [self.get_tool_dash_id(self.tool_slash_id_d[x], no_dots=True) for x in t['dependencies']] for t in self.tool_iterator()}
+
         # Create a dictionary. Keys are tool ids. Values are tuples: (variables from which they depend from, dependent tool)
         # This does not contain the variables of the tool that is the key
         self.tool_dependent_variables = {self.get_tool_dash_id(tool, no_dots=True):self.get_tool_dependent_variables(tool) for tool in self.tool_iterator()} 
@@ -538,7 +541,8 @@ class Workflow:
         self.input_ids = {inp['id']:inp for inp in self.inputs_iterator()}
 
         # Create a dictionary. Keys a output ids. Values are output objects
-        self.output_ids = {outp['id']:outp for outp in self.outputs_iterator()}
+        self.output_ids = {outp['id']:outp for outp in self.outputs_iterator()}        
+
 
         self.set_step_reads_sets()
 
@@ -1221,10 +1225,9 @@ class Workflow:
 
         def convert_tool_id(tool_id):
             if not tool_id.count('__') == 3:
-                return tool_id
+                return tool_id.replace('.', '_')
 
             return '__'.join(tool_id.split('__')[0:-1]).replace('.', '_')
-
 
         input_variables_to_final = []
         for tool_id in step['tools']:
@@ -1560,7 +1563,7 @@ ENDOFFILE
                 # Check if this command is a call to a tool
                 if (
                     break_down_on_tools and
-                    not step.get("artificial_tool_step") and # If this step is an artificial step, do not go into infinite recursion
+                    not step.get("tool_invocation") and # If this step is an artificial step, do not go into infinite recursion
                     hasattr(main_command, 'parts') and
                     len(main_command.parts) > 0 and 
                     hasattr(main_command.parts[0], 'parts') and
@@ -1573,7 +1576,7 @@ ENDOFFILE
                     pos = (positions[0][0], positions[-1][1])
                     this_var = main_command.parts[0].parts[0].value
                     tool_to_call = self.tool_variables_ids[this_var]
-                    tool_to_call_id = self.get_tool_dash_id(tool_to_call)
+                    tool_to_call_id = self.get_tool_dash_id(tool_to_call, no_dots=True)
                     #print (bash_to_parse[pos[0]:pos[1]])
                     #print (f'-->{break_down_on_tools}<--')
                     #print (step['id']) # step__new_step__w__1 
@@ -1603,7 +1606,7 @@ ENDOFFILE
                         "inputs_sets": [],
                         "outputs_sets": [],
                         "outputs_reads": [],
-                        "artificial_tool_step": True,
+                        "tool_invocation": tool_to_call_id,
                     }
 
 
@@ -1659,6 +1662,7 @@ ENDOFFILE
                     'input_variables': input_workflow_variables,
                     'output_variables': output_workflow_variables,
                     'run_after': run_after + run_afters,
+                    'tool_invocation': step.get('tool_invocation'),
                 }
                 #read_from = save_to
                 read_from = save_to_nodot
@@ -1734,6 +1738,7 @@ ENDOFFILE
                 'input_variables': input_workflow_variables,
                 'output_variables': output_workflow_variables,
                 'run_after': run_afters + run_after,
+                'tool_invocation': step.get('tool_invocation'),
             }
 
         return break_down_step_recursive(self.root_step)
@@ -1745,6 +1750,9 @@ class BaseExecutor():
     '''
     '''
     load_obc_functions_bash = r'. ${OBC_WORK_PATH}/obc_functions.sh' + '\n'
+
+    INIT_STEP_NAME = 'INIT_STEP'
+    FINAL_STEP_NAME = 'FINAL_STEP'
 
     def __init__(self, workflow):
         if not isinstance(workflow, Workflow):
@@ -1820,6 +1828,16 @@ class BaseExecutor():
         '''
         return os.path.join('${OBC_WORK_PATH}', step_inter_id + '_VARS.sh')
 
+
+    @staticmethod
+    def build_graph_from_run_afters(run_afters):
+        G = nx.DiGraph()
+        edges = [(run_before, run_after) for run_after, run_befores in run_afters.items() for run_before in run_befores]
+        G.add_edges_from(edges)
+
+        return G
+
+
     def transitive_reduction(self, run_afters):
         '''
         This is a dictionary.
@@ -1830,11 +1848,9 @@ class BaseExecutor():
         Applies https://en.wikipedia.org/wiki/Transitive_reduction 
         Method: https://networkx.github.io/documentation/stable/reference/algorithms/generated/networkx.algorithms.dag.transitive_reduction.html 
         '''
-        G = nx.DiGraph()
-        edges = [(run_before, run_after) for run_after, run_befores in run_afters.items() for run_before in run_befores]
-        G.add_edges_from(edges)
-        DAG = nx.transitive_reduction(G)
-        return DAG
+        self.G = BaseExecutor.build_graph_from_run_afters(run_afters)
+        self.DAG = nx.transitive_reduction(self.G)
+        return self.DAG
 
     def obc_init_step(self,):
         # Create init step for report
@@ -1975,7 +1991,7 @@ OBCENDOFFILE
             break_down_on_tools=False,
         ):
         '''
-        Decomposes the workflow in steps
+        Decomposes the workflow in steps. Create DAG
         '''
         self.decomposed = {
             'environment_variables': {},
@@ -2015,10 +2031,11 @@ OBCENDOFFILE
         input_parameters = self.save_input_parameters(from_workflow=True) # touch ${OBC_WORK_PATH}/v5FDK_inputs.sh
         init_bash = initial_variabes + self.obc_init_step() + input_parameters
 
-        run_afters = {'INIT_STEP': []}
-        self.decomposed['steps']['INIT_STEP'] = {
+        run_afters = {BaseExecutor.INIT_STEP_NAME: []}
+        self.decomposed['steps'][BaseExecutor.INIT_STEP_NAME] = {
             'bash' : init_bash,
             'run_after': [],
+            'type': 'initial',
         }
 
         #print ('INIT BASH:')
@@ -2051,7 +2068,7 @@ OBCENDOFFILE
             #print (f'TOOL ID: {tool_id}')
             #print (bash)
 
-            run_afters[tool_id] = ['INIT_STEP'] # All tools run after PROCESSOBCINIT
+            run_afters[tool_id] = [BaseExecutor.INIT_STEP_NAME] # All tools run after PROCESSOBCINIT
             if tool_ids:
                 run_afters[tool_id] += copy.copy(tool_ids)
                 
@@ -2061,6 +2078,7 @@ OBCENDOFFILE
             self.decomposed['steps'][tool_id] = {
                 'bash': bash,
                 'run_after': run_afters[tool_id],
+                'type': 'tool_installation',
             }
 
         # STEP STEPS!
@@ -2068,6 +2086,7 @@ OBCENDOFFILE
         step_inter_ids = []
         step_bash_scripts = []
         all_step_inter_ids = []
+        
         for step in self.workflow.break_down_step_generator(
             enable_read_arguments_from_commandline=False,
             enable_save_variables_to_json=False,
@@ -2083,7 +2102,11 @@ OBCENDOFFILE
             step_inter_ids.append(step_inter_id)
             step_vars_filename = self.create_step_vars_filename(step_inter_id) # os.path.join('${OBC_WORK_PATH}', step_inter_id + '.sh')
 
-            run_afters[step_inter_id] = ['INIT_STEP'] + tool_ids
+            # Mark first step
+            if not 'first_step' in self.decomposed:
+                self.decomposed['first_step'] = step_inter_id
+
+            run_afters[step_inter_id] = [BaseExecutor.INIT_STEP_NAME] + tool_ids
             if step['run_after']:
                 run_afters[step_inter_id] += step['run_after']
 
@@ -2105,35 +2128,60 @@ OBCENDOFFILE
 
             previous_steps_vars.append(step_vars_filename)
 
-            #print (f'STEP ID {step_inter_id}')
+            #print (f'STEP ID {step_inter_id} ==> {step.get("tool_invocation")}')
             #print (bash)
+            tool_invocation = step.get('tool_invocation')
+            if tool_invocation:
+                step_type = 'tool_invocation'
+            else:
+                step_type = 'simple'
 
-            self.decomposed[step_inter_id] = {
+            self.decomposed['steps'][step_inter_id] = {
                 'bash': bash,
-                'run_after': run_afters[step_inter_id]
+                'run_after': run_afters[step_inter_id],
+                'type': step_type
             }
+            if tool_invocation:
+                self.decomposed['steps'][step_inter_id]['tool_to_call'] = tool_invocation
+
+
 
         # FINAL STEP
         bash = self.initial_variabes() + self.obc_final_step(previous_tools, previous_steps_vars)     
         #print ('FINAL_STEP:')
         #print (bash)
 
-        run_afters['FINAL_STEP'] = ['INIT_STEP'] + tool_ids + all_step_inter_ids 
-        self.decomposed['FINAL_STEP'] = {
+        run_afters[BaseExecutor.FINAL_STEP_NAME] = [BaseExecutor.INIT_STEP_NAME] + tool_ids + all_step_inter_ids 
+        self.decomposed['steps'][BaseExecutor.FINAL_STEP_NAME] = {
             'bash': bash,
-            'run_after': run_afters['FINAL_STEP'],
+            'run_after': run_afters[BaseExecutor.FINAL_STEP_NAME],
+            'type': 'final',
         }
 
         #print ('===FINAL====')
         #print (json.dumps(ret, indent=4))
 
 
-        DAG = self.transitive_reduction(run_afters)
-        self.decomposed['DAG'] = {node: list(DAG.predecessors(node)) for node in DAG.nodes()}
+        self.transitive_reduction(run_afters)
+        self.decomposed['DAG'] = {node: list(self.DAG.predecessors(node)) for node in self.DAG.nodes()}
 
-#        print ('DAG:')
-#        print (self.decomposed['DAG'])
-        return "test"
+        self.decomposed['environments'] = {}
+        environment_counter = 0
+        # https://stackoverflow.com/questions/21739569/finding-separate-graphs-within-a-graph-object-in-networkx
+        tool_graph = BaseExecutor.build_graph_from_run_afters(self.workflow.tool_run_afters)
+        tool_graph_undirected = tool_graph.to_undirected()
+        tool_sub_graphs = (tool_graph_undirected.subgraph(c) for c in nx.connected_components(tool_graph_undirected))
+        for i, sg in enumerate(tool_sub_graphs):
+            this_environment_nodes = set(sg.nodes())
+            #print (i, this_environment_nodes)
+            self.decomposed['environments'][environment_counter] = {x: [y for y in self.decomposed['steps'][x]['run_after'] if y in this_environment_nodes] for x in this_environment_nodes}
+            environment_counter += 1
+
+        #print ('DAG:')
+        #print (json.dumps(self.decomposed['DAG'], indent=4))
+        #print ('ENVIRONMENTS')
+        #print (json.dumps(self.decomposed['environments'], indent=4))
+        #print (break_down_on_tools)
 
 
 class LocalExecutor(BaseExecutor):
