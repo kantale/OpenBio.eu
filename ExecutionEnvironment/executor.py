@@ -1454,7 +1454,7 @@ ENDOFFILE
                 bash = '\n' + to_add + '\n' + bash
 
             # Join multiline lines
-            # issue #231
+            # issue #232
             bash = re.sub(r'\\\n', '', bash)
 
             # https://stackoverflow.com/questions/12404661/what-is-the-use-case-of-noop-in-bash
