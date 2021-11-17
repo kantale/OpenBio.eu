@@ -1453,6 +1453,10 @@ ENDOFFILE
                 to_add= '\n'.join([r'{}="{}"'.format(k,v) for k,v in parallel_variables.items()])
                 bash = '\n' + to_add + '\n' + bash
 
+            # Join multiline lines
+            # issue #231
+            bash = re.sub(r'\\\n', '', bash)
+
             # https://stackoverflow.com/questions/12404661/what-is-the-use-case-of-noop-in-bash
             # bashlex Cannot parse empty strings!
             bash_to_parse = '{\n:\n' + bash + '\n}'  
@@ -1505,6 +1509,11 @@ ENDOFFILE
             run_afters = [] # List of all the steps that are run in this break down
             if run_after is None:
                 run_after = []
+
+            #print ('MAIN COMMANDS:')
+            #print (main_commands)
+            #for ast in main_commands:
+            #    print (ast.dump())
 
             for main_command in main_commands:
 
@@ -1571,6 +1580,8 @@ ENDOFFILE
                     main_command.parts[0].parts[0].kind == 'parameter' and
                     main_command.parts[0].parts[0].value in self.tool_variables_ids # Belongs in tool variables
                 ):
+
+                    #print (main_command)
                     this_is_a_tool_invocation = True
                     positions = [part.pos for part in main_command.parts]
                     pos = (positions[0][0], positions[-1][1])
