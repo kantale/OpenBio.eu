@@ -209,6 +209,13 @@
                         ng-show="!workflows_info_editable" 
                         ng-click="workflows_plus_button_clicked(true)">
                         <i class="material-icons plusIcon">add</i></a>
+                    
+                    <a id="workflowsUploadBtn" class="waves-effect btn green plusBtn right tooltipped"
+                        data-position="left" data-tooltip="Upload Workflow" 
+                        ng-show="!workflows_info_editable" 
+                        ng-click="workflows_upload_button_clicked()">
+                        <i class="material-icons plusIcon">arrow_upward</i></a>
+
                     <a id="workflowsUnsavedBtn"
                         ng-show="workflows_info_editable"
                         ng-click="workflows_plus_button_clicked(false)"

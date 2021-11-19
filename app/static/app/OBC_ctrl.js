@@ -1558,6 +1558,13 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.workflow_step_add_update_label = 'Add';
     };
 
+    /*
+     * Workflows --> "arrow up" (upload workflow) --> pressed 
+    */
+    $scope.workflows_upload_button_clicked = function() {
+        alert('test');
+    };
+
 
     /*
     * Get a list of dependencies for the current tool

@@ -325,6 +325,8 @@ nav {
     width: 23px;
     top: 0px;
     padding-left: 0px;
+
+    margin-right: 10px; /* For upload */
 }
 
 .plusIcon {
