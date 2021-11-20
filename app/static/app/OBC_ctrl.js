@@ -51,7 +51,7 @@ angular.module('OBC_app').filter('workflow_label', function() {
     }
 });
 
-app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log) {
+app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log, ) {
     /*
     * ok some things that are here perhaps could be placed elsewhere.. 
     * https://docs.angularjs.org/api/ng/directive/ngInit
@@ -151,6 +151,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             label: 'Private',
             values: { name: 'private' }
         }];
+
+        $scope.formData = {mitsos: 'sss', csrftoken: CSRF_TOKEN};
 
         $scope.get_init_data();
 
@@ -1561,10 +1563,22 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     /*
      * Workflows --> "arrow up" (upload workflow) --> pressed 
     */
-    $scope.workflows_upload_button_clicked = function() {
+    $scope.workflows_upload_button_on_success = function(response) {
         alert('test');
+        console.log(response);
+
+        if (response.data['success']) {
+            $scope.toast(response.data['message'], 'success');
+        }
+        else {
+            $scope.toast(response.data['error_message'], 'error');
+        }
     };
 
+    $scope.onUpload = function(files) {
+        console.log($scope.formData);
+        console.log(files);
+    };
 
     /*
     * Get a list of dependencies for the current tool

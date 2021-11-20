@@ -1,7 +1,7 @@
 //var app = angular.module("OBC_app", ['ngJsTree', 'ui.select', 'ngSanitize']); // 'ui.tree' , 'treeControl' 
 
 
-var app = angular.module("OBC_app", ['ngJsTree', 'ui.select', 'ngSanitize']).config(function($sceProvider) {
+var app = angular.module("OBC_app", ['ngJsTree', 'ui.select', 'ngSanitize', 'lr.upload']).config(function($sceProvider) {
   // Completely disable SCE.  For demonstration purposes only!
   // Do not use in new projects or libraries.
   // https://docs.angularjs.org/api/ng/service/$sce 

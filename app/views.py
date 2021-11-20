@@ -148,6 +148,7 @@ g = {
     'create_client_resume_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'workflow/{NICE_ID}/paused/false'.format(NICE_ID=nice_id)),
     'create_client_abort_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'workflow/delete/{NICE_ID}'.format(NICE_ID=nice_id)),
     'create_client_airflow_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'admin/airflow/graph?dag_id={NICE_ID}&execution_date='.format(NICE_ID=nice_id)),
+    'maximum_workflow_file_upload': 1 , # Maximum file size for workflow upload in megabytes  
 }
 
 ### HELPING FUNCTIONS AND DECORATORS #####
@@ -3529,6 +3530,35 @@ def workflows_add(request, **kwargs):
 
         'workflow_pk': new_workflow.pk, # Used in comments
         'workflow_thread': qa_create_thread(new_workflow.comment, obc_user), # Tool comment thread
+    }
+
+    return success(ret)
+
+#@has_data
+def upload(request, **kwargs):
+    print (request)
+    print (dir(request))
+    print (len(request.POST))
+    print (request.method)
+    #print (request.parse_file_upload())
+    print (request.FILES)
+    print (request.FILES['file'])
+    size = 0
+    complete = b''
+    for chunk in request.FILES['file']:
+        size += len(chunk)
+        complete += chunk
+        print (size)
+        if size > g['maximum_workflow_file_upload'] * 1_048_576:
+            return fail(f'Maximum file size: {g["maximum_workflow_file_upload"]} MB reached.')
+
+    try:
+        complete_str = complete.decode("utf-8") 
+    except UnicodeDecodeError:
+        return fail('Failed to convert file\'s content to Unicode UTF-8')
+
+    ret = {
+        'message': 'Workflow uploaded correctly',
     }
 
     return success(ret)
