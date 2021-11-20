@@ -36,7 +36,11 @@ from rest_framework.authtoken.models import Token # https://www.django-rest-fram
 from app.models import create_nice_id
 
 #Import executor
-from ExecutionEnvironment.executor import create_bash_script, OBC_Executor_Exception
+from ExecutionEnvironment.executor import (
+    create_bash_script, 
+    OBC_Executor_Exception,
+    Workflow as Workflow_executor,
+)
 
 # Email imports
 import smtplib
@@ -724,14 +728,24 @@ def workflow_id_cytoscape(workflow, name, edit):
 
     return name + '__' + str(edit)
 
-def workflow_label_cytoscape(workflow, name, edit):
+def workflow_label_cytoscape_name_edit(name, edit):
+    return f'{name}/{str(edit)}'
+
+def workflow_label_cytoscape(workflow, name=None, edit=None):
     '''
     The cytoscape workflow label
     '''
-    if workflow:
-        return workflow.name + '/' + str(workflow.edit)
+    if workflow is None:
+        return workflow_label_cytoscape_name_edit(name, edit)
 
-    return name + '/' + str(edit)
+    if isinstance(workflow, Workflow):
+        return workflow_label_cytoscape_name_edit(workflow.name, workflow.edit)
+
+    if type(workflow) is dict:
+        return workflow_label_cytoscape_name_edit(workflow['name'], workflow['edit'])
+
+
+    raise Exception('Error: 9811')
 
 
 def workflow_id_jstree(workflow, id_):
@@ -3115,7 +3129,7 @@ def set_edit_to_cytoscape_json(cy, edit, workflow_info_name, *,
     new_worfklow_node[0]['data']['edit'] = edit
 
     # Set the label value
-    new_worfklow_node[0]['data']['label'] = workflow_label_cytoscape(None, workflow_info_name, edit)
+    new_worfklow_node[0]['data']['label'] = workflow_label_cytoscape(workflow=None, name=workflow_info_name, edit=edit)
 
     # Set workflow description
     new_worfklow_node[0]['data']['description'] = workflow_description
@@ -3534,21 +3548,36 @@ def workflows_add(request, **kwargs):
 
     return success(ret)
 
+def tool_exists_in_db(tool):
+    '''
+    Check if tool represented in cytoscape exists 
+    '''
+    return Tool.objects.filter(
+        name = tool['name'],
+        version = tool['version'],
+        edit = int(tool['edit']),
+    ).exists()
+
+def workflow_exists_in_db(workflow):
+    '''
+    Check if a workflow represented in cytoscape exists
+    '''
+    return Workflow.objects.filter(
+        name = workflow['name'],
+        edit = int(workflow['edit']),
+    ).exists()
+
 #@has_data
 def upload(request, **kwargs):
-    print (request)
-    print (dir(request))
-    print (len(request.POST))
-    print (request.method)
-    #print (request.parse_file_upload())
-    print (request.FILES)
-    print (request.FILES['file'])
+    '''
+    Upload a workflow
+    '''
+
     size = 0
     complete = b''
     for chunk in request.FILES['file']:
         size += len(chunk)
         complete += chunk
-        print (size)
         if size > g['maximum_workflow_file_upload'] * 1_048_576:
             return fail(f'Maximum file size: {g["maximum_workflow_file_upload"]} MB reached.')
 
@@ -3556,6 +3585,23 @@ def upload(request, **kwargs):
         complete_str = complete.decode("utf-8") 
     except UnicodeDecodeError:
         return fail('Failed to convert file\'s content to Unicode UTF-8')
+
+    try:
+        workflow = Workflow_executor(workflow_string=complete_str)
+    except OBC_Executor_Exception as e:
+        return fail(str(e))
+    except Exception as e:
+        return fail(f'Error 5488. Could not parse Workflow: {str(e)}')
+
+    error_message = 'Could not import workflow. '
+    for tool in workflow.get_tool_installation_order():
+        if tool_exists_in_db(tool):
+            return fail(error_message + f' Contained tool: {tool_label_cytoscape(tool)} already exists.')
+
+    for w in workflow.get_workflow_order():
+        if workflow_exists_in_db(w):
+            return fail(error_message + f' Contained workflow: {workflow_label_cytoscape(w)} already exists.')
+
 
     ret = {
         'message': 'Workflow uploaded correctly',
@@ -3640,7 +3686,7 @@ def workflow_node_cytoscape(workflow, name='root', edit=0):
             'belongto': None,
             'edit': edit,
             'id': workflow_id_cytoscape(workflow, name, edit),
-            'label': workflow_label_cytoscape(workflow, name, edit),
+            'label': workflow_label_cytoscape(workflow, name=name, edit=edit),
             'name': name,
             'type': 'workflow',
             'draft': False, # For consistency. It does not realy makes any difference

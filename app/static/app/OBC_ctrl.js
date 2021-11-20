@@ -1117,8 +1117,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 }
                 else {
                     // Somehow we need to throw exception here
-                    console.log('Invalid visibility')
-                    console.log(data['visibility']);
+                    //console.log('Invalid visibility')
+                    //console.log(data['visibility']);
+                    $scope.toast('Invalid visibility value', 'error'); //This should never happen
                 }
 
                 //Set chip data
@@ -1562,8 +1563,6 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
      * Workflows --> "arrow up" (upload workflow) --> pressed 
     */
     $scope.workflows_upload_button_on_success = function(response) {
-        alert('test');
-        console.log(response);
 
         if (response.data['success']) {
             $scope.toast(response.data['message'], 'success');

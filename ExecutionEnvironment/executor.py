@@ -325,10 +325,18 @@ class Workflow:
     ]
 
 
-    def __init__(self, workflow_filename=None, workflow_object=None, askinput='JSON', obc_server=None, workflow_id=None):
+    def __init__(self, 
+        workflow_filename=None, 
+        workflow_object=None, 
+        workflow_string=None,
+        askinput='JSON', 
+        obc_server=None, 
+        workflow_id=None,
+    ):
         '''
         workflow_filename: the JSON filename of the workflow
         workflow_object: The representation of the workflow
+        workflow_string: A string representation of the JSON workflow object (used in workflow upload)
         askinput: 
             JSON: Ask for input during convertion to BASH
             BASH: Ask for input in BASH
@@ -338,15 +346,27 @@ class Workflow:
         workflow_id: The nice_id of the workflow
         '''
 
-        if workflow_filename:
-            if not os.path.exists(workflow_filename):
-                raise OBC_Executor_Exception(f'File {workflow_filename} does not exist')
-        else:
-            if not workflow_object:
-                raise OBC_Executor_Exception('Both workflow_filename and workflow_string are empty')
+        # One of workflow_filename, workflow_object, workflow_string can be declared 
+        declared = [x[0] for x in (
+                ('workflow_filename', workflow_filename), 
+                ('workflow_object', workflow_object), 
+                ('workflow_string', workflow_string),
+            )
+                if x[1]
+        ]
+        if len(declared) == 0:
+            raise OBC_Executor_Exception('None of workflow_filename, workflow_object, workflow_string have been declared')
+
+        if len(declared) > 1:
+            raise OBC_Executor_Exception(
+                f'Only one of workflow_filename, workflow_object, workflow_string can be declared. You declared: '
+                ', '.join(declared)
+            )
 
         self.workflow_filename = workflow_filename
         self.workflow_object = workflow_object
+        self.workflow_string = workflow_string
+
         self.askinput = askinput
         self.obc_server = obc_server
         self.workflow_id = workflow_id
@@ -399,12 +419,22 @@ class Workflow:
         '''
 
         if self.workflow_filename:
-            with open(self.workflow_filename) as f:
-                self.workflow = json.load(f)
+            try:
+                with open(self.workflow_filename) as f:
+                    self.workflow = json.load(f)
+            except FileNotFoundError:
+                raise OBC_Executor_Exception(f'File {self.workflow_filename} does not exist')
+            except json.decoder.JSONDecodeError as e:
+                raise OBC_Executor_Exception(f'File {self.workflow_filename} does not seem to be in JSON format. Error: {str(e)}')
+
+        elif self.workflow_string:
+            try:
+                self.workflow = json.loads(self.workflow_string)
+            except json.decoder.JSONDecodeError as e:
+                raise OBC_Executor_Exception(f'Could not parse workflow_string as JSON. Error: {str(e)}')
+
         elif self.workflow_object:
             self.workflow = self.workflow_object
-        else:
-            raise OBC_Executor_Exception('Both workflow_filename and workflow_string are empty')
 
         self.input_parameters = self.get_input_parameters()
         self.root_workflow = self.get_root_workflow()
@@ -891,10 +921,15 @@ class Workflow:
 
 
     @staticmethod
-    def get_workflow_dash_id(workflow):
+    def get_workflow_slash_id(workflow):
         '''
         '''
         return workflow['name'] + '/' + str(workflow['edit'])
+
+    def get_workflow_dash_id(self, workflow):
+        '''
+        '''
+        return workflow['name'] + '__' + str(workflow['edit'])
 
     def get_step_calling_order(self,):
         '''
@@ -915,6 +950,36 @@ class Workflow:
             id_getter = self.get_tool_slash_id,
             dependency_getter = lambda x : x['dependencies'],
 
+        )
+
+    def get_workflow_workflow_dependency(self, workflow):
+        '''
+        Return a list of the workflows that are directly (not recursively) included in this workflow
+        Or else returns a list of the workflows that are directly part of this workflow
+        '''
+
+        ret = []
+        for n in self.node_iterator():
+            if not self.is_workflow(n):
+                continue
+
+            if n['belongto'] is None:
+                continue
+
+            if self.get_workflow_dash_id(n['belongto']) == workflow['id']:
+                ret.append(n)
+
+        return ret
+
+
+    def get_workflow_order(self,):
+        '''
+        '''
+
+        return self.get_node_order(
+            node_iterator = self.workflow_iterator,
+            id_getter = lambda x: x['id'],
+            dependency_getter = lambda x : list(map(self.get_workflow_dash_id, self.get_workflow_workflow_dependency(x))),
         )
 
 
@@ -1034,6 +1099,13 @@ class Workflow:
         '''
         for node in self.node_iterator():
             if self.is_tool(node):
+                yield node
+
+    def workflow_iterator(self,):
+        '''
+        '''
+        for node in self.node_iterator():
+            if self.is_workflow(node):
                 yield node
 
     def step_iterator(self,):
@@ -1190,11 +1262,11 @@ class Workflow:
 
     @staticmethod
     def bash_workflow_starts(workflow):
-        return Workflow.update_server_status('workflow started {}'.format(Workflow.get_workflow_dash_id(workflow)))
+        return Workflow.update_server_status('workflow started {}'.format(Workflow.get_workflow_slash_id(workflow)))
 
     @staticmethod
     def bash_workflow_ends(workflow):
-        return Workflow.update_server_status('workflow finished {}'.format(Workflow.get_workflow_dash_id(workflow)))
+        return Workflow.update_server_status('workflow finished {}'.format(Workflow.get_workflow_slash_id(workflow)))
 
     @staticmethod
     def bash_tool_installation_started(tool):
