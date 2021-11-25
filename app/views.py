@@ -3,8 +3,8 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.conf import settings # Access to project settings
-from django.contrib.auth.models import User
 
+from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django.contrib.auth import login as django_login # To distinguish from AJAX called login
 from django.contrib.auth import logout as django_logout # To distinguish from AJAX called logout
@@ -25,11 +25,28 @@ from django.views.decorators.csrf import csrf_exempt # https://stackoverflow.com
 # https://stackoverflow.com/questions/3289860/how-can-i-embed-django-csrf-token-straight-into-html
 from django.middleware.csrf import get_token
 
+from django.test.client import RequestFactory # We need this to simulate a request when uploading a workflow
+
 #Import database objects
-from app.models import OBC_user, Tool, Workflow, Variables, ToolValidations, \
-    OS_types, Keyword, Report, ReportToken, Reference, ReferenceField, Comment, \
-    UpDownCommentVote, UpDownToolVote, UpDownWorkflowVote, ExecutionClient, \
-    VisibilityOptions
+from app.models import (
+    OBC_user, 
+    Tool, 
+    Workflow, 
+    Variables, 
+    ToolValidations, 
+    OS_types, 
+    Keyword, 
+    Report, 
+    ReportToken, 
+    Reference, 
+    ReferenceField, 
+    Comment,
+    UpDownCommentVote, 
+    UpDownToolVote, 
+    UpDownWorkflowVote, 
+    ExecutionClient,
+    VisibilityOptions,
+)
 
 from rest_framework.authtoken.models import Token # https://www.django-rest-framework.org/api-guide/authentication/#setting-the-authentication-scheme
 
@@ -162,6 +179,10 @@ def md5(t):
     Return the md5 hash of this string
     '''
     return hashlib.md5(t.encode("utf-8")).hexdigest()
+
+def decode_response(response):
+   r_s = str(response.content, encoding='utf8')
+   return simplejson.loads(r_s)
 
 def valid_url(url):
     '''
@@ -689,6 +710,14 @@ def tool_id_cytoscape(tool):
     else:
         raise Exception('Error: 8151')
 
+
+def tool_variable_id_bash(tool, variable):
+    '''
+    Create a bash tool variabe
+    a1__1__1__path
+    '''
+    return '__'.join([tool['name'], tool['version'], str(tool['edit']), variable['name']])
+
 def step_id_cytoscape(step_name, workflow, name, edit):
     '''
     cytoscape step id
@@ -714,6 +743,17 @@ def tool_label_cytoscape(tool):
         return '/'.join([tool['name'], tool['version'], str(tool['edit'])])
     else:
         raise Exception('Error: 9810')
+
+def tool_label_cytoscape_to_object(tool_label):
+    '''
+    The inverse of tool_label_cytoscape
+    '''
+    name, version, edit = tool_label.split('/')
+    return {
+        'name': name,
+        'version': version,
+        'edit': int(edit),
+    }
 
 def workflow_id_cytoscape(workflow, name, edit):
     '''
@@ -850,6 +890,7 @@ def tool_build_dependencies_jstree(tool_dependencies, add_variables=False, add_i
             to_append['description'] = tool_dependency['dependency'].description
             to_append['website'] = tool_dependency['dependency'].website
             to_append['keywords'] = [k.keyword for k in tool_dependency['dependency'].keywords.all()]
+            to_append['visibility'] = VisibilityOptions.VISIBILITY_OPTIONS_CODE_dic[tool_dependency['dependency'].visibility] 
 
         tool_dependencies_jstree.append(to_append)
 
@@ -2144,6 +2185,9 @@ def tools_add(request, **kwargs):
     * names and version is searched case insensitive
     '''
 
+    print ('TOOL KWARGS:')
+    print (kwargs)
+
     if request.user.is_anonymous: # Server should always check..
         return fail('Please login to create new tools')
 
@@ -2175,21 +2219,38 @@ def tools_add(request, **kwargs):
         return fail('Invalid version')
 
     tool_edit_state = kwargs.get('tool_edit_state', '')
+    if tool_edit_state in {'False', 'false'}:
+        tool_edit_state = False
+    elif tool_edit_state in {'True', 'true'}:
+        tool_edit_state = True
+    print (tool_edit_state, type(tool_edit_state))
     if not type(tool_edit_state) is bool:
-        return fail('Error 8715')
+        return fail('Error 8715. Tool edit state has not been set')
 
     tool_visibility = kwargs.get('tool_visibility', '')
+    print (tool_visibility, type(tool_visibility))
     visibility_code = validate_visibility(tool_visibility)
     if type(visibility_code) is str:
         return fail(visibility_code)
 
     #Dependencies
     if not 'tool_dependencies' in kwargs:
-        return fail('Error 8777')
+        return fail('Error 8777. Could not find tool dependencies.')
     tool_dependencies = kwargs['tool_dependencies']
 
-    # FIXME! What if a dependency is deleted???
-    tool_dependencies_objects = [Tool.objects.get(name=t['name'], version=t['version'], edit=int(t['edit'])) for t in tool_dependencies]
+    #Check that dependencies are will formed 
+    tool_dependencies_objects = []
+    for t in tool_dependencies:
+        if not 'name' in t:
+            return fail('Dependency does not contain name field')
+        if not 'version' in t:
+            return fail('Dependency does not contain version field')
+        if not 'edit' in t:
+            return fail('Dependency does not contain edit field')
+
+        # FIXME! What if a dependency is deleted???
+        tool_dependencies_objects.append(Tool.objects.get(name=t['name'], version=t['version'], edit=int(t['edit'])))
+
 
     #If this is a public tool check that all tool dependencies are public as well
     if visibility_code == VisibilityOptions.PUBLIC_CODE:
@@ -2339,18 +2400,18 @@ def tools_add(request, **kwargs):
     try:
         tool_installation_commands = kwargs['tool_installation_commands']
     except KeyError:
-        return fail('Error 8778')
+        return fail('Error 8778. Could not find tool_installation_commands field.')
 
     try:
         tool_validation_commands = kwargs['tool_validation_commands']
     except KeyError:
-        return fail('Error 8779')
+        return fail('Error 8779. Could not find tool_validation_commands field.')
 
     #Variables
     try:
         tool_variables = kwargs['tool_variables']
     except KeyError:
-        return fail('Error 8780')
+        return fail('Error 8780. Could not find tool_variables field')
     tool_variables = [x for x in tool_variables if x['name'] and x['value'] and x['description']] # Filter out empty fields
 
     # Check that variables do not have the same name
@@ -2414,7 +2475,7 @@ def tools_add(request, **kwargs):
     try:
         keywords = [Keyword.objects.get_or_create(keyword=keyword)[0] for keyword in kwargs['tool_keywords']]
     except KeyError:
-        return fail('Error 8781')
+        return fail('Error 8781. Could not find tool_keywords field.')
     new_tool.keywords.add(*keywords)
     new_tool.save()
 
@@ -2476,7 +2537,7 @@ def tools_add(request, **kwargs):
 
 class WorkflowJSON:
     '''
-    Basically a function collection for dealing with the workflow json object
+    Basically a function collection for dealing with the workflows json object
     '''
 
     def update_workflow(self, workflow):
@@ -3112,6 +3173,7 @@ def set_edit_to_cytoscape_json(cy, edit, workflow_info_name, *,
         workflow_description,
         workflow_website,
         workflow_keywords,
+        workflow_visibility,
     ):
     '''
     Perform the following tasks:
@@ -3139,6 +3201,9 @@ def set_edit_to_cytoscape_json(cy, edit, workflow_info_name, *,
 
     # Set workflow keywords
     new_worfklow_node[0]['data']['keywords'] = workflow_keywords
+
+    # Set workflow visibility
+    new_worfklow_node[0]['data']['visibility'] = workflow_visibility
 
     belongto = {
         'name': workflow_info_name,
@@ -3246,11 +3311,11 @@ def workflows_add(request, **kwargs):
     try:
         workflow_info_forked_from = kwargs['workflow_info_forked_from']
     except KeyError:
-        return fail('Error 4876')
+        return fail('Error 4876. Invalid workflow_info_forked_from field')
 
     workflow_edit_state = kwargs.get('workflow_edit_state', '')
     if not type(workflow_edit_state) is bool:
-        return fail('Error 4877')
+        return fail('Error 4877. Invalid workflow_edit_state')
 
     # Check visibility
     workflow_visibility = kwargs.get('workflow_visibility')
@@ -3323,6 +3388,7 @@ def workflows_add(request, **kwargs):
         workflow_description = workflow_description,
         workflow_website = workflow_website,
         workflow_keywords = kwargs['workflow_keywords'],
+        workflow_visibility = workflow_visibility,
     )
 
     # Get all workflows that are used in this workflow
@@ -3567,6 +3633,116 @@ def workflow_exists_in_db(workflow):
         edit = int(workflow['edit']),
     ).exists()
 
+def convert_cytoscape_tool_to_request(tool, added_objects):
+    '''
+    Takes a cytoscape node and creates a dictionary with the fields that can be used for a request to tools_add
+    '''
+
+    #  "a1/1/1" --> {'name': 'a', 'version': '1', 'edit': 1}
+    tool['dependencies'] = [tool_label_cytoscape_to_object(x) for x in tool['dependencies']]
+
+    def change_tool_dependencies(dependencies):
+        ret = []
+        for dependency in dependencies:
+            #print ('==232323==')
+            #print (dependency)
+            dependency_label = tool_label_cytoscape(dependency)
+            #print ('dependency_label:', dependency_label)
+            if dependency_label in added_objects:
+                ret.append(added_objects[dependency_label]['new'])
+            else:
+                ret.append(dependency)
+
+        return ret
+
+
+    def change_tool_variables_in_bash(bash, dependencies):
+
+        ret = bash
+
+        for dependency in dependencies:
+            dependency_label = tool_label_cytoscape(dependency)
+            if dependency_label in added_objects:
+                this_tool = added_objects[dependency_label]
+                for variable_name in this_tool['variable_names']:
+                    old_tool_variable_bash = tool_variable_id_bash(dependency, {'name' : variable_name} )
+                    new_tool_variable_bash = tool_variable_id_bash(added_objects[dependency_label]['new'], {'name': variable_name})
+
+                    ret = ret.replace(old_tool_variable_bash, new_tool_variable_bash)
+
+        return ret
+
+    return {
+        'tool_description': tool['description'],
+        'tools_search_name': tool['name'],
+        'tools_search_version': tool['version'],
+        'tool_edit_state': False,
+        'tool_visibility': tool['visibility'],
+        'tool_dependencies': change_tool_dependencies(tool['dependencies']), # "a1/1/1"
+        'tool_os_choices': [{'value': x} for x in tool['os_choices']], # [{'value': 'posix'}],
+        'tool_installation_commands': change_tool_variables_in_bash(tool['installation_commands'], tool['dependencies']),
+        'tool_validation_commands': change_tool_variables_in_bash(tool['validation_commands'], tool['dependencies']),
+        'tool_variables': tool['variables'],
+        'tool_keywords': tool['keywords'],
+
+    }
+
+def convert_cytoscape_workflow_to_request(complete_workflow, workflow_to_isolate, added_objects):
+    '''
+    complete_workflow: Complete as load from graph json
+    workflow_to_isolate:
+    {'id': 'a__1', 'name': 'a', 'edit': 1, 'description': '1', 'website': '', 'keywords': [], 'visibility': 'public', 'label': 'a/1', 'type': 'workflow', 'draft': True, 'disconnected': False, 'belongto': {'name': 'a2', 'edit': 1}}
+
+    root workflow name is : "root__"
+    root workflow edit is : "__null"
+    '''
+
+    workflow_to_isolate_id = workflow_to_isolate['id']
+
+    def isolate_workflow_from_cytoscape_workflow():
+
+        ret = {
+            'elements': {
+                'nodes': [],
+                'edge': [],
+                'style': complete_workflow['workflow']['elements']['style'],
+            }
+        }
+
+        for node in complete_workflow['workflow']['elements']['nodes']:
+
+            if node['belongto'] is None:
+                node['edit'] = None
+                node['name'] = 'root'
+
+                del node['label']   
+                del node['description']
+                del node['website']
+                del node['keywords']
+                del node['visibility']
+
+
+            belongto_id = None
+            if node['belongto']:
+                belongto_id = create_workflow_id(node['belongto'])
+            
+            
+
+
+
+                
+
+
+
+
+    return {
+        'workflow_info_name': workflow['name'],
+        'workflow_info_forked_from': None,
+        'workflow_edit_state': False,
+        'workflow_visibility': workflow['visibility'],
+        #'workflow_json'
+    }
+
 #@has_data
 def upload(request, **kwargs):
     '''
@@ -3594,13 +3770,82 @@ def upload(request, **kwargs):
         return fail(f'Error 5488. Could not parse Workflow: {str(e)}')
 
     error_message = 'Could not import workflow. '
-    for tool in workflow.get_tool_installation_order():
-        if tool_exists_in_db(tool):
-            return fail(error_message + f' Contained tool: {tool_label_cytoscape(tool)} already exists.')
 
-    for w in workflow.get_workflow_order():
-        if workflow_exists_in_db(w):
-            return fail(error_message + f' Contained workflow: {workflow_label_cytoscape(w)} already exists.')
+    if False: # We do not check if ROs exist!
+        for tool in workflow.get_tool_installation_order():
+            if tool_exists_in_db(tool):
+                return fail(error_message + f' Contained tool: {tool_label_cytoscape(tool)} already exists.')
+
+        for w in workflow.get_workflow_order():
+            if workflow_exists_in_db(w):
+                return fail(error_message + f' Contained workflow: {workflow_label_cytoscape(w)} already exists.')
+
+
+    rf = RequestFactory()
+
+    # All quality controls seem to be fine. Start importing!
+    added_objects = {}
+
+    # First, add tool
+    for tool in workflow.get_tool_installation_order():
+        tool_request = convert_cytoscape_tool_to_request(tool, added_objects)
+        #print ('Tool Request:')
+        #print (tool_request)
+        fake_request = rf.post('/tools_add/', tool_request, content_type='application/json')
+        fake_request.user = request.user
+
+        #print ('Fake request:')
+        #print (fake_request)
+        response = tools_add(fake_request)
+        response_decoded = decode_response(response)
+
+        #print (response_decoded) # {'success': False, 'error_message': 'Description cannot be empty'} 
+
+        tool_label = tool_label_cytoscape(tool)
+
+        added_objects[tool_label] = {
+            'type': 'tool',
+            'old': {
+                'name': tool['name'], 
+                'version': tool['version'],
+                'edit': int(tool['edit']),
+            },
+            'new': {
+                'name': tool['name'],
+                'version': tool['version'],
+                'edit': response_decoded['edit'],
+            },
+            'variable_names': [x['name'] for x in tool['variables']],
+        }
+
+
+        if not response_decoded['success']:
+            return fail(response_decoded['error_message'])
+
+    added_objects['added_workflow_ids'] = set()
+
+
+    # Next, add workflows
+    for sub_workflow in workflow.get_workflow_order():
+
+        print ('Workflow:')
+        print (workflow)
+
+        workflow_label = workflow_label_cytoscape(workflow) # a/1
+        print ('Workflow label:', workflow_label)
+
+
+        workflow_request = convert_cytoscape_workflow_to_request(workflow, sub_workflow, added_objects)
+        fake_request = rf.post('/workflows_add/', workflow_request, content_type='application/json')
+        fake_request.user = request.user
+
+        response = workflows_add(fake_request)
+        response_decoded = decode_response(response)
+
+
+        if not response_decoded['success']:
+            return fail(response_decoded['error_message'])
+
 
 
     ret = {
