@@ -72,6 +72,7 @@ import io
 import os
 import re
 import six
+import copy
 import time # for time.sleep
 import uuid
 import hashlib
@@ -710,13 +711,6 @@ def tool_id_cytoscape(tool):
     else:
         raise Exception('Error: 8151')
 
-
-def tool_variable_id_bash(tool, variable):
-    '''
-    Create a bash tool variabe
-    a1__1__1__path
-    '''
-    return '__'.join([tool['name'], tool['version'], str(tool['edit']), variable['name']])
 
 def step_id_cytoscape(step_name, workflow, name, edit):
     '''
@@ -3212,10 +3206,12 @@ def set_edit_to_cytoscape_json(cy, edit, workflow_info_name, *,
     belongto_id = create_workflow_id(belongto)
 
     for node in cy['elements']['nodes']:
+        # Set the edit in belongto
         if not node['data']['belongto'] is None:
             if not node['data']['belongto']['edit']:
                 node['data']['belongto'] = belongto
 
+        # Set the name in root 
         if 'name' in node['data']:
             if node['data']['name'] == 'root':
                 node['data']['name'] = workflow_info_name
@@ -3633,115 +3629,7 @@ def workflow_exists_in_db(workflow):
         edit = int(workflow['edit']),
     ).exists()
 
-def convert_cytoscape_tool_to_request(tool, added_objects):
-    '''
-    Takes a cytoscape node and creates a dictionary with the fields that can be used for a request to tools_add
-    '''
 
-    #  "a1/1/1" --> {'name': 'a', 'version': '1', 'edit': 1}
-    tool['dependencies'] = [tool_label_cytoscape_to_object(x) for x in tool['dependencies']]
-
-    def change_tool_dependencies(dependencies):
-        ret = []
-        for dependency in dependencies:
-            #print ('==232323==')
-            #print (dependency)
-            dependency_label = tool_label_cytoscape(dependency)
-            #print ('dependency_label:', dependency_label)
-            if dependency_label in added_objects:
-                ret.append(added_objects[dependency_label]['new'])
-            else:
-                ret.append(dependency)
-
-        return ret
-
-
-    def change_tool_variables_in_bash(bash, dependencies):
-
-        ret = bash
-
-        for dependency in dependencies:
-            dependency_label = tool_label_cytoscape(dependency)
-            if dependency_label in added_objects:
-                this_tool = added_objects[dependency_label]
-                for variable_name in this_tool['variable_names']:
-                    old_tool_variable_bash = tool_variable_id_bash(dependency, {'name' : variable_name} )
-                    new_tool_variable_bash = tool_variable_id_bash(added_objects[dependency_label]['new'], {'name': variable_name})
-
-                    ret = ret.replace(old_tool_variable_bash, new_tool_variable_bash)
-
-        return ret
-
-    return {
-        'tool_description': tool['description'],
-        'tools_search_name': tool['name'],
-        'tools_search_version': tool['version'],
-        'tool_edit_state': False,
-        'tool_visibility': tool['visibility'],
-        'tool_dependencies': change_tool_dependencies(tool['dependencies']), # "a1/1/1"
-        'tool_os_choices': [{'value': x} for x in tool['os_choices']], # [{'value': 'posix'}],
-        'tool_installation_commands': change_tool_variables_in_bash(tool['installation_commands'], tool['dependencies']),
-        'tool_validation_commands': change_tool_variables_in_bash(tool['validation_commands'], tool['dependencies']),
-        'tool_variables': tool['variables'],
-        'tool_keywords': tool['keywords'],
-
-    }
-
-def convert_cytoscape_workflow_to_request(complete_workflow, workflow_to_isolate, added_objects):
-    '''
-    complete_workflow: Complete as load from graph json
-    workflow_to_isolate:
-    {'id': 'a__1', 'name': 'a', 'edit': 1, 'description': '1', 'website': '', 'keywords': [], 'visibility': 'public', 'label': 'a/1', 'type': 'workflow', 'draft': True, 'disconnected': False, 'belongto': {'name': 'a2', 'edit': 1}}
-
-    root workflow name is : "root__"
-    root workflow edit is : "__null"
-    '''
-
-    workflow_to_isolate_id = workflow_to_isolate['id']
-
-    def isolate_workflow_from_cytoscape_workflow():
-
-        ret = {
-            'elements': {
-                'nodes': [],
-                'edge': [],
-                'style': complete_workflow['workflow']['elements']['style'],
-            }
-        }
-
-        for node in complete_workflow['workflow']['elements']['nodes']:
-
-            if node['belongto'] is None:
-                node['edit'] = None
-                node['name'] = 'root'
-
-                del node['label']   
-                del node['description']
-                del node['website']
-                del node['keywords']
-                del node['visibility']
-
-
-            belongto_id = None
-            if node['belongto']:
-                belongto_id = create_workflow_id(node['belongto'])
-            
-            
-
-
-
-                
-
-
-
-
-    return {
-        'workflow_info_name': workflow['name'],
-        'workflow_info_forked_from': None,
-        'workflow_edit_state': False,
-        'workflow_visibility': workflow['visibility'],
-        #'workflow_json'
-    }
 
 #@has_data
 def upload(request, **kwargs):
@@ -3784,43 +3672,30 @@ def upload(request, **kwargs):
     rf = RequestFactory()
 
     # All quality controls seem to be fine. Start importing!
-    added_objects = {}
+   
 
-    # First, add tool
-    for tool in workflow.get_tool_installation_order():
-        tool_request = convert_cytoscape_tool_to_request(tool, added_objects)
-        #print ('Tool Request:')
-        #print (tool_request)
+    # First, add tools
+
+    def edit_getter(tool_request):
+        '''
+        This function takes an "artificial" tool_add request and submits it
+        '''
         fake_request = rf.post('/tools_add/', tool_request, content_type='application/json')
         fake_request.user = request.user
-
-        #print ('Fake request:')
-        #print (fake_request)
         response = tools_add(fake_request)
         response_decoded = decode_response(response)
 
-        #print (response_decoded) # {'success': False, 'error_message': 'Description cannot be empty'} 
-
-        tool_label = tool_label_cytoscape(tool)
-
-        added_objects[tool_label] = {
-            'type': 'tool',
-            'old': {
-                'name': tool['name'], 
-                'version': tool['version'],
-                'edit': int(tool['edit']),
-            },
-            'new': {
-                'name': tool['name'],
-                'version': tool['version'],
-                'edit': response_decoded['edit'],
-            },
-            'variable_names': [x['name'] for x in tool['variables']],
-        }
-
-
         if not response_decoded['success']:
             return fail(response_decoded['error_message'])
+
+        return response_decoded['edit']
+
+
+    result = workflow.process_tool_requests(edit_getter)
+    if type(result) is str:
+        return fail(error_message + ' ' + result)
+
+        
 
     added_objects['added_workflow_ids'] = set()
 
@@ -3828,11 +3703,6 @@ def upload(request, **kwargs):
     # Next, add workflows
     for sub_workflow in workflow.get_workflow_order():
 
-        print ('Workflow:')
-        print (workflow)
-
-        workflow_label = workflow_label_cytoscape(workflow) # a/1
-        print ('Workflow label:', workflow_label)
 
 
         workflow_request = convert_cytoscape_workflow_to_request(workflow, sub_workflow, added_objects)

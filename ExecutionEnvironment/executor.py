@@ -819,6 +819,9 @@ class Workflow:
 
         return ret
 
+    @staticmethod
+    def get_edge_id(source_id, target_id):
+        return f'{source_id}..{target_id}'
 
     def get_input_bash_commands(self,):
         '''
@@ -918,6 +921,19 @@ class Workflow:
         
         d = {Workflow.get_tool_bash_variable(tool, tool_variable['name']): tool_variable['value'] for tool_variable in tool['variables']}
         return json.dumps(d, indent=4)
+
+    @staticmethod
+    def tool_label_to_object(tool_label):
+        '''
+        The inverse of get_tool_slash_id
+        '''
+        name, version, edit = tool_label.split('/')
+        return {
+            'name': name,
+            'version': version,
+            'edit': int(edit),
+        }
+
 
 
     @staticmethod
@@ -1093,6 +1109,23 @@ class Workflow:
         '''
         for node in self.workflow['workflow']['elements']['nodes']:
             yield node['data']
+
+    def node_iterator_with_style(self, create_copy=False):
+        for node in self.workflow['workflow']['elements']['nodes']:
+            if create_copy:
+                yield copy.deepcopy(node)
+            else:
+                yield node
+
+
+    def edge_iterator_with_style(self, create_copy=False):
+        '''
+        '''
+        for edge in self.workflow['workflow']['elements']['edges']:
+            if create_copy:
+                yield copy.deepcopy(edge)
+            else:
+                yield edge
 
     def tool_iterator(self,):
         '''
@@ -1315,6 +1348,347 @@ class Workflow:
 
 
         return input_variables_to_final
+
+
+    @staticmethod
+    def convert_tool_to_request(tool, added_objects):
+        '''
+        Takes a tool and creates a dictionary with the fields that can be used for a request to tools_add
+        added_objects: The tools that have been added alreadt
+        '''
+
+        #  "a1/1/1" --> {'name': 'a', 'version': '1', 'edit': 1}
+        tool['dependencies'] = [Workflow.tool_label_to_object(x) for x in tool['dependencies']]
+
+        def change_tool_dependencies(dependencies):
+            ret = []
+            for dependency in dependencies:
+                #print ('==232323==')
+                #print (dependency)
+                dependency_label = Workflow.get_tool_slash_id(dependency)
+                #print ('dependency_label:', dependency_label)
+                if dependency_label in added_objects:
+                    ret.append(added_objects[dependency_label]['new'])
+                else:
+                    ret.append(dependency)
+
+            return ret
+
+
+        def change_tool_variables_in_bash(bash, dependencies):
+
+            ret = bash
+
+            for dependency in dependencies:
+                dependency_label = Workflow.get_tool_slash_id(dependency)
+                if dependency_label in added_objects:
+                    this_tool = added_objects[dependency_label]
+                    for variable_name in this_tool['variable_names']:
+                        old_tool_variable_bash = Workflow.get_tool_bash_variable(dependency, {'name' : variable_name} )
+                        new_tool_variable_bash = Workflow.get_tool_bash_variable(added_objects[dependency_label]['new'], {'name': variable_name})
+
+                        ret = ret.replace(old_tool_variable_bash, new_tool_variable_bash)
+
+            return ret
+
+        return {
+            'tool_description': tool['description'],
+            'tools_search_name': tool['name'],
+            'tools_search_version': tool['version'],
+            'tool_edit_state': False,
+            'tool_visibility': tool['visibility'],
+            'tool_dependencies': change_tool_dependencies(tool['dependencies']), # "a1/1/1"
+            'tool_os_choices': [{'value': x} for x in tool['os_choices']], # [{'value': 'posix'}],
+            'tool_installation_commands': change_tool_variables_in_bash(tool['installation_commands'], tool['dependencies']),
+            'tool_validation_commands': change_tool_variables_in_bash(tool['validation_commands'], tool['dependencies']),
+            'tool_variables': tool['variables'],
+            'tool_keywords': tool['keywords'],
+
+        }
+
+    def process_tool_requests(self, edit_getter):
+        '''
+        edit_getter: A function that gets a tool_request and returns the edit of this tool
+        '''
+
+        added_objects = {}
+        for tool in self.get_tool_installation_order():
+            tool_request = Workflow.convert_tool_to_request(tool, added_objects)
+            new_edit = edit_getter(tool_request)
+
+            if not type(new_edit) is int:
+                return new_edit # This is an error
+
+            #print (f'new_edit: {new_edit}')
+
+
+            tool_label = Workflow.get_tool_slash_id(tool)
+            added_objects[tool_label] = {
+                'type': 'tool',
+                'old': {
+                    'name': tool['name'], 
+                    'version': tool['version'],
+                    'edit': int(tool['edit']),
+                },
+                'new': {
+                    'name': tool['name'],
+                    'version': tool['version'],
+                    'edit': int(new_edit) # response_decoded['edit'],
+                },
+                'variable_names': [x['name'] for x in tool['variables']],
+            }
+
+        return 0 # An integer to intigate no error
+            
+
+    def test_process_tool_requests(self, ):
+        c = 0
+        def edit_getter(tool_request):
+            nonlocal c
+            c += 1
+            return c
+
+        return self.process_tool_requests(edit_getter)
+
+
+    def isolate_workflow(self, workflow_to_isolate, added_workflows_ids):
+        '''
+        Extract a workflow from within the workflow object
+        workflow_to_isolate:
+        {'id': 'a__1', 'name': 'a', 'edit': 1, 'description': '1', 'website': '', 'keywords': [], 'visibility': 'public', 'label': 'a/1', 'type': 'workflow', 'draft': True, 'disconnected': False, 'belongto': {'name': 'a2', 'edit': 1}}
+        '''
+
+        #print ('workflow to isolate:')
+        #print (workflow_to_isolate)
+
+        ret = {
+            'elements': {
+                'nodes': [],
+                'edges': [],
+            },
+        }
+        # Add the rest fields of the cytoscape workflow
+        for k,v in self.workflow['workflow'].items():
+            if k == 'elements': 
+                continue
+
+            ret[k] = v
+
+        workflow_to_isolate_id = workflow_to_isolate['id']
+        added_workflows_ids.add(workflow_to_isolate_id)
+
+        for node in self.node_iterator_with_style(create_copy=True):
+            #print (node)
+
+            # Is this the root workflow of the complete workflow that belongs to the isolated?
+            if self.is_root_workflow(node['data']) and node['data']['id'] == workflow_to_isolate_id:
+                #print ('added root')
+                ret['elements']['nodes'].append(node)
+                continue
+
+            # Is this the root workflow of the workflow to be isolated?
+            if self.is_workflow(node['data']) and node['data']['id'] == workflow_to_isolate_id:
+                #print ('added isolated')
+                node['data']['belongto'] = None
+                ret['elements']['nodes'].append(node)
+                continue
+
+            # Is this the root workflow of the complete workflow that does not belong to the isolated?
+            if node['data']['belongto'] is None:
+                continue
+
+            # This not the root workflow
+            # If the "belongs" field is in added_workflows_ids, add it 
+            if self.get_workflow_dash_id(node['data']['belongto']) in added_workflows_ids:
+                ret['elements']['nodes'].append(node)
+
+
+        this_workflows_ids = {node['data']['id'] for node in ret['elements']['nodes']}
+
+        # Add edges
+        for edge in self.edge_iterator_with_style(create_copy=True):
+            if edge['data']['source'] in this_workflows_ids and edge['data']['target'] in this_workflows_ids:
+                ret['elements']['edges'].append(edge)
+
+        #print ('===111===')
+        #print (json.dumps(ret, indent=4))
+        #print ('===222===')
+
+        return ret
+
+
+
+
+
+    def convert_workflow_to_request(complete_workflow, workflow_to_isolate, added_objects):
+        '''
+        complete_workflow: Complete as loaded from graph json
+
+        root workflow name is : "root__"
+        root workflow edit is : "__null"
+        '''
+        pass
+
+    
+
+    @staticmethod
+    def remove_edit_from_workflow_cytoscape(workflow_cytoscape, old_variables):
+        '''
+        Takes a cytoscape workflow object and removes the edit information. 
+        Makes it appropriate for sending it as a request to the add_workflow function
+
+        This does the reverse job of set_edit_to_cytoscape_json in views.py 
+
+        old_variables: A dictionary. Key: old bash variables. Values: new bash variables
+        '''
+
+        # Get the root workflow
+        for node in workflow_cytoscape['elements']['nodes']:
+            if node['data']['type'] == 'workflow' and node['data']['belongto'] is None:
+                root_workflow = node
+                break
+        else:
+            raise OBC_Executor_Exception('Could not find root workflow')
+
+
+        print ('Root:')
+        print (root_workflow)
+        root_id = root_workflow['id']
+        root_name = root_workflow['name']
+        root_edit = root_workflow['edit']
+
+        # Get the root workflow
+        for node in workflow_cytoscape['elements']['nodes']:
+            if node_to_add['belongto'] is None:
+                root_workflow = node
+                break
+        else:
+            raise OBC_Executor_Exception('Could not find root node')
+
+        for node in workflow_cytoscape['elements']['nodes']:
+
+            node_to_add = copy.copy(node)
+
+            # If this the root workflow Change the edit, the name and 
+            if node_to_add['belongto'] is None:
+
+                node_to_add['edit'] = None
+                node_to_add['name'] = 'root'
+                node_to_add['id'] = 'root__null'
+
+                del node_to_add['label']   
+                del node_to_add['description']
+                del node_to_add['website']
+                del node_to_add['keywords']
+                del node_to_add['visibility']
+
+                continue
+
+            # Does this belong in root? 
+            if self.get_workflow_slash_id(node['data']) == root_id:
+                node_to_add['data']['belongto']['edit'] = None # Remove edit
+
+            #Change bash
+            if 'bash' in node['data']:
+                # step__ssrr__name_edit --> step__ssrr__root__null 
+                node['bash'] = re.sub(r'step__(\w+)__' + root_name + r'__' + str(root_edit) , r'step__\1__root__null',  node['data']['bash'])
+                node['bash'] = re.sub(r'input__(\w+)__' + root_name + r'__' + str(root_edit) , r'input__\1__root__null',  node['data']['bash'])
+                node['bash'] = re.sub(r'output__(\w+)__' + root_name + r'__' + str(root_edit) , r'output__\1__root__null',  node['data']['bash'])
+
+                for k,v in old_variables.items():
+                    node['bash'] = node['bash'].replace(k, v)
+
+            #Change steps
+            if 'steps' in node['data']:
+                new_steps = []
+                for step in node['data']['steps']:
+                    new_step = re.sub(r'step__(\w+)__' + root_name + r'__' + str(root_edit) , r'step__\1__root__null',  step)
+                    if new_step in old_variables:
+                        new_step = old_variables[new_step]
+                    new_steps.append(new_step)
+                node['data']['steps'] = new_steps
+
+            #Change inputs
+            if 'inputs' in node['data']:
+                new_inputs = []
+                for input_ in node['data']['inputs']:
+                    # input__inp__root__null -->  input__inp__root__null 
+                    new_input = re.sub(r'input__(\w+)__' + root_name + r'__' + str(root_edit) , r'input__\1__root__null',  input_)
+                    if new_input in old_variables:
+                        new_input = old_variables[new_input]
+                    new_inputs.append(new_input)
+                node['data']['inputs'] = new_inputs
+
+            # Change outputs
+            if 'outputs' in node['data']:
+                new_outputs = []
+                for output in node['data']['inputs']:
+                    # input__inp__root__null -->  input__inp__root__null 
+                    new_output = re.sub(r'output__(\w+)__' + root_name + r'__' + str(root_edit) , r'output__\1__root__null',  output)
+                    if new_output in old_variables:
+                        new_output = old_variables[new_output]
+                    new_outputs.append(new_output)
+                node['data']['outputs'] = new_outputs
+
+
+        # Change edges
+        new_edges = []
+        for edge in workflow_cytoscape['elements']['edges']:
+
+            if edge['data']['source'] in old_variables:
+                edge['data']['source'] = old_variables[edge['data']['source']]
+            if edge['data']['target'] in old_variables:
+                edge['data']['target'] = old_variables[edge['data']['target']]
+
+            if root_id in edge['data']['source']:
+                edge['data']['source'] = edge['data']['source'].replace(root_id, 'root__null')
+
+            if root_id in edge['data']['target']:
+                edge['data']['target'] = edge['data']['target'].replace(root_id, 'root__null')
+
+            edge['data']['id'] = Workflow.get_edge_id(edges['data']['source'], edge['data']['target'])
+
+
+
+    @staticmethod
+    def create_workflow_request(workflow_cytoscape) :    
+
+        return {
+            'workflow_info_name': workflow['name'],
+            'workflow_info_forked_from': None,
+            'workflow_edit_state': False,
+            'workflow_visibility': workflow['visibility'],
+            #'workflow_json'
+        }
+
+
+
+
+    def process_workflow_requests(self, edit_getter, old_tool_variables):
+        '''
+        old_tool_variables : dictionary, keys: old tool variables, values: new tool variables
+        '''
+
+        added_workflows_ids = set()
+        old_variables = old_tool_variables
+
+        for sub_workflow in self.get_workflow_order():
+            print ('Workflow:')
+            print (sub_workflow)
+
+            workflow_label = self.get_workflow_slash_id(sub_workflow) # a/1
+            print ('Workflow label:', workflow_label)
+
+
+            isolated_workflow = self.isolate_workflow(sub_workflow, added_workflows_ids)
+            Workflow.remove_edit_from_workflow_cytoscape(isolated_workflow, old_variables)
+
+
+
+    def test_process_workflow_requests(self,):
+        self.process_workflow_requests()        
+
+
 
     def break_down_step_generator(self,
         enable_read_arguments_from_commandline = True,
@@ -3888,6 +4262,15 @@ if __name__ == '__main__':
         args.askinput = 'NO'
 
     w = Workflow(args.workflow_filename, askinput=args.askinput)
+
+    ##################
+        
+    w.test_process_tool_requests()
+    w.test_process_workflow_requests()
+
+
+    a=1/0
+    ###############
 
     if args.format == 'sh':
         e = LocalExecutor(w)
