@@ -1537,6 +1537,9 @@ echo "after tool execution"
 
 If we convert to DAG this step, it will result in a graph with a single node. This is because the step does not call other steps. If we set the parameter `break_down_on_tools` to `true`, then the tool execution command (`${t__1__1__exec} --parameter`) will be treated as a step calling command and the resulted DAG will contain 3 nodes (similar to the first example before). But why someone might want to have a different node in the DAG for every tool execution? In cases where the tool is in a different execution environment (for example docker container) this might be very useful. Basically this offers a complete isolation between the tools that are used and the scripts that call them. 
 
+## Enabling different tool environments
+Option `tools_depends_on_environments` in API, if True then tools read from previous variables only if they belong to the same isolated environment. Default: False. 
+
 ## The JSON format 
 The JSON representation of the DAG of a workflow has the following fields:
 

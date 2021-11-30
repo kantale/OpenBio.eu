@@ -3840,9 +3840,11 @@ def download_workflow(request, **kwargs):
     coming_from_UI = kwargs.get('UI', False) # WHO CALLED ME?? 
     coming_from_API = kwargs.get('API', False) # WHO CALLED ME??
 
-    # for break_down_on_tools see executor.py
+    # for break_down_on_tools, tools_depends_on_environments see executor.py
     # If we are coming from UI then always break down on tools 
     break_down_on_tools = kwargs.get('break_down_on_tools', False) or coming_from_UI 
+    # If we are coming from UI then tools depend on environments
+    tools_depends_on_environments = kwargs.get('tools_depends_on_environments', False) or coming_from_UI
 
     #print ('Name:', workflow_arg['name'])
     #print ('Edit:', workflow_arg['edit'])
@@ -3915,7 +3917,12 @@ def download_workflow(request, **kwargs):
         if download_type == 'JSONGRAPH':
             output_object = simplejson.dumps(output_object)
         elif download_type == 'JSONDAG':
-            output_object = create_bash_script(output_object, server_url, 'jsondag', workflow_id=workflow_id, obc_client=workflow_obc_client, break_down_on_tools=break_down_on_tools)
+            output_object = create_bash_script(output_object, server_url, 'jsondag', 
+                workflow_id=workflow_id, 
+                obc_client=workflow_obc_client, 
+                break_down_on_tools=break_down_on_tools,
+                tools_depends_on_environments=tools_depends_on_environments,
+            )
         elif download_type == 'BASH':
             output_object = create_bash_script(output_object, server_url, 'sh')
         elif download_type == 'CWLTARGZ':

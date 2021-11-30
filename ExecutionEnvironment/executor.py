@@ -870,8 +870,15 @@ class Workflow:
     def get_tool_vars_filename(tool):
         '''
         '''
+        return Workflow.get_tool_vars_filename_tool_id(Workflow.get_tool_dash_id(tool, no_dots=True))
 
-        return '{TOOL_ID}_VARS.sh'.format(TOOL_ID=Workflow.get_tool_dash_id(tool, no_dots=True))
+    @staticmethod
+    def get_tool_vars_filename_tool_id(tool_id):
+        '''
+        '''
+
+        return '{TOOL_ID}_VARS.sh'.format(TOOL_ID=tool_id)
+
 
     @staticmethod
     def get_tool_bash_variable(tool, variable_name):
@@ -1998,11 +2005,41 @@ OBCENDOFFILE
             fileIO.flush()
             return fileIO.getvalue()
 
+    def create_environments(self,):
+        '''
+        '''
+
+        ret = {}
+
+        environment_counter = 0
+        # https://stackoverflow.com/questions/21739569/finding-separate-graphs-within-a-graph-object-in-networkx
+        tool_graph = BaseExecutor.build_graph_from_run_afters(self.workflow.tool_run_afters)
+        tool_graph_undirected = tool_graph.to_undirected()
+        tool_sub_graphs = (tool_graph_undirected.subgraph(c) for c in nx.connected_components(tool_graph_undirected))
+        for i, sg in enumerate(tool_sub_graphs):
+            this_environment_nodes = set(sg.nodes())
+            #print (i, this_environment_nodes)
+            #self.decomposed['environments'][environment_counter] = {x: [y for y in self.decomposed['steps'][x]['run_after'] if y in this_environment_nodes] for x in this_environment_nodes}
+            ret[environment_counter] = {x: [y for y in self.workflow.tool_run_afters[x] if y in this_environment_nodes] for x in this_environment_nodes}
+            environment_counter += 1
+
+        #print (json.dumps(ret, indent=2))
+
+        return ret
+
+
     def decompose(self,
             break_down_on_tools=False,
+            tools_depends_on_environments=False,
         ):
         '''
-        Decomposes the workflow in steps. Create DAG
+        Decomposes the workflow in steps. Create DAG.
+
+        break_down_on_tools: Should a tool invocation create a new node in DAG?
+        tools_depends_on_environments: 
+            See: https://github.com/kantale/OpenBio.eu/issues/234 
+            If False then the tools depend on tools that are predecessor in the DAG
+            If True  then the tools depend only from tools that are predecerror in the DAG and are in the same environment
         '''
         self.decomposed = {
             'environment_variables': {},
@@ -2037,6 +2074,11 @@ OBCENDOFFILE
         #print ('OUTPUT VARIABLES:')
         #print (json.dumps(ret['output_parameters'], indent=4))
 
+
+        # Create isolated environments
+        self.decomposed['environments'] = self.create_environments()
+
+
         # INIT STEP
         initial_variabes = self.initial_variabes()
         input_parameters = self.save_input_parameters(from_workflow=True) # touch ${OBC_WORK_PATH}/v5FDK_inputs.sh
@@ -2062,8 +2104,30 @@ OBCENDOFFILE
 
         for tool_index, tool in enumerate(self.workflow.tool_bash_script_generator()):
 
+
             tool_vars_filename = os.path.join('${OBC_WORK_PATH}', Workflow.get_tool_vars_filename(tool))
             tool_id = self.workflow.get_tool_dash_id(tool, no_dots=True)
+
+            # Get the environment in which this tool belongs
+            this_tool_environment = [k for k,v in self.decomposed['environments'].items() if tool_id in v]
+            if len(this_tool_environment) == 0:
+                raise OBC_Executor_Exception(f'Tool {tool_id} does not exist in any environment')
+            if len(this_tool_environment) > 1:
+                raise OBC_Executor_Exception(f'Tool {tool_id} exists in more than one environments.')
+            this_tool_environment = this_tool_environment[0]
+            #print (f'tool: {tool_id} Environment: {this_tool_environment}')
+
+            if tools_depends_on_environments:
+                this_tool_previous_tools = [
+                    Workflow.get_tool_vars_filename_tool_id(x) 
+                    for x in tool_ids 
+                    if x in self.decomposed['environments'][this_tool_environment]
+                ]
+            else:
+                this_tool_previous_tools = previous_tools
+
+            #print (f'tool: {tool_id}  Previous tools: {this_tool_previous_tools}')
+
             
             bash = self.initial_variabes()
             bash += self.workflow.get_tool_bash_commands(
@@ -2072,7 +2136,7 @@ OBCENDOFFILE
                 update_server_status=False,
                 read_variables_from_command_line=False,
                 variables_json_filename=None,
-                variables_sh_filename_read = previous_tools,
+                variables_sh_filename_read = this_tool_previous_tools,
                 variables_sh_filename_write = tool_vars_filename,
             )
 
@@ -2091,6 +2155,8 @@ OBCENDOFFILE
                 'run_after': run_afters[tool_id],
                 'type': 'tool_installation',
             }
+
+
 
         # STEP STEPS!
         previous_steps_vars = []
@@ -2173,20 +2239,10 @@ OBCENDOFFILE
         #print (json.dumps(ret, indent=4))
 
 
+        # Add DAG
         self.transitive_reduction(run_afters)
         self.decomposed['DAG'] = {node: list(self.DAG.predecessors(node)) for node in self.DAG.nodes()}
 
-        self.decomposed['environments'] = {}
-        environment_counter = 0
-        # https://stackoverflow.com/questions/21739569/finding-separate-graphs-within-a-graph-object-in-networkx
-        tool_graph = BaseExecutor.build_graph_from_run_afters(self.workflow.tool_run_afters)
-        tool_graph_undirected = tool_graph.to_undirected()
-        tool_sub_graphs = (tool_graph_undirected.subgraph(c) for c in nx.connected_components(tool_graph_undirected))
-        for i, sg in enumerate(tool_sub_graphs):
-            this_environment_nodes = set(sg.nodes())
-            #print (i, this_environment_nodes)
-            self.decomposed['environments'][environment_counter] = {x: [y for y in self.decomposed['steps'][x]['run_after'] if y in this_environment_nodes] for x in this_environment_nodes}
-            environment_counter += 1
 
         #print ('DAG:')
         #print (json.dumps(self.decomposed['DAG'], indent=4))
@@ -3310,11 +3366,18 @@ RUN chmod +x install-tool1.sh && ./install-tool1.sh
         return 'test'
 
 class JSONDAGExecutor(BaseExecutor):
-    def build(self, output, output_format='jsondag', workflow_id=None, obc_client=False, break_down_on_tools=False):
+    def build(self, output, 
+            output_format='jsondag', 
+            workflow_id=None, 
+            obc_client=False, 
+            break_down_on_tools=False,
+            tools_depends_on_environments=False,
+        ):
         
 
         self.decompose(
             break_down_on_tools=break_down_on_tools,
+            tools_depends_on_environments=tools_depends_on_environments,
         )
         return json.dumps(self.decomposed)
 
@@ -3705,7 +3768,12 @@ rule {RULE_ID}:
 
         return snakemake
 
-def create_bash_script(workflow_object, server, output_format, workflow_id=None, obc_client=False, break_down_on_tools=False):
+def create_bash_script(workflow_object, server, output_format, 
+        workflow_id=None, 
+        obc_client=False, 
+        break_down_on_tools=False,
+        tools_depends_on_environments=False,
+    ):
     '''
     convenient function called by server
     server: the server to report to
@@ -3731,7 +3799,14 @@ def create_bash_script(workflow_object, server, output_format, workflow_id=None,
     elif output_format == 'jsondag':
         w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
         e = JSONDAGExecutor(w)
-        return e.build(output=None, output_format='jsondag', workflow_id=workflow_id, obc_client=obc_client, break_down_on_tools=break_down_on_tools)
+        return e.build(
+            output=None, 
+            output_format='jsondag', 
+            workflow_id=workflow_id, 
+            obc_client=obc_client, 
+            break_down_on_tools=break_down_on_tools,
+            tools_depends_on_environments=tools_depends_on_environments,
+        )
     elif output_format in ['cwltargz', 'cwlzip']:
         w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
         e = CWLExecutor(w)
