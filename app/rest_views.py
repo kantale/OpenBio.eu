@@ -144,9 +144,6 @@ class WorkflowSerializerDAG(serializers.BaseSerializer):
     def set_break_down_on_tools(self, break_down_on_tools):
         self.break_down_on_tools = break_down_on_tools
 
-    def set_tools_depends_on_environments(self, tools_depends_on_environments):
-        self.tools_depends_on_environmentsv = tools_depends_on_environments
-
     def to_representation(self, instance):
         '''
         Call run_workflow to get a dag representation of the workflow
@@ -177,7 +174,6 @@ class WorkflowSerializerDAG(serializers.BaseSerializer):
             'do_url_quote': do_url_quote, # In case of binary Do not url encode objects . We need the bytes object
             'return_bytes': return_bytes, # Return bytes ?
             'break_down_on_tools': self.break_down_on_tools, # see executor.py
-            'tools_depends_on_environments': self.tools_depends_on_environments, # see executor.py
             'API': True, # We need to know if download_workflow gets called from the API
         }
 
@@ -242,7 +238,6 @@ def workflow_complete(request, workflow_name, workflow_edit):
             return Response({'success': False, 'error': 'Unsupported or Undefined format',}, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
         break_down_on_tools = check_boolean_get_param('break_down_on_tools')
-        tools_depends_on_environments = check_boolean_get_param('tools_depends_on_environments')
 
         # /?workflow_id=xyz
         workflow_id = request.query_params.get('workflow_id')
@@ -272,7 +267,6 @@ def workflow_complete(request, workflow_name, workflow_edit):
         serializer.set_workflow_format(format_)
         serializer.set_workflow_input_parameters(input_parameters)
         serializer.set_break_down_on_tools(break_down_on_tools)
-        serializer.set_tools_depends_on_environments(tools_depends_on_environments)
 
         filename = None
         if format_ == 'CWLTARGZ':

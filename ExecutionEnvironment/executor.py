@@ -372,6 +372,26 @@ class Workflow:
         for tool in tool_installation_order:
             yield tool
 
+    def get_tool_dependencies(self, tool):
+        '''
+        Returns the tools that this tool depends from
+        '''
+
+        def rec(tool):
+
+            ret = []
+
+            for tool_slash_id in tool['dependencies']:
+                tool_d = self.tool_slash_id_d[tool_slash_id]
+
+                ret.append(Workflow.get_tool_slash_id(tool_d))
+                ret.extend(rec(tool_d))
+
+            return ret
+            
+        ret = set(rec(tool))
+        return [self.tool_slash_id_d[x] for x in ret]
+
     def get_tool_dependent_variables(self, tool, include_this_tool=False):
         '''
         Get the variables for which this tool is dependent
@@ -2030,22 +2050,15 @@ OBCENDOFFILE
 
     def decompose(self,
             break_down_on_tools=False,
-            tools_depends_on_environments=False,
         ):
         '''
         Decomposes the workflow in steps. Create DAG.
 
         break_down_on_tools: Should a tool invocation create a new node in DAG?
-        tools_depends_on_environments: 
-            See: https://github.com/kantale/OpenBio.eu/issues/234 
-            If False then the tools depend on tools that are predecessor in the DAG
-            If True  then the tools depend only from tools that are predecerror in the DAG and are in the same environment
         '''
         self.decomposed = {
             'environment_variables': {},
-            'steps': {
-
-            },
+            'steps': {},
         }
 
         # ENVIRONMENT VARIABLES
@@ -2117,17 +2130,8 @@ OBCENDOFFILE
             this_tool_environment = this_tool_environment[0]
             #print (f'tool: {tool_id} Environment: {this_tool_environment}')
 
-            if tools_depends_on_environments:
-                this_tool_previous_tools = [
-                    Workflow.get_tool_vars_filename_tool_id(x) 
-                    for x in tool_ids 
-                    if x in self.decomposed['environments'][this_tool_environment]
-                ]
-            else:
-                this_tool_previous_tools = previous_tools
-
-            #print (f'tool: {tool_id}  Previous tools: {this_tool_previous_tools}')
-
+            this_tool_previous_tools = [Workflow.get_tool_vars_filename(t) for t in self.workflow.get_tool_dependencies(tool)]
+            
             
             bash = self.initial_variabes()
             bash += self.workflow.get_tool_bash_commands(
@@ -3371,13 +3375,11 @@ class JSONDAGExecutor(BaseExecutor):
             workflow_id=None, 
             obc_client=False, 
             break_down_on_tools=False,
-            tools_depends_on_environments=False,
         ):
         
 
         self.decompose(
             break_down_on_tools=break_down_on_tools,
-            tools_depends_on_environments=tools_depends_on_environments,
         )
         return json.dumps(self.decomposed)
 
@@ -3772,7 +3774,6 @@ def create_bash_script(workflow_object, server, output_format,
         workflow_id=None, 
         obc_client=False, 
         break_down_on_tools=False,
-        tools_depends_on_environments=False,
     ):
     '''
     convenient function called by server
@@ -3805,7 +3806,6 @@ def create_bash_script(workflow_object, server, output_format,
             workflow_id=workflow_id, 
             obc_client=obc_client, 
             break_down_on_tools=break_down_on_tools,
-            tools_depends_on_environments=tools_depends_on_environments,
         )
     elif output_format in ['cwltargz', 'cwlzip']:
         w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
