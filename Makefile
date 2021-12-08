@@ -45,6 +45,7 @@ develop:
 		python manage.py migrate --run-syncdb; \
 		python manage.py runserver 0.0.0.0:8200; \
 	fi
+	# python manage.py createsuperuser
 
 container:
 	docker build -f Dockerfile -t $(IMAGE_TAG) .

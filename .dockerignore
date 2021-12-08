@@ -6,3 +6,7 @@ venv/
 docs/site/
 psql/
 db.sqlite3
+app/static/app/material-design-icons-v3.0.1_tar.gz
+app/static/app/material-design-icons-3.0.1/
+app/static/app/node_modules
+app/static/app/package-lock.json

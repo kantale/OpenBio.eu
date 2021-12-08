@@ -1,6 +1,5 @@
 {
 	"main": "dist/main.js",
-
 	"dependencies": {
 		"ace-builds": "^1.4.1",
 		"angular": "^1.7.2",
@@ -20,11 +19,8 @@
 		"ui-select": "^0.19.8",
 		"vis": "^4.21.0"
 	},
-
 	"scripts": {
 		"fix-ace": "sed -i.bak 's/will-change: transform;//g' node_modules/ace-builds/src-min-noconflict/ace.js",
 		"get-material-icons": "wget -O \"material-design-icons-v3.0.1_tar.gz\" https://github.com/google/material-design-icons/archive/3.0.1.tar.gz && tar zxvf material-design-icons-v3.0.1_tar.gz"
 	}
 }
-
-
