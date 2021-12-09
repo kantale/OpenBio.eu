@@ -25,6 +25,7 @@ except (ImportError, AttributeError):
 import argparse 
 
 from collections import defaultdict
+from pprint import pprint 
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -948,7 +949,8 @@ class Workflow:
         '''
         return workflow['name'] + '/' + str(workflow['edit'])
 
-    def get_workflow_dash_id(self, workflow):
+    @staticmethod
+    def get_workflow_dash_id(workflow):
         '''
         '''
         return workflow['name'] + '__' + str(workflow['edit'])
@@ -988,7 +990,7 @@ class Workflow:
             if n['belongto'] is None:
                 continue
 
-            if self.get_workflow_dash_id(n['belongto']) == workflow['id']:
+            if Workflow.get_workflow_dash_id(n['belongto']) == workflow['id']:
                 ret.append(n)
 
         return ret
@@ -1001,7 +1003,7 @@ class Workflow:
         return self.get_node_order(
             node_iterator = self.workflow_iterator,
             id_getter = lambda x: x['id'],
-            dependency_getter = lambda x : list(map(self.get_workflow_dash_id, self.get_workflow_workflow_dependency(x))),
+            dependency_getter = lambda x : list(map(Workflow.get_workflow_dash_id, self.get_workflow_workflow_dependency(x))),
         )
 
 
@@ -1524,7 +1526,7 @@ class Workflow:
 
             # This not the root workflow
             # If the "belongs" field is in added_workflows_ids, add it 
-            if self.get_workflow_dash_id(node['data']['belongto']) in added_workflows_ids:
+            if Workflow.get_workflow_dash_id(node['data']['belongto']) in added_workflows_ids:
                 ret['elements']['nodes'].append(node)
 
 
@@ -1550,7 +1552,7 @@ class Workflow:
 
         This does the reverse job of set_edit_to_cytoscape_json in views.py 
 
-        workflow_cytoscape: The workflow in cytoscape format to remove edit ingo
+        workflow_cytoscape: The workflow in cytoscape format to remove edit info
         old_variables: A dictionary. Keys: old bash variables. Values: new bash variables
         old_tool_ids: A dictionaty. Keys: old tool cytoscape ids, values: new tool cytoscape ids
         '''
@@ -1587,11 +1589,14 @@ class Workflow:
 
                 continue
 
-            # Does this belong in root? 
+            # Does this belong in root?  Change belong to
             #print ('=3333==')
             #print (node)
-            if Workflow.get_workflow_slash_id(node['data']['belongto']) == root_id:
+            if Workflow.get_workflow_dash_id(node['data']['belongto']) == root_id:
                 node_to_add['data']['belongto']['edit'] = None # Remove edit
+                node_to_add['data']['belongto']['name'] = 'root'
+
+            
 
             #Change bash
             if 'bash' in node['data']:
@@ -1665,10 +1670,10 @@ class Workflow:
 
 
     @staticmethod
-    def convert_workflow_to_request(workflow_cytoscape, isolated_workflow_root_node):
+    def convert_workflow_to_request(workflow_cytoscape, isolated_workflow_root_node_before):
         '''
         See also: convert_tool_to_request
-        isolated_workflow_root_node: The root node of the workflow BEFORE removing edit info
+        isolated_workflow_root_node_before: The root node of the workflow BEFORE removing edit info
         '''
 
         #Get root node
@@ -1678,14 +1683,15 @@ class Workflow:
 
         print ('Workflow request root node:')
         print (root_node)
-        print ('Workflow isolated root node')
+        print ('Workflow isolated root node:')
+        print (isolated_workflow_root_node_before)
 
         return {
-            'workflow_info_name': isolated_workflow_root_node['data']['name'],
+            'workflow_info_name': isolated_workflow_root_node_before['data']['name'],
             'workflow_info_forked_from': None,
             'workflow_edit_state': False,
-            'workflow_visibility': isolated_workflow_root_node['data']['visibility'],
-            #'workflow_json'
+            'workflow_visibility': isolated_workflow_root_node_before['data']['visibility'],
+            'workflow_json': workflow_cytoscape,
         }
 
 
@@ -1704,15 +1710,20 @@ class Workflow:
         old_variables = old_tool_variables
 
         for sub_workflow_node in self.get_workflow_order():
-            print ('Workflow:')
-            print (sub_workflow_node)
+            print ('Workflow sub_workflow_node:')
+            pprint (sub_workflow_node)
 
             workflow_label = self.get_workflow_slash_id(sub_workflow_node) # a/1
             print ('Workflow label:', workflow_label)
 
             isolated_workflow = self.isolate_workflow(sub_workflow_node, added_workflows_ids)
-            isolated_workflow_root_node = self.get_root_workflow_cytoscape(isolated_workflow)
+            print ('Isolated workflow:')
+            pprint (isolated_workflow)
 
+            isolated_workflow_root_node = self.get_root_workflow_cytoscape(isolated_workflow)
+            print ('isolated_workflow_root_node:')
+            print (isolated_workflow_root_node)
+            #visibility = isolated_workflow_root_node['data']['visibility']
 
             isolated_workflow_old_variables = {
                 node['data']['id']
@@ -1730,12 +1741,26 @@ class Workflow:
             print ('OLD BASH VARIABLES:')
             print (isolated_workflow_old_variables)
 
+            print ('isolated_workflow_root_node 222:')
+            print (isolated_workflow)
+            isolated_workflow_root_node_before = copy.deepcopy(isolated_workflow_root_node)
+
             Workflow.remove_edit_from_workflow_cytoscape(
                 workflow_cytoscape = isolated_workflow, 
                 old_variables = old_variables,
                 old_tool_ids = old_tool_ids,
             )
-            workflow_request = Workflow.convert_workflow_to_request(isolated_workflow, isolated_workflow_root_node)
+            print ('isolated_workflow_root_node 333:')
+            print (isolated_workflow_root_node)
+
+            workflow_request = Workflow.convert_workflow_to_request(
+                isolated_workflow, 
+                isolated_workflow_root_node_before,
+            )
+            print ('====')
+            print ('workflow request:')
+            pprint (workflow_request)
+
             new_edit = edit_getter(workflow_request)
 
             if not type(new_edit) is int:
@@ -1747,7 +1772,9 @@ class Workflow:
 
             print ('OLD VARIABLES:')
             print (old_variables)
-            a=1/0
+            #a=1/0
+
+        #a=1/0
 
 
 
@@ -4342,7 +4369,8 @@ if __name__ == '__main__':
     w = Workflow(args.workflow_filename, askinput=args.askinput)
 
     ##################
-        
+    # python executor.py -W workflow.json  
+    
     old_tool_variables, old_tool_ids = w.test_process_tool_requests()
     print ('OLD TOOL VARIABLES:')
     print (old_tool_variables)
