@@ -267,7 +267,27 @@ def dag_phase(data, wfl: workflow, last_builder):
                         step), dependencies=sb_step_name)
                 # print(step.name, " depends on ", dep.name)
 
+def workflow_yaml():
+    return states.workflow.to_dict()
 
+def yaml():
+    yaml_str = pyaml.dump(workflow_yaml())
+
+    # The maximum size of an etcd request is 1.5MiB:
+    # https://github.com/etcd-io/etcd/blob/master/Documentation/dev-guide/limit.md#request-size-limit # noqa: E501
+    if len(yaml_str) > 1573000:
+        raise ValueError(
+            "The size of workflow YAML file should not be more \
+            than 1.5MiB."
+        )
+
+    # TODO(weiyan): add unittest for verifying multiple secrets outputs
+    for secret in states._secrets.values():
+        if not secret.dry_run:
+            yaml_str += "\n---\n" + pyaml.dump(secret.to_yaml())
+
+    if states._enable_print_yaml:
+        return yaml_str
 
 def pipeline(data:str,registry:str,isPath:bool):
     wfl = workflow()
