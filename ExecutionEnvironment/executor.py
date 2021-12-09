@@ -22,7 +22,7 @@ try:
 except (ImportError, AttributeError):
     compression = zipfile.ZIP_STORED
 
-import argparse 
+import argparse
 
 from collections import defaultdict
 
@@ -55,7 +55,7 @@ function obc_parse_json()
     echo $1 | \
     sed -e "s/.*$2\":[ ]*\"\([^\"]*\)\".*/\1/"
 }
-''' + '\n', # https://stackoverflow.com/a/26655887/5626738 
+''' + '\n', # https://stackoverflow.com/a/26655887/5626738
     'curl_send_json': '''curl -s --header "Content-Type: application/json" --request POST -d '{json}' {url}''',
     'command_to_variable': '''{variable}=$({command})''',
     'string_contains': '''
@@ -79,7 +79,7 @@ function update_server_status()
         if [[ $c == *'"success": true'* ]]; then
             obc_current_token=$(obc_parse_json "$c" "token")
         else
-           
+
             if [[ $c == *'"success": false'* ]]; then
                 obc_error_message=$(obc_parse_json "$c" "error_message")
                 echo "Server Return Error: $obc_error_message"
@@ -90,7 +90,7 @@ function update_server_status()
             fi
         fi
     else
-        : 
+        :
     fi
 }
 
@@ -204,9 +204,9 @@ tar zcf ${OBC_REPORT_TGZ} -C ${OBC_WORK_PATH} ${OBC_NICE_ID}.html ${OBC_NICE_ID}
 'function_PARALLEL': r'''
 function PARALLEL() {
     local line_counter=0
-    local PIDS=() # 
+    local PIDS=() #
 
-    if [[ $2 == *$'\n'* ]] ; then 
+    if [[ $2 == *$'\n'* ]] ; then
       while IFS= read -r line; do
 
           if [[ -z "${line// }" ]] ; then
@@ -329,7 +329,7 @@ class Workflow:
         '''
         workflow_filename: the JSON filename of the workflow
         workflow_object: The representation of the workflow
-        askinput: 
+        askinput:
             JSON: Ask for input during convertion to BASH
             BASH: Ask for input in BASH
         One of these should not be None
@@ -388,7 +388,7 @@ class Workflow:
                 ret.extend(rec(tool_d))
 
             return ret
-            
+
         ret = set(rec(tool))
         return [self.tool_slash_id_d[x] for x in ret]
 
@@ -432,10 +432,10 @@ class Workflow:
         self.root_step = self.get_root_step()
         self.root_inputs_outputs = self.get_input_output_from_workflow(self.root_workflow)
         self.output_parameters = self.root_inputs_outputs['outputs']
-        self.nice_id = self.workflow['nice_id'] # The nice ID from the server 
+        self.nice_id = self.workflow['nice_id'] # The nice ID from the server
         self.nice_id_local = Workflow.create_nice_id() # A local nice ID
 
-        if self.nice_id: # The id from the JSON 
+        if self.nice_id: # The id from the JSON
             self.nice_id_global = self.nice_id
         elif self.workflow_id: # The id from the executor
             self.nice_id_global = self.workflow_id
@@ -489,7 +489,7 @@ class Workflow:
                     self.input_parameter_values[root_input_node['id']] = {'value': local_input_parameter, 'description': root_input_node['description']}
 
                 elif self.askinput == 'BASH':
-                    pass # Do nothing 
+                    pass # Do nothing
 
                 elif self.askinput == 'NO':
                     log_info('Warning: Input Parameter {} ({}) has not been set by any step.'.format(root_input_node['id'], root_input_node['description']))
@@ -515,7 +515,7 @@ class Workflow:
                     found_output_filling_step = True
 
             if not found_output_filling_step and (not self.askinput in ['BASH']):
-                # If askinput = BASH don't raise exception 
+                # If askinput = BASH don't raise exception
                 message = 'Output {} ({}) is not set by any step!'.format(root_output_node['id'], root_output_node['description'])
                 raise OBC_Executor_Exception(message)
 
@@ -545,11 +545,11 @@ class Workflow:
 
         # Create a dictionary. Keys are tool ids. Values are tuples: (variables from which they depend from, dependent tool)
         # This does not contain the variables of the tool that is the key
-        self.tool_dependent_variables = {self.get_tool_dash_id(tool, no_dots=True):self.get_tool_dependent_variables(tool) for tool in self.tool_iterator()} 
+        self.tool_dependent_variables = {self.get_tool_dash_id(tool, no_dots=True):self.get_tool_dependent_variables(tool) for tool in self.tool_iterator()}
 
         # Create a dictionary. Keys are tool ids. Values are tuples: (variables from which they depend from, dependent tool)
         # It also contains the variables of the tool that is the key
-        self.tool_variables = {self.get_tool_dash_id(tool, no_dots=True):self.get_tool_dependent_variables(tool, include_this_tool=True) for tool in self.tool_iterator()} 
+        self.tool_variables = {self.get_tool_dash_id(tool, no_dots=True):self.get_tool_dependent_variables(tool, include_this_tool=True) for tool in self.tool_iterator()}
 
         # Create a dictionary. Keys are tool variable ids . Values are the tools in which they belong.
         self.tool_variables_ids = {self.get_tool_bash_variable(tool, tool_variable['name']):tool for tool in self.tool_iterator() for tool_variable in tool['variables']}
@@ -561,12 +561,12 @@ class Workflow:
         self.input_ids = {inp['id']:inp for inp in self.inputs_iterator()}
 
         # Create a dictionary. Keys a output ids. Values are output objects
-        self.output_ids = {outp['id']:outp for outp in self.outputs_iterator()}        
+        self.output_ids = {outp['id']:outp for outp in self.outputs_iterator()}
 
 
         self.set_step_reads_sets()
 
-  
+
     def set_step_reads_sets(self,):
         '''
         The 'inputs' and 'outputs' fields for every step does NOT contain which variables are set and read respectively.
@@ -590,7 +590,7 @@ class Workflow:
 
             for step_input in step['inputs']:
                 input_node = self.input_ids[step_input]
-                
+
                 if input_node['belongto'] == step['belongto']:
                     #print ('Step: {} Reads: {}'.format(step['id'], step_input))
                     step['inputs_reads'].append(step_input)
@@ -600,7 +600,7 @@ class Workflow:
 
             for step_output in step['outputs']:
                 output_node = self.output_ids[step_output]
-                
+
                 if output_node['belongto'] == step['belongto']:
                     #print ('Step: {} Sets: {}'.format(step['id'], step_output))
                     step['outputs_sets'].append(step_output)
@@ -682,7 +682,7 @@ class Workflow:
         if self.input_unset_variables:
 
             # Read unset variables from the command line
-            # https://github.com/kantale/OpenBioC/issues/154 
+            # https://github.com/kantale/OpenBioC/issues/154
             ret += Workflow.read_arguments_from_commandline([x['id'] for x in self.input_unset_variables])
 
             # Check if the variable has been read from command line. If not halt execution and prompt for a value
@@ -704,7 +704,7 @@ class Workflow:
     @staticmethod
     def read_arguments_from_commandline(arguments):
         '''
-        Help from: https://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash 
+        Help from: https://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
         '''
 
         ret = ''
@@ -724,8 +724,8 @@ class Workflow:
         return ret
 
 
-    def get_tool_bash_commands(self, tool, 
-        validation=True, 
+    def get_tool_bash_commands(self, tool,
+        validation=True,
         update_server_status=True,
         read_variables_from_command_line=False,
         variables_json_filename=None,
@@ -750,7 +750,7 @@ class Workflow:
         if update_server_status:
             ret += Workflow.bash_tool_installation_started(tool) + '\n'
         if read_variables_from_command_line:
-            arguments = [Workflow.get_tool_bash_variable(dependent_tool, dependent_variable['name']) 
+            arguments = [Workflow.get_tool_bash_variable(dependent_tool, dependent_variable['name'])
                             for dependent_variable, dependent_tool in self.tool_dependent_variables[tool_id]]
             ret += Workflow.read_arguments_from_commandline(arguments)
 
@@ -759,7 +759,7 @@ class Workflow:
                 ret += '### READING VARIABLES FROM {}\n'.format(filename)
                 ret += '. {}\n\n'.format(filename)
 
-        # We are adding the installation commands in parenthesis. 
+        # We are adding the installation commands in parenthesis.
         # By doing so, we are isolating the raw installation commands with the rest pre- and post- commands
         ret += '(\n:\n' + tool['installation_commands'] + '\n)\n' # Add A bash no-op command (:) to avoid empty installation instructions
         ret += 'echo "OBC: INSTALLATION OF TOOL: {} . COMPLETED"\n'.format(tool['label'])
@@ -789,7 +789,7 @@ class Workflow:
         for tool_variable in tool['variables']:
             tool_bash_variable=self.get_tool_bash_variable(tool, tool_variable['name'])
             ret += 'export {}="{}" # {} \n'.format(tool_bash_variable, tool_variable['value'], tool_variable['description'])
-            ret += 'echo "OBC: SET {}=\\"${}\\"   <-- {} "\n'.format(tool_bash_variable, tool_bash_variable, tool_variable['description']) 
+            ret += 'echo "OBC: SET {}=\\"${}\\"   <-- {} "\n'.format(tool_bash_variable, tool_bash_variable, tool_variable['description'])
         ret += '### END OF SETTING TOOL VARIABLES FOR: {}\n\n'.format(tool['label'])
 
         if variables_json_filename:
@@ -841,7 +841,7 @@ class Workflow:
 
             ret += '# STEP: {}\n'.format(a_node['id'])
             ret += '{} () {{\n'.format(a_node['id'])
-            #ret += ':\n' # No op in case a_node['bash'] is empty 
+            #ret += ':\n' # No op in case a_node['bash'] is empty
             ret += "OBC_WHOCALLEDME=$(caller 0 | awk '{print $2}') \n"
             ret += 'if [ ${OBC_WHOCALLEDME} == "PARALLEL" ] ; then \n '
             ret += "   OBC_WHOCALLEDME=$(caller 1 | awk '{print $2}') \n"
@@ -849,7 +849,7 @@ class Workflow:
 #            ret += "if [ ${OBC_WHOCALLEDME} != \"main\" ] ; then \n"
 #            ret += "   OBC_WHOCALLEDME=${OBC_WHOCALLEDME:6}\n" # :6 =  step__step1__callme__1 --> step1__callme__1
 #            ret += "fi\n"
-            ret += 'echo "OBC: CALLING STEP: {}    CALLER: $OBC_WHOCALLEDME"\n'.format(a_node['id']) # 
+            ret += 'echo "OBC: CALLING STEP: {}    CALLER: $OBC_WHOCALLEDME"\n'.format(a_node['id']) #
             ret += 'update_server_status "step started {} $OBC_WHOCALLEDME"\n'.format(a_node['id'])
             ret += a_node['bash'] + '\n'
             ret += 'update_server_status "step finished {}"\n'.format(a_node['id'])
@@ -912,7 +912,7 @@ class Workflow:
     def get_tool_bash_variables_json(tool):
         '''
         '''
-        
+
         d = {Workflow.get_tool_bash_variable(tool, tool_variable['name']): tool_variable['value'] for tool_variable in tool['variables']}
         return json.dumps(d, indent=4)
 
@@ -961,7 +961,7 @@ class Workflow:
 
         ret = []
 
-        # Get all nodes that have dependencies 
+        # Get all nodes that have dependencies
         dependencies_notok = []
 
 
@@ -1012,7 +1012,7 @@ class Workflow:
         # Get all tools
         all_tools = [a_node for a_node in self.node_iterator() if self.is_tool(a_node)]
 
-        # Get all tools that have dependencies 
+        # Get all tools that have dependencies
         dependencies_notok = []
 
         for tool in all_tools:
@@ -1040,8 +1040,8 @@ class Workflow:
 
             ret.extend(found_on_this_round)
             dependencies_notok = current_notok
-	
-        return ret	
+
+        return ret
 
 
     def get_input_parameters(self, ):
@@ -1167,7 +1167,7 @@ class Workflow:
 
         ret = {'inputs': [], 'outputs': []}
 
-        for a_node in self.node_iterator(): 
+        for a_node in self.node_iterator():
             if self.is_input_output(a_node) and self.belongto(a_node) == node['id']:
                 ret[a_node['type'] + 's'].append(a_node)
 
@@ -1209,7 +1209,7 @@ class Workflow:
     def update_server_status(new_status):
         '''
         * Update the serve with a new status
-        * Checks for error messages 
+        * Checks for error messages
         * sets the new token
         '''
         ret = 'update_server_status "{}"\n'.format(new_status)
@@ -1264,7 +1264,7 @@ class Workflow:
                 dependent_tool_id = convert_tool_id(dependent_tool['id'])
 
                 input_variables_to_final.append({
-                    'input_name': input_name, # The name of the variable 
+                    'input_name': input_name, # The name of the variable
                     'input_source': dependent_tool_id, # The name of the tool
                 })
 
@@ -1294,12 +1294,12 @@ class Workflow:
         def get_level(command, steps):
             '''
             What is the level with which a script is calling a step?
-            command does not necessarily has to be a bashlex command class node 
+            command does not necessarily has to be a bashlex command class node
             '''
 
             def recursive(command, current_level):
                 if hasattr(command, 'word'):
-                    if command.word in steps:  
+                    if command.word in steps:
                         return current_level, command.word
 
                 if hasattr(command, 'parts'):
@@ -1442,7 +1442,7 @@ class Workflow:
             if True:
                 for var in output_variables:
                     output_variables_str += ',\n"{VAR}": "${{{VAR}}}"'.format(VAR=var)
-            
+
             # The 'ENDOFILE' means do not interpret anything
             content = '''
 cat > {OUTPUT_FILENAME} << ENDOFFILE
@@ -1468,7 +1468,7 @@ ENDOFFILE
             '''
             Use bashlex to break down all steps of a bash script
             parallel_variables: Initialize script with these variables. Used for the parallel execution
-            run_after: Run this step after "run_after". This is a list 
+            run_after: Run this step after "run_after". This is a list
             '''
 
             bash = step['bash']
@@ -1486,13 +1486,13 @@ ENDOFFILE
 
             # https://stackoverflow.com/questions/12404661/what-is-the-use-case-of-noop-in-bash
             # bashlex Cannot parse empty strings!
-            bash_to_parse = '{\n:\n' + bash + '\n}'  
+            bash_to_parse = '{\n:\n' + bash + '\n}'
             calling_steps = step['steps']
 
             # Get the input variables of this step.
-            # We need to add them in every breaked step in order to read from the command line 
+            # We need to add them in every breaked step in order to read from the command line
             input_tool_variables = [variable['input_name'] for variable in self.step_tool_variables(step)]
-            
+
 
             try:
                 p = bashlex.parse(bash_to_parse)
@@ -1531,7 +1531,7 @@ ENDOFFILE
             found_call = False
             start = 2 # Remove '{\n'
             read_from = None
-            last_assignment = None # Used for PARALLEL 
+            last_assignment = None # Used for PARALLEL
 
             run_afters = [] # List of all the steps that are run in this break down
             if run_after is None:
@@ -1562,10 +1562,10 @@ ENDOFFILE
                     continue
 
                 # Check if this is a CommandNode(parts=[AssignmentNode(parts=[] pos=(118, 152) word='STEPS=\nA,B\n1,2\n3,4\n5,6\n7,8\n9,10\n')] pos=(118, 152))
-                # OR 
+                # OR
                 # Check if this is a CommandNode(pos=(0, 20), parts=[WordNode(pos=(0, 20), word='VAR1=\nA,B\n1,2\n3,4\n'),])
                 # word='VAR1=\nA,B\n1,2\n3,4\n' --> THIS IS A WordNode !
-                # word='VAR=\nA,B\n1,2\n3,4\n' --> THIS IS A AssignmentNode 
+                # word='VAR=\nA,B\n1,2\n3,4\n' --> THIS IS A AssignmentNode
                 if len(main_command.parts) == 1:
                     if main_command.parts[0].kind in ['assignment', 'word']:
                         # This is an assignment
@@ -1575,7 +1575,7 @@ ENDOFFILE
 
                 # This is a command
                 # check for PARALLEL step__new_step__test5__1 ${STEPS}
-                if len(main_command.parts) == 3 and all(hasattr(x,'word') for x in main_command.parts): # Make sure that it contains only word nodes #186 
+                if len(main_command.parts) == 3 and all(hasattr(x,'word') for x in main_command.parts): # Make sure that it contains only word nodes #186
                     line_to_match = ' '.join(x.word for x in main_command.parts)
                     parallel_call = parse_parrallel_call_1(line_to_match)
                     #print ('Last assignment:', last_assignment)
@@ -1601,7 +1601,7 @@ ENDOFFILE
                     break_down_on_tools and
                     not step.get("tool_invocation") and # If this step is an artificial step, do not go into infinite recursion
                     hasattr(main_command, 'parts') and
-                    len(main_command.parts) > 0 and 
+                    len(main_command.parts) > 0 and
                     hasattr(main_command.parts[0], 'parts') and
                     len(main_command.parts[0].parts) > 0 and
                     main_command.parts[0].parts[0].kind == 'parameter' and
@@ -1617,7 +1617,7 @@ ENDOFFILE
                     tool_to_call_id = self.get_tool_dash_id(tool_to_call, no_dots=True)
                     #print (bash_to_parse[pos[0]:pos[1]])
                     #print (f'-->{break_down_on_tools}<--')
-                    #print (step['id']) # step__new_step__w__1 
+                    #print (step['id']) # step__new_step__w__1
                     #print (tool_to_call_id) #  t__1__1
                     #print (json.dumps(step, indent=4))
                     # Create an artificial step to call
@@ -1668,7 +1668,7 @@ ENDOFFILE
 
                 #This is a calling step OR a tool invocation step!
                 found_call = True
-                
+
                 part_before_step_call = bash_to_parse[start: pos[0]]
                 step_counter[step['id']] += 1
                 step_inter_id = '{}__{}'.format(step['id'], str(step_counter[step['id']]))
@@ -1681,14 +1681,14 @@ ENDOFFILE
                 yield {
                     'bash': create_json(
                         bash = save_variables(
-                            bash = part_before_step_call, 
-                            read_from = None, 
-                            save_to = save_to, 
-                            input_tool_variables = input_tool_variables, 
+                            bash = part_before_step_call,
+                            read_from = None,
+                            save_to = save_to,
+                            input_tool_variables = input_tool_variables,
                             input_workflow_variables = input_workflow_variables,
-                        ), 
-                        step = step, 
-                        step_breaked_id = step_counter[step['id']], 
+                        ),
+                        step = step,
+                        step_breaked_id = step_counter[step['id']],
                         is_last = False,
                         output_variables = output_workflow_variables
                         ),
@@ -1705,7 +1705,7 @@ ENDOFFILE
                 read_from = save_to_nodot
 
                 run_afters.append(step_inter_id)
-                
+
                 # Are we calling another step? What is the id of this step?
                 if this_is_a_parallel_call_1:
                     step_to_call_id = parallel_call['step']
@@ -1715,8 +1715,8 @@ ENDOFFILE
                     step_to_call_id = None # We are not calling any step
                 else:
                     step_to_call_id = bash_to_parse[pos[0]:pos[1]]
-                
-                # What is the step object to call? 
+
+                # What is the step object to call?
                 if step_to_call_id:
                     step_to_call = self.step_ids[step_to_call_id]
                 elif this_is_a_tool_invocation:
@@ -1760,7 +1760,7 @@ ENDOFFILE
                         #print ('About to yield:')
                         #print (item)
                         yield item
-                
+
                 start = pos[1]
 
 
@@ -1776,14 +1776,14 @@ ENDOFFILE
             yield {
                 'bash' : create_json(
                     bash = save_variables(
-                        bash = part_after_step_call, 
-                        read_from = None, 
-                        save_to = save_to, 
-                        input_tool_variables = input_tool_variables, 
+                        bash = part_after_step_call,
+                        read_from = None,
+                        save_to = save_to,
+                        input_tool_variables = input_tool_variables,
                         input_workflow_variables = input_workflow_variables,
-                    ), 
-                    step = step, 
-                    step_breaked_id = step_counter[step['id']], 
+                    ),
+                    step = step,
+                    step_breaked_id = step_counter[step['id']],
                     is_last = True,
                     output_variables = output_workflow_variables),
                 'id': step['id'],
@@ -1824,7 +1824,7 @@ class BaseExecutor():
 
     def save_input_parameters(self, from_variable=False, from_workflow=False):
         '''
-        from_variable: Read the variable from the variable with the same name: A="${A}". 
+        from_variable: Read the variable from the variable with the same name: A="${A}".
                        Somehow the variable must be already set
         from_workflow: Read the variable from the workflow. The value of the variable
                        must exist in the workflow
@@ -1865,7 +1865,7 @@ class BaseExecutor():
             d = {env:g[env] for env in ['OBC_DATA_PATH', 'OBC_TOOL_PATH', 'OBC_WORK_PATH'] if env in g}
 
         d['OBC_WORKFLOW_NAME'] = self.workflow.root_workflow['name']
-        d['OBC_WORKFLOW_EDIT'] = str(self.workflow.root_workflow['edit']) 
+        d['OBC_WORKFLOW_EDIT'] = str(self.workflow.root_workflow['edit'])
         d['OBC_NICE_ID'] = workflow_id if workflow_id else self.workflow.root_workflow_id # self.workflow.nice_id_global
 
         if obc_client:
@@ -1899,9 +1899,9 @@ class BaseExecutor():
         Keys: IDs of broken down steps
         List: List of broken steps that should be run BEFORE the key
 
-        Return an airflow DAG without redundancies 
-        Applies https://en.wikipedia.org/wiki/Transitive_reduction 
-        Method: https://networkx.github.io/documentation/stable/reference/algorithms/generated/networkx.algorithms.dag.transitive_reduction.html 
+        Return an airflow DAG without redundancies
+        Applies https://en.wikipedia.org/wiki/Transitive_reduction
+        Method: https://networkx.github.io/documentation/stable/reference/algorithms/generated/networkx.algorithms.dag.transitive_reduction.html
         '''
         self.G = BaseExecutor.build_graph_from_run_afters(run_afters)
         self.DAG = nx.transitive_reduction(self.G)
@@ -1928,7 +1928,7 @@ OBCENDOFFILE
 
     def obc_final_step(self, previous_tools, previous_steps_vars):
         # CREATE FINAL OPERATOR
-        # Add all variables from previous tools. 
+        # Add all variables from previous tools.
         load_tool_vars = ''
         for tool_filename in previous_tools:
             load_tool_vars += '. {}\n'.format(tool_filename)
@@ -1944,7 +1944,7 @@ OBCENDOFFILE
         for output_parameter in self.workflow.output_parameters:
             bash += 'REPORT {} ${{{}}} OUTPUT_VARIABLE \n'.format(output_parameter['id'], output_parameter['id'])
 
-        # Archive the report in tar.gz 
+        # Archive the report in tar.gz
         bash += bash_patterns['final_report']
 
         # The final step, prints the output variables in json format
@@ -2148,13 +2148,13 @@ digraph G {{
         #print ('INIT BASH:')
         #print (init_bash)
 
-        # INPUT PARAMETERS 
+        # INPUT PARAMETERS
         self.decomposed['input_parameters'] = self.workflow.input_parameter_values
 
         # TOOL STEPS
         tool_ids = []
         previous_tools = []
-        
+
 
         for tool_index, tool in enumerate(self.workflow.tool_bash_script_generator()):
 
@@ -2172,15 +2172,15 @@ digraph G {{
             #print (f'tool: {tool_id} Environment: {this_tool_environment}')
 
             this_tool_previous_tools = [
-                os.path.join('${OBC_WORK_PATH}', Workflow.get_tool_vars_filename(t)) 
+                os.path.join('${OBC_WORK_PATH}', Workflow.get_tool_vars_filename(t))
                 for t in self.workflow.get_tool_dependencies(tool)
             ]
-            
-            
+
+
             bash = self.initial_variabes()
             bash += self.workflow.get_tool_bash_commands(
-                tool=tool, 
-                validation=True, 
+                tool=tool,
+                validation=True,
                 update_server_status=False,
                 read_variables_from_command_line=False,
                 variables_json_filename=None,
@@ -2194,7 +2194,7 @@ digraph G {{
             run_afters[tool_id] = [BaseExecutor.INIT_STEP_NAME] # All tools run after PROCESSOBCINIT
             if tool_ids:
                 run_afters[tool_id] += copy.copy(tool_ids)
-                
+
             tool_ids.append(tool_id)
             previous_tools.append(tool_vars_filename)
 
@@ -2211,7 +2211,7 @@ digraph G {{
         step_inter_ids = []
         step_bash_scripts = []
         all_step_inter_ids = []
-        
+
         for step in self.workflow.break_down_step_generator(
             enable_read_arguments_from_commandline=False,
             enable_save_variables_to_json=False,
@@ -2244,13 +2244,13 @@ digraph G {{
             load_tool_vars = ''
             for tool_filename in previous_tools:
                 load_tool_vars += '. {}\n'.format(tool_filename)
-            
+
             # Load all variables from previous steps
             load_step_vars = ''
             if step['run_after']:
                 for run_after_step in step['run_after']:
                     load_step_vars += '. {}\n'.format(self.create_step_vars_filename(run_after_step))
-            
+
             bash = self.initial_variabes() + load_tool_vars + self.load_file_with_input_parameters() + load_step_vars + self.load_obc_functions_bash + bash
 
             previous_steps_vars.append(step_vars_filename)
@@ -2274,11 +2274,11 @@ digraph G {{
 
 
         # FINAL STEP
-        bash = self.initial_variabes() + self.obc_final_step(previous_tools, previous_steps_vars)     
+        bash = self.initial_variabes() + self.obc_final_step(previous_tools, previous_steps_vars)
         #print ('FINAL_STEP:')
         #print (bash)
 
-        run_afters[BaseExecutor.FINAL_STEP_NAME] = [BaseExecutor.INIT_STEP_NAME] + tool_ids + all_step_inter_ids 
+        run_afters[BaseExecutor.FINAL_STEP_NAME] = [BaseExecutor.INIT_STEP_NAME] + tool_ids + all_step_inter_ids
         self.decomposed['steps'][BaseExecutor.FINAL_STEP_NAME] = {
             'bash': bash,
             'run_after': run_afters[BaseExecutor.FINAL_STEP_NAME],
@@ -2315,7 +2315,7 @@ class LocalExecutor(BaseExecutor):
     def build(self, output):
         '''
         output: if string then consider this a file name
-                if None then create a in-memory file and return the string 
+                if None then create a in-memory file and return the string
         '''
 
         if type(output) is str:
@@ -2347,13 +2347,13 @@ class LocalExecutor(BaseExecutor):
             f.write(bash_patterns['update_server_status'])
             f.write(bash_patterns['base64_decode'])
             f.write(bash_patterns['validate'])
-            f.write((bash_patterns['init_report'] + bash_patterns['function_REPORT'] + bash_patterns['function_PARALLEL']) 
-                .replace('{{OBC_SERVER}}', str(self.workflow.obc_server)) 
-                .replace('{{OBC_WORKFLOW_NAME}}', self.workflow.root_workflow['name']) 
-                .replace('{{OBC_WORKFLOW_EDIT}}', str(self.workflow.root_workflow['edit'])) 
+            f.write((bash_patterns['init_report'] + bash_patterns['function_REPORT'] + bash_patterns['function_PARALLEL'])
+                .replace('{{OBC_SERVER}}', str(self.workflow.obc_server))
+                .replace('{{OBC_WORKFLOW_NAME}}', self.workflow.root_workflow['name'])
+                .replace('{{OBC_WORKFLOW_EDIT}}', str(self.workflow.root_workflow['edit']))
             )
 
-            # Set the OBC_REPORT_PATH parameter 
+            # Set the OBC_REPORT_PATH parameter
 
 
             f.write(Workflow.bash_workflow_starts(self.workflow.root_workflow))
@@ -2404,7 +2404,7 @@ requirements:
       listing:
          - class: File
            location: "{COMMAND_LINE_SH}"
-   InlineJavascriptRequirement: {{}} 
+   InlineJavascriptRequirement: {{}}
    EnvVarRequirement:
        envDef:
 {ENVIRONMENT_VARIABLES}
@@ -2450,14 +2450,14 @@ steps:
          outputEval: $(JSON.parse(self[0].contents).{ID})
 '''
 
-    # This is a trick to allow absolute paths in glob 
+    # This is a trick to allow absolute paths in glob
     OUTPUT_REPORT_PATTERN = '''
    OBC_FINAL_REPORT:
       type: File
       outputBinding:
          glob: $(runtime.outdir)/../../../../../../../../$(inputs.OBC_WORK_PATH)/{NICE_ID}.tgz
 '''
-    
+
     OUTPUT_VARIABLES_REPORT_WORKFLOW_PATTERN = r'''
    OBC_FINAL_REPORT:
       type: File
@@ -2624,7 +2624,7 @@ steps:
 
         env_variables = self.get_environment_variables(workflow_id=workflow_id)
         env_variables_string = self.get_environment_variables_string(env_variables)
-        # Get the essential variables that have not been set 
+        # Get the essential variables that have not been set
         # We will set these variable from the input yml file
 
         previous_tools = []
@@ -2632,9 +2632,9 @@ steps:
         files = {}
         run_afters = {}
 
-        
+
         # Create init step
-        # We read the input parameters of the pipelines from the command line 
+        # We read the input parameters of the pipelines from the command line
         input_parameters = list(self.workflow.input_parameter_values.keys())
 
 
@@ -2643,7 +2643,7 @@ steps:
         bash += self.save_input_parameters(from_workflow=True)
         bash += self.obc_init_step()
 
-        files['OBC_CWL_INIT.sh'] = bash 
+        files['OBC_CWL_INIT.sh'] = bash
 
         files['OBC_CWL_INIT.cwl'] = self.COMMAND_LINE_CWL_PATTERN.format(
             CWL_VERSION=self.CWL_VERSION,
@@ -2661,10 +2661,10 @@ steps:
             tool_vars_filename = os.path.join('${OBC_WORK_PATH}', Workflow.get_tool_vars_filename(tool))
             tool_id = self.workflow.get_tool_dash_id(tool, no_dots=True)
             tool_id_sh_fn = self.create_tool_id_sh_fn(tool_id)
-            
+
             bash = self.workflow.get_tool_bash_commands(
-                tool=tool, 
-                validation=True, 
+                tool=tool,
+                validation=True,
                 update_server_status=False,
                 read_variables_from_command_line=False,
                 variables_json_filename=None,
@@ -2672,17 +2672,17 @@ steps:
                 variables_sh_filename_write = tool_vars_filename,
             )
             files[tool_id_sh_fn] = bash
-            
+
             if tool_ids:
-                run_afters[tool_id] = copy.copy(tool_ids)          
+                run_afters[tool_id] = copy.copy(tool_ids)
             tool_ids.append(tool_id)
             previous_tools.append(tool_vars_filename)
-            
+
 
         # Add steps
         previous_steps_vars = []
         step_inter_ids = []
-        
+
         for step in self.workflow.break_down_step_generator(
             enable_read_arguments_from_commandline=False,
             enable_save_variables_to_json=False,
@@ -2706,13 +2706,13 @@ steps:
             load_tool_vars = ''
             for tool_filename in previous_tools:
                 load_tool_vars += '. {}\n'.format(tool_filename)
-            
+
             # Load all variables from: input_parameters + previous steps
             load_step_vars = ''
             if step['run_after']:
                 for run_after_step in step['run_after']:
                     load_step_vars += '. {}\n'.format(self.create_step_vars_filename(run_after_step))
-            
+
             bash = load_tool_vars + self.load_file_with_input_parameters() + load_step_vars + self.load_obc_functions_bash + bash
 
             previous_steps_vars.append(step_vars_filename)
@@ -2724,7 +2724,7 @@ steps:
         files['OBC_CWL_FINAL.sh'] = self.obc_final_step(previous_tools, previous_steps_vars)
 
         # Add INIT and FINAL in the graph
-        self.add_init_and_final_in_graph('OBC_CWL_INIT', 'OBC_CWL_FINAL', run_afters, tool_ids, step_inter_ids) 
+        self.add_init_and_final_in_graph('OBC_CWL_INIT', 'OBC_CWL_FINAL', run_afters, tool_ids, step_inter_ids)
 
         #Create DAG
         DAG = self.transitive_reduction(run_afters)
@@ -2738,8 +2738,8 @@ steps:
             if node == 'OBC_CWL_FINAL':
                 INPUTS = self.cwl_inputs(predecessors)
                 OUTPUTS = self.OUTPUT_REPORT_PATTERN.format(NICE_ID=env_variables['OBC_NICE_ID']) + self.create_final_step_output_cwl() # OBC_FINAL_OUTPUT = REPORT + WORKFLOW_OUTPUTS
-                STDOUT = 'stdout: cwl2.output.json' # Normally this should be cwl.output.json . https://www.commonwl.org/v1.0/CommandLineTool.html#Output_binding 
-                                                    # It is not very clear how this feature will hold in future.. 
+                STDOUT = 'stdout: cwl2.output.json' # Normally this should be cwl.output.json . https://www.commonwl.org/v1.0/CommandLineTool.html#Output_binding
+                                                    # It is not very clear how this feature will hold in future..
             else:
                 INPUTS = self.cwl_inputs(predecessors)
                 OUTPUTS = self.cwl_output(node)
@@ -2861,7 +2861,7 @@ dag = DAG(
     def build(self, output, output_format='airflow', workflow_id=None, obc_client=False):
         '''
         output: Name of output file. If None then the function returns a string
-        output_format: it is not currently used 
+        output_format: it is not currently used
         workflow_id : The id to use in DAG. If None it will use "<workflow_name>__<workflow_edit>"
         obc_client : IF True, generate airflow for OBC client. This just sets the proper OBC_* directories
         '''
@@ -2895,10 +2895,10 @@ dag = DAG(
 
             tool_vars_filename = os.path.join('${OBC_WORK_PATH}', Workflow.get_tool_vars_filename(tool))
             tool_id = self.workflow.get_tool_dash_id(tool, no_dots=True)
-            
+
             bash = self.workflow.get_tool_bash_commands(
-                tool=tool, 
-                validation=True, 
+                tool=tool,
+                validation=True,
                 update_server_status=False,
                 read_variables_from_command_line=False,
                 variables_json_filename=None,
@@ -2947,13 +2947,13 @@ dag = DAG(
             load_tool_vars = ''
             for tool_filename in previous_tools:
                 load_tool_vars += '. {}\n'.format(tool_filename)
-            
+
             # Load all variables from previous steps
             load_step_vars = ''
             if step['run_after']:
                 for run_after_step in step['run_after']:
                     load_step_vars += '. {}\n'.format(self.create_step_vars_filename(run_after_step))
-            
+
             bash = load_tool_vars + self.load_file_with_input_parameters() + load_step_vars + self.load_obc_functions_bash + bash
 
             previous_steps_vars.append(step_vars_filename)
@@ -2967,8 +2967,8 @@ dag = DAG(
             step_bash_operators.append(airflow_bash)
 
         # Create final step
-        bash = self.obc_final_step(previous_tools, previous_steps_vars) 
-        bash = self.raw_jinja2(bash) # Wrap in jinja2 verbatim . https://stackoverflow.com/questions/25359898/escape-jinja2-syntax-in-a-jinja2-template 
+        bash = self.obc_final_step(previous_tools, previous_steps_vars)
+        bash = self.raw_jinja2(bash) # Wrap in jinja2 verbatim . https://stackoverflow.com/questions/25359898/escape-jinja2-syntax-in-a-jinja2-template
         airflow_bash = self.bash_operator_pattern.format(
             ID='OBC_AIRFLOW_FINAL',
             BASH=bash,
@@ -2977,14 +2977,14 @@ dag = DAG(
         final_operators = [airflow_bash]
 
         # Add INIT and FINAL in the run_afters graph
-        self.add_init_and_final_in_graph('OBC_AIRFLOW_INIT', 'OBC_AIRFLOW_FINAL', run_afters, tool_ids, step_inter_ids) 
+        self.add_init_and_final_in_graph('OBC_AIRFLOW_INIT', 'OBC_AIRFLOW_FINAL', run_afters, tool_ids, step_inter_ids)
         # Create dag
         DAG = self.create_DAG(run_afters)
 
         airflow_python = self.pattern.format(
             WORKFLOW_ID = workflow_id if workflow_id else self.workflow.root_workflow_id,
             BASH_OPERATORS = '\n'.join(init_operators + tool_bash_operators + step_bash_operators + final_operators),
-            ORDER = DAG, 
+            ORDER = DAG,
         )
 
         # Save output / Return
@@ -3003,432 +3003,20 @@ dag = DAG(
             # Return string
             return airflow_python
 
+
 class ArgoExecutor(BaseExecutor):
-    '''
-    https://argoproj.github.io/
-
-    Documentation: 
-    https://github.com/argoproj/argo-workflows/blob/master/examples/README.md
-    '''
-
-    ARGO_ROOT = "/private/openbio"
-
-    WORKFLOW_TEMPLATE = '''
-apiVersion: argoproj.io/v1alpha1
-kind: Workflow
-metadata:
-  generateName: {WORKFLOW_NAME}
-spec:
-  entrypoint: DAG-{WORKFLOW_NAME}
-  templates:
-{SCRIPTS}
-  - name: DAG-{WORKFLOW_NAME}
-    dag:
-      tasks:
-{DAGS}
-
-'''
-
-    SCRIPT_TEMPLATE = '''
-  - name: {ID}
-    script:
-      image: debian:9.4
-      env:
-      - name: OBC_WORK_PATH
-        value: "{ARGO_ROOT}/work"
-      - name: OBC_TOOL_PATH
-        value: "{ARGO_ROOT}/tool"
-      - name: OBC_DATA_PATH
-        value: "{ARGO_ROOT}/data"
-{ENVS}
-      command: [bash]
-      source: |3+
-{BASH}
-'''
-
-    DAG_TEMPLATE = '''
-      - name: {TASK_NAME}
-        dependencies: [{DEPENDENCIES}]
-        template: {TEMPLATE_NAME}
-'''
-
-    VARIABLE_TEMPLATE = '''      - name: {NAME}
-        value: "{VALUE}"'''  # Numerical variables need to be encoded in double quotes (?)  
-
-    @staticmethod
-    def yaml_variable(name, value):
-        return ArgoExecutor.VARIABLE_TEMPLATE.format(NAME=name, VALUE=value)
-
-    @staticmethod
-    def yaml_variables(variables):
-        return '\n'.join([ArgoExecutor.yaml_variable(name=k, value=v) for k,v in variables.items()])
-
-    @staticmethod
-    def argo_workflow_id(workflow_id):
-        r'''
-        a DNS-1123 subdomain must consist of lower case alphanumeric characters, '-' or '.', 
-        and must start and end with an alphanumeric character (e.g. 'example.com', regex used for validation 
-        is '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'), 
-        '''
-        return workflow_id.replace('_', '-')
-
-    @staticmethod
-    def yaml_intend(text, indent=9):
-        ret = ''
-        for line in text.split('\n'):
-            ret += ' '*indent + line + '\n'
-        return ret
-
     def build(self, output, output_format='argo', workflow_id=None, obc_client=False):
-        '''
-        ARGO
-        '''
+        return 'hello world'
 
-        variables = self.get_environment_variables(obc_client=obc_client, workflow_id=workflow_id)
-        
-        # List of all argo_dags. First we store them. Then we add the dependent steps after transitive reduction (TR)
-        # ARGO does not apply TR. This makes the graph overly dense and complex 
-        argo_dags = ['TASKOBCINIT']
-
-        # Create init step
-        bash = self.obc_init_step()
-        bash += self.save_input_parameters(from_workflow=True)
-
-        argo_bash = self.SCRIPT_TEMPLATE.format(
-            ARGO_ROOT = ArgoExecutor.ARGO_ROOT,
-            ID = 'SCRIPTOBCINIT',
-            BASH = ArgoExecutor.yaml_intend(bash),
-            ENVS = ArgoExecutor.yaml_variables(variables),
-        )
-        init_bash_scripts = [argo_bash]
-
-
-        run_afters = {'TASKOBCINIT': []}
-
-
-        # CREATE TOOL OPERATORS ARGO
-        previous_tools = []
-        tool_bash_scripts = []
-        tool_ids = []
-        for tool_index, tool in enumerate(self.workflow.tool_bash_script_generator()):
-
-            tool_vars_filename = os.path.join('${OBC_WORK_PATH}', Workflow.get_tool_vars_filename(tool))
-            tool_id = self.workflow.get_tool_dash_id(tool, no_dots=True)
-            
-            bash = self.workflow.get_tool_bash_commands(
-                tool=tool, 
-                validation=True, 
-                update_server_status=False,
-                read_variables_from_command_line=False,
-                variables_json_filename=None,
-                variables_sh_filename_read = previous_tools,
-                variables_sh_filename_write = tool_vars_filename,
-            )
-            
-            argo_bash = self.SCRIPT_TEMPLATE.format(
-                ARGO_ROOT = ArgoExecutor.ARGO_ROOT,
-                ID = ArgoExecutor.argo_workflow_id(tool_id),
-                BASH = ArgoExecutor.yaml_intend(bash),
-                ENVS = ArgoExecutor.yaml_variables(variables),
-            )
-
-            tool_bash_scripts.append(argo_bash)
-
-            run_afters[tool_id] = ['TASKOBCINIT'] # All tools run after TASKOBCINIT
-            if tool_ids:
-                run_afters[tool_id] += copy.copy(tool_ids)
-                
-            tool_ids.append(tool_id)
-
-            argo_dags.append(tool_id)
-            #dags.append(self.DAG_TEMPLATE.format(
-            #    TASK_NAME = ArgoExecutor.argo_workflow_id('TASK-' + tool_id),
-            #    DEPENDENCIES = ', '.join(
-            #        ['TASKOBCINIT'] + \
-            #        [ArgoExecutor.argo_workflow_id('TASK-'+x) for x in this_tool_run_after]
-            #        ), 
-            #    TEMPLATE_NAME = ArgoExecutor.argo_workflow_id(tool_id)
-            #))
-
-
-            previous_tools.append(tool_vars_filename)
-
-
-        # CREATE STEP OPERATORS ARGO
-        previous_steps_vars = []
-        step_inter_ids = []
-        step_bash_scripts = []
-        all_step_inter_ids = []
-        for step in self.workflow.break_down_step_generator(
-            enable_read_arguments_from_commandline=False,
-            enable_save_variables_to_json=False,
-            enable_save_variables_to_sh=False,
-            ):
-
-            step_id = step['id']
-            count = step['count']
-            bash = step['bash']
-            step_inter_id = '{}__{}'.format(step_id, str(count))
-            all_step_inter_ids.append(step_inter_id)
-            step_inter_ids.append(step_inter_id)
-            step_vars_filename = self.create_step_vars_filename(step_inter_id) # os.path.join('${OBC_WORK_PATH}', step_inter_id + '.sh')
-
-            run_afters[step_inter_id] = ['TASKOBCINIT'] + tool_ids
-            if step['run_after']:
-                run_afters[step_inter_id] += step['run_after']
-
-            # Add declare. This should be first
-            bash = self.workflow.declare_decorate_bash(bash, step_vars_filename)
-
-            # Add all variables from previous tools
-            load_tool_vars = ''
-            for tool_filename in previous_tools:
-                load_tool_vars += '. {}\n'.format(tool_filename)
-            
-            # Load all variables from previous steps
-            load_step_vars = ''
-            if step['run_after']:
-                for run_after_step in step['run_after']:
-                    load_step_vars += '. {}\n'.format(self.create_step_vars_filename(run_after_step))
-            
-            bash = load_tool_vars + self.load_file_with_input_parameters() + load_step_vars + self.load_obc_functions_bash + bash
-
-            previous_steps_vars.append(step_vars_filename)
-
-            
-            argo_bash = self.SCRIPT_TEMPLATE.format(
-                ARGO_ROOT = ArgoExecutor.ARGO_ROOT,
-                ID = ArgoExecutor.argo_workflow_id(step_inter_id),
-                BASH = ArgoExecutor.yaml_intend(bash),
-                ENVS = ArgoExecutor.yaml_variables(variables),
-            )
-            step_bash_scripts.append(argo_bash)
-
-            argo_dags.append(step_inter_id)
-            #dags.append(self.DAG_TEMPLATE.format(
-            #    TASK_NAME = ArgoExecutor.argo_workflow_id('TASK-' + step_inter_id),
-            #    DEPENDENCIES = ', '.join(
-            #        ['TASKOBCINIT'] + \
-            #        [ArgoExecutor.argo_workflow_id('TASK-'+x) for x in tool_ids] + \
-            #        [ArgoExecutor.argo_workflow_id('TASK-'+x) for x in run_afters.get(step_inter_id, [])]
-            #    ), 
-            #    TEMPLATE_NAME = ArgoExecutor.argo_workflow_id(step_inter_id)
-            #))
-
-
-        # Create final step
-        bash = self.obc_final_step(previous_tools, previous_steps_vars) 
-         
-        argo_bash = self.SCRIPT_TEMPLATE.format(
-            ARGO_ROOT = ArgoExecutor.ARGO_ROOT,
-            ID='SCRIPTOBCFINAL',
-            BASH=ArgoExecutor.yaml_intend(bash),
-            ENVS=ArgoExecutor.yaml_variables(variables),
-        )
-        final_bash_scripts = [argo_bash]
-
-        # Build the run_afters so that 'SCRIPTOBCINIT' is before everything
-        # and 'SCRIPTOBCFINAL' is after everything 
-        # We did this when filling the run_afters dictionary so we don't have to call it
-        #self.add_init_and_final_in_graph('SCRIPTOBCINIT', 'SCRIPTOBCFINAL', run_afters, tool_ids, step_inter_ids) 
-
-        argo_dags.append('TASKOBCFINAL')
-        run_afters['TASKOBCFINAL'] = ['TASKOBCINIT'] + tool_ids + all_step_inter_ids 
-
-        #print (run_afters)
-
-        # Create the DAGS part of the YAML
-        dags = []
-        DAG = self.transitive_reduction(run_afters)
-        for node in DAG.nodes():
-            predecessors = list(DAG.predecessors(node))
-
-            def create_task_name(node):
-                if node in ['TASKOBCINIT', 'TASKOBCFINAL']:
-                    return node
-            
-                return ArgoExecutor.argo_workflow_id('TASK-' + node)
-
-            def create_template_name(node):
-                if node == 'TASKOBCINIT':
-                    return 'SCRIPTOBCINIT'
-
-                if node == 'TASKOBCFINAL':
-                    return 'SCRIPTOBCFINAL'
-
-                return ArgoExecutor.argo_workflow_id(node)
-
-            dags.append(self.DAG_TEMPLATE.format(
-                TASK_NAME = create_task_name(node),
-                DEPENDENCIES = ', '.join([create_task_name(x) for x in predecessors]),
-                TEMPLATE_NAME = create_template_name(node),
-            ))
-
-
-        argo = self.WORKFLOW_TEMPLATE.format(
-            WORKFLOW_NAME = ArgoExecutor.argo_workflow_id(workflow_id if workflow_id else self.workflow.root_workflow_id).replace('_', '-').lower(),
-            SCRIPTS = '\n'.join(init_bash_scripts + tool_bash_scripts + step_bash_scripts + final_bash_scripts),
-            DAGS = ''.join(dags)
-        )
-
-        #print (argo)
-
-        return argo
-
-
-class ArgoExecutor2(BaseExecutor):
-    '''
-    Highly experimental...
-    '''
-
-    def create_artifact(self, *, name, path, raw_data):
-        return {
-            'name': name,
-            'path': path,
-            'raw': {
-                'data': raw_data,
-            }
-        }
-
-    def create_template(self, *, name, inputs, container):
-
-        return {
-            'name': name,
-            'inputs': inputs,
-            'container': container,
-        }
-
-    def create_template_dag(self, name, dag):
-        return {
-            'name': name,
-            'dag': dag,
-        }
-
-    def create_input(self, *, artifacts):
-        return {
-            'artifacts': artifacts,
-        }
-
-    def create_container(self, *, image, args):
-        return {
-            'image': image,
-            'args': args
-        }
-
-    def create_task(self, *, name, dependencies, template):
-        return {
-            'name': name,
-            'dependencies': dependencies,
-            'template': template,
-        }
-
-    def create_dag(self, tasks): 
-        return {
-            'tasks': tasks,
-        }
-
-
-    def build(self, output, output_format='argo2', workflow_id=None, obc_client=False):
-        self.data = {
-            'metadata': {
-                'generateName': 'workflow-name-',
-            },
-            'spec': {
-                'entrypoint': 'DAG-workflow-name',
-            }
-
-        }
-
-        # {'OBC_WORKFLOW_NAME': 'w', 'OBC_WORKFLOW_EDIT': '1', 'OBC_NICE_ID': 'w__1'}
-        variables = self.get_environment_variables(obc_client=obc_client, workflow_id=workflow_id)
-
-        print ('Variables:')
-        print (variables)
-
-        # Create init step
-        bash = self.obc_init_step()
-        bash += self.save_input_parameters(from_workflow=True)
-        bash = f'''
-#!/bin/bash
-export OBC_WORKFLOW_NAME="{variables['OBC_WORKFLOW_NAME']}"
-export OBC_WORKFLOW_EDIT="{variables['OBC_WORKFLOW_EDIT']}"
-export OBC_NICE_ID="{variables['OBC_NICE_ID']}"
-export OBC_WORK_PATH="/private/openbio"
-{bash}
-        '''
-
-        init_artifact_script = self.create_artifact(
-            name='install-tool1',
-            path = '/tmp/image-for-step1/install-tool1.sh',
-            raw_data=bash,
-        )
-
-        init_artifact_dockerfile = self.create_artifact(
-            name='Dockerfile',
-            path= '/tmp/image-for-step1/Dockerfile',
-            raw_data = '''
-FROM ubuntu:18.04
-ADD . /root/
-WORKDIR /root
-RUN apt-get update
-RUN chmod +x install-tool1.sh && ./install-tool1.sh
-''',
-        )
-
-
-        init_input = self.create_input(artifacts=[init_artifact_script, init_artifact_dockerfile])
-        init_container = self.create_container(
-            image = 'gcr.io/kaniko-project/executor:latest',
-            args = [
-              "--dockerfile=Dockerfile",
-              "--cache=true",
-              "--cache-dir=/private/.kaniko",
-              "--context=dir:///tmp/image-for-step1",
-              "--destination=192.168.1.213:5000/image-for-step1:v5",
-            ]
-        )
-        init_template = self.create_template(
-            name='install-tool1',
-            inputs = init_input,
-            container= init_container,
-        )
-
-
-        ####################
-        init_task = self.create_task(
-            name = 'step-init', # step names should not contain uderscore
-            dependencies = [],
-            template = 'install-tool1',
-        )
-        dag = self.create_dag(tasks = [init_task])
-        dag_template = self.create_template_dag(
-            name='DAG-workflow-name',
-            dag = dag,
-        )
-
-
-        self.data['spec']['templates'] = [init_template, dag_template]
-
-
-        print (bash)
-
-
-        #print (yaml.dump(self.data, indent=4))
-        print (yaml.safe_dump(self.data, indent=4))
-        print ('==========================================')
-
-        print (json.dumps(self.data, indent=4))
-
-        return 'test'
 
 class JSONDAGExecutor(BaseExecutor):
-    def build(self, output, 
-            output_format='jsondag', 
-            workflow_id=None, 
-            obc_client=False, 
+    def build(self, output,
+            output_format='jsondag',
+            workflow_id=None,
+            obc_client=False,
             break_down_on_tools=False,
         ):
-        
+
 
         self.decompose(
             break_down_on_tools=break_down_on_tools,
@@ -3438,16 +3026,16 @@ class JSONDAGExecutor(BaseExecutor):
 
 class NextflowExecutor(BaseExecutor):
     '''
-    
+
     '''
 
     NEXTFLOW_TEMPLATE = '''
 {PROCESSES}
 '''
-    
-    # Source: https://www.nextflow.io/docs/latest/process.html#script 
-    # When you need to access a system environment variable in your script you have two options. 
-    # The first choice is as easy as defining your script block by using a single-quote string. 
+
+    # Source: https://www.nextflow.io/docs/latest/process.html#script
+    # When you need to access a system environment variable in your script you have two options.
+    # The first choice is as easy as defining your script block by using a single-quote string.
     NEXTFLOW_PROCESS_TEMPLATE = """
 process {PROCESS_NAME} {{
 {INPUT_CHANNELS}
@@ -3468,7 +3056,7 @@ process {PROCESS_NAME} {{
     output:
     val '{VALUE}' into {CHANNELS}
 '''
-    
+
     @staticmethod
     def create_input_channels(channels):
 
@@ -3476,8 +3064,8 @@ process {PROCESS_NAME} {{
             return ''
 
         input_channels = ''.join(NextflowExecutor.NEXTFLOW_INPUT_CHANNEL.format(
-            VALUE='VAL_{}'.format(channel), 
-            CHANNEL=channel) 
+            VALUE='VAL_{}'.format(channel),
+            CHANNEL=channel)
         for channel in channels)
 
         return NextflowExecutor.NEXTLOW_INPUT_TEMPLATE.format(INPUT_CHANNELS=input_channels)
@@ -3530,7 +3118,7 @@ process {PROCESS_NAME} {{
         #variables = self.get_environment_variables(obc_client=obc_client, workflow_id=workflow_id)
 
         nextflow_process = {}
-        
+
         # Create init step
         bash = self.initial_variabes() # Use this ONLY for NEXFLOW
         bash += self.obc_init_step()
@@ -3549,11 +3137,11 @@ process {PROCESS_NAME} {{
 
             tool_vars_filename = os.path.join('${OBC_WORK_PATH}', Workflow.get_tool_vars_filename(tool))
             tool_id = self.workflow.get_tool_dash_id(tool, no_dots=True)
-            
+
             bash = self.initial_variabes()
             bash += self.workflow.get_tool_bash_commands(
-                tool=tool, 
-                validation=True, 
+                tool=tool,
+                validation=True,
                 update_server_status=False,
                 read_variables_from_command_line=False,
                 variables_json_filename=None,
@@ -3562,11 +3150,11 @@ process {PROCESS_NAME} {{
             )
 
             nextflow_process[tool_id] = {'BASH': bash}
-        
+
             run_afters[tool_id] = ['PROCESSOBCINIT'] # All tools run after PROCESSOBCINIT
             if tool_ids:
                 run_afters[tool_id] += copy.copy(tool_ids)
-                
+
             tool_ids.append(tool_id)
 
             #argo_dags.append(tool_id)
@@ -3604,13 +3192,13 @@ process {PROCESS_NAME} {{
             load_tool_vars = ''
             for tool_filename in previous_tools:
                 load_tool_vars += '. {}\n'.format(tool_filename)
-            
+
             # Load all variables from previous steps
             load_step_vars = ''
             if step['run_after']:
                 for run_after_step in step['run_after']:
                     load_step_vars += '. {}\n'.format(self.create_step_vars_filename(run_after_step))
-            
+
             bash = self.initial_variabes() + load_tool_vars + self.load_file_with_input_parameters() + load_step_vars + self.load_obc_functions_bash + bash
 
             previous_steps_vars.append(step_vars_filename)
@@ -3618,11 +3206,11 @@ process {PROCESS_NAME} {{
             nextflow_process[step_inter_id] = {'BASH': bash}
 
         # Create final step
-        bash = self.initial_variabes() + self.obc_final_step(previous_tools, previous_steps_vars) 
+        bash = self.initial_variabes() + self.obc_final_step(previous_tools, previous_steps_vars)
 
         nextflow_process['PROCESSOBCFINAL'] = {'BASH': bash}
-        
-        run_afters['PROCESSOBCFINAL'] = ['PROCESSOBCINIT'] + tool_ids + all_step_inter_ids 
+
+        run_afters['PROCESSOBCFINAL'] = ['PROCESSOBCINIT'] + tool_ids + all_step_inter_ids
         #print (run_afters)
 
         # Create the DAGS part of the YAML
@@ -3691,10 +3279,10 @@ rule {RULE_ID}:
         ret +=  '        """\n'
 
         return ret
-    
+
     def create_rule_filename(self, rule):
-       return os.path.join(self.OBC_DONE_DIR, rule + '.done' ) 
-    
+       return os.path.join(self.OBC_DONE_DIR, rule + '.done' )
+
     def build(self, output, output_format='snakemake', workflow_id=None, obc_client=False):
 
 
@@ -3705,7 +3293,7 @@ rule {RULE_ID}:
 
 
         snakemake_rules = {}
-        
+
         # Create init step
         bash = 'mkdir -p {}\n'.format(self.OBC_DONE_DIR)
         bash += self.initial_variabes() # Load OBC_WORKFLOW, OBC
@@ -3724,11 +3312,11 @@ rule {RULE_ID}:
 
             tool_vars_filename = os.path.join('${OBC_WORK_PATH}', Workflow.get_tool_vars_filename(tool))
             tool_id = self.workflow.get_tool_dash_id(tool, no_dots=True)
-            
+
             bash = self.initial_variabes()
             bash += self.workflow.get_tool_bash_commands(
-                tool=tool, 
-                validation=True, 
+                tool=tool,
+                validation=True,
                 update_server_status=False,
                 read_variables_from_command_line=False,
                 variables_json_filename=None,
@@ -3737,11 +3325,11 @@ rule {RULE_ID}:
             )
 
             snakemake_rules[tool_id] = {'BASH': bash}
-        
+
             run_afters[tool_id] = ['RULEOBCINIT'] # All tools run after PROCESSOBCINIT
             if tool_ids:
                 run_afters[tool_id] += copy.copy(tool_ids)
-                
+
             tool_ids.append(tool_id)
 
             previous_tools.append(tool_vars_filename)
@@ -3776,13 +3364,13 @@ rule {RULE_ID}:
             load_tool_vars = ''
             for tool_filename in previous_tools:
                 load_tool_vars += '. {}\n'.format(tool_filename)
-            
+
             # Load all variables from previous steps
             load_step_vars = ''
             if step['run_after']:
                 for run_after_step in step['run_after']:
                     load_step_vars += '. {}\n'.format(self.create_step_vars_filename(run_after_step))
-            
+
             bash = self.initial_variabes() + load_tool_vars + self.load_file_with_input_parameters() + load_step_vars + self.load_obc_functions_bash + bash
 
             previous_steps_vars.append(step_vars_filename)
@@ -3790,11 +3378,11 @@ rule {RULE_ID}:
             snakemake_rules[step_inter_id] = {'BASH': bash}
 
         # Create final step snakemake
-        bash = self.initial_variabes() + self.obc_final_step(previous_tools, previous_steps_vars) 
+        bash = self.initial_variabes() + self.obc_final_step(previous_tools, previous_steps_vars)
 
         snakemake_rules['RULEOBCFINAL'] = {'BASH': bash}
-        
-        run_afters['RULEOBCFINAL'] = ['RULEOBCINIT'] + tool_ids + all_step_inter_ids 
+
+        run_afters['RULEOBCFINAL'] = ['RULEOBCINIT'] + tool_ids + all_step_inter_ids
         #print (run_afters)
 
         # Create the DAGS part of the YAML
@@ -3822,9 +3410,9 @@ rule {RULE_ID}:
 
         return snakemake
 
-def create_bash_script(workflow_object, server, output_format, 
-        workflow_id=None, 
-        obc_client=False, 
+def create_bash_script(workflow_object, server, output_format,
+        workflow_id=None,
+        obc_client=False,
         break_down_on_tools=False,
     ):
     '''
@@ -3853,10 +3441,10 @@ def create_bash_script(workflow_object, server, output_format,
         w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
         e = JSONDAGExecutor(w)
         return e.build(
-            output=None, 
-            output_format='jsondag', 
-            workflow_id=workflow_id, 
-            obc_client=obc_client, 
+            output=None,
+            output_format='jsondag',
+            workflow_id=workflow_id,
+            obc_client=obc_client,
             break_down_on_tools=break_down_on_tools,
         )
     elif output_format in ['cwltargz', 'cwlzip']:
@@ -3870,10 +3458,6 @@ def create_bash_script(workflow_object, server, output_format,
     elif output_format in ['argo']:
         w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
         e = ArgoExecutor(w)
-        return e.build(output=None, output_format='argo', workflow_id=workflow_id, obc_client=obc_client)
-    elif output_format in ['argo2']:
-        w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
-        e = ArgoExecutor2(w)
         return e.build(output=None, output_format='argo', workflow_id=workflow_id, obc_client=obc_client)
     elif output_format in ['nextflow']:
         w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
@@ -3893,7 +3477,7 @@ def create_bash_script(workflow_object, server, output_format,
 if __name__ == '__main__':
     '''
     Example:
-    python executor.py -W workflow.json 
+    python executor.py -W workflow.json
     '''
 
     runner_options = ['sh', 'cwl', 'cwltargz', 'cwlzip', 'airflow']
@@ -3902,22 +3486,22 @@ if __name__ == '__main__':
 
     parser.add_argument('-W', '--workflow', dest='workflow_filename', help='JSON filename of the workflow to run', required=True)
     parser.add_argument('-S', '--server', dest='server', help='The Server\'s url. It should contain http or https', default='https://www.openbio.eu/platform')
-    parser.add_argument('-F', '--format', dest='format', choices=runner_options, 
+    parser.add_argument('-F', '--format', dest='format', choices=runner_options,
         help='Select the output format of the workflow. Options are:\n  ' \
 'sh: Create a shell script (default)\n  ' \
 'cwl: Create a set of Common Workflow Language files\n' \
 'cwltargz: Same as cwl but create a tar.gz file\n' \
 'cwlzip: Same as cwl but create a zip file\n' \
 'airflow: Create airflow bashoperator scripts\n' \
-'argo: Create ARGO workflow (YAML)\n' 
+'argo: Create ARGO workflow (YAML)\n'
 'nextflow: Create NEXTFLOW workflow\n'
 'snakemake: Create a Snakemake workflow\n',
         default='sh')
     parser.add_argument('-O', '--output', dest='output', help='The output filename. default is script.sh, workflow.cwl and workflow.tar.gz, depending on the format', default='script')
     parser.add_argument('--insecure', dest='insecure', help="Pass insecure option (-k) to curl", default=False, action="store_true")
     parser.add_argument('--silent', dest='silent', help="Do not print logging info", default=False, action="store_true")
-    parser.add_argument('--askinput', dest='askinput', 
-        help="Where to get input parameters from. Available options are: 'JSON', during convert JSON to BASH, 'BASH' ask for input in bash, 'NO' do not ask for input.", 
+    parser.add_argument('--askinput', dest='askinput',
+        help="Where to get input parameters from. Available options are: 'JSON', during convert JSON to BASH, 'BASH' ask for input in bash, 'NO' do not ask for input.",
         default='JSON', choices=['JSON', 'BASH', 'NO'])
     parser.add_argument('--OBC_DATA_PATH', dest='OBC_DATA_PATH', required=False, help="Set the ${OBC_DATA_PATH} environment variable. This is where the data are stored")
     parser.add_argument('--OBC_TOOL_PATH', dest='OBC_TOOL_PATH', required=False, help="Set the ${OBC_TOOL_PATH} environment variable. This is where the tools are installed")
@@ -3938,7 +3522,7 @@ if __name__ == '__main__':
     if args.silent:
         g['silent'] = True
 
-    # Do not ask input values if the format is CWL or airflow 
+    # Do not ask input values if the format is CWL or airflow
     if args.format in ['cwl', 'cwltargz', 'cwlzip', 'airflow']:
         args.askinput = 'NO'
 
@@ -3970,7 +3554,7 @@ if __name__ == '__main__':
         raise OBC_Executor_Exception('Unknown format: {}'.format(args.format))
 
 
-	
+
 
 
 

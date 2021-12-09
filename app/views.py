@@ -92,6 +92,7 @@ g = {
     'PRIVACY': settings.PRIVACY,
     'FUNDING_LOGOS': settings.FUNDING_LOGOS,
     'TEST': settings.TEST,
+    'ARGO_EXECUTION_CLIENT_URL': settings.ARGO_EXECUTION_CLIENT_URL,
 
     'DEFAULT_DEBUG_PORT': 8200,
     'SEARCH_TOOL_TREE_ID': '1',
@@ -1369,6 +1370,7 @@ def index(request, **kwargs):
     context['TERMS'] = g.get('TERMS')
     context['PRIVACY'] = g.get('PRIVACY')
     context['FUNDING_LOGOS'] = g.get('FUNDING_LOGOS')
+    context['show_execution_environments'] = False if g.get('ARGO_EXECUTION_CLIENT_URL') else True
 
 
     #print (social_core.pipeline.social_auth.social_details)
@@ -3093,7 +3095,7 @@ def create_workflow_id(workflow):
     return workflow['name'] + '__' + str(workflow['edit'])
 
 
-def set_edit_to_cytoscape_json(cy, edit, workflow_info_name, *, 
+def set_edit_to_cytoscape_json(cy, edit, workflow_info_name, *,
         workflow_description,
         workflow_website,
         workflow_keywords,
@@ -3119,7 +3121,7 @@ def set_edit_to_cytoscape_json(cy, edit, workflow_info_name, *,
     # Set workflow description
     new_worfklow_node[0]['data']['description'] = workflow_description
 
-    # Set workflow website 
+    # Set workflow website
     new_worfklow_node[0]['data']['website'] = workflow_website
 
     # Set workflow keywords
@@ -3304,7 +3306,7 @@ def workflows_add(request, **kwargs):
 
 
     #Change the edit value in the cytoscape json object
-    set_edit_to_cytoscape_json(workflow, next_edit, workflow_info_name, 
+    set_edit_to_cytoscape_json(workflow, next_edit, workflow_info_name,
         workflow_description = workflow_description,
         workflow_website = workflow_website,
         workflow_keywords = kwargs['workflow_keywords'],
@@ -3824,7 +3826,7 @@ def download_workflow(request, **kwargs):
     Note 1: Everyone can download a workflow!
     '''
 
-    workflow_arg = kwargs['workflow'] # For example: {'name': 'test', 'edit': 1} 
+    workflow_arg = kwargs['workflow'] # For example: {'name': 'test', 'edit': 1}
 
     # These are the options fetched from the UI. Check ui.js : window.OBCUI.get_workflow_options
     #    OR
@@ -3837,12 +3839,12 @@ def download_workflow(request, **kwargs):
     workflow_obc_client = kwargs.get('obc_client', False)
     do_url_quote = kwargs.get('do_url_quote', True) # See rest_views.py
     return_bytes = kwargs.get('return_bytes', False) # See rest_views.py
-    coming_from_UI = kwargs.get('UI', False) # WHO CALLED ME?? 
+    coming_from_UI = kwargs.get('UI', False) # WHO CALLED ME??
     coming_from_API = kwargs.get('API', False) # WHO CALLED ME??
 
     # for break_down_on_tools see executor.py
-    # If we are coming from UI then always break down on tools 
-    break_down_on_tools = kwargs.get('break_down_on_tools', False) or coming_from_UI 
+    # If we are coming from UI then always break down on tools
+    break_down_on_tools = kwargs.get('break_down_on_tools', False) or coming_from_UI
 
     #print ('Name:', workflow_arg['name'])
     #print ('Edit:', workflow_arg['edit'])
@@ -3915,9 +3917,9 @@ def download_workflow(request, **kwargs):
         if download_type == 'JSONGRAPH':
             output_object = simplejson.dumps(output_object)
         elif download_type == 'JSONDAG':
-            output_object = create_bash_script(output_object, server_url, 'jsondag', 
-                workflow_id=workflow_id, 
-                obc_client=workflow_obc_client, 
+            output_object = create_bash_script(output_object, server_url, 'jsondag',
+                workflow_id=workflow_id,
+                obc_client=workflow_obc_client,
                 break_down_on_tools=break_down_on_tools,
             )
         elif download_type == 'BASH':
@@ -3930,8 +3932,6 @@ def download_workflow(request, **kwargs):
             output_object = create_bash_script(output_object, server_url, 'airflow', workflow_id=workflow_id, obc_client=workflow_obc_client)
         elif download_type == 'ARGO':
             output_object = create_bash_script(output_object, server_url, 'argo', workflow_id=workflow_id, obc_client=workflow_obc_client)
-        elif download_type == 'ARGO2':
-            output_object = create_bash_script(output_object, server_url, 'argo2', workflow_id=workflow_id, obc_client=workflow_obc_client)
         elif download_type == 'NEXTFLOW':
             output_object = create_bash_script(output_object, server_url, 'nextflow', workflow_id=workflow_id, obc_client=workflow_obc_client)
         elif download_type == 'SNAKEMAKE':
@@ -3980,10 +3980,6 @@ def run_workflow(request, **kwargs):
 
     obc_user = OBC_user.objects.get(user=request.user)
 
-    profile_name = kwargs.get('profile_name', '')
-    if not str(profile_name):
-        return fail('Error 3288. Invalid profile name')
-
     workflow_options = kwargs.get('workflow_options', {}) # Get the workflow input options (arguments)
 
     name = kwargs.get('name', '')
@@ -3996,23 +3992,68 @@ def run_workflow(request, **kwargs):
     except ValueError as e:
         return fail('Error 3290. Invalid workflow edit')
 
-    # Get the client
-    try:
-        client = obc_user.clients.get(name=profile_name)
-    except ObjectDoesNotExist as e:
-        return fail('Error 3293. Could not get execution client.')
-
     # Get the workflow
     try:
         workflow = Workflow.objects.get(name=name, edit=edit)
     except ObjectDoesNotExist as e:
         return fail('Error 3294. Could not get Workflow object.')
 
+    # If a default Argo execution environment is set, use it.
+    argo_execution_client_url = g.get('ARGO_EXECUTION_CLIENT_URL')
+    if argo_execution_client_url:
+        profile_name = 'argo'
+        try:
+            argo_client = obc_user.clients.get(name=profile_name)
+        except ObjectDoesNotExist as e:
+            try:
+                argo_client = ExecutionClient.objects.get(name=profile_name)
+            except ObjectDoesNotExist as e:
+                argo_client = ExecutionClient(name=profile_name, client=argo_execution_client_url)
+                argo_client.save()
+                obc_user.clients.add(argo_client)
+
+        if argo_client.client != argo_execution_client_url:
+            argo_client.client = argo_execution_client_url
+            argo_client.save()
+    else:
+        profile_name = kwargs.get('profile_name', '')
+        if not str(profile_name):
+            return fail('Error 3288. Invalid profile name')
+
+    # Get the client
+    try:
+        client = obc_user.clients.get(name=profile_name)
+    except ObjectDoesNotExist as e:
+        return fail('Error 3293. Could not get execution client.')
+
     url = client.client
     #print ('URL FROM DATABASE:', url)
-
-    run_url = urllib.parse.urljoin(url + '/', 'run') # https://stackoverflow.com/questions/8223939/how-to-join-absolute-and-relative-urls
     nice_id = create_nice_id()
+
+    # Run locally...
+    if urllib.parse.urlparse(url).scheme == 'argo':
+        visualization_url = urllib.parse.urljoin(url + '/', 'visualize')
+        monitor_url = urllib.parse.urljoin(url + '/', 'monitor')
+
+        report = Report(
+            obc_user=obc_user,
+            workflow = workflow,
+            nice_id = nice_id,
+            client=client,
+            visualization_url=visualization_url,
+            monitor_url = monitor_url,
+            client_status='SUBMITTED')
+        report.save()
+
+        # Let's not create a reporttoken for now.
+        ret = {
+            'nice_id': nice_id,
+        }
+
+        return success(ret)
+
+    # ...or continue with "experimental" code.
+    run_url = urllib.parse.urljoin(url + '/', 'run') # https://stackoverflow.com/questions/8223939/how-to-join-absolute-and-relative-urls
 
     data_to_submit = {
         'type': 'workflow',
@@ -4046,6 +4087,7 @@ curl --header "Content-Type: application/json" \
 
     # !!!HIGLY EXPERIMENTAL!!!
     try:
+        print('RUNNING WITH CLIENT AT URL:', run_url, 'HEADERS:', headers, 'DATA:', data_to_submit)
         r = requests.post(run_url, headers=headers, data=simplejson.dumps(data_to_submit))
     except requests.exceptions.ConnectionError as e:
         return fail('Could not establish a connection with client')

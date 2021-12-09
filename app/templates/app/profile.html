@@ -69,18 +69,18 @@
                                                 <div class="col s12">
                                                     <div style="border-bottom: 1px solid #9e9e9e;">
                                                         <!-- use this link for orcid sandbox <a href="/platform/login/orcid-sandbox/" -->
-                                                        
-                                                                                                            
+
+
                                                         <label><img alt="ORCID logo" src="/static/app/images/orcid_16x16.png" width="16" height="16" style="margin-bottom: -3px; "> ORCID iD</label>
                                                         {% verbatim %}<a ng-href="{{ profile_ORCID_url }}" target="_blank"><span ng-bind="profile_ORCID" ng-show="profile_ORCID" style="font-size: 16px; display: block; margin: 4px 0px 12px 0px;">0000-0000-00000-0000</span></a>{% endverbatim %}
                                                         <span ng-show="!profile_ORCID" style="font-size: 16px; display: block; margin: 4px 0px 12px 0px;">Not associated with ORCID</span>
                                                         <a href='{% url "social:begin" "orcid" %}' class="waves-effect waves-teal btn right tooltipped" data-position="bottom" data-tooltip="Associate with ORCID" style="margin-top: -42px; width: auto;" ng-show="!profile_ORCID">Associate</a>
                                                         <a class="waves-effect waves-teal btn right tooltipped" data-position="bottom" data-tooltip="Disassociate with ORCID" style="margin-top: -42px; width: auto;" ng-click="profile_orcid_disconnect_pressed()" ng-show="profile_ORCID">Disassociate</a>
-                                                        
+
                                                     </div>
 
 
-                                                </div> 
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="input-field col s12">
@@ -109,7 +109,7 @@
                                         </div>
                                     </form>
                                 </div>
-                                
+
                             </div>
                         </div>
                     </section>
@@ -156,7 +156,7 @@
                                     <form class="col s12" style="margin-top: 20px;">
                                         <div class="col s12" style="margin-top: 15px; margin-bottom: 15px;">
                                             <div style="border-bottom: 1px solid #9e9e9e;">
-                                                {% verbatim %}                                                    
+                                                {% verbatim %}
                                                 <label>Access Token</label><br>
                                                 <span id="access_token_span" ng-bind="profile_access_token ? profile_access_token : 'Access token is not set'" style="font-size: 16px; display: block; margin: 4px 0px 12px 0px;"></span>
                                                 <a id="at_delete" ng-click="profile_delete_access_token()" class="waves-effect waves-teal btn right" style="margin-top: -42px; left: -90px; width: auto;" ng-show="profile_access_token">Delete</a>
@@ -164,7 +164,7 @@
                                                 <a id="at_create" ng-click="profile_issue_access_token()" class="waves-effect waves-teal btn right" style="margin-top: -42px; width: auto;" ng-show="!profile_access_token">Create</a>
                                                 {% endverbatim %}
                                             </div>
-                                        </div> 
+                                        </div>
                                     </form>
                                     <!-- Access token: <span id="access_token_span" ng-bind="profile_access_token ? profile_access_token : 'Acess token is not set'"></span>
                                     <button id="at_delete" ng-click="profile_delete_access_token()" ng-show="profile_access_token">Delete</button>
@@ -180,6 +180,7 @@
                 <!-- --------------------------------------------------------------------------------------- -->
                 <!-- ----------------------------- Execution Environment Card ------------------------------ -->
                 <!-- --------------------------------------------------------------------------------------- -->
+                {% if show_execution_environments %}
                 <div class="col s12">
                     <section id="executionCard" class="scrollspy section_projet">
                         <div class="card">
@@ -197,7 +198,7 @@
                                         <tbody>
                                             <tr ng-repeat="client in profile_clients track by $index">
                                                 <td><input type="text" placeholder="Name" ng-model="client.name" ng-readonly="!$last"></td>
-                                                <td><input type="text" placeholder="URL" ng-model="client.client" ng-readonly="!$last"></td>   
+                                                <td><input type="text" placeholder="URL" ng-model="client.client" ng-readonly="!$last"></td>
                                                 <td>
                                                     <a class="waves-effect waves-light btn-small tooltipped green darken-1"
                                                         ng-show="client.name && client.client && $last"
@@ -220,6 +221,7 @@
                         </div>
                     </section>
                 </div>
+                {% endif %}
                 <!-- --------------------------------------------------------------------------------------- -->
                 <!-- -------------------------------- Notifications Card ----------------------------------- -->
                 <!-- --------------------------------------------------------------------------------------- -->

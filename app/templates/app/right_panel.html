@@ -482,7 +482,13 @@
                     <a class="btn tooltipped" data-position="bottom" data-tooltip="Delete" style="margin-bottom:2px"
                         ng-show="workflows_info_draft && workflows_info_username==username && !workflows_info_editable"
                         ng-click="ro_finalize_delete_pressed('workflow', 'DELETE', false)">Delete</a>
+                    {% if show_execution_environments %}
                     <a class="dropdown-trigger btn" data-target='runDropdownWorkflow' style="margin-bottom:2px" ng-disabled="(profile_clients.length<=1) || workflow_run_disabled || workflows_info_editable">Run</a>
+                    {% else %}
+                    <a class="btn tooltipped" data-position="bottom" data-tooltip="Run" style="margin-bottom:2px"
+                        ng-show="!workflow_run_disabled && !workflows_info_editable"
+                        ng-click="workflow_info_run_pressed()">Run</a>
+                    {% endif %}
                     <a class="dropdown-trigger btn" data-target='downloadDropdownWorkflow' ng-show="!workflows_info_editable" style="margin-bottom:2px">Download</a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fit" ng-click="workflow_info_fit_pressed()">Fit</a>
@@ -516,8 +522,7 @@
                         <li><a ng-click="workflow_info_download_pressed('CWLTARGZ')">CWL tar.gz</a></li>
                         <li><a ng-click="workflow_info_download_pressed('CWLZIP')">CWL zip</a></li>
                         <li><a ng-click="workflow_info_download_pressed('AIRFLOW')">Airflow</a></li>
-                        <li><a ng-click="workflow_info_download_pressed('ARGO')">Argo (one container)</a></li>
-                        <li><a ng-click="workflow_info_download_pressed('ARGO2')">Argo (multi containers)</a></li>
+                        <li><a ng-click="workflow_info_download_pressed('ARGO')">Argo</a></li>
                         <li><a ng-click="workflow_info_download_pressed('NEXTFLOW')">Nextflow</a></li>
                         <li><a ng-click="workflow_info_download_pressed('SNAKEMAKE')">Snakemake</a></li>
                     </ul>

@@ -172,3 +172,4 @@ TERMS = 'https://www.openbio.eu/static/static/static/docs/terms_privacy/OpenBio_
 PRIVACY = 'https://www.openbio.eu/static/static/static/docs/terms_privacy/OpenBio_Privacy_Policy.pdf' # URL OF PRIVACY
 FUNDING_LOGOS = True # Show the funding logos?
 TEST = False # Are we testing the views?
+ARGO_EXECUTION_CLIENT_URL = 'argo:///karvdash-'
