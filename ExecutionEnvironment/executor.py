@@ -1678,7 +1678,6 @@ ENDOFFILE
                 input_workflow_variables = [var for var in step['inputs_reads'] + step['outputs_reads'] if var in part_before_step_call]
                 output_workflow_variables = [var for var in step['inputs_sets'] + step['outputs_sets'] if var in part_before_step_call]
 
-                
                 yield {
                     'bash': create_json(
                         bash = save_variables(
@@ -1707,15 +1706,17 @@ ENDOFFILE
 
                 run_afters.append(step_inter_id)
                 
+                # Are we calling another step? What is the id of this step?
                 if this_is_a_parallel_call_1:
                     step_to_call_id = parallel_call['step']
                 elif this_is_a_parallel_call_2:
                     step_to_call_id = None
                 elif this_is_a_tool_invocation:
-                    step_to_call_id = None
+                    step_to_call_id = None # We are not calling any step
                 else:
                     step_to_call_id = bash_to_parse[pos[0]:pos[1]]
                 
+                # What is the step object to call? 
                 if step_to_call_id:
                     step_to_call = self.step_ids[step_to_call_id]
                 elif this_is_a_tool_invocation:
@@ -1740,8 +1741,24 @@ ENDOFFILE
                             run_afters.append(item['step_inter_id'])
                             yield item
                 else:
-                    for item in break_down_step_recursive(step_to_call, run_after=run_after + [step_inter_id]):
+                    # Step call or tool invocation
+                    #print ('=1=')
+                    #print (step_to_call)
+                    #print ('=2=')
+                    #print (step_inter_id)
+                    #print ('=3=')
+                    #print (run_after)
+                    #print ('=4=')
+                    #print (run_afters)
+                    #print ('=5=')
+                    #print (this_is_a_tool_invocation)
+                    #print ('=run_after_=')
+                    #print (run_after + [step_inter_id])
+                    #for item in break_down_step_recursive(step_to_call, run_after=run_after + [step_inter_id]):
+                    for item in break_down_step_recursive(step_to_call, run_after=run_afters):
                         run_afters.append(item['step_inter_id'])
+                        #print ('About to yield:')
+                        #print (item)
                         yield item
                 
                 start = pos[1]
@@ -2047,6 +2064,28 @@ OBCENDOFFILE
 
         return ret
 
+    @staticmethod
+    def dot_graph(dag):
+        '''
+        Create a dot visualization
+        '''
+
+        EDGE = '   {FROM} -> {TO};'
+
+        ret = '''
+digraph G {{
+{EDGES}
+}}
+'''
+
+        edges = []
+        for k,v in dag.items():
+            for node in v:
+                edges.append(EDGE.format(FROM=node, TO=k))
+
+        return ret.format(EDGES='\n'.join(edges))
+
+
 
     def decompose(self,
             break_down_on_tools=False,
@@ -2083,6 +2122,8 @@ OBCENDOFFILE
                 'belongto': x['belongto'],
             } for x in self.workflow.output_parameters
         }
+
+
 
         #print ('OUTPUT VARIABLES:')
         #print (json.dumps(ret['output_parameters'], indent=4))
@@ -2130,7 +2171,10 @@ OBCENDOFFILE
             this_tool_environment = this_tool_environment[0]
             #print (f'tool: {tool_id} Environment: {this_tool_environment}')
 
-            this_tool_previous_tools = [Workflow.get_tool_vars_filename(t) for t in self.workflow.get_tool_dependencies(tool)]
+            this_tool_previous_tools = [
+                os.path.join('${OBC_WORK_PATH}', Workflow.get_tool_vars_filename(t)) 
+                for t in self.workflow.get_tool_dependencies(tool)
+            ]
             
             
             bash = self.initial_variabes()
@@ -2182,6 +2226,8 @@ OBCENDOFFILE
             all_step_inter_ids.append(step_inter_id)
             step_inter_ids.append(step_inter_id)
             step_vars_filename = self.create_step_vars_filename(step_inter_id) # os.path.join('${OBC_WORK_PATH}', step_inter_id + '.sh')
+
+            #print (f'step_inter_id: {step_inter_id}  Run afters: {step.get("run_after", [])}')
 
             # Mark first step
             if not 'first_step' in self.decomposed:
@@ -2246,6 +2292,12 @@ OBCENDOFFILE
         # Add DAG
         self.transitive_reduction(run_afters)
         self.decomposed['DAG'] = {node: list(self.DAG.predecessors(node)) for node in self.DAG.nodes()}
+
+        # DOT visualization
+        self.decomposed['DOT'] = self.dot_graph(self.decomposed['DAG'])
+
+        #print ('DAG:')
+        #print (self.decomposed['DOT'])
 
 
         #print ('DAG:')
