@@ -13,7 +13,7 @@ import logging
 import bashlex
 import tarfile
 import zipfile
-
+from . import cargo
 import networkx as nx
 
 try:
@@ -3006,7 +3006,12 @@ dag = DAG(
 
 class ArgoExecutor(BaseExecutor):
     def build(self, output, output_format='argo', workflow_id=None, obc_client=False):
-        return 'hello world'
+        self.decompose(
+            break_down_on_tools=False,
+        )
+        json_wf = json.dumps(self.decomposed)
+        return cargo.pipeline(json_wf,"192.168.0.1",False)
+
 
 
 class JSONDAGExecutor(BaseExecutor):
