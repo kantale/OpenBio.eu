@@ -3007,10 +3007,10 @@ dag = DAG(
 class ArgoExecutor(BaseExecutor):
     def build(self, output, output_format='argo', workflow_id=None, obc_client=False):
         self.decompose(
-            break_down_on_tools=False,
+            break_down_on_tools=True,
         )
         json_wf = json.dumps(self.decomposed)
-        return cargo.pipeline(json_wf,"192.168.0.1",False)
+        return cargo.pipeline(json_wf,"192.168.0.1",None,"/work")
 
 
 
