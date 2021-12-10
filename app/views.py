@@ -1,4 +1,3 @@
-
 # Django imports
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
@@ -4032,18 +4031,44 @@ def run_workflow(request, **kwargs):
 
     # Run locally...
     if urllib.parse.urlparse(url).scheme == 'argo':
-        visualization_url = urllib.parse.urljoin(url + '/', 'visualize')
-        monitor_url = urllib.parse.urljoin(url + '/', 'monitor')
-
-        report = Report(
+        # Create report
+        run_report = Report(
             obc_user=obc_user,
-            workflow = workflow,
-            nice_id = nice_id,
-            client=client,
-            visualization_url=visualization_url,
-            monitor_url = monitor_url,
-            client_status='SUBMITTED')
-        report.save()
+            workflow=workflow,
+            nice_id=nice_id,
+            client=client
+        )
+        run_report.save()
+        report_token = ReportToken(status=ReportToken.UNUSED, active=True)
+        report_token.save()
+        run_report.tokens.add(report_token)
+        run_report.save()
+        token = str(report_token.token)
+        report_created = True
+
+        # Create and run workflow
+        import couler.argo as couler
+        from couler.argo_submitter import ArgoSubmitter
+
+        output_object = {
+            'arguments': workflow_options,
+            'workflow': simplejson.loads(workflow.workflow),
+            'token': token,
+            'nice_id': nice_id,
+        }
+        server_url = get_server_url(request)
+        _ = create_bash_script(output_object, server_url, 'argo', workflow_id=None, obc_client=False)
+        submitter = ArgoSubmitter()
+        result = couler.run(submitter=submitter)
+
+        # w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
+        # e = ArgoExecutor(w)
+        # return e.run(output=None, output_format='argo', workflow_id=workflow_id, obc_client=obc_client)
+
+        run_report.visualization_url = urllib.parse.urljoin(url + '/', 'visualize')
+        run_report.monitor_url = urllib.parse.urljoin(url + '/', 'monitor')
+        run_report.client_status='SUBMITTED'
+        run_report.save()
 
         # Let's not create a reporttoken for now.
         ret = {
