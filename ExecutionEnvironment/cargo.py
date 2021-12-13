@@ -36,9 +36,9 @@ class workflow():
     def __init__(self):
         self.containers: dict[container] = []
         self.dag = []
-        self.registry = ""
-        self.buildcachepath = None
-        self.workpath = ""
+        self.image_registry = ""
+        self.image_cache_path = None
+        self.work_path = ""
         self.builders = []
 
         # couler.run_container()
@@ -134,9 +134,9 @@ def sb_step_call(wfl, step:sb_step):
     artifact = rawArtifact("/root/step_bash.sh", step.bash)
     sb_step_name = utils.argo_safe_name(step.name)
     obc_env = {
-        "OBC_WORK_PATH": wfl.workpath,
-        "OBC_TOOL_PATH": wfl.workpath,
-        "OBC_DATA_PATH": wfl.workpath
+        "OBC_WORK_PATH": wfl.work_path,
+        "OBC_TOOL_PATH": wfl.work_path,
+        "OBC_DATA_PATH": wfl.work_path
     }
     return couler.run_container(c.image, command=["/bin/bash"], args="/root/step_bash.sh", input=[artifact], step_name=sb_step_name, env=obc_env)
 
@@ -145,11 +145,11 @@ def get_steps(data, wfl: workflow):
     for step in data['steps']:
         if data['steps'][step]['type'] == "tool_installation":
             s = tool_installation_step(step, data['steps'][step]['bash'])
-            installation_script_path = os.path.join(wfl.workpath, "install-tool-"+s.name+".sh")
+            installation_script_path = os.path.join(wfl.work_path, "install-tool-"+s.name+".sh")
             artifact = rawArtifact(installation_script_path, s.bash)
             for c in get_container_with_tool(wfl, s.tool_to_install):
                 idx = wfl.containers.index(c)
-                c.image = wfl.registry+"/image"+c.name+":v1"
+                c.image = wfl.image_registry + "/image" + c.name + ":v1"
                 c.artifacts.append(artifact)
                 wfl.containers[idx] = c
         elif data['steps'][step]['type'] == "tool_invocation":
@@ -162,11 +162,11 @@ def get_steps(data, wfl: workflow):
 
 def builder_phase(c:container, wfl:workflow):
     obc_env = {
-        "OBC_WORK_PATH": wfl.workpath,
-        "OBC_TOOL_PATH": wfl.workpath,
-        "OBC_DATA_PATH": wfl.workpath
+        "OBC_WORK_PATH": wfl.work_path,
+        "OBC_TOOL_PATH": wfl.work_path,
+        "OBC_DATA_PATH": wfl.work_path
     }
-    dockerfile_path = os.path.join(wfl.workpath, "Dockerfile")
+    dockerfile_path = os.path.join(wfl.work_path, "Dockerfile")
     dockerfile = """
 FROM ubuntu:18.04
 ADD . /root/
@@ -187,12 +187,12 @@ WORKDIR /root
     kaniko_args = [
         "--dockerfile=Dockerfile",
         "--cache=true",
-        "--context=dir://%s/" % wfl.workpath.rstrip("/"),
+        "--context=dir://%s/" % wfl.work_path.rstrip("/"),
         "--insecure",
         "--destination=" + c.image
     ]
-    if wfl.buildcachepath:
-        kaniko_args += ["--cache-dir=%s" % wfl.buildcachepath]
+    if wfl.image_cache_path:
+        kaniko_args += ["--cache-dir=%s" % wfl.image_cache_path]
     tmpl = couler.run_container(image="gcr.io/kaniko-project/executor:latest",
                                 args=kaniko_args,
                                 input=c.artifacts,
@@ -283,12 +283,14 @@ def yaml():
     if states._enable_print_yaml:
         return yaml_str
 
-def pipeline(data:str, registry:str, buildcachepath:str, workpath:str):
+def pipeline(data:str, workflow_name:str, image_registry:str, image_cache_path:str, work_path:str):
     wfl = workflow()
-    wfl.registry = registry
-    wfl.buildcachepath = buildcachepath
-    wfl.workpath = workpath
+    wfl.image_registry = image_registry
+    wfl.image_cache_path = image_cache_path
+    wfl.work_path = work_path
     data = parse(data, wfl)
+    if workflow_name:
+        couler.workflow.name = workflow_name
     couler.workflow.dag_mode = True
     last_builder = None
     for c in wfl.containers:
@@ -297,16 +299,16 @@ def pipeline(data:str, registry:str, buildcachepath:str, workpath:str):
     dag_phase(data, wfl, last_builder)
     return yaml()
 
-def pipeline_from_file(filename:str, registry:str, workpath:str):
+def pipeline_from_file(filename:str, workflow_name:str, image_registry:str, image_cache_path:str, work_path:str):
     with open(filename, 'r') as f:
-        return pipeline(f.read(), registry, workpath)
+        return pipeline(f.read(), workflow_name, image_registry, image_cache_path, work_path)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Add a json workflow to be converted into argo')
 
     parser.add_argument('-f', metavar='<file_path>', type=str, required=False)
-    parser.add_argument('-r', metavar='<registry>', type=str, required=False)
+    parser.add_argument('-r', metavar='<image_registry>', type=str, required=False)
     args = parser.parse_args()
     logging.basicConfig(level=logging.DEBUG)
     if args.f is not None:

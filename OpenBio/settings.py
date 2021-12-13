@@ -172,4 +172,10 @@ TERMS = 'https://www.openbio.eu/static/static/static/docs/terms_privacy/OpenBio_
 PRIVACY = 'https://www.openbio.eu/static/static/static/docs/terms_privacy/OpenBio_Privacy_Policy.pdf' # URL OF PRIVACY
 FUNDING_LOGOS = True # Show the funding logos?
 TEST = False # Are we testing the views?
-ARGO_EXECUTION_CLIENT_URL = 'argo:///karvdash-'
+
+ARGO_EXECUTION_ENVIRONMENT = True
+ARGO_BASE_URL = 'https://argo.192.168.1.1.nip.io'
+ARGO_NAMESPACE_PREFIX = 'karvdash-'
+ARGO_IMAGE_REGISTRY = '192.168.1.1:5000'
+ARGO_IMAGE_CACHE_PATH = '/private/.imagecache'
+ARGO_WORK_PATH = '/private/openbio'

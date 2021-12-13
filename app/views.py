@@ -91,7 +91,7 @@ g = {
     'PRIVACY': settings.PRIVACY,
     'FUNDING_LOGOS': settings.FUNDING_LOGOS,
     'TEST': settings.TEST,
-    'ARGO_EXECUTION_CLIENT_URL': settings.ARGO_EXECUTION_CLIENT_URL,
+    'ARGO_EXECUTION_ENVIRONMENT': settings.ARGO_EXECUTION_ENVIRONMENT,
 
     'DEFAULT_DEBUG_PORT': 8200,
     'SEARCH_TOOL_TREE_ID': '1',
@@ -1369,7 +1369,7 @@ def index(request, **kwargs):
     context['TERMS'] = g.get('TERMS')
     context['PRIVACY'] = g.get('PRIVACY')
     context['FUNDING_LOGOS'] = g.get('FUNDING_LOGOS')
-    context['show_execution_environments'] = False if g.get('ARGO_EXECUTION_CLIENT_URL') else True
+    context['show_execution_environments'] = False if g.get('ARGO_EXECUTION_ENVIRONMENT') else True
 
 
     #print (social_core.pipeline.social_auth.social_details)
@@ -3998,8 +3998,7 @@ def run_workflow(request, **kwargs):
         return fail('Error 3294. Could not get Workflow object.')
 
     # If a default Argo execution environment is set, use it.
-    argo_execution_client_url = g.get('ARGO_EXECUTION_CLIENT_URL')
-    if argo_execution_client_url:
+    if settings.ARGO_EXECUTION_ENVIRONMENT:
         profile_name = 'argo'
         try:
             argo_client = obc_user.clients.get(name=profile_name)
@@ -4007,12 +4006,12 @@ def run_workflow(request, **kwargs):
             try:
                 argo_client = ExecutionClient.objects.get(name=profile_name)
             except ObjectDoesNotExist as e:
-                argo_client = ExecutionClient(name=profile_name, client=argo_execution_client_url)
+                argo_client = ExecutionClient(name=profile_name, client=settings.ARGO_BASE_URL)
                 argo_client.save()
                 obc_user.clients.add(argo_client)
 
-        if argo_client.client != argo_execution_client_url:
-            argo_client.client = argo_execution_client_url
+        if argo_client.client != settings.ARGO_BASE_URL:
+            argo_client.client = settings.ARGO_BASE_URL
             argo_client.save()
     else:
         profile_name = kwargs.get('profile_name', '')
@@ -4030,7 +4029,7 @@ def run_workflow(request, **kwargs):
     nice_id = create_nice_id()
 
     # Run locally...
-    if urllib.parse.urlparse(url).scheme == 'argo':
+    if settings.ARGO_EXECUTION_ENVIRONMENT:
         # Create report
         run_report = Report(
             obc_user=obc_user,
@@ -4044,7 +4043,6 @@ def run_workflow(request, **kwargs):
         run_report.tokens.add(report_token)
         run_report.save()
         token = str(report_token.token)
-        report_created = True
 
         # Create and run workflow
         import couler.argo as couler
@@ -4057,16 +4055,19 @@ def run_workflow(request, **kwargs):
             'nice_id': nice_id,
         }
         server_url = get_server_url(request)
-        _ = create_bash_script(output_object, server_url, 'argo', workflow_id=None, obc_client=False)
-        submitter = ArgoSubmitter()
+        executor_parameters = {
+            'workflow_name': 'openbio-' + nice_id,
+            'image_registry': settings.ARGO_IMAGE_REGISTRY,
+            'image_cache_path': settings.ARGO_IMAGE_CACHE_PATH,
+            'work_path': os.path.join(settings.ARGO_WORK_PATH, nice_id)
+        }
+        namespace = settings.ARGO_NAMESPACE_PREFIX + 'admin' # self.request.user.username
+        _ = create_bash_script(output_object, server_url, 'argo', workflow_id=None, obc_client=False, executor_parameters=executor_parameters)
+        submitter = ArgoSubmitter(namespace=namespace)
         result = couler.run(submitter=submitter)
 
-        # w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
-        # e = ArgoExecutor(w)
-        # return e.run(output=None, output_format='argo', workflow_id=workflow_id, obc_client=obc_client)
-
-        run_report.visualization_url = urllib.parse.urljoin(url + '/', 'visualize')
-        run_report.monitor_url = urllib.parse.urljoin(url + '/', 'monitor')
+        run_report.visualization_url = urllib.parse.urlparse(settings.ARGO_BASE_URL)._replace(path='/workflows/%s/%s' % (namespace, result['metadata']['name'])).geturl()
+        run_report.monitor_url = 'http://asdf.com'
         run_report.client_status='SUBMITTED'
         run_report.save()
 

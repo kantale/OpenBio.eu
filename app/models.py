@@ -11,7 +11,7 @@ After making changes here run:
 python manage.py makemigrations
 python manage.py migrate;
 
-Important: 
+Important:
    * When adding new fields, declare a default value (null=True ?)
    * Do not use underscore in class names
 '''
@@ -20,7 +20,7 @@ class ExecutionClient(models.Model):
 
     name = models.CharField(max_length=256, null=False)
     client = models.URLField(max_length=256, null=False)
-    created_at = models.DateTimeField(auto_now_add=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#datefield 
+    created_at = models.DateTimeField(auto_now_add=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#datefield
 
 
 class OBC_user(models.Model):
@@ -33,8 +33,8 @@ class OBC_user(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE) # Basically we will never delete users ??
     email_validated = models.BooleanField() # Is this user's email validated?
     email_validation_token = models.CharField(max_length=32, null=True) # This is a uuid4 . TODO: https://docs.djangoproject.com/en/2.1/ref/models/fields/#uuidfield
-    password_reset_token = models.CharField(max_length=32, null=True) # A token to reset the password . TODO: https://docs.djangoproject.com/en/2.1/ref/models/fields/#uuidfield 
-    password_reset_timestamp = models.DateTimeField(null=True) # When the request to update the password was done 
+    password_reset_token = models.CharField(max_length=32, null=True) # A token to reset the password . TODO: https://docs.djangoproject.com/en/2.1/ref/models/fields/#uuidfield
+    password_reset_timestamp = models.DateTimeField(null=True) # When the request to update the password was done
 
     # Profile info
     first_name = models.CharField(max_length=256, null=True)
@@ -52,7 +52,7 @@ class OBC_user(models.Model):
 
 class Keyword(models.Model):
     '''
-    Tool and Workflow Keywords 
+    Tool and Workflow Keywords
     '''
 
     keyword = models.CharField(max_length=100)
@@ -85,7 +85,7 @@ class OS_types(models.Model):
     OS_CHOICES = (
         (posix, 'POSIX system'),
         (ubuntu_14_04,'Ubuntu:14.04'),
-        (ubuntu_16_04,'Ubuntu:16.04'), 
+        (ubuntu_16_04,'Ubuntu:16.04'),
         (debian_jessie,'Debian 8 (Jessie)'),
         (debian_stretch,'Debian 9 (Stretch)'),
         (denian_buster,'Debian 10 (Buster)'),
@@ -181,7 +181,7 @@ class Tool(models.Model):
     #         ('jessie','Debian 8 (Jessie)'),
     #         ('stretch','Debian 9 (Stretch)'),
     #         ('buster','Debian 10 (Buster)')
-    #     )), 
+    #     )),
     # )
 
 
@@ -197,10 +197,10 @@ class Tool(models.Model):
     keywords = models.ManyToManyField(Keyword)
     forked_from = models.ForeignKey(to="Tool", null=True, on_delete=models.CASCADE, related_name='forked_from_related') #Is this forked from another tool? Also Never delete tools
     changes = models.TextField(null=True) # What changes have been made from forked tool?
-    created_at = models.DateTimeField(auto_now_add=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#datefield 
+    created_at = models.DateTimeField(auto_now_add=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#datefield
 
     dependencies = models.ManyToManyField(to='Tool', related_name='dependencies_related') # the dependencies of this tool
-    os_choices = models.ManyToManyField(to='OS_types') # The OSs that this tool runs 
+    os_choices = models.ManyToManyField(to='OS_types') # The OSs that this tool runs
     installation_commands = models.TextField() # The BASH commands to install this tool
     validation_commands = models.TextField() # The BASH commands to validate this tool
 
@@ -215,7 +215,7 @@ class Tool(models.Model):
     comment = models.ForeignKey(to='Comment', null=True, on_delete=models.CASCADE, related_name='tool_comment') # The comments of the tool
 
     visibility = models.CharField(choices=VisibilityOptions.VISIBILITY_OPTIONS, max_length=100, default=VisibilityOptions.PUBLIC_CODE)
-    
+
 
 class ToolValidations(models.Model):
     '''
@@ -236,15 +236,15 @@ class ToolValidations(models.Model):
 
     tool = models.ForeignKey(Tool, on_delete=models.CASCADE) # The tool that we are validating
 
-    # The task id in controller. This is a uuid . 
-    # We are not using UUIDField because this is not JSON serializable?? 
-    task_id = models.CharField(max_length=256) 
+    # The task id in controller. This is a uuid .
+    # We are not using UUIDField because this is not JSON serializable??
+    task_id = models.CharField(max_length=256)
 
-    validation_status = models.CharField(max_length=256) 
+    validation_status = models.CharField(max_length=256)
     errcode = models.IntegerField(null=True)
     stdout = models.TextField(null=True)
     stderr = models.TextField(null=True)
-    created_at = models.DateTimeField(auto_now_add=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#datefield 
+    created_at = models.DateTimeField(auto_now_add=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#datefield
 
 
 class Workflow(models.Model):
@@ -279,24 +279,24 @@ class Workflow(models.Model):
     description_html = models.TextField(null=False)
     keywords = models.ManyToManyField(Keyword)
 
-    # JSON serialized,  The workflow cytoscape graph , cy.json. 
+    # JSON serialized,  The workflow cytoscape graph , cy.json.
     # TODO: When deploying in Postgresql change this to JSONField
-    # https://docs.djangoproject.com/en/2.1/ref/contrib/postgres/fields/#jsonfield 
+    # https://docs.djangoproject.com/en/2.1/ref/contrib/postgres/fields/#jsonfield
     workflow = models.TextField(null=False)
 
     obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
     forked_from = models.ForeignKey(to='Workflow', null=True, on_delete=models.CASCADE, related_name='forked_from_related') #Is this forked from another tool?
 
     # All tools used by this workflow
-    tools = models.ManyToManyField(to='Tool', related_name='workflows_using_me') 
+    tools = models.ManyToManyField(to='Tool', related_name='workflows_using_me')
 
     # All workflows used by this workflow
     # The fact that the related_name with tools is the same is not a bug!
-    workflows = models.ManyToManyField(to='Workflow', related_name='workflows_using_me') 
+    workflows = models.ManyToManyField(to='Workflow', related_name='workflows_using_me')
 
     changes = models.TextField(null=True) # What changes have been made from forked tool?
 
-    created_at = models.DateTimeField(auto_now_add=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#datefield 
+    created_at = models.DateTimeField(auto_now_add=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#datefield
 
     upvotes = models.IntegerField() # Number of upvotes
     downvotes = models.IntegerField() # Number of downvotes
@@ -307,26 +307,26 @@ class Workflow(models.Model):
 
 class ReportToken(models.Model):
     '''
-    Each report has multiple Tokens 
+    Each report has multiple Tokens
     Each Token represent a state of the workflow
     '''
 
-    # IMPORTANT: ADD THESE CODES ALSO IN ui.js :  window.OBCUI 
+    # IMPORTANT: ADD THESE CODES ALSO IN ui.js :  window.OBCUI
     WORKFLOW_STARTED_CODE = 1
     WORKFLOW_STARTED = r'workflow started (?P<name>[\w\./]+)[\s]*$'
-    
+
     WORKFLOW_FINISHED_CODE = 2
     WORKFLOW_FINISHED = r'workflow finished (?P<name>[\w\./]+)[\s]*$'
-    
+
     TOOL_STARTED_CODE = 3
     TOOL_STARTED = r'tool started (?P<name>[\w\./]+)[\s]*$'
-    
+
     TOOL_FINISHED_CODE = 4
     TOOL_FINISHED = r'tool finished (?P<name>[\w\./]+)[\s]*$'
 
     STEP_STARTED_CODE = 5
     STEP_STARTED = r'step started (?P<name>[\w]+) (?P<caller>[\w]+)[\s]*$'
-    
+
     STEP_FINISHED_CODE = 6
     STEP_FINISHED = r'step finished (?P<name>[\w]+)[\s]*$'
 
@@ -353,7 +353,7 @@ class ReportToken(models.Model):
 
         # We don't need this here to return None, left for readability
         return None
-            
+
 
 
     token = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) # https://books.agiliq.com/projects/django-orm-cookbook/en/latest/uuid.html
@@ -362,7 +362,7 @@ class ReportToken(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
-def create_nice_id(length=5):
+def create_nice_id(length=8):
     '''
     Create a nice ID for Report class
     I tried to add it as a static method in Report class (below) but the following happened:
@@ -375,7 +375,7 @@ def create_nice_id(length=5):
 
     '''
 
-    possible_letters = tuple(string.ascii_letters + string.digits)
+    possible_letters = tuple(string.ascii_lowercase + string.digits)
     return ''.join(random.sample(possible_letters, length))
 
 class Report(models.Model):
@@ -387,11 +387,11 @@ class Report(models.Model):
     obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
     workflow = models.ForeignKey(Workflow, null=False, on_delete=models.CASCADE) # The workflow that it run
     nice_id = models.CharField(max_length=10, unique=True, default=create_nice_id, editable=False)
-    client = models.ForeignKey(to='ExecutionClient', null=True, on_delete=models.CASCADE) # Which client creates this report? 
+    client = models.ForeignKey(to='ExecutionClient', null=True, on_delete=models.CASCADE) # Which client creates this report?
     url = models.URLField(max_length=256, null=True) # The url of the report (containing the results)
     log_url = models.URLField(max_length=256, null=True) # The url of the log (containing the results)
-    visualization_url = models.URLField(max_length=256, null=True) # The url of the visualization environment (i.e. airflow) 
-    monitor_url = models.URLField(max_length=256, null=True) # The url of the monitoring environment (i.e. netdata) 
+    visualization_url = models.URLField(max_length=256, null=True) # The url of the visualization environment (i.e. airflow)
+    monitor_url = models.URLField(max_length=256, null=True) # The url of the monitoring environment (i.e. netdata)
     client_status = models.CharField(max_length=25, null=True) # The status of the client
     tokens = models.ManyToManyField(ReportToken, related_name='report_related')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -399,7 +399,7 @@ class Report(models.Model):
 class ReferenceField(models.Model):
     '''
     This is a tuple of keys/values that come from parsing the BIBTEX entry
-    For example: 
+    For example:
     'journal': 'The American journal of human genetics'
     '''
 

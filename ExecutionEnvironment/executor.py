@@ -281,7 +281,7 @@ g = {
     'CLIENT_OBC_DATA_PATH': '/usr/local/airflow/REPORTS/DATA',
     'CLIENT_OBC_TOOL_PATH': '/usr/local/airflow/REPORTS/TOOL',
     'CLIENT_OBC_WORK_PATH': '/usr/local/airflow/REPORTS/WORK',
-    'possible_letters_nice_id': tuple(string.ascii_letters + string.digits),
+    'possible_letters_nice_id': tuple(string.ascii_lowercase + string.digits),
 }
 
 def log_info(message):
@@ -358,7 +358,7 @@ class Workflow:
         return json.dumps(self.workflow, indent=4)
 
     @staticmethod
-    def create_nice_id(length=5):
+    def create_nice_id(length=8):
         '''
         Create a nice id
         '''
@@ -1809,13 +1809,17 @@ class BaseExecutor():
     INIT_STEP_NAME = 'INIT_STEP'
     FINAL_STEP_NAME = 'FINAL_STEP'
 
-    def __init__(self, workflow):
+    def __init__(self, workflow, executor_parameters=None):
         if not isinstance(workflow, Workflow):
             raise OBC_Executor_Exception('workflow unknown type: {}'.format(type(workflow).__name__))
         self.workflow = workflow
 
         # The file that contain the values of the input parameters
         self.file_with_input_parameters = '${{OBC_WORK_PATH}}/{ID}_inputs.sh'.format(ID=self.workflow.nice_id_global)
+
+        if executor_parameters and type(executor_parameters) == dict:
+            for key, value in executor_parameters.items():
+                setattr(self, key, value)
 
     def load_file_with_input_parameters(self,):
         '''
@@ -3005,13 +3009,25 @@ dag = DAG(
 
 
 class ArgoExecutor(BaseExecutor):
-    def build(self, output, output_format='argo', workflow_id=None, obc_client=False):
-        self.decompose(
-            break_down_on_tools=True,
-        )
-        json_wf = json.dumps(self.decomposed)
-        return cargo.pipeline(json_wf,"192.168.0.1",None,"/work")
+    def __init__(self, workflow, executor_parameters=None):
+        # Set defaults
+        if not executor_parameters:
+            executor_parameters = {}
+        if 'workflow_name' not in executor_parameters:
+            executor_parameters['workflow_name'] = ''
+        if 'image_registry' not in executor_parameters:
+            executor_parameters['image_registry'] = '127.0.0.1'
+        if 'image_cache_path' not in executor_parameters:
+            executor_parameters['image_cache_path'] = None
+        if 'work_path' not in executor_parameters:
+            executor_parameters['work_path'] = '/work'
 
+        super().__init__(workflow, executor_parameters)
+
+    def build(self, output, output_format='argo', workflow_id=None, obc_client=False):
+        self.decompose(break_down_on_tools=True,)
+        json_wf = json.dumps(self.decomposed)
+        return cargo.pipeline(json_wf, self.workflow_name, self.image_registry, self.image_cache_path, self.work_path)
 
 
 class JSONDAGExecutor(BaseExecutor):
@@ -3419,6 +3435,7 @@ def create_bash_script(workflow_object, server, output_format,
         workflow_id=None,
         obc_client=False,
         break_down_on_tools=False,
+        executor_parameters=None,
     ):
     '''
     convenient function called by server
@@ -3426,6 +3443,7 @@ def create_bash_script(workflow_object, server, output_format,
     workflow_id: The ID of the workflow. Used in airflow
     obc_client: True/False. Do we have to generate a script for the obc client?
     break_down_on_tools : See decomposer
+    executor_parameters: Dictionary with options per implementation of workflow creator.
     '''
 
     args = type('A', (), {
@@ -3462,7 +3480,7 @@ def create_bash_script(workflow_object, server, output_format,
         return e.build(output=None, output_format='airflow', workflow_id=workflow_id, obc_client=obc_client)
     elif output_format in ['argo']:
         w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
-        e = ArgoExecutor(w)
+        e = ArgoExecutor(w, executor_parameters)
         return e.build(output=None, output_format='argo', workflow_id=workflow_id, obc_client=obc_client)
     elif output_format in ['nextflow']:
         w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
