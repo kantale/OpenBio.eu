@@ -907,6 +907,17 @@ class Workflow:
         return f'{Workflow.get_tool_dash_id(tool, no_dots=True)}__2'
 
     @staticmethod
+    def create_tool_from_cytoscape_id(cytoscape_tool_id):
+        '''
+        '''
+        s = cytoscape_tool_id.split('__')
+        return {
+            'name': s[0],
+            'version': s[1],
+            'edit': int(s[2]),
+        }
+
+    @staticmethod
     def get_tool_vars_filename(tool):
         '''
         '''
@@ -935,6 +946,15 @@ class Workflow:
         The inverse of get_tool_slash_id
         '''
         name, version, edit = tool_label.split('/')
+        return {
+            'name': name,
+            'version': version,
+            'edit': int(edit),
+        }
+
+    @staticmethod
+    def tool_dash_id_to_object(tool_dash_id):
+        name, version, edit = tool_dash_id.split('__')
         return {
             'name': name,
             'version': version,
@@ -1572,20 +1592,18 @@ class Workflow:
 
         for node in workflow_cytoscape['elements']['nodes']:
 
-            node_to_add = copy.copy(node)
-
             # If this the root workflow Change the edit, the name and 
-            if node_to_add['data']['belongto'] is None:
+            if node['data']['belongto'] is None:
 
-                node_to_add['data']['edit'] = None
-                node_to_add['data']['name'] = 'root'
-                node_to_add['data']['id'] = 'root__null'
+                node['data']['edit'] = None
+                node['data']['name'] = 'root'
+                node['data']['id'] = 'root__null'
 
-                del node_to_add['data']['label']   
-                del node_to_add['data']['description']
-                del node_to_add['data']['website']
-                del node_to_add['data']['keywords']
-                del node_to_add['data']['visibility']
+                del node['data']['label']   
+                del node['data']['description']
+                del node['data']['website']
+                del node['data']['keywords']
+                del node['data']['visibility']
 
                 continue
 
@@ -1593,8 +1611,8 @@ class Workflow:
             #print ('=3333==')
             #print (node)
             if Workflow.get_workflow_dash_id(node['data']['belongto']) == root_id:
-                node_to_add['data']['belongto']['edit'] = None # Remove edit
-                node_to_add['data']['belongto']['name'] = 'root'
+                node['data']['belongto']['edit'] = None # Remove edit
+                node['data']['belongto']['name'] = 'root'
 
             
 
@@ -1648,6 +1666,52 @@ class Workflow:
                         new_output = old_variables[new_output]
                     new_outputs.append(new_output)
                 node['data']['outputs'] = new_outputs
+
+            # Change the id . From step__main_step__a__1 --> step__main_step__root__null
+            if re.search(fr'{root_id}$', node['data']['id']):
+                node['data']['id'] = re.sub(fr'{root_id}$', 'root__null', node['data']['id'])
+
+            # Change tools 
+            if node['data']['type'] == 'tool':
+                # {'a1__1__1__2': 'a1__1__1001__2', 'a2__1__1__2': 'a2__1__1002__2'} 
+
+                # Change tools dependencies 
+                new_dependencies = []
+                for dependency in node['data']['dependencies']:
+                    dependency_id = Workflow.get_tool_cytoscape_id(dependency)
+                    if not dependency_id in old_tool_ids:
+                        raise OBC_Executor_Exception('Could not resolve dependencies')
+                    new_dependencies.append(Workflow.create_tool_from_cytoscape_id(old_tool_ids[dependency_id]))
+                node['data']['dependencies'] = new_dependencies
+
+                # Change tool id 
+                node['data']['id'] = old_tool_ids[node["data"]["id"]]
+                
+                # Change dep_id
+                if node['data']['dep_id'] != '#':
+                    node['data']['dep_id'] = old_tool_ids[node["data"]["dep_id"]]
+
+
+                # Change installation commands and validation commands
+                # a1__1__1__path . ${a1__1__1__path} --> ${a1__1__1001__path}
+                for old_tool_id_cytoscape, new_tool_id_cytoscape in old_tool_ids.items():
+                    old_tool_id = '__'.join(old_tool_id_cytoscape.split('__')[:-1]) # a1__1__1__2 --> a1__1__1
+                    new_tool_id = '__'.join(new_tool_id_cytoscape.split('__')[:-1])
+                    node['data']['installation_commands'] = re.sub(fr'{old_tool_id}', f'{new_tool_id}', node['data']['installation_commands'] )
+                    node['data']['validation_commands'] = re.sub(fr'{old_tool_id}', f'{new_tool_id}', node['data']['validation_commands'] )
+
+                # Change label and text
+                t1 = Workflow.tool_label_to_object(node['data']['label'])  # text': 'a2/1/1', 'label': 'a2/1/1',  
+                t2 = Workflow.get_tool_cytoscape_id(t1) # a2__1__1__2 
+                t3 = old_tool_ids[t2] # a2__1__1002__2
+                t4 = '__'.join(t3.split('__')[:-1])  # a2__1__1002
+                t5 = Workflow.tool_dash_id_to_object(t4) # {'name': 'a2', 'version': '1', 'edit': 1002}
+                t6 = Workflow.get_tool_slash_id(t5) # a2/1/1002 
+                node['data']['label'] = t6
+                node['data']['text'] = t6
+
+
+
 
 
         # Change edges
