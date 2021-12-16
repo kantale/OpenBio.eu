@@ -149,7 +149,7 @@ def get_steps(data, wfl: workflow):
             artifact = rawArtifact(installation_script_path, s.bash)
             for c in get_container_with_tool(wfl, s.tool_to_install):
                 idx = wfl.containers.index(c)
-                c.image = wfl.image_registry + "/image" + c.name + ":v1"
+                c.image = wfl.image_registry + ("/%s/image" % (couler.workflow.name)) + c.name + ":v1"
                 c.artifacts.append(artifact)
                 wfl.containers[idx] = c
         elif data['steps'][step]['type'] == "tool_invocation":
@@ -284,14 +284,16 @@ def yaml():
         return yaml_str
 
 def pipeline(data:str, workflow_name:str, image_registry:str, image_cache_path:str, work_path:str):
+    couler._cleanup()
+    couler.workflow.name = workflow_name if workflow_name else "workflow"
+
     wfl = workflow()
     wfl.image_registry = image_registry
     wfl.image_cache_path = image_cache_path
     wfl.work_path = work_path
     data = parse(data, wfl)
-    if workflow_name:
-        couler.workflow.name = workflow_name
     couler.workflow.dag_mode = True
+
     last_builder = None
     for c in wfl.containers:
         couler.set_dependencies(lambda: builder_phase(c, wfl), dependencies=last_builder)
