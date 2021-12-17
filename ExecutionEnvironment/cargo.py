@@ -274,7 +274,7 @@ def yaml():
 
     if states._enable_print_yaml:
         return yaml_str
-
+      
 def pipeline(data:str, workflow_name:str, image_registry:str, image_cache_path:str, work_path:str):
     couler._cleanup()
     couler.workflow.name = workflow_name if workflow_name else "workflow"
@@ -286,11 +286,12 @@ def pipeline(data:str, workflow_name:str, image_registry:str, image_cache_path:s
     data = parse(data, wfl)
     couler.workflow.dag_mode = True
 
-    last_builder = None
+    builder_as_deps = ""
     for c in wfl.containers:
-        couler.set_dependencies(lambda: builder_phase(c, wfl), dependencies=last_builder)
-        last_builder = "builder" + c.name
-    dag_phase(data, wfl, last_builder)
+        couler.set_dependencies(lambda: builder_phase(c, wfl), dependencies=None)
+        builder_as_deps += " builder"+c.name+".Succeeded" + " &&"
+    builder_as_deps = builder_as_deps[:len(builder_as_deps) - 2]
+    dag_phase(data, wfl, builder_as_deps)
     return yaml()
 
 def pipeline_from_file(filename:str, workflow_name:str, image_registry:str, image_cache_path:str, work_path:str):
@@ -306,7 +307,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     logging.basicConfig(level=logging.DEBUG)
     if args.f is not None:
-        pipeline(args.f, args.r)
+        print(pipeline_from_file(args.f,"", args.r,"/private/.cache","/private"))
     else:
         parser.print_help()
 
