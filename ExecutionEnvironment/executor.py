@@ -1574,8 +1574,17 @@ class Workflow:
 
         workflow_cytoscape: The workflow in cytoscape format to remove edit info
         old_variables: A dictionary. Keys: old bash variables. Values: new bash variables
+            Example: {'a1__1__1__path': 'a1__1__1001__path', 'a2__1__1__path': 'a2__1__1002__path'}
         old_tool_ids: A dictionaty. Keys: old tool cytoscape ids, values: new tool cytoscape ids
+            Example: {'a1__1__1__2': 'a1__1__1001__2', 'a2__1__1__2': 'a2__1__1002__2'} 
         '''
+
+        print ('old_variables:')
+        print (old_variables)
+        print ('old_tool_ids:')
+        print (old_tool_ids)
+
+        #a=1/0
 
         # Get the root workflow
         root_workflow = Workflow.get_root_workflow_cytoscape(workflow_cytoscape)
@@ -1700,7 +1709,7 @@ class Workflow:
                     node['data']['installation_commands'] = re.sub(fr'{old_tool_id}', f'{new_tool_id}', node['data']['installation_commands'] )
                     node['data']['validation_commands'] = re.sub(fr'{old_tool_id}', f'{new_tool_id}', node['data']['validation_commands'] )
 
-                # Change label and text
+                # Change label and text 
                 t1 = Workflow.tool_label_to_object(node['data']['label'])  # text': 'a2/1/1', 'label': 'a2/1/1',  
                 t2 = Workflow.get_tool_cytoscape_id(t1) # a2__1__1__2 
                 t3 = old_tool_ids[t2] # a2__1__1002__2
@@ -1718,10 +1727,12 @@ class Workflow:
         new_edges = []
         for edge in workflow_cytoscape['elements']['edges']:
 
-            if edge['data']['source'] in old_variables:
-                edge['data']['source'] = old_variables[edge['data']['source']]
-            if edge['data']['target'] in old_variables:
-                edge['data']['target'] = old_variables[edge['data']['target']]
+
+            if edge['data']['source'] in old_tool_ids:
+                edge['data']['source'] = old_tool_ids[edge['data']['source']]
+
+            if edge['data']['target'] in old_tool_ids:
+                edge['data']['target'] = old_tool_ids[edge['data']['target']]
 
             if root_id in edge['data']['source']:
                 edge['data']['source'] = edge['data']['source'].replace(root_id, 'root__null')
@@ -1730,6 +1741,8 @@ class Workflow:
                 edge['data']['target'] = edge['data']['target'].replace(root_id, 'root__null')
 
             edge['data']['id'] = Workflow.get_edge_id(edge['data']['source'], edge['data']['target'])
+
+            print (f"{edge['data']['target']} <--> {edge['data']['target']}")
 
 
 
