@@ -40,7 +40,9 @@ class workflow():
         self.image_cache_path = None
         self.work_path = ""
         self.builders = []
-
+        simple_container = container("simple")
+        simple_container.image = "ubuntu:18.04"
+        self.simple_container = simple_container
         # couler.run_container()
 
 
@@ -112,20 +114,9 @@ class rawArtifact(LocalArtifact):
         return yaml_output
 
 
-def get_container_with_least_dependencies(wfl:workflow, step:sb_step):
-    min_container_deps = MAXSIZE
-    min_container_deps_container = None
-    for c in wfl.containers:
-        if len(c.tool_deps) < min_container_deps:
-            min_container_deps = len(c.tool_deps)
-            min_container_deps_container = c
-    if min_container_deps_container == None:
-        logging.error("could not get a container with the least requirements(tool_dependencies")
-    return min_container_deps_container
 
-
-def sb_step_call(wfl, step:sb_step):
-    c = get_container_with_least_dependencies(wfl, step)
+def sb_step_call(wfl:workflow, step:sb_step):
+    c = wfl.simple_container
     if(step.type == step_type.tool_invocation):
         conts = get_container_with_tool(wfl, step.tool_to_call)
         c = conts[0]
@@ -193,7 +184,8 @@ WORKDIR /root
     ]
     if wfl.image_cache_path:
         kaniko_args += ["--cache-dir=%s" % wfl.image_cache_path]
-    tmpl = couler.run_container(image="gcr.io/kaniko-project/executor:latest",
+
+    couler.run_container(image="gcr.io/kaniko-project/executor:latest",
                                 args=kaniko_args,
                                 input=c.artifacts,
                                 step_name="builder"+c.name,
@@ -232,7 +224,7 @@ def dag_phase(data, wfl:workflow, last_builder):
         if(step.type == tool_invocation_step):
             step.container = get_container_with_tool(wfl, step.tool_to_call)
         else:
-            step.container = get_container_with_least_dependencies(wfl, step)
+            step.container = wfl.simple_container
     last_elem = None
     for step in sb_step.global_steps:
         if(step.type == step_type.initial):
