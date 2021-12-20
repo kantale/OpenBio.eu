@@ -496,8 +496,7 @@ class Workflow:
                     # Set None values
                     self.input_parameter_values[root_input_node['id']] = {'value': None, 'description': root_input_node['description']}
 
-        # Check that all outpus will be eventually set
-        self.output_parameter_step_setters = {}
+        # Check that all output_parameterss will be eventually set
         for root_output_node in self.root_inputs_outputs['outputs']:
             found_output_filling_step = False
             for step_node in self.node_iterator():
@@ -505,14 +504,8 @@ class Workflow:
                     continue
 
                 if root_output_node['id'] in step_node['outputs']:
-                    if not self.output_parameter_step_setters.get(root_output_node['id']) in [None, step_node]:
-                        message = 'OBC: Output variable: {} is set by more than one steps:\n'.format(root_output_node['id'])
-                        message += '   {}\n'.format(self.output_parameter_step_setters[root_output_node['id']]['id'])
-                        message += '   {}\n'.format(step_node['id'])
-                        raise OBC_Executor_Exception(message)
-
-                    self.output_parameter_step_setters[root_output_node['id']] = step_node
                     found_output_filling_step = True
+                    continue
 
             if not found_output_filling_step and (not self.askinput in ['BASH']):
                 # If askinput = BASH don't raise exception 
