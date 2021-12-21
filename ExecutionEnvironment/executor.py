@@ -1747,7 +1747,7 @@ ENDOFFILE
                                     try:
                                         v1, v2 = list(map(int, k.split(':')))
                                     except:
-                                        OBC_Executor_Exception('Invalid range specification: {}'.format(k))
+                                        raise OBC_Executor_Exception('Invalid range specification: {}'.format(k))
                                     last_assignment['content'][i][j] = list(str(k) for k in range(v1, v2))
                             temp = list(product(*last_assignment['content'][i]))
                             last_assignment['content'].pop(i)
