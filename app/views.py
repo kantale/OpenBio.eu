@@ -81,6 +81,7 @@ import hashlib
 import logging # https://docs.djangoproject.com/en/2.1/topics/logging/
 
 from collections import Counter, defaultdict
+from pprint import pprint 
 import urllib.parse # https://stackoverflow.com/questions/40557606/how-to-url-encode-in-python-3/40557716
 
 # Installed packages imports
@@ -2179,9 +2180,6 @@ def tools_add(request, **kwargs):
     * names and version is searched case insensitive
     '''
 
-    print ('TOOL KWARGS:')
-    print (kwargs)
-
     if request.user.is_anonymous: # Server should always check..
         return fail('Please login to create new tools')
 
@@ -2217,12 +2215,10 @@ def tools_add(request, **kwargs):
         tool_edit_state = False
     elif tool_edit_state in {'True', 'true'}:
         tool_edit_state = True
-    print (tool_edit_state, type(tool_edit_state))
     if not type(tool_edit_state) is bool:
         return fail('Error 8715. Tool edit state has not been set')
 
     tool_visibility = kwargs.get('tool_visibility', '')
-    print (tool_visibility, type(tool_visibility))
     visibility_code = validate_visibility(tool_visibility)
     if type(visibility_code) is str:
         return fail(visibility_code)
@@ -3376,7 +3372,7 @@ def workflows_add(request, **kwargs):
     try:
         keywords = [Keyword.objects.get_or_create(keyword=keyword)[0] for keyword in kwargs['workflow_keywords']]
     except KeyError:
-        return fail('Error 4882')
+        return fail('Error 4882. Could not find keywords')
 
 
     #Change the edit value in the cytoscape json object
@@ -3651,7 +3647,7 @@ def upload(request, **kwargs):
         return fail('Failed to convert file\'s content to Unicode UTF-8')
 
     try:
-        workflow = Workflow_executor(workflow_string=complete_str)
+        workflow = Workflow_executor(workflow_string=complete_str, askinput='NO',)
     except OBC_Executor_Exception as e:
         return fail(str(e))
     except Exception as e:
@@ -3675,8 +3671,8 @@ def upload(request, **kwargs):
    
 
     # First, add tools
-
-    def edit_getter(tool_request):
+    tools_added = [] # Keep records of which tools we have added 
+    def tool_edit_getter(tool_request):
         '''
         This function takes an "artificial" tool_add request and submits it
         '''
@@ -3686,40 +3682,49 @@ def upload(request, **kwargs):
         response_decoded = decode_response(response)
 
         if not response_decoded['success']:
-            return fail(response_decoded['error_message'])
+            return response_decoded['error_message']
 
+        tools_added.append('/'.join([
+            tool_request['tools_search_name'], tool_request['tools_search_version'], str(response_decoded['edit']),
+        ]))
         return response_decoded['edit']
 
+    workflows_added = []
+    def workflow_edit_getter(workflow_request):
 
-    result = workflow.process_tool_requests(edit_getter)
-    if type(result) is str:
-        return fail(error_message + ' ' + result)
-
-        
-
-    added_objects['added_workflow_ids'] = set()
-
-
-    # Next, add workflows
-    for sub_workflow in workflow.get_workflow_order():
-
-
-
-        workflow_request = convert_cytoscape_workflow_to_request(workflow, sub_workflow, added_objects)
         fake_request = rf.post('/workflows_add/', workflow_request, content_type='application/json')
         fake_request.user = request.user
-
         response = workflows_add(fake_request)
         response_decoded = decode_response(response)
 
-
         if not response_decoded['success']:
-            return fail(response_decoded['error_message'])
+            return response_decoded['error_message']
+
+        workflows_added.append('/'.join([
+            workflow_request['workflow_info_name'], str(response_decoded['edit']),
+        ]))
+        return response_decoded['edit']
 
 
+    try:
+        error_message = workflow.upload(
+            tool_edit_getter = tool_edit_getter,
+            #tool_edit_getter = None,
+            workflow_edit_getter = workflow_edit_getter,
+            #workflow_edit_getter = None,
+        )
+    except OBC_Executor_Exception as e:
+        #raise e 
+        return fail(str(e))
+    except Exception as e:
+        #raise e
+        return fail(str(e))
+
+    if error_message:
+        return fail(error_message)
 
     ret = {
-        'message': 'Workflow uploaded correctly',
+        'message': f'Workflow uploaded correctly. Created {len(tools_added)} tools: {", ".join(tools_added)} and {len(workflows_added)} workflows: {", ".join(workflows_added)}.',
     }
 
     return success(ret)
