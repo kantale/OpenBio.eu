@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ .Release.Name }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      containers:
+      - image: {{- if .Values.image }} {{ .Values.image }} {{- else }} kantale/openbio:v{{ .Chart.Version }} {{- end }}
+        name: openbio
+        env:
+        - name: DJANGO_SETTINGS_MODULE
+          value: OpenBio.obc_private
+        ports:
+        - containerPort: 8200
+          name: http
+        volumeMounts:
+        - name: {{ .Release.Name }}-config
+          mountPath: /app/OpenBio/obc_private.py
+          subPath: obc_private.py
+      - image: postgres:13.3
+        name: postgres-container
+        env:
+        - name: POSTGRES_USER
+          value: openbio
+        - name: POSTGRES_HOST_AUTH_METHOD
+          value: trust
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: {{ .Release.Name }}-database-volume
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: {{ .Release.Name }}-config
+        configMap:
+          name: {{ .Release.Name }}
+          defaultMode: 0644
+      - name: {{ .Release.Name }}-database-volume
+        persistentVolumeClaim:
+          claimName: {{- if .Values.openbio.databaseVolumeClaim }} {{ .Values.openbio.databaseVolumeClaim }} {{- else }} {{ .Release.Name }}-database-pvc {{- end }}

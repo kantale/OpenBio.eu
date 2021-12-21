@@ -1,0 +1,308 @@
+<div style="margin-top: 1px;">
+    <div class="card blue-grey lighten-4 rightPanelTitleCard">
+        <div class="card-content rightPanelTitleContent">
+            <h5 class="rightPanelTitleHeader center">Profile</h5>
+            <a class="waves-effect btn-flat white-text red lighten-2 right tooltipped cancelButton" data-position="bottom" data-tooltip="Close Profile" ng-click="profile_cancel_clicked()">Close</a>
+            <a class="waves-effect btn-flat white-text green lighten-2 right tooltipped cancelButton" data-position="bottom" data-tooltip="Save Profile" ng-click="profile_update_clicked()">Save</a>
+        </div>
+    </div>
+</div>
+<div class="row container left-align">
+    <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+    <!-- -------------------------------------------------------------- ScrollSpy ------------------------------------------------------------------------ -->
+    <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+    <div>
+        <div class="scrollspyMenu col s12 m12 l2 hide-on-med-and-down pushpin pushpin-demo-nav"
+            style="position:fixed; padding-top: 200px; margin-left: -40px;">
+            <ul class="section table-of-contents">
+                <li><a class="lien_projet" href="#profileCard">Profile</a></li>
+                <li><a class="lien_projet" href="#changePasswordCard">Change Password</a></li>
+                <li><a class="lien_projet" href="#accessTokenCard">Access Token</a></li>
+                <li><a class="lien_projet" href="#executionCard">Execution Environment</a></li>
+                <li><a class="lien_projet" href="#notificationsCard" ng-show="false">Notifications</a></li>
+                <li><a class="lien_projet" href="#settingsCard" ng-show="false">Settings</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="card red lighten-2" style="margin-top: 14px;" ng-show="!user_is_validated">
+            <div class="card-content">
+                <p>Please validate your email address</p>
+                <a class="waves-effect btn-flat red lighten-3 right" style="margin-top: -30px;" onclick="window.OBCUI.send_validation_mail()">Validate email</a>
+            </div>
+        </div>
+    <div id="profileContent" class="scrollspyContent col s12 m12 l10">
+        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+        <!-- ------------------------------------------------------- Profile --------------------------------------------------------------------------------- -->
+        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+        <div class="faster panel" id="profilePanel">
+            <div class="row">
+                <!-- --------------------------------------------------------------------------------------- -->
+                <!-- ------------------------------------ Profile Card ------------------------------------- -->
+                <!-- --------------------------------------------------------------------------------------- -->
+                <div class="col s12">
+                    <section id="profileCard" class="scrollspy section_projet">
+                        <div class="card">
+                            <div class="card-content">
+                                <blockquote style="margin-bottom: 0px;"><span class="card-title">Profile</span></blockquote>
+                                <div class="row" style="margin-top: 20px;">
+                                    <form class="col s12">
+                                        <div class="row valign-wrapper">
+                                            <div class="col s3">
+                                                <img src="/static/app/images/konstantina/img_avatar.png" alt=""
+                                                    data-target='editProfileImgDropdown'
+                                                    class="responsive-img dropdown-trigger circle">
+                                                <ul id='editProfileImgDropdown' class='dropdown-content'>
+                                                    <li><a href="#!">Edit</a></li>
+                                                    <li><a href="#!">Add</a></li>
+                                                    <li><a href="#!">Remove</a></li>
+                                                </ul>
+                                            </div>
+                                            <div class="col s9">
+                                                <div class="input-field col s12">
+                                                    <input id="profileFirstname" type="text" class="validate" ng-model="profile_firstname">
+                                                    <label for="profileFirstname">Firstname</label>
+                                                </div>
+                                                <div class="input-field col s12">
+                                                    <input id="profileLastname" type="text" class="validate" ng-model=profile_lastname>
+                                                    <label for="profileLastname">Lastname</label>
+                                                </div>
+                                                <div class="col s12">
+                                                    <div style="border-bottom: 1px solid #9e9e9e;">
+                                                        <!-- use this link for orcid sandbox <a href="/platform/login/orcid-sandbox/" -->
+                                                        
+                                                                                                            
+                                                        <label><img alt="ORCID logo" src="/static/app/images/orcid_16x16.png" width="16" height="16" style="margin-bottom: -3px; "> ORCID iD</label>
+                                                        {% verbatim %}<a ng-href="{{ profile_ORCID_url }}" target="_blank"><span ng-bind="profile_ORCID" ng-show="profile_ORCID" style="font-size: 16px; display: block; margin: 4px 0px 12px 0px;">0000-0000-00000-0000</span></a>{% endverbatim %}
+                                                        <span ng-show="!profile_ORCID" style="font-size: 16px; display: block; margin: 4px 0px 12px 0px;">Not associated with ORCID</span>
+                                                        <a href='{% url "social:begin" "orcid" %}' class="waves-effect waves-teal btn right tooltipped" data-position="bottom" data-tooltip="Associate with ORCID" style="margin-top: -42px; width: auto;" ng-show="!profile_ORCID">Associate</a>
+                                                        <a class="waves-effect waves-teal btn right tooltipped" data-position="bottom" data-tooltip="Disassociate with ORCID" style="margin-top: -42px; width: auto;" ng-click="profile_orcid_disconnect_pressed()" ng-show="profile_ORCID">Disassociate</a>
+                                                        
+                                                    </div>
+
+
+                                                </div> 
+                                            </div>
+                                        </div>
+                                        <div class="input-field col s12">
+                                            <input id="profileUsername" type="text" class="validate" ng-model="username" disabled>
+                                            <label for="profileUsername">Username</label>
+                                        </div>
+                                        <div class="input-field col s12">
+                                            <input id="profileEmail" type="email" class="validate" ng-model="profile_email" disabled>
+                                            <label for="profileEmail">Email</label>
+                                        </div>
+                                        <div class="input-field col s12">
+                                            <input id="profileMember" type="text" class="validate" ng-model="profile_created_at" disabled>
+                                            <label for="profileMember">Member Since</label>
+                                        </div>
+                                        <div class="input-field col s12">
+                                            <input id="profileWebsite" type="text" class="validate" ng-model="profile_website">
+                                            <label for="profileWebsite">Website</label>
+                                        </div>
+                                        <div class="input-field col s12">
+                                            <input id="profileAffiliation" type="text" class="validate" ng-model="profile_affiliation">
+                                            <label for="profileAffiliation">Affiliation</label>
+                                        </div>
+                                        <div class="input-field col s12">
+                                            <textarea id="profilePublicInfo" class="materialize-textarea" ng-model="profile_publicinfo"></textarea>
+                                            <label for="profilePublicInfo">Public Information</label>
+                                        </div>
+                                    </form>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <!-- --------------------------------------------------------------------------------------- -->
+                <!-- -------------------------------- Change Password Card --------------------------------- -->
+                <!-- --------------------------------------------------------------------------------------- -->
+                <div class="col s12">
+                    <section id="changePasswordCard" class="scrollspy section_projet">
+                        <div class="card">
+                            <div class="card-content">
+                                <div class="row">
+                                    <blockquote style="margin-bottom: 0px;"><span class="card-title">Change Password</span></blockquote>
+                                    <form class="col s12" style="margin-top: 20px;">
+                                        <div class="input-field col s12">
+                                            <input id="profileOldPassword" type="password" class="validate">
+                                            <label for="profileOldPassword">Old Password</label>
+                                        </div>
+                                        <div class="input-field col s12">
+                                            <input id="profileNewPassword" type="password" class="validate">
+                                            <label for="profileNewPassword">New Password</label>
+                                        </div>
+                                        <div class="input-field col s12">
+                                            <input id="profileConfirmPassword" type="password" class="validate">
+                                            <label for="profileConfirmPassword">Confirm Password</label>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- --------------------------------------------------------------------------------------- -->
+                <!-- ----------------------------- Access token Card --------------------------------------- -->
+                <!-- --------------------------------------------------------------------------------------- -->
+                <div class="col s12">
+                    <section id="accessTokenCard" class="scrollspy section_projet">
+                        <div class="card">
+                            <div class="card-content">
+                                <div class="row">
+                                    <blockquote style="margin-bottom: 0px;"><span class="card-title">Access Token</span></blockquote>
+                                    <p>Manage your access tokens</p>
+                                    <form class="col s12" style="margin-top: 20px;">
+                                        <div class="col s12" style="margin-top: 15px; margin-bottom: 15px;">
+                                            <div style="border-bottom: 1px solid #9e9e9e;">
+                                                {% verbatim %}                                                    
+                                                <label>Access Token</label><br>
+                                                <span id="access_token_span" ng-bind="profile_access_token ? profile_access_token : 'Access token is not set'" style="font-size: 16px; display: block; margin: 4px 0px 12px 0px;"></span>
+                                                <a id="at_delete" ng-click="profile_delete_access_token()" class="waves-effect waves-teal btn right" style="margin-top: -42px; left: -90px; width: auto;" ng-show="profile_access_token">Delete</a>
+                                                <a id="at_renew" ng-click="profile_issue_access_token()" class="waves-effect waves-teal btn right" style="margin-top: -42px; width: auto;" ng-show="profile_access_token">Renew</a>
+                                                <a id="at_create" ng-click="profile_issue_access_token()" class="waves-effect waves-teal btn right" style="margin-top: -42px; width: auto;" ng-show="!profile_access_token">Create</a>
+                                                {% endverbatim %}
+                                            </div>
+                                        </div> 
+                                    </form>
+                                    <!-- Access token: <span id="access_token_span" ng-bind="profile_access_token ? profile_access_token : 'Acess token is not set'"></span>
+                                    <button id="at_delete" ng-click="profile_delete_access_token()" ng-show="profile_access_token">Delete</button>
+                                    <button id="at_renew" ng-click="profile_issue_access_token()" ng-show="profile_access_token">Renew</button>
+                                    <button ud="at_create" ng-click="profile_issue_access_token()" ng-show="!profile_access_token">Create</button> -->
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+
+                <!-- --------------------------------------------------------------------------------------- -->
+                <!-- ----------------------------- Execution Environment Card ------------------------------ -->
+                <!-- --------------------------------------------------------------------------------------- -->
+                <div class="col s12">
+                    <section id="executionCard" class="scrollspy section_projet">
+                        <div class="card">
+                            <div class="card-content">
+                                <div class="row">
+                                    <blockquote style="margin-bottom: 0px;"><span class="card-title">Execution Environment</span></blockquote>
+                                    <p>Manage your execution environments</p>
+                                    <table class="highlight" style="margin-top: 20px;">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>URL</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="client in profile_clients track by $index">
+                                                <td><input type="text" placeholder="Name" ng-model="client.name" ng-readonly="!$last"></td>
+                                                <td><input type="text" placeholder="URL" ng-model="client.client" ng-readonly="!$last"></td>   
+                                                <td>
+                                                    <a class="waves-effect waves-light btn-small tooltipped green darken-1"
+                                                        ng-show="client.name && client.client && $last"
+                                                        ng-click="profile_add_client($index)"
+                                                        style="padding-left: 7px; padding-right:7px" data-position="bottom"
+                                                        data-tooltip="Add URL"><i class="material-icons">add</i></a>
+                                                </td>
+                                                <td>
+                                                    <a class="waves-effect waves-light btn-small tooltipped red darken-1"
+                                                        ng-show="client.name && client.client && (!$last)"
+                                                        ng-click="profile_delete_client($index)"
+                                                        style="padding-left: 7px; padding-right:7px" data-position="bottom"
+                                                        data-tooltip="Remove URL"><i class="material-icons">remove</i></a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <!-- --------------------------------------------------------------------------------------- -->
+                <!-- -------------------------------- Notifications Card ----------------------------------- -->
+                <!-- --------------------------------------------------------------------------------------- -->
+                <div class="col s12" ng-show="false">
+                    <section id="notificationsCard" class="scrollspy section_projet">
+                        <div class="card">
+                            <div class="card-content">
+                                <blockquote><span class="card-title">Notifications</span></blockquote>
+                                <div class="row">
+                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                                    incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+                                    nostrud
+                                    exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem
+                                    ipsum
+                                    dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+                                    labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                                    exercitation
+                                    ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit
+                                    amet,
+                                    consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
+                                    dolore
+                                    magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+                                    nisi ut aliquip ex ea commodo consequat.
+                                </div>
+                            </div>
+                            <div class="card-action right-align">
+                                <button class="btn waves-effect waves-light" type="submit" name="action">Update</button>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <!-- --------------------------------------------------------------------------------------- -->
+                <!-- ------------------------------------ Settings Card ------------------------------------ -->
+                <!-- --------------------------------------------------------------------------------------- -->
+                <div class="col s12" ng-show="false">
+                    <section id="settingsCard" class="scrollspy section_projet">
+                        <div class="card">
+                            <div class="card-content">
+                                <blockquote><span class="card-title">Settings</span></blockquote>
+                                <div class="row">
+                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                                    incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+                                    nostrud
+                                    exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem
+                                    ipsum
+                                    dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+                                    labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                                    exercitation
+                                    ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit
+                                    amet,
+                                    consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
+                                    dolore
+                                    magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+                                    nisi ut aliquip ex ea commodo consequat.
+                                </div>
+                            </div>
+                            <div class="card-action right-align">
+                                <button class="btn waves-effect waves-light" type="submit" name="action">Update</button>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+        <!-- -------------------------------------------------------- Temp ----------------------------------------------------------------------------------- -->
+        <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+        <div class="container faster" ng-show="false"> <!-- what is this for? -->
+            <div class="col s12">
+                <div class="card">
+                    <div class="card-content">
+                        <blockquote><span class="card-title">Settings</span></blockquote>
+                        <div class="row">
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                            incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+                            nostrud
+                        </div>
+                    </div>
+                    <div class="card-action right-align">
+                        <button class="btn waves-effect waves-light" type="submit" name="action">Update</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

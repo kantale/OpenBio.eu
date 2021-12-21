@@ -1,0 +1,30 @@
+{
+	"main": "dist/main.js",
+
+	"dependencies": {
+		"ace-builds": "^1.4.1",
+		"angular": "^1.7.2",
+		"angular-sanitize": "^1.7.2",
+		"cytoscape-cxtmenu": "^3.0.2",
+		"cytoscape": "^3.4.0",
+		"cytoscape-popper": "^1.0.4",
+		"dagre": "^0.8.5",
+		"jquery": "^3.3.1",
+		"jstree": "^3.3.5",
+		"materialize-css": "^1.0.0",
+		"ng-js-tree": "ezraroi/ngJsTree#1dcb95f",
+		"pell": "^1.0.6",
+		"popper.js": "^1.14.7",
+		"select2": "^3.4.5",
+		"tippy.js": "^4.0.1",
+		"ui-select": "^0.19.8",
+		"vis": "^4.21.0"
+	},
+
+	"scripts": {
+		"fix-ace": "sed -i.bak 's/will-change: transform;//g' node_modules/ace-builds/src-min-noconflict/ace.js",
+		"get-material-icons": "wget -O \"material-design-icons-v3.0.1_tar.gz\" https://github.com/google/material-design-icons/archive/3.0.1.tar.gz && tar zxvf material-design-icons-v3.0.1_tar.gz"
+	}
+}
+
+
