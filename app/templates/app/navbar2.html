@@ -1,0 +1,226 @@
+<!-- --------------------------------------------------------------------------------------- -->
+<!-- ------------------------------------- Navbar ------------------------------------------ -->
+<!-- --------------------------------------------------------------------------------------- -->
+<div class="navbar" id="navbar">
+    <nav>
+        <div class="nav-wrapper blue-grey lighten-4 ">
+            <!-- on large and up screens -->
+            <div class="hide-on-med-and-down">
+                <a href="#!" class="brand-logo left">
+                    {% if FUNDING_LOGOS %}<img style="height: 60px;" src="/static/app/images/konstantina/epanek_logo_transparent_x60.png">{% endif %}
+                </a>
+                <span class="brand-logo center black-text" style="top: -8px;">
+                    <a href="/" style="color:black;">{{TITLE}}</a> <span style="font-size:24px;">(beta)</span>
+                </span>
+                <span class="brand-logo center black-text" style="font-size: 14px; top: 20px;">
+                    Version: {{version}}
+                    <a href="https://github.com/kantale/OpenBio.eu" target="_blank">Source</a>
+                    {% if TERMS %}<a href="{{TERMS}}">Terms</a>{% endif %}
+                    {% if PRIVACY %}<a href="{{PRIVACY}}">Privacy</a>{% endif %}
+                </span>
+            </div>
+            <!-- on medium and down screens -->
+            <div class="hide-on-large-only">
+                <span class="brand-logo left black-text" style="top: -8px;">
+                    {{TITLE}} <span style="font-size:24px;">(beta)</span>
+                </span>
+                <span class="brand-logo left black-text" style="font-size: 14px; top: 20px;">
+                    Version: {{version}}
+                    <a href="https://github.com/kantale/OpenBio.eu" target="_blank">Source</a>
+                </span>
+            </div>
+            <a id="navMenuBtn" href="#" data-target="mobile-nav" class="sidenav-trigger right black-text"><i class="material-icons">menu</i></a>
+            <!-- Navbar Content -->
+            <ul id="main-nav" class="right hide-on-med-and-down">
+                <!-- <li><a class="black-text" href ng-click="navbar_home_clicked()">Home</a></li> -->
+                <!-- <li><a class="black-text" ng-click="documenation_navbar_clicked()">Documentation</a></li> -->
+                <li><a class="black-text" href="https://kantale.github.io/OpenBio.eu/" target="_blank">Documentation</a></li>
+                {% if LOGIN_BACKEND %}
+                <li ng-show="!username"><a href="{% url 'social:begin' backend=LOGIN_BACKEND %}" id="signInBtn" class="modal-trigger black-text">Log in</a></li>
+                {% else %}
+                <li ng-show="!username"><a href="#signModal" id="signInBtn" class="modal-trigger black-text" ng-click="navbar_signup_pressed()">Sign in</a></li>
+                {% endif %}
+
+
+
+                <li ng-show="username">
+                    <a class="dropdown-trigger valign-wrapper black-text" href="#" data-target="profile">
+                        <img class="circle responsive-img imgAvatar" alt="Avatar">
+                        <span ng-bind="username"></span><i class="material-icons right">arrow_drop_down</i>
+                    </a>
+                </li>
+            </ul>
+            <!-- Profile dropdown content -->
+            <ul id="profile" class="dropdown-content">
+                <li><a href ng-click="navbar_profile_clicked()" class="dropdownStyle"><i class="material-icons dropdownIcon">person</i>Profile</a></li>
+                <li ng-show="false"><a href="#!" class="dropdownStyle"><i class="material-icons dropdownIcon">mail_outline</i>Inbox</a></li>
+                <li ng-show="false"><a href="#!" class="dropdownStyle"><i class="material-icons dropdownIcon">notifications</i>Notifications</a></li>
+                <li ng-show="false"><a href="#!" class="dropdownStyle"><i class="material-icons dropdownIcon">settings</i>Settings</a></li>
+                <li class="divider"></li>
+                <li><a href="{{request.scheme}}://{{request.META.HTTP_HOST}}/platform/logout/" class="dropdownStyle"><i class="material-icons dropdownIcon">exit_to_app</i>Logout</a></li>
+            </ul>
+            <!-- Sidenav Content -->
+            <ul class="sidenav" id="mobile-nav">
+                <!-- <li ng-show="false"><a href="#">Home</a></li> -->
+                <li ng-click="documenation_navbar_clicked()"><a>Documentation</a></li>
+
+                {% if LOGIN_BACKEND %}
+                <li ng-show="!username"><a id="signInBtn" href="{% url 'social:begin' backend=LOGIN_BACKEND %}" class="modal-trigger">Log in</a></li>
+                {% else %}
+                <li ng-show="!username"><a id="signInBtn" href="#signModal" class="modal-trigger" ng-click="navbar_signup_pressed()">Sign in</a></li>
+                {% endif %}
+
+
+                <li ng-show="username"><a href ng-click="navbar_profile_clicked()">Profile</a></li>
+                <!-- <li ng-show="false"><a href="#!">Inbox</a></li> -->
+                <!-- <li ng-show="false"><a href="#!">Notifications</a></li> -->
+                <!-- <li ng-show="false"><a href="#!">Settings</a></li> -->
+                <li class="divider"></li>
+                <li><a href="logout/">Logout</a></li>
+                {% if FUNDING_LOGOS %}
+                <li class="divider"></li>
+                <li><img style="height: 63px;" src="/static/app/images/konstantina/epanek_logo_transparent_x60.png"></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+</div>
+
+
+<!-- Sign Modal Structure -->
+<div id="signModal" class="modal">
+    <div class="modal-content">
+        <!-- ------------------------------------------------------------------------------- -->
+        <!-- ---------------- Sign In Form ------------------------------------------------- -->
+        <!-- ------------------------------------------------------------------------------- -->
+        <div class="row faster" id="signInForm" ng-show="show_sign_in" style="margin-bottom: 0px;">
+            <div class="row" style="padding-left: 11px;">
+                <h4>Sign In</h4>
+            </div>
+            <form>
+                <div class="row col s12" ng-show="login_error_message">
+                    <div class="card-panel red lighten-1 center-align" style="padding:10px">
+                        <span class="white-text" ng-bind="login_error_message"></span>
+                    </div>
+                </div>
+                <div class="row col s12" style="margin: 0px; padding: 0px;">
+                    <div class="input-field col s12">
+                        <input id="signInUsername" type="text" class="validate" ng-model="login_username">
+                        <label for="signInUsername">Username</label>
+                    </div>
+                    <div class="input-field col s12">
+                        <input id="signInPassword" type="password" class="validate" ng-model="login_password">
+                        <label for="signInPassword">Password</label>
+                    </div>
+                    <p style="padding-left: 11px;">
+                        <label>
+                            <input type="checkbox" />
+                            <span>Remember me</span>
+                        </label>
+                    </p>
+                </div>
+                <div class="row col s12" style="margin-bottom: 0px;">
+                    <button id="signinbtn" class="btn waves-effect waves-light" name="action" ng-click="login_login_pressed()">Sign in</button> <!-- modal-close-->
+                    <p style="margin: 0px;">
+                        <small class="form-text text-muted">
+                            <a ng-click="signup_forgot_password_clicked()">Forgot Password?</a>
+                        </small>
+                    </p>
+                </div>
+                <!-- Forgot password form -->
+                <div class="row col s12" style="margin: 0px; padding: 0px;">
+                    <div class="col s12" ng-show="signup_forgot_password_show" style="margin: 0px; padding: 0px;">
+                        <p style="padding-left: 11px; margin-bottom: 0px;">Please enter your email address below. An email will be sent to you to reset your password.</p>
+                        <div class="input-field input-group col s12" style="display: table; margin-bottom: 0px;">
+                            <input id="forgotPasswordEmail" type="text" class="validate" style="display: table-cell;" ng-model="reset_password_email">
+                            <label for="forgotPasswordEmail" class="">Email</label>
+                            <span class="suffix" style="display: table-cell; width:1%;">
+                                <button class="btn-flat waves-effect" ng-click="login_password_reset_email_send_pressed()"><i class="material-icons">send</i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row col s12" style="margin-bottom: 0px;">
+                    <p class="center-align" style="margin-bottom: 0px;">New user? <a id="modalSignUpBtn" ng-click="new_user_sign_up()">Sign up</a></p>
+                </div>
+            </form>
+        </div>
+        <!-- -------------------------------------------------------------------------------- -->
+        <!-- ------------------- Sign Up Form ----------------------------------------------- -->
+        <!-- -------------------------------------------------------------------------------- -->
+        <div class="row faster" id="signUpForm" ng-show="show_sign_up" style="margin-bottom: 0px;">
+            <div class="row" style="padding-left: 11px;">
+                <h4>Sign Up</h4>
+            </div>
+            <div class="row col s12" ng-show="signup_error_message">
+                <div class="card-panel red lighten-1 center-align" style="padding:10px">
+                    <span class="white-text" ng-bind="signup_error_message"></span>
+                </div>
+            </div>
+            <form>
+                <div class="row">
+                    <div class="input-field col s12 m6 grid-s12-m6-l6">
+                        <input id="signUpUsername" type="text" class="validate" ng-model="signup_username">
+                        <label for="signUpUsername">Username</label>
+                    </div>
+                    <div class="input-field col s12 m6 grid-s12-m6-l6">
+                        <input id="signUpEmail" type="email" class="validate" ng-model="signup_email">
+                        <label for="signUpEmail">Email</label>
+                    </div>
+                    <div class="input-field col s12 m6 grid-s12-m6-l6">
+                        <input id="signUpPassword" type="password" class="validate" ng-model="signup_password">
+                        <label for="signUpPassword">Password</label>
+                    </div>
+                    <div class="input-field col s12 m6 grid-s12-m6-l6">
+                        <input id="signUpConfirmPassword" type="password" class="validate" ng-model="signup_confirm_password">
+                        <label for="signUpConfirmPassword">Confirm Password</label>
+                    </div>
+                </div>
+                <div class="row col s12" style="margin-bottom: 0px;">
+                    <button class="btn waves-effect waves-light" ng-click="signup_signup_pressed()">Sign up</button> <!-- modal-close -->
+                    <div ng-show="false">
+                    <p>
+                        <small class="form-text text-muted">
+                            By clicking Sign Up, you agree to our <a href="#">Terms</a>
+                            and that you
+                            have read our <a href="#">Data Use Policy</a>, including our <a href="#">Cookie Use</a>
+                        </small>
+                    </p>
+                    </div>
+                    <p class="center-align" style="margin-bottom: 0px;">Already a member? <a id="modalSignInBtn" ng-click="new_user_sign_in()">Sign in</a></p>
+                </div>
+            </form>
+        </div>
+        <!-- ----------------->
+        <!-- RESET PASSWORD -->
+        <!-------------------->
+        <div class="row faster" id="resetPasswordForm" ng-show="show_reset_password" style="margin-bottom: 0px;">
+            <div class="row" style="padding-left: 11px;">
+                <h4>Reset your password</h4>
+            </div>
+            <form>
+                <div class="row">
+                    <div class="input-field col s12 m6 grid-s12-m6-l6">
+                        <input id="resetsignUpUsername" type="text" class="validate" ng-model="reset_signup_username" ng-disabled="true">
+                        <label for="resetsignUpUsername">Username</label>
+                    </div>
+                    <div class="input-field col s12 m6 grid-s12-m6-l6">
+                        <input id="resetsignUpEmail" type="email" class="validate" ng-model="reset_signup_email" ng-disabled="true">
+                        <label for="resetsignUpEmail">Email</label>
+                    </div>
+                    <div class="input-field col s12 m6 grid-s12-m6-l6">
+                        <input id="resetsignUpPassword" type="password" class="validate" ng-model="reset_signup_password">
+                        <label for="resetsignUpPassword">Password</label>
+                    </div>
+                    <div class="input-field col s12 m6 grid-s12-m6-l6">
+                        <input id="resetsignUpConfirmPassword" type="password" class="validate" ng-model="reset_signup_confirm_password">
+                        <label for="resetsignUpConfirmPassword">Confirm Password</label>
+                    </div>
+                </div>
+                <div class="row col s12" style="margin-bottom: 0px;">
+                    <button class="btn waves-effect waves-light" ng-click="password_reset_change_pressed()">Reset</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

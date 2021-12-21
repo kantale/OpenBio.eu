@@ -1,0 +1,8 @@
+apiVersion: v2
+name: openbio
+description: OpenBio is an open collaborative scientific environment
+type: application
+version: 0.0.0
+kubeVersion: ">= 1.15.0"
+sources:
+- https://github.com/kantale/OpenBio.eu

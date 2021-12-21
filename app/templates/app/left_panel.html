@@ -1,0 +1,464 @@
+<!-- Modal Structure -->
+<!--
+<div id="warningModal" class="modal">
+    <div class="modal-content">
+        <h4>Warning</h4>
+        <p>
+            <span ng-bind="modal_message"></span>
+            Are you sure you want to continue?
+        </p>
+    </div>
+    <div class="modal-footer">
+        <a href class="waves-effect waves-red btn-flat" ng-click="tools_search_jstree_modal_editable(false)">No</a>
+        <a href class="waves-effect waves-green btn-flat" ng-click="tools_search_jstree_modal_editable(true)">Yes</a>
+    </div>
+</div>
+-->
+
+<!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+<!-- --------------------------------------------------------- Left Panel ---------------------------------------------------------------------------- -->
+<!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+<div class="leftPanel">
+    <div id="leftPanelProgress" class="progress" style="margin-top:1px; display: none;">
+        <div class="indeterminate"></div>
+    </div>
+    <!-- <a id="preloaderBtn" class="waves-effect waves-light btn">Toggle Preloader</a> -->
+    <div style="margin: 20px;">
+        <!-- --------------------------------------------------------------------------------------- -->
+        <!-- ------------------------------- Search Input ------------------------------------------ -->
+        <!-- --------------------------------------------------------------------------------------- -->
+        <div class="row">
+            <form class="col s12">
+                <div class="center-align">
+                    <div class="input-field col s12" style="margin-bottom:0px">
+                        <i class="material-icons prefix">search</i>
+                        <input id="leftPanelSearch" type="text" class="validate" ng-model="main_search"
+                            ng-change="main_search_changed()">
+                        <label for="leftPanelSearch">Search</label>
+                    </div>
+                </div>
+            </form>
+
+            <div class="right-align" ng-show="false">
+                <a id="searchFiltersBtn" class="teal-text text-lighten-2 btn-flat"><i class="material-icons"
+                        style="padding-bottom: 3px;">keyboard_arrow_right</i>Advanced search</a>
+            </div>
+            <ul id="searchFiltersCollapsible" class="collapsible hidden"
+                style="border:none; box-shadow: none; margin-top:0px" ng-show="false">
+                <li>
+                    <div class="collapsible-header hide" style="padding:0px;"></div>
+                    <div id="searchFiltersCollapsibleBody" class="collapsible-body">
+                        <form class="col s12">
+                            <div class="row">
+                                <div class="left-align" style="margin-left:15px">
+                                    <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
+                                        <label>
+                                            <input type="checkbox" />
+                                            <span>Tool</span>
+                                        </label>
+                                    </p>
+                                    <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
+                                        <label>
+                                            <input type="checkbox" />
+                                            <span>Workflow</span>
+                                        </label>
+                                    </p>
+                                    <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
+                                        <label>
+                                            <input type="checkbox" />
+                                            <span>Report</span>
+                                        </label>
+                                    </p>
+                                    <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
+                                        <label>
+                                            <input type="checkbox" />
+                                            <span>Reference</span>
+                                        </label>
+                                    </p>
+                                    <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
+                                        <label>
+                                            <input type="checkbox" />
+                                            <span>User</span>
+                                        </label>
+                                    </p>
+                                    <p class="col s6 m4 l2 grid-s6-m4-l2" style="margin-bottom:0px">
+                                        <label>
+                                            <input type="checkbox" />
+                                            <span>Q&A</span>
+                                        </label>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="input-field col s12 m4 grid-s12-m4-l4">
+                                    <input id="searchName" type="text">
+                                    <label for="searchName">Name</label>
+                                </div>
+                                <div class="input-field col s12 m4 grid-s12-m4-l4">
+                                    <input id="searchVersion" type="text">
+                                    <label for="searchVersion">Version</label>
+                                </div>
+                                <div class="input-field col s12 m4 grid-s12-m4-l4">
+                                    <input id="searchEdit" type="text">
+                                    <label for="searchEdit">Edit</label>
+                                </div>
+                                <div class="input-field col s12 m6 grid-s12-m6-l6">
+                                    <input id="searchContainTool" type="text">
+                                    <label for="searchContainTool">Contain Tool</label>
+                                </div>
+                                <div class="input-field col s12 m6 grid-s12-m6-l6">
+                                    <input id="searchCreatedBy" type="text">
+                                    <label for="searchCreatedBy">Created By</label>
+                                </div>
+                                <div class="input-field col s12 m6 grid-s12-m6-l6">
+                                    <input id="searchDateStart" type="text" class="datepicker">
+                                    <label for="searchDateStart">Created from</label>
+                                </div>
+                                <div class="input-field col s12 m6 grid-s12-m6-l6">
+                                    <input id="searchDateEnd" type="text" class="datepicker">
+                                    <label for="searchDateEnd">Created to</label>
+                                </div>
+                                <div class="input-field col s12 m12 grid-s12-m12-l12">
+                                    <div id="searchChips" class="input-field chips left-align" style="margin:0px">
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </li>
+            </ul>
+
+        </div>
+
+        <ul id="searchResultsCollapsible" class="collapsible expandable">
+            <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+            <!-- ------------------------------------------------ Tools / Data Left Panel ------------------------------------------------------------------------ -->
+            <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+            <li id="toolsData">
+                <div class="collapsible-header customCollapsibleHeader">
+                    <i class="material-icons arrow left">keyboard_arrow_right</i>
+                    <i class="material-icons left">settings</i>
+                    <span class="left" style="margin-right: 10px;">Tools/Data</span>
+                    <span class="new badge" data-badge-caption="found" ng-bind="tools_search_tools_number"
+                        ng-show="tools_search_tools_number >= 0" style="margin-left: 5px;"></span>
+                    <a id="toolsDataPlusBtn" class="waves-effect btn green plusBtn right tooltipped"
+                        data-position="left" data-tooltip="Add a new Tool or Dataset" ng-show="!tools_info_editable"
+                        ng-click="tools_plus_button_clicked(true)">
+                        <i class="material-icons plusIcon">add</i></a>
+                    <a id="toolsDataUnsavedBtn" class="waves-effect waves-light btn red lighten-2 right unsavedBtn"
+                        ng-show="tools_info_editable" ng-click="tools_plus_button_clicked(false)">UNSAVED</a>
+                </div>
+                <div class="collapsible-body">
+                    <!--
+                    <div class="row">
+                        <form class="col s12">
+                            <div class="row">
+                                <div class="input-field col s12 m4 grid-s12-m4-l4">
+                                    <input id="toolsDataName" type="text" class="validate" ng-model="tools_search_name"
+                                        ng-change="tools_search_input_changed()">
+                                    <label for="toolsDataName">Name</label>
+                                </div>
+                                <div class="input-field col s12 m4 grid-s12-m4-l4">
+                                    <input id="toolsDataVersion" type="text" class="validate"
+                                        ng-model="tools_search_version" ng-change="tools_search_input_changed()">
+                                    <label for="toolsDataVersion">Version</label>
+                                </div>
+                                <div class="input-field col s12 m4 grid-s12-m4-l4">
+                                    <input id="toolsDataEdit" type="text" class="validate" ng-model="tools_search_edit"
+                                        ng-change="tools_search_input_changed()">
+                                    <label for="toolsDataEdit">Edit</label>
+                                </div>
+                            </div>
+                        </form>
+                        <a href id="createToolDataBtn" class="waves-effect waves-light btn"
+                            ng-click="tools_search_create_new_pressed()"
+                            ng-show="(!tools_info_editable) && (!tools_search_warning)">create</a>
+                        <a href id="cancelToolDataBtn" class="waves-effect waves-light btn"
+                            ng-show="tools_info_editable"
+                            ng-click="tools_search_raise_edit_are_you_sure_modal('TOOLS_CANCEL_BUTTON')">cancel</a>
+                    </div>
+                    <div class="row col s12" ng-show="tools_search_warning">
+                        <div class="card-panel orange lighten-1 center-align" style="padding:10px">
+                            <span class="white-text" ng-bind="tools_search_warning"></span>
+                        </div>
+                    </div>
+                    -->
+
+                    <div class="row left-align">
+                        <div class="col">
+                            <div id='tools_search_jstree_id' js-tree="tools_search_jstree_config" should-apply="tools_search_jstree_config_apply()"
+                                ng-model="tools_search_jstree_model" tree="tools_search_jstree"
+                                tree-events="select_node:tools_search_jstree_select_node"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </li>
+            <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+            <!-- ---------------------------------------------------- Workflows Left Panel ----------------------------------------------------------------------- -->
+            <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+            <li id="workflows">
+                <div class="collapsible-header customCollapsibleHeader">
+                    <i class="material-icons arrow left">keyboard_arrow_right</i>
+                    <i class="material-icons left">device_hub</i>
+                    <span class="left" style="margin-right: 10px;">Workflows</span>
+                    <span class="new badge" data-badge-caption="found" ng-bind="workflows_search_tools_number"
+                        ng-show="workflows_search_tools_number >= 0" style="margin-left: 5px;"></span>
+                    <a id="workflowsPlusBtn" class="waves-effect btn green plusBtn right tooltipped"
+                        data-position="left" data-tooltip="Create Workflow" 
+                        ng-show="!workflows_info_editable" 
+                        ng-click="workflows_plus_button_clicked(true)">
+                        <i class="material-icons plusIcon">add</i></a>
+                    <a id="workflowsUnsavedBtn"
+                        ng-show="workflows_info_editable"
+                        ng-click="workflows_plus_button_clicked(false)"
+                        class="waves-effect waves-light btn red lighten-2 right unsavedBtn">UNSAVED</a>
+                </div>
+                <div class="collapsible-body">
+                    <div class="row">
+                        <!-- 
+                        <form class="col s12">
+                            <div class="row">
+                                <div class="input-field col s12 m6 grid-s12-m6-l6">
+                                    <input id="workflowsName" type="text" class="validate"
+                                        ng-model="workflows_search_name" ng-change="workflows_search_input_changed()">
+                                    <label for="workflowsName">Name</label>
+                                </div>
+                                <div class="input-field col s12 m6 grid-s12-m6-l6">
+                                    <input id="workflowsEdit" type="text" class="validate"
+                                        ng-model="workflows_search_edit" ng-change="workflows_search_input_changed()">
+                                    <label for="workflowsEdit">Edit</label>
+                                </div>
+                            </div>
+                        </form>
+                        -->
+                        <!-- Create / Cancel buttons in Workflows 
+                        <a href id="enableEditWorkflowBtn" class="waves-effect waves-light btn"
+                            ng-click="workflows_search_create_new_pressed()"
+                            ng-show="(!workflows_info_editable) && (!workflows_search_warning)">Create</a>
+                        <a href id="disableEditWorkflowBtn" class="waves-effect waves-light btn"
+                            ng-show="workflows_info_editable"
+                            ng-click="tools_search_raise_edit_are_you_sure_modal('WORKFLOWS_CANCEL_BUTTON')">Cancel</a>
+                         TOOLS!!! FIXME -->
+                    </div>
+
+                    <div class="row left-align">
+                        <div class="col">
+                            <div js-tree="workflows_search_jstree_config"
+                                should-apply="tools_search_jstree_config_apply()"
+                                ng-model="workflows_search_jstree_model" tree="tools_search_jstree"
+                                tree-events="select_node:workflows_search_jstree_select_node"></div>
+                        </div>
+                    </div>
+
+
+
+
+                </div>
+            </li>
+            <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+            <!-- -------------------------------------------------------- Reports Left Panel ----------------------------------------------------------------------- -->
+            <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+            <li id="reports">
+                <div class="collapsible-header customCollapsibleHeader">
+                    <i class="material-icons arrow left">keyboard_arrow_right</i>
+                    <i class="material-icons left">description</i>
+                    <span class="left" style="margin-right: 10px;">Reports</span>
+                    <span class="new badge" data-badge-caption="found" style="margin-left: 5px;"
+                        ng-bind="main_search_reports_number" ng-show="main_search_reports_number >= 0"></span>
+                </div>
+                <div class="collapsible-body">
+                    <!--
+                    <div class="row">
+                        <form class="col s12">
+                            <div class="input-field col s12">
+                                <i class="material-icons prefix">search</i>
+                                <input id="reportsSearch" type="text" class="validate">
+                                <label for="reportsSearch">Search</label>
+                            </div>
+                        </form>
+                    </div>
+                    -->
+                    <div class="row left-align">
+                        <div class="col">
+                            <div js-tree="reports_search_jstree_config"
+                                should-apply="reports_search_jstree_config_apply()"
+                                ng-model="reports_search_jstree_model" tree="reports_search_jstree"
+                                tree-events="select_node:reports_search_jstree_select_node"></div>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+            <!-- -------------------------------------------------------- References Left Panel ----------------------------------------------------------------------- -->
+            <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+            <li id="references">
+                <div class="collapsible-header customCollapsibleHeader">
+                    <i class="material-icons arrow left">keyboard_arrow_right</i>
+                    <i class="material-icons left">link</i>
+                    <span class="left" style="margin-right: 10px;">References</span>
+                    <span class="new badge" data-badge-caption="found" style="margin-left: 5px;"
+                        ng-bind="main_search_references_number" ng-show="main_search_references_number >= 0"></span>
+                    <a id="referencesPlusBtn" class="waves-effect btn green plusBtn right tooltipped"
+                        data-position="left" data-tooltip="Create Reference" ng-show="!references_info_editable"><i class="material-icons plusIcon"
+                            ng-click="references_plus_button_clicked(true)">add</i></a>
+                    <a id="referencesUnsavedBtn"
+                        ng-show="references_info_editable"
+                        ng-click="references_plus_button_clicked(false)"
+                        class="waves-effect waves-light btn red lighten-2 right unsavedBtn">UNSAVED</a>
+                </div>
+                <div class="collapsible-body">
+                    <!--
+                    <div class="row">
+                        <form class="col s12">
+                            <div class="input-field col s12">
+                                <i class="material-icons prefix">search</i>
+                                <input id="referencesSearch" type="text" class="validate">
+                                <label for="referencesSearch">Search</label>
+                            </div>
+                        </form>
+                    </div>
+                    -->
+                    <div class="row left-align">
+                        <div class="col">
+                            <div js-tree="references_search_jstree_config"
+                                should-apply="references_search_jstree_config_apply()"
+                                ng-model="references_search_jstree_model" tree="references_search_jstree"
+                                tree-events="select_node:references_search_jstree_select_node"></div>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+            <!-- -------------------------------------------------------- Users Left Panel ----------------------------------------------------------------------- -->
+            <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+            <li id="users">
+                <div class="collapsible-header customCollapsibleHeader">
+                    <i class="material-icons arrow left">keyboard_arrow_right</i>
+                    <i class="material-icons left">people</i>
+                    <span class="left" style="margin-right: 10px;">Users</span>
+                    <span class="new badge" data-badge-caption="found" style="margin-left: 5px;"
+                        ng-bind="main_search_users_number" ng-show="main_search_users_number >= 0"></span>
+                </div>
+                <div class="collapsible-body">
+                    <!-- 
+                    <div class="row">
+                        <form class="col s12">
+                            <div class="input-field col s12">
+                                <i class="material-icons prefix">search</i>
+                                <input id="usersSearch" type="text" class="validate">
+                                <label for="usersSearch">Search</label>
+                            </div>
+                        </form>
+                    </div>
+                    -->
+                    <div class="row left-align">
+                        <div class="col">
+                            <div js-tree="users_search_jstree_config" should-apply="users_search_jstree_config_apply()"
+                                ng-model="users_search_jstree_model" tree="users_search_jstree"
+                                tree-events="select_node:users_search_jstree_select_node"></div>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+            <!-- ---------------------------------------------------------- Q&A Left Panel ----------------------------------------------------------------------- -->
+            <!-- ------------------------------------------------------------------------------------------------------------------------------------------------- -->
+            <li id="qa">
+                <div class="collapsible-header customCollapsibleHeader">
+                    <i class="material-icons arrow left">keyboard_arrow_right</i>
+                    <i class="material-icons left">forum</i>
+                    <span class="left" style="margin-right: 10px;">Q & A</span>
+                    <span class="new badge" data-badge-caption="found" style="margin-left: 5px;"
+                        ng-bind="main_search_qa_number" ng-show="main_search_qa_number >= 0"></span>
+                    <a id="qaPlusBtn" class="waves-effect btn green plusBtn right tooltipped" data-position="left"
+                        data-tooltip="Create Question" ng-click="qa_plus_button_clicked(true)" ng-show="!qa_info_editable"><i
+                            class="material-icons plusIcon">add</i></a>
+                    <a id="qaUnsavedBtn"
+                        ng-show="qa_info_editable"
+                        ng-click="qa_plus_button_clicked(false)"
+                        class="waves-effect waves-light btn red lighten-2 right unsavedBtn">UNSAVED</a>
+                </div>
+                <div class="collapsible-body">
+                    <!--
+                    <div class="row">
+                        <form class="col s12">
+                            <div class="input-field col s12">
+                                <i class="material-icons prefix">search</i>
+                                <input id="qaSearch" type="text" class="validate">
+                                <label for="qaSearch">Search</label>
+                            </div>
+                        </form>
+                    </div>
+                    -->
+
+                    <!-- Q & A TEMPLATE START -->
+                    <div ng-show="false">
+                        <div class="row left-align">
+                            <div class="col s12">
+                                <span class="new badge grey lighten-2 black-text" data-badge-caption="votes"
+                                    style="float:left; margin-right:4px">0</span>
+                                <span class="new badge green" data-badge-caption="answers"
+                                    style="float:left; margin-right:4px">0</span>
+                                <span class="new badge grey lighten-2 black-text" data-badge-caption="views"
+                                    style="float:left; margin-right:4px">0</span>
+                                <small style="float:right;">active: 22 days ago</small>
+                            </div>
+                            <div class="col s12">
+                                <h6 style="margin-top:6px; margin-bottom:6px;">Question sakdjaldjaldjdlakdjslakslka
+                                    skldjsdkajdlsjkd askdjaldjals m</h6>
+                            </div>
+                            <div class="col s12">
+                                <span class="new badge blue lighten-1" data-badge-caption=""
+                                    style="float:left; margin-right:4px">tag1</span>
+                                <span class="new badge blue lighten-1" data-badge-caption=""
+                                    style="float:left; margin-right:4px">tag2</span>
+                                <span class="new badge blue lighten-1" data-badge-caption=""
+                                    style="float:left; margin-right:4px">tag3</span>
+                                <span class="new badge blue lighten-1" data-badge-caption=""
+                                    style="float:left; margin-right:4px">tag4</span>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row left-align">
+                            <div class="col s12">
+                                <span class="new badge grey lighten-2 black-text" data-badge-caption="votes"
+                                    style="float:left; margin-right:4px">0</span>
+                                <span class="new badge green" data-badge-caption="answers"
+                                    style="float:left; margin-right:4px">0</span>
+                                <span class="new badge grey lighten-2 black-text" data-badge-caption="views"
+                                    style="float:left; margin-right:4px">0</span>
+                                <small style="float:right;">active: 5 Feb</small>
+                            </div>
+                            <div class="col s12">
+                                <h6 style="margin-top:6px; margin-bottom:6px;">Question sakdjaldjaldjdlakdjslakslka
+                                    skldjsdkajdlsjkd askdjaldjals m</h6>
+                            </div>
+                            <div class="col s12">
+                                <span class="new badge blue lighten-1" data-badge-caption=""
+                                    style="float:left; margin-right:4px">tag1</span>
+                                <span class="new badge blue lighten-1" data-badge-caption=""
+                                    style="float:left; margin-right:4px">tag2</span>
+                                <span class="new badge blue lighten-1" data-badge-caption=""
+                                    style="float:left; margin-right:4px">tag3</span>
+                                <span class="new badge blue lighten-1" data-badge-caption=""
+                                    style="float:left; margin-right:4px">tag4</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Q & A TEMPLATE END -->
+
+
+                    <div class="row left-align">
+                        <div class="col">
+                            <div js-tree="qa_search_jstree_config" should-apply="qa_search_jstree_config_apply()"
+                                ng-model="qa_search_jstree_model" tree="qa_search_jstree"
+                                tree-events="select_node:qa_search_jstree_select_node"></div>
+                        </div>
+                    </div>
+                </div>
+            </li>
+        </ul>
+
+    </div>
+</div>

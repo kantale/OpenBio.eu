@@ -1,0 +1,699 @@
+/* scroll to top */
+
+/* #back2Top {
+    width: 40px;
+    line-height: 40px;
+    overflow: hidden;
+    z-index: 999;
+    display: none;
+    cursor: pointer;
+    -moz-transform: rotate(270deg);
+    -webkit-transform: rotate(270deg);
+    -o-transform: rotate(270deg);
+    -ms-transform: rotate(270deg);
+    transform: rotate(270deg);
+    position: fixed;
+    bottom: 50px;
+    right: 0;
+    background-color: #DDD;
+    color: #555;
+    text-align: center;
+    font-size: 30px;
+    text-decoration: none;
+}
+#back2Top:hover {
+    background-color: #DDF;
+    color: #000;
+} */
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* ----------------------------------------------------------------------------- Splitter --------------------------------------------------------------------------------------- */
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+.splitter-container {
+    color: #222;
+    text-align: center;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+.leftPanel {
+    overflow: auto;
+}
+
+.rightPanel {
+    overflow: auto;
+}
+
+.splitterShadow {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+    -moz-box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+    -webkit-box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+    -o-box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+}
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* ----------------------------------------------------------------------------- Navbar ----------------------------------------------------------------------------------------- */
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+nav {
+    color: black !important;
+}
+
+.brand-logo {
+    left: 5px;
+}
+
+/* Sign up / Sign in Modal */
+
+#signModal {
+    max-width: 600px !important;
+}
+
+.dropdownStyle {
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* ----------------------------------------------------------------------------- Images ----------------------------------------------------------------------------------------- */
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+.imgAvatar {
+    height: 34px;
+    width: 34px;
+    margin: 5px;
+}
+
+.avatarForumReply {
+    height: 25px;
+    width: 25px;
+    margin: 0px;
+    margin-right: 5px;
+}
+
+.avatarForumQuestion {
+    height: 34px;
+    width: 34px;
+    margin: 0px;
+    margin-right: 5px;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* ---------------------------------------------------------------------- Search Filters Collapsible ---------------------------------------------------------------------------- */
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+#searchFiltersCollapsibleBody {
+    border: none;
+    padding-top: 0px;
+    padding-bottom: 0px;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------------ Accordion Collapsible ------------------------------------------------------------------------------- */
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+.customCollapsibleHeader {
+    height: 55px;
+    display: block;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------------- Disabled Collapsible ------------------------------------------------------------------------------- */
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+.collapsible li.disabled .collapsible-body {
+    display: none !important;
+    /*or using id of the app to avoid the use of !important*/
+}
+
+.collapsible li.disabled .collapsible-header {
+    background: rgb(221, 221, 221);
+    cursor: not-allowed;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* -------------------------------------------------------------------- Badge Installation Collapsible -------------------------------------------------------------------------- */
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* ---------------------------------------------------------------------------- Material Icons ---------------------------------------------------------------------------------- */
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* Instead of <script src="/static/app/jquery-3.3.1.min.js"></script> (see also #23) */
+
+@font-face {
+    font-family: 'Material Icons';
+    font-style: normal;
+    font-weight: 400;
+    src: url(/static/app/material-design-icons-3.0.1/iconfont/MaterialIcons-Regular.eot);
+    /* For IE6-8 */
+    src: local('Material Icons'), local('MaterialIcons-Regular'), url(/static/app/material-design-icons-3.0.1/iconfont/MaterialIcons-Regular.woff2) format('woff2'), url(/static/app/material-design-icons-3.0.1/iconfont/MaterialIcons-Regular.woff) format('woff'), url(/static/app/material-design-icons-3.0.1/iconfont/MaterialIcons-Regular.ttf) format('truetype');
+}
+
+.material-icons {
+    font-family: 'Material Icons';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    /* Preferred icon size */
+    display: inline-block;
+    line-height: 1;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
+    /* Support for all WebKit browsers. */
+    -webkit-font-smoothing: antialiased;
+    /* Support for Safari and Chrome. */
+    text-rendering: optimizeLegibility;
+    /* Support for Firefox. */
+    -moz-osx-font-smoothing: grayscale;
+    /* Support for IE. */
+    font-feature-settings: 'liga';
+}
+
+/* END OF #23 resolve */
+
+.material-icons.md-18 {
+    font-size: 18px;
+}
+
+.material-icons.md-24 {
+    font-size: 24px;
+}
+
+.material-icons.md-36 {
+    font-size: 36px;
+}
+
+.material-icons.md-48 {
+    font-size: 48px;
+}
+
+.material-icons.md-red {
+    color: #f44336;
+}
+
+.material-icons.md-red.md-inactive {
+    color: #f44336;
+}
+
+.material-icons {
+    vertical-align: middle;
+}
+
+.jsTreeMaterialIcons {
+    margin-right: 2px !important;
+    padding-top: 3px;
+}
+
+.dropdownIcon {
+    margin-right: 10px !important;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------------------- D3 example ----------------------------------------------------------------------------------- */
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+.line-chart {
+    border: 1px solid lightgray;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------------- Grid for Responsive Panels ------------------------------------------------------------------------- */
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+.gridRow1 {
+    width: 8.33% !important;
+}
+
+.gridRow2 {
+    width: 16.66% !important;
+}
+
+.gridRow3 {
+    width: 25% !important;
+}
+
+.gridRow4 {
+    width: 33.33% !important;
+}
+
+.gridRow5 {
+    width: 41.66% !important;
+}
+
+.gridRow6 {
+    width: 50% !important;
+}
+
+.gridRow7 {
+    width: 58.33% !important;
+}
+
+.gridRow8 {
+    width: 66.66% !important;
+}
+
+.gridRow9 {
+    width: 75% !important;
+}
+
+.gridRow10 {
+    width: 83.33% !important;
+}
+
+.gridRow11 {
+    width: 91.66% !important;
+}
+
+.gridRow12 {
+    width: 100% !important;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* ----------------------------------------------------------------------------- Buttons ---------------------------------------------------------------------------------------- */
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* Button */
+
+.col.s12>.btn {
+    width: 100%;
+}
+
+/* Fixed action button */
+
+.fixed-action-btn {
+    right: auto;
+    left: 23px;
+}
+
+.btnCollapsible {
+    padding: 0px;
+    top: -9px;
+    margin: 0px !important;
+}
+
+.plusBtn {
+    height: 22px;
+    width: 23px;
+    top: 0px;
+    padding-left: 0px;
+}
+
+.plusIcon {
+    margin-top: -15px;
+    margin-left: -3px;
+    margin-right: 0px !important;
+}
+
+.qaReplyBtn {
+    padding: 4px;
+    height: 19px;
+    line-height: 12px;
+}
+
+/* .fixed-action-btn {
+    float: right;
+    position: relative;
+    right: 5px;
+    padding-top: 0px;
+    bottom: 61px;
+} */
+
+.unsavedBtn {
+    padding: 3px;
+    line-height: 1;
+    height: 20px;
+    margin-top: 2px;
+}
+
+#downloadDropdown{
+    width: 160px !important;
+}
+
+.reportUrl {
+    margin-bottom:2px;
+    margin-left: 4px; 
+    padding-left: 4px; 
+    padding-right: 4px;
+}
+
+.reportUrl:hover {
+    background-color: transparent;
+}
+
+.cancelButton {
+    margin-top: -37px; 
+    height: 47px; 
+    right: -10px; 
+    margin-bottom: -2px; 
+    padding-top: 5px;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------------ Pushpin with Scrollspy ------------------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+.scrollspyContent {
+    float: right !important;
+}
+
+/* Class for when element is above threshold */
+
+.pin-top {
+    position: relative;
+}
+
+/* Class for when element is below threshold */
+
+.pin-bottom {
+    position: relative;
+}
+
+/* Class for when element is pinned */
+
+.pinned {
+    position: fixed !important;
+}
+
+.scrollspyMenu a.active {
+    font-weight: 500 !important;
+    padding-left: 14px !important;
+    border-left: 2px solid #ee6e73 !important;
+}
+
+/* Switch colors */
+
+.switch label .lever {
+    background-color: #84c7c1;
+}
+
+.switch label .lever:after {
+    background-color: #26a69a;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------------ Right Panel Title Header ------------------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+.rightPanelTitleCard {
+    margin: 0px !important;
+}
+
+.rightPanelTitleContent {
+    padding: 10px !important;
+}
+
+.rightPanelTitleHeader {
+    margin: 0px !important;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------------------------ Switch ---------------------------------------------------------------------------------- */
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/*
+ * Copyright (c) 2012-2013 Thibaut Courouble
+ * http://www.cssflow.com
+ *
+ * Licensed under the MIT License:
+ * http://www.opensource.org/licenses/mit-license.php
+ */
+
+.switch-custom {
+    position: relative;
+    margin: 0px;
+    height: 26px;
+    width: 84px;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 2px;
+    -webkit-box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0.2);
+}
+
+.switch-label {
+    position: relative;
+    z-index: 2;
+    float: left;
+    width: 40px;
+    line-height: 26px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.35);
+    text-align: center;
+    cursor: pointer;
+}
+
+.switch-label:active {
+    color: #ffffff;
+    /* font-weight: bold; */
+}
+
+.switch-label-off {
+    padding-left: 2px;
+    color: #ffffff;
+}
+
+.switch-label-on {
+    padding-right: 2px;
+    color: #ffffff;
+}
+
+/*
+   * Note: using adjacent or general sibling selectors combined with
+   *       pseudo classes doesn't work in Safari 5.0 and Chrome 12.
+   *       See this article for more info and a potential fix:
+   *       http://css-tricks.com/webkit-sibling-bug/
+   */
+
+.switch-input {
+    display: none;
+}
+
+.switch-input:checked+.switch-label {
+    color: #ffffff;
+    font-weight: bold;
+    -webkit-transition: 0.15s ease-out;
+    -moz-transition: 0.15s ease-out;
+    -o-transition: 0.15s ease-out;
+    transition: 0.15s ease-out;
+}
+
+.switch-input:checked+.switch-label-on~.switch-selection {
+    left: 42px;
+    /* Note: left: 50% doesn't transition in WebKit */
+}
+
+.switch-selection {
+    display: block;
+    position: absolute;
+    z-index: 1;
+    top: 2px;
+    left: 2px;
+    width: 40px;
+    height: 22px;
+    background: #26a69a;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+    -webkit-transition: left 0.15s ease-out;
+    -moz-transition: left 0.15s ease-out;
+    -o-transition: left 0.15s ease-out;
+    transition: left 0.15s ease-out;
+}
+
+.switch-custom>.switch-input:disabled~.switch-selection {
+    background: #949494;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------------------------ Documentation --------------------------------------------------------------------------- */
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+.documentationCodeTag {
+    border: 1px solid black;
+    display: block;
+    padding: 6px;
+    margin-top: 5px;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* --------------------------------------------------------------------- Upvote and Downvote (in q&a) --------------------------------------------------------------------------- */
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+.upDownVoteBox {
+    display: inline;
+    background: transparent;
+    padding: 5px;
+    border-radius: 5px;
+    text-align: center;
+    line-height: 1.5em;
+    margin-top: -5px; 
+    margin-left: 5px;
+}
+
+.upvoteDiv {
+    display: inline-block;
+    color: #dadada;
+}
+
+.upvoteDiv:hover {
+    color: #98ce9b;
+    cursor: default;
+}
+
+.upvoteDiv.active {
+    color: #55bd5a !important;
+}
+
+.downvoteDiv {
+    display: inline-block;
+    color: #dadada;
+}
+
+.downvoteDiv:hover {
+    color: rgb(247, 154, 152);
+    cursor: default;
+}
+
+.downvoteDiv.active {
+    color: #F0625F !important;
+}
+
+.upDownVoteSpan {
+    display: inline-block;
+}
+
+/* In the title of tools and workflows */
+.upDownVoteBoxTitle {
+    background: transparent;
+    padding: 5px;
+    text-align: center;
+    float: left; 
+    margin-left: 0px; 
+    margin-right: 5px;
+}
+
+.upDownvoteDivTitle {
+    display: block;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* ----------------------------------------------------------------------------- Draft span ------------------------------------------------------------------------------------- */
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+.draft {
+    float: right; 
+    color: #fff;
+    padding: 6px;
+    border-radius: 2px;
+    font-size: 17px;
+    line-height: 15px;
+    letter-spacing: .5px;
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2);
+}
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* --------------------------------------------------------------------------- Delete Modal ------------------------------------------------------------------------------------- */
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+#deleteModal { 
+    max-width: 35%;
+    max-height: 25%;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* ---------------------------------------------------------------------------------- Q & A ------------------------------------------------------------------------------------- */
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+.qaCollectionItem{
+    border: 1px solid #e0e0e0;
+    border-bottom: 1px solid #e0e0e0 !important;
+}
+
+.writeTabContent.active, .previewTabContent.active {
+    display: block;
+}
+
+.writeTabContent, .previewTabContent {
+    display: none;
+}
+
+.qaTabs {
+    margin-bottom: 0px; 
+    margin-top:15px; 
+    border: 1px solid #9e9e9e; 
+    border-radius: 3px;
+}
+
+/* Fix on sass */
+.tabs .tab a {
+    /* color: rgba(38, 166, 154, 0.6); */
+    color: #ababab;
+}
+  
+.tabs .tab a:hover {
+    color:#26a69a;
+}
+
+.tabs .tab a.active {
+    color:#26a69a;
+    /* background-color: rgba(38, 166, 154, 0.08); */
+}
+  
+.tabs .indicator {
+    background-color:#26a69a;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* ---------------------------------------------------------------------------------- Text -------------------------------------------------------------------------------------- */
+
+/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+.font13 {
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.cursorPointer {
+    cursor: pointer;
+}
