@@ -1750,7 +1750,9 @@ ENDOFFILE
                                         n_total_steps = n_total_steps*(v2-v1)
                                         if n_total_steps > 10**6:
                                             raise OBC_Executor_Exception('Error: Too many steps in ranged parallel invocation')
-                                    except:
+                                    except OBC_Executor_Exception:
+                                        raise
+                                    except ValueError:
                                         raise OBC_Executor_Exception('Invalid range specification: {}'.format(k))
                                     last_assignment['content'][i][j] = list(str(k) for k in range(v1, v2))
                             temp = list(product(*last_assignment['content'][i]))
