@@ -16,6 +16,26 @@ import zipfile
 
 import networkx as nx
 
+from itertools import chain
+
+def product(*args, repeat=1):
+    # This code adapted from: https://docs.python.org/3/library/itertools.html#itertools.product
+    # Copyright (C) 2001-2021 , Python Software Foundation
+    # Licensed under the Zero Clause BSD License
+    # itertools.product with adaptations so that it doesn't consider strings as iterables
+    # product('ABCD', 'xy') --> Ax Ay Bx By Cx Cy Dx Dy
+    # product(range(2), repeat=3) --> 000 001 010 011 100 101 110 111
+    pools = [tuple(pool) if not isinstance(pool, str) else pool for pool in args] * repeat
+    result = [[]]
+    for pool in pools:
+        if not isinstance(pool, str):
+            result = [x+[y] for x in result for y in pool]
+        else:
+            result = [x+[pool] for x in result]
+    for prod in result:
+        yield tuple(prod)
+
+
 try:
     import zlib
     compression = zipfile.ZIP_DEFLATED
@@ -49,13 +69,6 @@ def detect_circles(graph, start, end):
             fringe.append((next_state, path+[next_state]))
 
 bash_patterns = {
-    'check_envsanity': r'''
-if [ -z ${OBC_TOOL_PATH+x} ] || [ -z ${OBC_DATA_PATH+x} ] || [ -z ${OBC_WORK_PATH+x} ]; then
-    echo "Environment is not sane. Please make sure the" 
-    echo "OBC_TOOL_PATH, OBC_DATA_PATH and OBC_WORK_PATH variables have been set."
-    exit 1
-fi
-    ''',
     'parse_json' : r'''
 function obc_parse_json()
 {
@@ -1725,6 +1738,21 @@ ENDOFFILE
                     step_to_call = None
 
                 if this_is_a_parallel_call_1:
+                    # Check if any line contains ranges
+                    has_range = any(map(lambda x: ':' in x, chain(*last_assignment['content'])))
+                    if has_range:
+                        for i, value in enumerate(last_assignment['content']):
+                            for j, k in enumerate(value):
+                                if ':' in k:
+                                    try:
+                                        v1, v2 = list(map(int, k.split(':')))
+                                    except:
+                                        OBC_Executor_Exception('Invalid range specification: {}'.format(k))
+                                    last_assignment['content'][i][j] = list(str(k) for k in range(v1, v2))
+                            temp = list(product(*last_assignment['content'][i]))
+                            last_assignment['content'].pop(i)
+                            last_assignment['content'][i:i] = temp
+
                     # This is a parallel call. Iterate in all variable assignments in CSV
                     header = last_assignment['header']
                     for values in last_assignment['content']:
@@ -2343,7 +2371,6 @@ class LocalExecutor(BaseExecutor):
             f.write(self.workflow.get_token_set_bash_commands())
 
             #Insert essential functions
-            f.write(bash_patterns['check_envsanity'])
             f.write(bash_patterns['parse_json'])
             f.write(bash_patterns['update_server_status'])
             f.write(bash_patterns['base64_decode'])
