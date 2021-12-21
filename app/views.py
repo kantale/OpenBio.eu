@@ -3684,9 +3684,15 @@ def upload(request, **kwargs):
         if not response_decoded['success']:
             return response_decoded['error_message']
 
-        tools_added.append('/'.join([
-            tool_request['tools_search_name'], tool_request['tools_search_version'], str(response_decoded['edit']),
-        ]))
+        #tools_added.append('/'.join([
+        #    tool_request['tools_search_name'], tool_request['tools_search_version'], str(response_decoded['edit']),
+        #]))
+
+        tools_added.append(Tool.objects.get(
+            name=tool_request['tools_search_name'],
+            version=tool_request['tools_search_version'],
+            edit=int(response_decoded['edit']),
+        ))
         return response_decoded['edit']
 
     workflows_added = []
@@ -3700,9 +3706,14 @@ def upload(request, **kwargs):
         if not response_decoded['success']:
             return response_decoded['error_message']
 
-        workflows_added.append('/'.join([
-            workflow_request['workflow_info_name'], str(response_decoded['edit']),
-        ]))
+        #workflows_added.append('/'.join([
+        #    workflow_request['workflow_info_name'], str(response_decoded['edit']),
+        #]))
+
+        workflows_added.append(Workflow.objects.get(
+            name =  workflow_request['workflow_info_name'],
+            edit= int(response_decoded['edit']),
+        ))
         return response_decoded['edit']
 
 
@@ -3715,16 +3726,25 @@ def upload(request, **kwargs):
         )
     except OBC_Executor_Exception as e:
         #raise e 
-        return fail(str(e))
+        error_message = str(e)
     except Exception as e:
         #raise e
-        return fail(str(e))
+        error_message = str(e)
 
     if error_message:
+
+        # Roll back
+        for w in reversed(workflows_added):
+            w.comment.delete()
+            w.delete()
+        for t in reversed(tools_added):
+            t.comment.delete()
+            t.delete()
+
         return fail(error_message)
 
     ret = {
-        'message': f'Workflow uploaded correctly. Created {len(tools_added)} tools: {", ".join(tools_added)} and {len(workflows_added)} workflows: {", ".join(workflows_added)}.',
+        'message': f'Workflow uploaded correctly. Created {len(tools_added)} tools: {", ".join(map(str, tools_added))} and {len(workflows_added)} workflows: {", ".join(map(str, workflows_added))}.',
     }
 
     return success(ret)
