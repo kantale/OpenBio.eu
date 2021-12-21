@@ -1741,11 +1741,15 @@ ENDOFFILE
                     # Check if any line contains ranges
                     has_range = any(map(lambda x: ':' in x, chain(*last_assignment['content'])))
                     if has_range:
+                        n_total_steps = 1
                         for i, value in enumerate(last_assignment['content']):
                             for j, k in enumerate(value):
                                 if ':' in k:
                                     try:
                                         v1, v2 = list(map(int, k.split(':')))
+                                        n_total_steps = n_total_steps*(v2-v1)
+                                        if n_total_steps > 10**6:
+                                            raise OBC_Executor_Exception('Error: Too many steps in ranged parallel invocation')
                                     except:
                                         raise OBC_Executor_Exception('Invalid range specification: {}'.format(k))
                                     last_assignment['content'][i][j] = list(str(k) for k in range(v1, v2))
