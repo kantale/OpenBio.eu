@@ -3741,10 +3741,16 @@ def upload(request, **kwargs):
             t.comment.delete()
             t.delete()
 
-        return fail(error_message)
+        return fail(f'Could not upload Workflow. Reason: {error_message}')
+
+    success_message = 'Workflow uploaded correctly. '
+    if tools_added:
+        success_message += f'Created {len(tools_added)} tools: {", ".join(map(str, tools_added))}. '
+    if workflows_added:
+        success_message += f'Created {len(workflows_added)} workflows: {", ".join(map(str, workflows_added))}.'
 
     ret = {
-        'message': f'Workflow uploaded correctly. Created {len(tools_added)} tools: {", ".join(map(str, tools_added))} and {len(workflows_added)} workflows: {", ".join(map(str, workflows_added))}.',
+        'message': success_message,
     }
 
     return success(ret)
