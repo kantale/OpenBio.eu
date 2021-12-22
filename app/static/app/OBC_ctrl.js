@@ -1117,8 +1117,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 }
                 else {
                     // Somehow we need to throw exception here
-                    console.log('Invalid visibility')
-                    console.log(data['visibility']);
+                    //console.log('Invalid visibility')
+                    //console.log(data['visibility']);
+                    $scope.toast('Invalid visibility value', 'error'); //This should never happen
                 }
 
                 //Set chip data
@@ -1558,6 +1559,19 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         $scope.workflow_step_add_update_label = 'Add';
     };
 
+    /*
+     * Workflows --> "arrow up" (upload workflow) --> pressed 
+    */
+    $scope.workflows_upload_button_on_success = function(response) {
+
+        if (response.data['success']) {
+            $scope.toast(response.data['message'], 'success');
+            $scope.all_search_2(); // Update search results
+        }
+        else {
+            $scope.toast(response.data['error_message'], 'error');
+        }
+    };
 
     /*
     * Get a list of dependencies for the current tool
@@ -2281,8 +2295,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                         }
                     }
 
-                    console.log(data['dependencies_jstree']);
-                    console.log($scope.tools_dep_jstree_model);
+                    //console.log(data['dependencies_jstree']);
+                    //console.log($scope.tools_dep_jstree_model);
 
                     //Check if this parent is already in the tree
                     for (var i=0; i<$scope.tools_dep_jstree_model.length; i++) {

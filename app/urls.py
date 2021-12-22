@@ -78,4 +78,6 @@ urlpatterns = [
     path('references_orcid_unclaim_pressed/', views.references_orcid_unclaim_pressed), # Called when ORCID unclaim pressed in reference right panel
     path('profile_delete_access_token/', views.profile_delete_access_token), # Called when delete token is pressed in the profile page
     path('profile_issue_access_token/', views.profile_issue_access_token), # Called to generate a new access token
+    path('upload/', views.upload), # Upload a workflow
+
 ]
