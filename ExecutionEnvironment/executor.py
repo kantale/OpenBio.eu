@@ -26,6 +26,7 @@ import argparse
 
 from collections import defaultdict
 from pprint import pprint 
+from itertools import product
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -2125,7 +2126,7 @@ ENDOFFILE
 
         step_counter = defaultdict(int) # How many times this steps has been yielded?
 
-        def break_down_step_recursive(step, parallel_variables=None, run_after=None):
+        def break_down_step_recursive(step, parallel_variables=None, run_after=None, ):
             '''
             Use bashlex to break down all steps of a bash script
             parallel_variables: Initialize script with these variables. Used for the parallel execution
@@ -2194,14 +2195,9 @@ ENDOFFILE
             read_from = None
             last_assignment = None # Used for PARALLEL 
 
-            run_afters = [] # List of all the steps that are run in this break down
+            #run_afters = [] # List of all the steps that are run in this break down
             if run_after is None:
                 run_after = []
-
-            #print ('MAIN COMMANDS:')
-            #print (main_commands)
-            #for ast in main_commands:
-            #    print (ast.dump())
 
             for main_command in main_commands:
 
@@ -2231,7 +2227,6 @@ ENDOFFILE
                     if main_command.parts[0].kind in ['assignment', 'word']:
                         # This is an assignment
                         assignment_word = main_command.parts[0].word
-                        #print ('BEFORE parse_parallel_constant')
                         last_assignment = parse_parallel_constant(assignment_word)
 
                 # This is a command
@@ -2239,12 +2234,10 @@ ENDOFFILE
                 if len(main_command.parts) == 3 and all(hasattr(x,'word') for x in main_command.parts): # Make sure that it contains only word nodes #186 
                     line_to_match = ' '.join(x.word for x in main_command.parts)
                     parallel_call = parse_parrallel_call_1(line_to_match)
-                    #print ('Last assignment:', last_assignment)
                     if  parallel_call and \
                         last_assignment and \
                         parallel_call['variable'] == last_assignment['variable'] and \
                         parallel_call['step'] in calling_steps:
-                            #print ('THIS IS A VALID PARALLEL CALL')
                             this_is_a_parallel_call_1 = True
                             pos = (main_command.parts[0].pos[0], main_command.parts[2].pos[1])
 
@@ -2269,18 +2262,13 @@ ENDOFFILE
                     main_command.parts[0].parts[0].value in self.tool_variables_ids # Belongs in tool variables
                 ):
 
-                    #print (main_command)
                     this_is_a_tool_invocation = True
                     positions = [part.pos for part in main_command.parts]
                     pos = (positions[0][0], positions[-1][1])
                     this_var = main_command.parts[0].parts[0].value
                     tool_to_call = self.tool_variables_ids[this_var]
                     tool_to_call_id = self.get_tool_dash_id(tool_to_call, no_dots=True)
-                    #print (bash_to_parse[pos[0]:pos[1]])
-                    #print (f'-->{break_down_on_tools}<--')
-                    #print (step['id']) # step__new_step__w__1 
-                    #print (tool_to_call_id) #  t__1__1
-                    #print (json.dumps(step, indent=4))
+
                     # Create an artificial step to call
                     artificial_tool_step = {
                         "id": step['id'], # "step__RANDOM__w__1",
@@ -2359,13 +2347,13 @@ ENDOFFILE
                     'last': False,
                     'input_variables': input_workflow_variables,
                     'output_variables': output_workflow_variables,
-                    'run_after': run_after + run_afters,
+                    'run_after': run_after,
                     'tool_invocation': step.get('tool_invocation'),
                 }
                 #read_from = save_to
                 read_from = save_to_nodot
 
-                run_afters.append(step_inter_id)
+                run_after.append(step_inter_id)
                 
                 # Are we calling another step? What is the id of this step?
                 if this_is_a_parallel_call_1:
@@ -2387,39 +2375,51 @@ ENDOFFILE
 
                 if this_is_a_parallel_call_1:
                     # This is a parallel call. Iterate in all variable assignments in CSV
+                    # As per the example:
+                    # last_assignment['header'] --> ['VAR_1', 'VAR_2', 'VAR_3']
+                    # last_assignment['content'] --> [['VALUE_11', 'VALUE_12', 'VALUE_13'], ['VALUE_21', 'VALUE_22', 'VALUE_23'], ['VALUE_31', 'VALUE_32', 'VALUE_33'], ['VALUE_41', 'VALUE_42', 'VALUE_43'], ['VALUE_51', 'VALUE_52', 'VALUE_53']]  
                     header = last_assignment['header']
+                    this_parallel_steps = []
+
+                    if ( # Try to match something like this: ['1:10', '2:20'] 
+                        len(last_assignment['content'])==1 and 
+                        len(last_assignment['content'][0]) > 0 and # avoid all([]) --> True !
+                        all(re.fullmatch(r'\d+:\d+', x) for x in last_assignment['content'][0])
+                    ):
+                        # 1:10,2:20,6:33
+                        # this is a range. Create a lazy iterator
+                        ranges = [list(map(int, x.split(':'))) for x in last_assignment['content'][0]] # [[1, 10], [2, 20], [6, 33]]
+                        ranges = [range(x[0], x[1]+1) for x in ranges] # [range(1, 11), range(2, 21), range(6, 34)] 
+                        last_assignment['content'] = product(*ranges)
+
                     for values in last_assignment['content']:
                         if len(values) != len(header):
                             raise OBC_Executor_Exception('Values in Parallel execution: {} are different than header: {}'.format(str(values), str(header)))
                         parallel_variables = dict(zip(header, values))
+                        this_run_after = copy.deepcopy(run_after)
 
-                        for item in break_down_step_recursive(step_to_call, parallel_variables=parallel_variables, run_after=run_after + [step_inter_id]):
-                            run_afters.append(item['step_inter_id'])
+                        for item in break_down_step_recursive(step_to_call, parallel_variables=parallel_variables, run_after=this_run_after):
+                            this_parallel_steps.append(item['step_inter_id'])
                             yield item
+
+                    run_after.extend(this_parallel_steps)
+
                 elif this_is_a_parallel_call_2:
-                    for step_to_call in parallel_call_2:
-                        for item in break_down_step_recursive(self.step_ids[step_to_call], run_after=run_after + [step_inter_id]):
-                            run_afters.append(item['step_inter_id'])
+                    # This is a parallel call: PARALLEL step__stp2__test1__1 step__stp3__test1__1 ...
+
+                    this_parallel_steps = []
+                    for step_to_call in parallel_call_2: # ['step__stp2__test1__1', 'step__stp3__test1__1']
+                        this_run_after = copy.deepcopy(run_after)
+                        
+                        for item in break_down_step_recursive(self. step_ids[step_to_call], run_after=this_run_after, ):# + [step_inter_id]):
+                            this_parallel_steps.append(item['step_inter_id'])
                             yield item
+
+
+                    run_after.extend(this_parallel_steps)
+
                 else:
-                    # Step call or tool invocation
-                    #print ('=1=')
-                    #print (step_to_call)
-                    #print ('=2=')
-                    #print (step_inter_id)
-                    #print ('=3=')
-                    #print (run_after)
-                    #print ('=4=')
-                    #print (run_afters)
-                    #print ('=5=')
-                    #print (this_is_a_tool_invocation)
-                    #print ('=run_after_=')
-                    #print (run_after + [step_inter_id])
-                    #for item in break_down_step_recursive(step_to_call, run_after=run_after + [step_inter_id]):
-                    for item in break_down_step_recursive(step_to_call, run_after=run_afters):
-                        run_afters.append(item['step_inter_id'])
-                        #print ('About to yield:')
-                        #print (item)
+                    for item in break_down_step_recursive(step_to_call, run_after=run_after):
                         yield item
                 
                 start = pos[1]
@@ -2433,6 +2433,7 @@ ENDOFFILE
             save_to_nodot = '{}__{}__VARS_sh'.format(step['id'], step_counter[step['id']])
             input_workflow_variables = [var for var in step['inputs_reads'] + step['outputs_reads'] if var in part_after_step_call]
             output_workflow_variables = [var for var in step['inputs_sets'] + step['outputs_sets'] if var in part_after_step_call]
+
 
             yield {
                 'bash' : create_json(
@@ -2453,9 +2454,12 @@ ENDOFFILE
                 'last': True,
                 'input_variables': input_workflow_variables,
                 'output_variables': output_workflow_variables,
-                'run_after': run_afters + run_after,
+                'run_after': run_after,
                 'tool_invocation': step.get('tool_invocation'),
             }
+
+            run_after.append(step_inter_id)
+
 
         return break_down_step_recursive(self.root_step)
 
@@ -2897,6 +2901,8 @@ digraph G {{
             run_afters[step_inter_id] = [BaseExecutor.INIT_STEP_NAME] + tool_ids
             if step['run_after']:
                 run_afters[step_inter_id] += step['run_after']
+
+            #print (f'{step_inter_id} --> {step["run_after"]}')
 
             # Add declare. This should be first
             bash = self.workflow.declare_decorate_bash(bash, step_vars_filename)

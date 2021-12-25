@@ -4142,6 +4142,12 @@ def download_workflow(request, **kwargs):
                 obc_client=workflow_obc_client, 
                 break_down_on_tools=break_down_on_tools,
             )
+
+#            ddd = simplejson.loads(output_object)
+#            print (simplejson.dumps(ddd, indent=4))
+#            print ('====')
+#            print (ddd['DOT'])
+
         elif download_type == 'BASH':
             output_object = create_bash_script(output_object, server_url, 'sh')
         elif download_type == 'CWLTARGZ':
