@@ -3,7 +3,7 @@ import argparse
 import enum
 import json
 import logging
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from pathlib import Path
 import atexit
 
@@ -228,6 +228,11 @@ def dag_phase(data, wfl:workflow, last_builder):
         else:
             step.container = wfl.simple_container
     last_elem = None
+
+    # Keys: Step nmes. Values a list with tuples: 
+    # A tuple contains the step object and the dependency
+    step_dependencies = defaultdict(list) 
+
     for step in sb_step.global_steps:
         if(step.type == step_type.initial):
             couler.set_dependencies(lambda:  sb_step_call(wfl, step), dependencies=last_builder)
@@ -252,8 +257,14 @@ def dag_phase(data, wfl:workflow, last_builder):
                     couler.set_dependencies(lambda:  sb_step_call(wfl, step), dependencies=sb_step_name)
                 else:
                     sb_step_name = utils.argo_safe_name(dep.name)
-                    couler.set_dependencies(lambda:  sb_step_call(wfl, step), dependencies=sb_step_name)
+                    # Do not set dependencies here. This dependenciy might belong to more than on step
+                    #couler.set_dependencies(lambda:  sb_step_call(wfl, step), dependencies=sb_step_name)
+                    step_dependencies[step.name].append(( step, sb_step_name ))
                 # print(step.name, " depends on ", dep.name)
+
+    # Add step dependencies
+    for k,v in step_dependencies.items():
+        couler.set_dependencies(lambda:  sb_step_call(wfl, v[0][0]), dependencies=[x[1] for x in v])
 
 def workflow_yaml():
     return states.workflow.to_dict()
