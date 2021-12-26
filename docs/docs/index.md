@@ -1019,6 +1019,31 @@ Input values PAR1=100   PAR2=200 finished
 
 As you notice the step ```complex_task``` run 3 times in parallel, each with different set of parameters. 
 
+## Run PARALLEL steps with ranges. 
+
+You can also define ranges of variables:
+
+```bash
+VARIABLES="
+PAR1,PAR2
+5:6,10:12
+"
+
+PARALLEL step__complex_task__PARALLEL_test_2__1 "${VARIABLES}" 
+```
+
+The step `step__complex_task__PARALLEL_test_2__1` will run for the cartesian product of the ranges that are defined in the variable. For this particular example the step `step__complex_task__PARALLEL_test_2__1` will run 6 times in parallel for the following values:
+
+```text
+PAR1,PAR2
+5,10
+5,11
+5,12
+6,10
+6,11
+6,12
+```
+
 # Public / Private Research Objects
 Tools/Data and Workflows can be either public or private. You can set this "visibility" option through the user interface upon creating or editing a Tool/Data or Workflow (ROs = Research Objects). The semantics of this private / public setting are:
 * Public ROs are visible to all users including anonymous users.
