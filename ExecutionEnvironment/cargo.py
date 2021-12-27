@@ -160,7 +160,8 @@ def builder_phase(c:container, wfl:workflow):
     dockerfile_path = os.path.join(wfl.work_path, "Dockerfile")
     dockerfile = """
 FROM ubuntu:18.04
-RUN apt-get update
+RUN apt-get update 
+RUN apt-get install -y file 
 
 ADD . /root/
 WORKDIR /root

@@ -1352,7 +1352,7 @@ class Workflow:
 
     @staticmethod
     def bash_workflow_starts(workflow):
-        return Workflow.update_server_status('workflow started {}'.format(Workflow.ƒ(workflow)))
+        return Workflow.update_server_status('workflow started {}'.format(Workflow.get_workflow_slash_id(workflow)))
 
     @staticmethod
     def bash_workflow_ends(workflow):
