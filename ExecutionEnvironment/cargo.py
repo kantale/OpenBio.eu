@@ -41,7 +41,7 @@ class workflow():
         self.work_path = ""
         self.builders = []
         simple_container = container("simple")
-        simple_container.image = "ubuntu:18.04"
+        simple_container.image = "kantale/openbio-env:1"
         self.simple_container = simple_container
         # couler.run_container()
 
@@ -159,9 +159,8 @@ def builder_phase(c:container, wfl:workflow):
     }
     dockerfile_path = os.path.join(wfl.work_path, "Dockerfile")
     dockerfile = """
-FROM ubuntu:18.04
+FROM kantale/openbio-env:1
 RUN apt-get update 
-RUN apt-get install -y file 
 
 ADD . /root/
 WORKDIR /root
