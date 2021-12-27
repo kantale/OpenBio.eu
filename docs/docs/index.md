@@ -1044,6 +1044,36 @@ PAR1,PAR2
 6,12
 ```
 
+# The `REPORT` command
+During the execution of the workflow an html file that contains logs and results is generated. The path of this file is `${OBC_WORK_PATH}/<NICE_ID>.html` and is printed at the end of the execution. The `REPORT` is another reserved word (aside from `PARALLEL`) with which you can add data in this file. You can use this command at any place in your BASH scripts. The syntax of the `REPORT` command is:
+
+```
+REPORT <LABEL> <TEXT or FILENAME> 
+```
+
+For example:
+```
+PROGRESS=0.75
+
+REPORT CURRENT_PROGRESS ${PROGRESS}
+```
+This will add the following entry in the report:
+```
+<timestamp> <name_of_step> CURRENT_PROGRESS=0.75
+```
+
+Another example is:
+```
+FILENAME=${OBC_WORK_PATH}/current_results.png
+REPORT CURRENT_GRAPH ${FILENAME}
+```
+
+This will add the following entry in the report:
+```
+<timestamp> <name_of_step> CURRENT_PROGRESS:
+<the image that is contained in ${OBC_WORK_PATH}/current_results.png>
+```
+
 # Public / Private Research Objects
 Tools/Data and Workflows can be either public or private. You can set this "visibility" option through the user interface upon creating or editing a Tool/Data or Workflow (ROs = Research Objects). The semantics of this private / public setting are:
 * Public ROs are visible to all users including anonymous users.
