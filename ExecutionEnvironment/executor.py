@@ -2709,6 +2709,25 @@ OBCENDOFFILE
 
     def create_environments(self,):
         '''
+        An empty tool_run_after: {'wget__latest__1': []} 
+
+        An example of what it might return:
+    "environments": {
+        "0": {
+            "plink__1_07_x86_64__1": [
+                "wget__latest__1",
+                "unzip__latest__1"
+            ],
+            "unzip__latest__1": [],
+            "wget__latest__1": []
+        },
+        "1": {
+            "test_script__1__2": [
+                "python__3_8__1"
+            ],
+            "python__3_8__1": []
+        }
+    }
         '''
 
         ret = {}
@@ -2718,12 +2737,27 @@ OBCENDOFFILE
         tool_graph = BaseExecutor.build_graph_from_run_afters(self.workflow.tool_run_afters)
         tool_graph_undirected = tool_graph.to_undirected()
         tool_sub_graphs = (tool_graph_undirected.subgraph(c) for c in nx.connected_components(tool_graph_undirected))
+        all_nodes = set()
         for i, sg in enumerate(tool_sub_graphs):
             this_environment_nodes = set(sg.nodes())
+            all_nodes |= this_environment_nodes
             #print (i, this_environment_nodes)
             #self.decomposed['environments'][environment_counter] = {x: [y for y in self.decomposed['steps'][x]['run_after'] if y in this_environment_nodes] for x in this_environment_nodes}
             ret[environment_counter] = {x: [y for y in self.workflow.tool_run_afters[x] if y in this_environment_nodes] for x in this_environment_nodes}
             environment_counter += 1
+
+
+        # It might be the case that the tool_run_afters do not contain dependencies. For example one (or more) tool(s) that do not have
+        # any dependency or other tools are dependent from them. In that case we do not have a graph (graph=edges=dependencies) so
+        # this method fails.   
+        for tool, dependencies in self.workflow.tool_run_afters.items():
+            if not tool in all_nodes:
+                # This tool is not in any environment
+                if dependencies:
+                    # This should never happen. If it had dependencis then it should belong in a graph!
+                    raise OBC_Executor_Exception('Error 3998')
+                ret[environment_counter] = {tool: []} # Create an environment of its own with a single tool.
+                environment_counter += 1
 
         #print (json.dumps(ret, indent=2))
 
