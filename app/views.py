@@ -114,7 +114,6 @@ g = {
     'PRIVACY': settings.PRIVACY,
     'FUNDING_LOGOS': settings.FUNDING_LOGOS,
     'TEST': settings.TEST,
-    'ARGO_EXECUTION_ENVIRONMENT': settings.ARGO_EXECUTION_ENVIRONMENT,
 
     'DEFAULT_DEBUG_PORT': 8200,
     'SEARCH_TOOL_TREE_ID': '1',
@@ -1420,7 +1419,6 @@ def index(request, **kwargs):
     context['TERMS'] = g.get('TERMS')
     context['PRIVACY'] = g.get('PRIVACY')
     context['FUNDING_LOGOS'] = g.get('FUNDING_LOGOS')
-    context['show_execution_environments'] = False if g.get('ARGO_EXECUTION_ENVIRONMENT') else True
 
 
     #print (social_core.pipeline.social_auth.social_details)
@@ -4207,6 +4205,10 @@ def run_workflow(request, **kwargs):
 
     obc_user = OBC_user.objects.get(user=request.user)
 
+    profile_name = kwargs.get('profile_name', '')
+    if not str(profile_name):
+        return fail('Error 3288. Invalid profile name')
+
     workflow_options = kwargs.get('workflow_options', {}) # Get the workflow input options (arguments)
 
     name = kwargs.get('name', '')
@@ -4219,14 +4221,24 @@ def run_workflow(request, **kwargs):
     except ValueError as e:
         return fail('Error 3290. Invalid workflow edit')
 
+    # Get the client
+    try:
+        client = obc_user.clients.get(name=profile_name)
+    except ObjectDoesNotExist as e:
+        return fail('Error 3293. Could not get execution client.')
+
     # Get the workflow
     try:
         workflow = Workflow.objects.get(name=name, edit=edit)
     except ObjectDoesNotExist as e:
         return fail('Error 3294. Could not get Workflow object.')
 
+    url = client.client 
+    print ('URL FROM DATABASE:', url) # In case of argo: https://argo.192.168.1.1.nip.io 
+    print ('PROFILE NAME:', profile_name) # argo
+
     # If a default Argo execution environment is set, use it.
-    if settings.ARGO_EXECUTION_ENVIRONMENT:
+    if 'argo' in profile_name:
         profile_name = 'argo'
         try:
             argo_client = obc_user.clients.get(name=profile_name)
