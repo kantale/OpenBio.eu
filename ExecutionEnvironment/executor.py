@@ -3728,7 +3728,10 @@ class ArgoExecutor(BaseExecutor):
     def build(self, output, output_format='argo', workflow_id=None, obc_client=False):
         self.decompose(break_down_on_tools=True,)
         json_wf = json.dumps(self.decomposed)
+        print ('JSON DAG:')
+        print (json.dumps(self.decomposed, indent=4))
         ret = cargo.pipeline(json_wf, self.workflow_name, self.image_registry, self.image_cache_path, self.work_path)
+        print ('ARGO WORKFLOW:')
         print (ret)
         #a=1/0
         return ret

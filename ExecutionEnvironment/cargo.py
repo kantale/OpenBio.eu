@@ -235,8 +235,10 @@ def dag_phase(data, wfl:workflow, last_builder):
 
     for step in sb_step.global_steps:
         if(step.type == step_type.initial):
+            print (last_builder, type(last_builder))
             couler.set_dependencies(lambda:  sb_step_call(wfl, step), dependencies=last_builder)
             continue
+
         if len(step.dependencies) == 0:
             key = len(list(couler.workflow.dag_tasks.keys())) - 1
             if key >= 0:
@@ -259,12 +261,12 @@ def dag_phase(data, wfl:workflow, last_builder):
                     sb_step_name = utils.argo_safe_name(dep.name)
                     # Do not set dependencies here. This dependenciy might belong to more than on step
                     #couler.set_dependencies(lambda:  sb_step_call(wfl, step), dependencies=sb_step_name)
-                    step_dependencies[step.name].append(( step, sb_step_name ))
+                    step_dependencies[step.name].append(( step, sb_step_name )) 
                 # print(step.name, " depends on ", dep.name)
 
     # Add step dependencies
     for k,v in step_dependencies.items():
-        couler.set_dependencies(lambda:  sb_step_call(wfl, v[0][0]), dependencies=[x[1] for x in v])
+        couler.set_dependencies(lambda:  sb_step_call(wfl, v[0][0]), dependencies=' && '.join( x[1] for x in v))
 
 def workflow_yaml():
     return states.workflow.to_dict()
@@ -299,13 +301,20 @@ def pipeline(data:str, workflow_name:str, image_registry:str, image_cache_path:s
     data = parse(data, wfl)
     couler.workflow.dag_mode = True
 
-    builder_as_deps = ""
+    builder_as_deps = []
     for c in wfl.containers:
         couler.set_dependencies(lambda: builder_phase(c, wfl), dependencies=None)
-        builder_as_deps += " builder"+c.name+".Succeeded" + " &&"
-    builder_as_deps = builder_as_deps[:len(builder_as_deps) - 2]
+        # From cargo documntation: https://github.com/argoproj/argo-workflows/blob/master/docs/enhanced-depends-logic.md 
+        # Create a string representing the enhanced depends logic that specifies
+        # dependencies based on their statuses.
+        builder_as_deps.append(f"builder{c.name}.Succeeded") #  += " builder"+c.name+".Succeeded" + " &&"
+    builder_as_deps =  ' && '.join(builder_as_deps) # builder_as_deps[:len(builder_as_deps) - 2]
     dag_phase(data, wfl, builder_as_deps)
-    return yaml()
+    ret = yaml()
+    #couler._cleanup()
+
+
+    return ret
 
 def pipeline_from_file(filename:str, workflow_name:str, image_registry:str, image_cache_path:str, work_path:str):
     with open(filename, 'r') as f:
