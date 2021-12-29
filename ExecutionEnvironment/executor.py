@@ -80,6 +80,7 @@ function update_server_status()
 
         if [[ $c == *'"success": true'* ]]; then
             obc_current_token=$(obc_parse_json "$c" "token")
+            echo obc_current_token=\"${obc_current_token}\" > ${OBC_WORK_PATH}/obc_current_token.sh 
         else
 
             if [[ $c == *'"success": false'* ]]; then
@@ -874,14 +875,12 @@ class Workflow:
 
             ret += '# STEP: {}\n'.format(a_node['id'])
             ret += '{} () {{\n'.format(a_node['id'])
-            #ret += ':\n' # No op in case a_node['bash'] is empty
+
             ret += "OBC_WHOCALLEDME=$(caller 0 | awk '{print $2}') \n"
             ret += 'if [ ${OBC_WHOCALLEDME} == "PARALLEL" ] ; then \n '
             ret += "   OBC_WHOCALLEDME=$(caller 1 | awk '{print $2}') \n"
             ret += "fi\n"
-#            ret += "if [ ${OBC_WHOCALLEDME} != \"main\" ] ; then \n"
-#            ret += "   OBC_WHOCALLEDME=${OBC_WHOCALLEDME:6}\n" # :6 =  step__step1__callme__1 --> step1__callme__1
-#            ret += "fi\n"
+
             ret += 'echo "OBC: CALLING STEP: {}    CALLER: $OBC_WHOCALLEDME"\n'.format(a_node['id']) #
             ret += 'update_server_status "step started {} $OBC_WHOCALLEDME"\n'.format(a_node['id'])
             ret += a_node['bash'] + '\n'
@@ -1372,6 +1371,14 @@ class Workflow:
         return Workflow.update_server_status('tool finished {}'.format(tool['label']))
 
     @staticmethod
+    def bash_step_started(step_id, who_called_me):
+        return Workflow.update_server_status(f'step started {step_id} {who_called_me}')
+
+    @staticmethod
+    def bash_step_finished(step_id):
+        return Workflow.update_server_status(f'step finished {step_id}')
+
+    @staticmethod
     def declare_decorate_bash(bash, save_to):
         '''
         '''
@@ -1416,7 +1423,7 @@ class Workflow:
     def convert_tool_to_request(tool, added_objects):
         '''
         Takes a tool and creates a dictionary with the fields that can be used for a request to tools_add
-        added_objects: The tools that have been added alreadt
+        added_objects: The tools that have been added alreadys
         '''
 
         #  "a1/1/1" --> {'name': 'a', 'version': '1', 'edit': 1}
@@ -2475,6 +2482,8 @@ class BaseExecutor():
     '''
     '''
     load_obc_functions_bash = r'. ${OBC_WORK_PATH}/obc_functions.sh' + '\n'
+    load_obc_current_token_bash = r'. ${OBC_WORK_PATH}/obc_current_token.sh' + '\n'
+
 
     INIT_STEP_NAME = 'INIT_STEP'
     FINAL_STEP_NAME = 'FINAL_STEP'
@@ -2581,7 +2590,7 @@ class BaseExecutor():
         self.DAG = nx.transitive_reduction(self.G)
         return self.DAG
 
-    def obc_init_step(self,):
+    def obc_init_step(self, update_server_status=False):
         # Create init step for report
         bash = r'''
 
@@ -2590,6 +2599,8 @@ class BaseExecutor():
 cat > ${OBC_WORK_PATH}/obc_functions.sh << 'OBCENDOFFILE'
 
 {{function_REPORT}}
+{{function_PARSE_JSON}}
+{{function_UPDATE_SERVER}}
 
 OBCENDOFFILE
 
@@ -2598,9 +2609,19 @@ OBCENDOFFILE
         bash = bash.replace(r'{{init_report}}', bash_patterns['init_report'])
         bash = bash.replace(r'{{function_REPORT}}', bash_patterns['function_REPORT'])
 
+        if update_server_status:
+            bash = bash.replace(r'{{function_PARSE_JSON}}', bash_patterns['parse_json'])
+            bash = bash.replace(r'{{function_UPDATE_SERVER}}', bash_patterns['update_server_status'])
+            bash += f'\n{self.load_obc_functions_bash}\n'
+            bash += f'\n{self.workflow.get_token_set_bash_commands()}\n'
+            bash += f'\n{self.workflow.bash_workflow_starts(self.workflow.root_workflow)}\n'
+        else:
+            bash = bash.replace(r'{{function_UPDATE_SERVER}}', '')
+            bash = bash.replace(r'{{function_PARSE_JSON}}', '')
+
         return bash
 
-    def obc_final_step(self, previous_tools, previous_steps_vars):
+    def obc_final_step(self, previous_tools, previous_steps_vars, update_server_status=False):
         # CREATE FINAL OPERATOR
         # Add all variables from previous tools.
         load_tool_vars = ''
@@ -2614,6 +2635,9 @@ OBCENDOFFILE
 
         bash = load_tool_vars + load_step_vars + self.load_obc_functions_bash
 
+        if update_server_status:
+            bash += self.load_obc_current_token_bash
+
         # Add output varables
         for output_parameter in self.workflow.output_parameters:
             bash += 'REPORT {} ${{{}}} OUTPUT_VARIABLE \n'.format(output_parameter['id'], output_parameter['id'])
@@ -2625,6 +2649,10 @@ OBCENDOFFILE
         export_json = '"{' + ', '.join([r'''\"{A}\": \"${{{A}}}\"'''.format(A=x['id']) for x in self.workflow.output_parameters]) + '}"'
         export_json = "echo " + export_json + '\n'
         bash = bash + export_json
+
+        # Update server status
+        if update_server_status:
+            bash += f'\n{self.workflow.bash_workflow_ends(self.workflow.root_workflow)}\n'
 
         return bash
 
@@ -2797,11 +2825,17 @@ digraph G {{
 
     def decompose(self,
             break_down_on_tools=False,
+            update_server_status=False,
+            update_server_on_tools=False,
+            update_server_on_steps=False,
         ):
         '''
         Decomposes the workflow in steps. Create DAG.
 
         break_down_on_tools: Should a tool invocation create a new node in DAG?
+        update_server_status: The script self reports its status on server
+        update_server_on_tools: Also update server on tools
+        update_server_on_steps: Also update server on steps
         '''
         self.decomposed = {
             'environment_variables': {},
@@ -2844,7 +2878,7 @@ digraph G {{
         # INIT STEP
         initial_variabes = self.initial_variabes()
         input_parameters = self.save_input_parameters(from_workflow=True) # touch ${OBC_WORK_PATH}/v5FDK_inputs.sh
-        init_bash = initial_variabes + self.obc_init_step() + input_parameters
+        init_bash = initial_variabes + self.obc_init_step(update_server_status=update_server_status) + input_parameters
 
         run_afters = {BaseExecutor.INIT_STEP_NAME: []}
         self.decomposed['steps'][BaseExecutor.INIT_STEP_NAME] = {
@@ -2889,7 +2923,7 @@ digraph G {{
             bash += self.workflow.get_tool_bash_commands(
                 tool=tool,
                 validation=True,
-                update_server_status=False,
+                update_server_status=update_server_on_tools,
                 read_variables_from_command_line=False,
                 variables_json_filename=None,
                 variables_sh_filename_read = this_tool_previous_tools,
@@ -2984,7 +3018,7 @@ digraph G {{
 
 
         # FINAL STEP
-        bash = self.initial_variabes() + self.obc_final_step(previous_tools, previous_steps_vars)
+        bash = self.initial_variabes() + self.obc_final_step(previous_tools, previous_steps_vars, update_server_status=update_server_status)
         #print ('FINAL_STEP:')
         #print (bash)
 
@@ -3731,7 +3765,10 @@ class ArgoExecutor(BaseExecutor):
         super().__init__(workflow, executor_parameters)
 
     def build(self, output, output_format='argo', workflow_id=None, obc_client=False):
-        self.decompose(break_down_on_tools=True,)
+        self.decompose(
+            break_down_on_tools=True,
+            update_server_status=True,
+        )
         json_wf = json.dumps(self.decomposed)
         print ('JSON DAG:')
         print (json.dumps(self.decomposed, indent=4))

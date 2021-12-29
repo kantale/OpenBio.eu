@@ -191,23 +191,26 @@
                                         <thead>
                                             <tr>
                                                 <th>Name</th>
-                                                <th>URL</th>
+                                                <th>Parameters</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr ng-repeat="client in profile_clients track by $index">
                                                 <td><input type="text" placeholder="Name" ng-model="client.name" ng-readonly="!$last"></td>
-                                                <td><input type="text" placeholder="URL" ng-model="client.client" ng-readonly="!$last"></td>
+                                                <td>
+                                                    <textarea class="materialize-textarea" placeholder="Parameters in JSON format" ng-model="client.parameters" ng-readonly="!$last"></textarea></td> 
+                                                    <!-- <input type="text" placeholder="Name" ng-model="client.parameters" ng-readonly="!$last"> -->
+
                                                 <td>
                                                     <a class="waves-effect waves-light btn-small tooltipped green darken-1"
-                                                        ng-show="client.name && client.client && $last"
+                                                        ng-show="client.name && client.parameters && $last"
                                                         ng-click="profile_add_client($index)"
                                                         style="padding-left: 7px; padding-right:7px" data-position="bottom"
                                                         data-tooltip="Add URL"><i class="material-icons">add</i></a>
                                                 </td>
                                                 <td>
                                                     <a class="waves-effect waves-light btn-small tooltipped red darken-1"
-                                                        ng-show="client.name && client.client && (!$last)"
+                                                        ng-show="client.name && client.parameters && (!$last)"
                                                         ng-click="profile_delete_client($index)"
                                                         style="padding-left: 7px; padding-right:7px" data-position="bottom"
                                                         data-tooltip="Remove URL"><i class="material-icons">remove</i></a>

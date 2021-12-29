@@ -309,11 +309,11 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
                 //If the server did not return any client. Add an empty placeholder
                 if (!$scope.profile_clients.length) {
-                    $scope.profile_clients = [{name: '', client: ''}];
+                    $scope.profile_clients = [{name: '', parameters: ''}];
                 }
                 else {
                     //Push an empty 
-                    $scope.profile_clients.push({name: '', client: ''});
+                    $scope.profile_clients.push({name: '', parameters: ''});
                 }
 
                 $timeout(function(){M.updateTextFields()}, 10);
@@ -367,12 +367,12 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             'user_add_client/',
             {
                 name: $scope.profile_clients[index].name,
-                client: $scope.profile_clients[index].client
+                parameters: $scope.profile_clients[index].parameters
             },
             function(data) {
                 $scope.toast('Execution Client added succesfully', 'success');
                 $scope.profile_clients = data['profile_clients'];
-                $scope.profile_clients.push({name: '', client: ''});
+                $scope.profile_clients.push({name: '', parameters: ''});
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');
@@ -396,7 +396,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             function(data) {
                 $scope.toast('Execution Client deleted succesfully', 'success');
                 $scope.profile_clients = data['profile_clients'];
-                $scope.profile_clients.push({name: '', client: ''});
+                $scope.profile_clients.push({name: '', parameters: ''});
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');

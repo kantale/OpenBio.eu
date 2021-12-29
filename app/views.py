@@ -1184,7 +1184,7 @@ def users_search_3(request, **kwargs):
     # * get ExecutionClients
     if username == request.user.username:
         ret['profile_email'] = u.user.email
-        ret['profile_clients'] = [{'name': client.name, 'client': client.client} for client in u.clients.all()]
+        ret['profile_clients'] = [{'name': client.name, 'parameters': client.parameters} for client in u.clients.all()]
     else:
         ret['profile_email'] = ''
 
@@ -1209,32 +1209,39 @@ def user_add_client(request, **kwargs):
         return fail('Invalid client name (allowed characters, a-z, A-Z, 0-9, _)')
 
     # Get and validate the client
-    client = kwargs.get('client', '')
-    if not valid_url(client):
-        return fail('URL is invalid')
+    parameters = kwargs.get('parameters', '')
+    try:
+        parameters_parsed = simplejson.loads(parameters)
+    except simplejson.errors.JSONDecodeError as e:
+        return fail(f'Invalid JSON data in Parameters: {str(e)}')
+
+    #Parameters should have a type field. This is the only obligatory field
+    if not 'type' in parameters_parsed:
+        return fail('"type" field not present in client parameters')
 
     # Check that the name and the client does not exist and that maximum number has not been reached
-    existing_clients = [{'name':x.name, 'client': x.client} for x in obc_user.clients.all()]
+    existing_clients = [{'name':x.name, 'parameters': x.parameters} for x in obc_user.clients.all()]
     if len(existing_clients) >= g['client_max']:
         return fail('Maximum number of Execution Clients has been reached')
 
     existing_names = {x['name'] for x in existing_clients}
-    existing_urls = {x['client'] for x in existing_clients}
-
     if name in existing_names:
         return fail('There is already an Execution Client with this name')
 
-    if client in existing_urls:
-        return fail('There is already an Execution Client with this URL')
-
     ## Add the execution environment
-    new_execution_client = ExecutionClient(name=name, client=client)
+    new_execution_client = ExecutionClient(name=name, parameters=simplejson.dumps(parameters_parsed))
     new_execution_client.save()
     obc_user.clients.add(new_execution_client)
 
     # Return all the profile clients
     ret = {
-        'profile_clients' : [{'name': client.name, 'client': client.client} for client in obc_user.clients.all()]
+        'profile_clients' : [
+            {
+            'name': client.name, 
+            'parameters': client.parameters
+            } 
+            for client in obc_user.clients.all()
+        ],
     }
 
     obc_user.save()
@@ -1269,7 +1276,7 @@ def user_delete_client(request, **kwargs):
 
     # Return all the profile clients
     ret = {
-        'profile_clients' : [{'name': client.name, 'client': client.client} for client in obc_user.clients.all()]
+        'profile_clients' : [{'name': client.name, 'parameters': client.parameters} for client in obc_user.clients.all()]
     }
 
     return success(ret)
@@ -1365,16 +1372,16 @@ def get_execution_clients(request):
 
     obc_user = OBC_user.objects.get(user=request.user)
 
-    ret = list(obc_user.clients.values('client', 'name'))
+    ret = list(obc_user.clients.values('parameters', 'name'))
 
     return ret
 
 def get_execution_clients_angular(request):
     '''
-    Angular excepts an empty entry at the end
+    Angular expects an empty entry at the end
     '''
 
-    return get_execution_clients(request) + [{'name': '', 'client': ''}];
+    return get_execution_clients(request) + [{'name': '', 'parameters': ''}];
 
 ### END OF USERS
 
@@ -4227,91 +4234,74 @@ def run_workflow(request, **kwargs):
     except ObjectDoesNotExist as e:
         return fail('Error 3293. Could not get execution client.')
 
+    # Parse parameters
+    try:
+        parameters_parsed = simplejson.loads(client.parameters)
+    except simplejson.errors.JSONDecodeError:
+        return fail('Error 1591. Could not parse json parameters from DB')
+
+    if not 'type' in parameters_parsed:
+        return fail('Error 1592. client parameters does not have a type field.')
+
     # Get the workflow
     try:
         workflow = Workflow.objects.get(name=name, edit=edit)
     except ObjectDoesNotExist as e:
         return fail('Error 3294. Could not get Workflow object.')
 
-    url = client.client 
-    print ('URL FROM DATABASE:', url) # In case of argo: https://argo.192.168.1.1.nip.io 
-    print ('PROFILE NAME:', profile_name) # argo
-
-    # If a default Argo execution environment is set, use it.
-    if 'argo' in profile_name:
-        profile_name = 'argo'
-        try:
-            argo_client = obc_user.clients.get(name=profile_name)
-        except ObjectDoesNotExist as e:
-            try:
-                argo_client = ExecutionClient.objects.get(name=profile_name)
-            except ObjectDoesNotExist as e:
-                argo_client = ExecutionClient(name=profile_name, client=settings.ARGO_BASE_URL)
-                argo_client.save()
-                obc_user.clients.add(argo_client)
-
-        if argo_client.client != settings.ARGO_BASE_URL:
-            argo_client.client = settings.ARGO_BASE_URL
-            argo_client.save()
-    else:
-        profile_name = kwargs.get('profile_name', '')
-        if not str(profile_name):
-            return fail('Error 3288. Invalid profile name')
-
-    # Get the client
-    try:
-        client = obc_user.clients.get(name=profile_name)
-    except ObjectDoesNotExist as e:
-        return fail('Error 3293. Could not get execution client.')
-
-    url = client.client
-    #print ('URL FROM DATABASE:', url)
     nice_id = create_nice_id()
 
+    print (simplejson.dumps(parameters_parsed, indent=4))
+    print (nice_id)
+
+    # Create report
+    run_report = Report(
+        obc_user=obc_user,
+        workflow=workflow,
+        nice_id=nice_id,
+        client=client
+    )
+    run_report.save()
+    report_token = ReportToken(status=ReportToken.UNUSED, active=True)
+    report_token.save()
+    run_report.tokens.add(report_token)
+    run_report.save()
+    token = str(report_token.token)
+
+    output_object = {
+        'arguments': workflow_options,
+        'workflow': simplejson.loads(workflow.workflow),
+        'token': token,
+        'nice_id': nice_id,
+    }
+    server_url = get_server_url(request) # http://0.0.0.0:8200/platform 
+    server_url = 'http://192.168.1.7:8200/platform'
+
+
     # Run locally...
-    if settings.ARGO_EXECUTION_ENVIRONMENT:
-        # Create report
-        run_report = Report(
-            obc_user=obc_user,
-            workflow=workflow,
-            nice_id=nice_id,
-            client=client
-        )
-        run_report.save()
-        report_token = ReportToken(status=ReportToken.UNUSED, active=True)
-        report_token.save()
-        run_report.tokens.add(report_token)
-        run_report.save()
-        token = str(report_token.token)
+    if parameters_parsed['type'] == 'karvdash':
 
         # Create and run workflow
         import couler.argo as couler
         from couler.argo_submitter import ArgoSubmitter
 
-        output_object = {
-            'arguments': workflow_options,
-            'workflow': simplejson.loads(workflow.workflow),
-            'token': token,
-            'nice_id': nice_id,
-        }
-        server_url = get_server_url(request)
         executor_parameters = {
             'workflow_name': 'openbio-' + nice_id,
-            'image_registry': settings.ARGO_IMAGE_REGISTRY,
-            'image_cache_path': settings.ARGO_IMAGE_CACHE_PATH,
-            'work_path': os.path.join(settings.ARGO_WORK_PATH, nice_id)
+            'image_registry': parameters_parsed['ARGO_IMAGE_REGISTRY'],
+            'image_cache_path': parameters_parsed['ARGO_IMAGE_CACHE_PATH'],
+            'work_path': os.path.join(parameters_parsed['ARGO_WORK_PATH'], nice_id)
         }
-        namespace = settings.ARGO_NAMESPACE_PREFIX + 'admin' # self.request.user.username
+        namespace = parameters_parsed['ARGO_NAMESPACE_PREFIX'] + 'admin' # self.request.user.username
         _ = create_bash_script(output_object, server_url, 'argo', workflow_id=None, obc_client=False, executor_parameters=executor_parameters)
         submitter = ArgoSubmitter(namespace=namespace)
         result = couler.run(submitter=submitter)
 
-        run_report.visualization_url = urllib.parse.urlparse(settings.ARGO_BASE_URL)._replace(path='/workflows/%s/%s' % (namespace, result['metadata']['name'])).geturl()
+        run_report.visualization_url = urllib.parse.urlparse(parameters_parsed['ARGO_BASE_URL'])._replace(path='/workflows/%s/%s' % (namespace, result['metadata']['name'])).geturl()
         run_report.monitor_url = 'http://asdf.com'
         run_report.client_status='SUBMITTED'
         run_report.save()
 
-        # Let's not create a reporttoken for now.
+        # Let's not create a report_token for now.
         ret = {
             'nice_id': nice_id,
         }
@@ -4399,7 +4389,7 @@ curl --header "Content-Type: application/json" \
         client_status='SUBMITTED')
     report.save()
 
-    # Let's not create a reporttoken for now.
+    # Let's not create a report token for now.
     ret = {
         'nice_id': nice_id,
     }
@@ -4411,12 +4401,18 @@ curl --header "Content-Type: application/json" \
 @has_data
 def report(request, **kwargs):
     '''
-    called from executor
+    called from the workflows themeslves in order to update the current execution progress.
+
+    curl -X POST "http://0.0.0.0:8200/platform/report/" -H 'Content-Type: application/json' -d '{"token":"a2a71f56-2817-4e45-8f9e-72b1341cdfdc"}' 
+    curl -X POST "http://0.0.0.0:8200/platform/report/" -H 'Content-Type: application/json' -d '{"token":"a2a71f56-2817-4e45-8f9e-72b1341cdfdc", "status": "workflow started test4/1"}' 
     '''
 
-    #print (kwargs)
+    print (kwargs)
+
+    print ('hellloooooooo')
 
     token = kwargs.get('token', None)
+    print ('token:', token)
     if not token:
         return fail('Could not find token field')
     #print ('token: {}'.format(token))
@@ -4618,7 +4614,9 @@ def reports_search_2(main_search, request):
 
     # We do not want reports that have only one tokens which is "unused"
     results = Report.objects.annotate(num_tokens=Count('tokens')).filter(
-        user_Q & (nice_id_Q | workflow_Q | username_Q) & (~(not_unused&count_1))
+        user_Q & 
+        (nice_id_Q | workflow_Q | username_Q) & 
+        (~(not_unused&count_1))
     )
 
     # BUILD TREE
@@ -4716,6 +4714,16 @@ def reports_refresh(request, **kwargs):
     path: report_refresh/
     Get an update for a report
     report_workflow_action : 1 = refresh , 2 = pause , 3 = resume
+
+    * Reports --> Refresh --> button click
+    * In cases when a workflow is executed from the OBC client. Update the status
+    * action: 
+    * 1 --> refresh
+    * 2 --> pause
+    * 3 --> resume
+    * 4 --> Delete
+    */
+
     '''
 
     report_workflow_name = kwargs['report_workflow_name']
@@ -4741,6 +4749,11 @@ def reports_refresh(request, **kwargs):
             # Just delete it..
             report.delete()
             return success()
+
+    if report_workflow_action == 4:
+        # Delete it..
+        report.delete()
+        return success()     
 
     # Get the url of the client
     client_url = report.client.client

@@ -19,7 +19,7 @@ Important:
 class ExecutionClient(models.Model):
 
     name = models.CharField(max_length=256, null=False)
-    client = models.URLField(max_length=256, null=False)
+    parameters = models.TextField(null=False) # The parameters of the client in json 
     created_at = models.DateTimeField(auto_now_add=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#datefield
 
 
@@ -381,7 +381,7 @@ def create_nice_id(length=8):
 class Report(models.Model):
     '''
     Describe a Report
-    A Report is an executed workflow
+    A Report is an executed workflow or a workflow that is being executed now.
     '''
 
     obc_user = models.ForeignKey(OBC_user, null=False, on_delete=models.CASCADE)
