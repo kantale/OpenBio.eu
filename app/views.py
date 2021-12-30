@@ -4275,7 +4275,7 @@ def run_workflow(request, **kwargs):
         'nice_id': nice_id,
     }
     server_url = get_server_url(request) # http://0.0.0.0:8200/platform 
-    server_url = 'http://192.168.1.7:8200/platform'
+    #server_url = 'http://192.168.1.7:8200/platform'
 
 
     # Run locally...

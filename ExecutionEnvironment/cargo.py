@@ -292,6 +292,7 @@ def yaml():
       
 def pipeline(data:str, workflow_name:str, image_registry:str, image_cache_path:str, work_path:str):
     couler._cleanup()
+    sb_step.global_steps = []
     couler.workflow.name = workflow_name if workflow_name else "workflow"
 
     wfl = workflow()
@@ -333,4 +334,4 @@ if __name__ == "__main__":
     else:
         parser.print_help()
 
-atexit._clear()
+# atexit._clear()
