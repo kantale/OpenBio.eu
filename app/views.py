@@ -56,6 +56,7 @@ from ExecutionEnvironment.executor import (
     create_bash_script, 
     OBC_Executor_Exception,
     Workflow as Workflow_executor,
+    dispatcher,
 )
 
 # Email imports
@@ -4251,8 +4252,8 @@ def run_workflow(request, **kwargs):
 
     nice_id = create_nice_id()
 
-    print (simplejson.dumps(parameters_parsed, indent=4))
-    print (nice_id)
+    #print (simplejson.dumps(parameters_parsed, indent=4))
+    #print (nice_id)
 
     # Create report
     run_report = Report(
@@ -4276,39 +4277,41 @@ def run_workflow(request, **kwargs):
     }
     server_url = get_server_url(request) # http://0.0.0.0:8200/platform 
     #server_url = 'http://192.168.1.7:8200/platform'
+  
+    # Dispatch it!
+    try:
+        dispatched = dispatcher(
+            nice_id = nice_id,
+            client_parameters=parameters_parsed,
+            workflow_object=output_object,
+            server_url=server_url,
+        )
+    except Exception as e:
+        return fail(f'Submission failed: {str(e)}')
 
-
-    # Run locally...
-    if parameters_parsed['type'] == 'karvdash':
-
-        # Create and run workflow
-        import couler.argo as couler
-        from couler.argo_submitter import ArgoSubmitter
-
-        executor_parameters = {
-            'workflow_name': 'openbio-' + nice_id,
-            'image_registry': parameters_parsed['ARGO_IMAGE_REGISTRY'],
-            'image_cache_path': parameters_parsed['ARGO_IMAGE_CACHE_PATH'],
-            'work_path': os.path.join(parameters_parsed['ARGO_WORK_PATH'], nice_id)
-        }
-        namespace = parameters_parsed['ARGO_NAMESPACE_PREFIX'] + 'admin' # self.request.user.username
-        _ = create_bash_script(output_object, server_url, 'argo', workflow_id=None, obc_client=False, executor_parameters=executor_parameters)
-        submitter = ArgoSubmitter(namespace=namespace)
-        result = couler.run(submitter=submitter)
-
-        run_report.visualization_url = urllib.parse.urlparse(parameters_parsed['ARGO_BASE_URL'])._replace(path='/workflows/%s/%s' % (namespace, result['metadata']['name'])).geturl()
+    # Did we get a visualization and/or monitor url?
+    if isinstance(dispatched, dict): 
+        run_report.visualization_url = dispatched.get('visualization_url', None)
+        run_report.monitor_url = dispatched.get('monitor_url', None)
+    else:
+        run_report.visualization_url = None
         run_report.monitor_url = None
-        run_report.client_status='SUBMITTED'
-        run_report.save()
 
-        # Let's not create a report_token for now.
-        ret = {
-            'nice_id': nice_id,
-        }
+    run_report.client_status='SUBMITTED'
+    run_report.save()
 
-        return success(ret)
+    #print ('Visualization url:', run_report.visualization_url)
 
-    # ...or continue with "experimental" code.
+    # Let's not create a report_token for now.
+    ret = {
+        'nice_id': nice_id,
+    }
+
+    return success(ret)
+
+    ############## HIGHLY EXPERIMENTAL ###############################
+
+# ...or continue with "experimental" code.
     run_url = urllib.parse.urljoin(url + '/', 'run') # https://stackoverflow.com/questions/8223939/how-to-join-absolute-and-relative-urls
 
     data_to_submit = {
@@ -4407,12 +4410,11 @@ def report(request, **kwargs):
     curl -X POST "http://0.0.0.0:8200/platform/report/" -H 'Content-Type: application/json' -d '{"token":"a2a71f56-2817-4e45-8f9e-72b1341cdfdc", "status": "workflow started test4/1"}' 
     '''
 
-    print (kwargs)
+    #print (kwargs)
 
-    print ('hellloooooooo')
 
     token = kwargs.get('token', None)
-    print ('token:', token)
+    #print ('token:', token)
     if not token:
         return fail('Could not find token field')
     #print ('token: {}'.format(token))
@@ -4702,6 +4704,7 @@ def reports_search_3(request, **kwargs):
         'report_log_url': report.log_url, # The url with the logs
         'report_visualization_url': report.visualization_url, # The url for monitoring of the execution progress (i.e. from airflow)
         'report_monitor_url': report.monitor_url,
+        'report_refresh_enabled': report.refresh_enabled,
         'report_client_status': report.client_status,
         'workflow' : simplejson.loads(workflow.workflow),
     }

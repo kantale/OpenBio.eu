@@ -13,8 +13,8 @@ import logging
 import bashlex
 import tarfile
 import zipfile
-from . import cargo
 import networkx as nx
+import importlib
 
 try:
     import zlib
@@ -3747,38 +3747,6 @@ dag = DAG(
             # Return string
             return airflow_python
 
-
-class ArgoExecutor(BaseExecutor):
-    def __init__(self, workflow, executor_parameters=None):
-        # Set defaults
-        if not executor_parameters:
-            executor_parameters = {}
-        if 'workflow_name' not in executor_parameters:
-            executor_parameters['workflow_name'] = ''
-        if 'image_registry' not in executor_parameters:
-            executor_parameters['image_registry'] = '127.0.0.1'
-        if 'image_cache_path' not in executor_parameters:
-            executor_parameters['image_cache_path'] = None
-        if 'work_path' not in executor_parameters:
-            executor_parameters['work_path'] = '/work'
-
-        super().__init__(workflow, executor_parameters)
-
-    def build(self, output, output_format='argo', workflow_id=None, obc_client=False):
-        self.decompose(
-            break_down_on_tools=True,
-            update_server_status=True,
-        )
-        json_wf = json.dumps(self.decomposed)
-        print ('JSON DAG:')
-        print (json.dumps(self.decomposed, indent=4))
-        ret = cargo.pipeline(json_wf, self.workflow_name, self.image_registry, self.image_cache_path, self.work_path)
-        print ('ARGO WORKFLOW:')
-        print (ret)
-        #a=1/0
-        return ret
-
-
 class JSONDAGExecutor(BaseExecutor):
     def build(self, output,
             output_format='jsondag',
@@ -4243,6 +4211,36 @@ def create_bash_script(workflow_object, server, output_format,
 
     else:
         raise OBC_Executor_Exception('Error: 6912: Unknown output format: {}'.format(str(output_format)))
+
+
+def dispatcher(*, 
+    nice_id, 
+    client_parameters, 
+    workflow_object,
+    server_url,
+    ):
+    '''
+    Allow any execution engine to execute / monitor / ...  workflows.
+
+    nice_id : Unique ID provided by OpenBio.eu
+    client_parameters : The parameters declared in Profile/Execution Environments of the OenBio Interface
+    workflow_object : The workflow object as it is stored in OpenBio. 
+                      This includes the cytoscape graph and can be passed to the ExecutionEnvironment
+    server_url : The url of the server,
+    '''
+
+    type_name = client_parameters['type']
+    new_module = importlib.import_module(f'ExecutionEnvironment.clients.{type_name}')
+
+    ret = new_module.dispatch(
+        nice_id=nice_id,
+        client_parameters=client_parameters,
+        workflow_object=workflow_object,
+        server_url=server_url,
+    )
+
+    return ret
+
 
 
 

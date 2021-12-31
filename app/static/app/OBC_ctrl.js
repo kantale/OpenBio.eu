@@ -2845,6 +2845,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.report_log_url = data['report_log_url'];
                 $scope.report_visualization_url = data['report_visualization_url'];
                 $scope.report_monitor_url = data['report_monitor_url'];
+                $scope.report_refresh_enabled = data['report_refresh_enabled']; // Can tis report be updated from the client?
                 $scope.report_client_status = data['report_client_status'];
                 $scope.report_username = data['report_username'];
                 $scope.report_created_at = data['report_created_at'];

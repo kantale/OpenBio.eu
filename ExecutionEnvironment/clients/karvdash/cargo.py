@@ -235,7 +235,7 @@ def dag_phase(data, wfl:workflow, last_builder):
 
     for step in sb_step.global_steps:
         if(step.type == step_type.initial):
-            print (last_builder, type(last_builder))
+            #print (last_builder, type(last_builder))
             couler.set_dependencies(lambda:  sb_step_call(wfl, step), dependencies=last_builder)
             continue
 

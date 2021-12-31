@@ -878,7 +878,7 @@
             </div>
             <div class="row right-align" style="margin-bottom: 0px;">
                 <!-- REFRESH BUTTON -->
-                <a class="btn tooltipped" data-position="bottom" data-tooltip="Refresh" style="margin-bottom:2px" ng-show="(username == report_username) && (report_client_status == 'RUNNING' || report_client_status == 'SUBMITTED' || report_client_status == 'PAUSE_SUBMITTED' || report_client_status == 'RESUME_SUBMITTED')" ng-click="report_refresh(1, true)">Refresh</a>
+                <a class="btn tooltipped" data-position="bottom" data-tooltip="Refresh" style="margin-bottom:2px" ng-show="report_refresh_enabled && (username == report_username) && (report_client_status == 'RUNNING' || report_client_status == 'SUBMITTED' || report_client_status == 'PAUSE_SUBMITTED' || report_client_status == 'RESUME_SUBMITTED')" ng-click="report_refresh(1, true)">Refresh</a>
 
                 <!-- PAUSE BUTTON -->
                 <a class="btn tooltipped" data-position="bottom" data-tooltip="Pause" style="margin-bottom:2px" ng-show="(username == report_username) && (report_client_status == 'RUNNING')" ng-click="report_refresh(2, true)">Pause</a>
