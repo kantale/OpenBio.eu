@@ -4297,7 +4297,7 @@ def run_workflow(request, **kwargs):
         result = couler.run(submitter=submitter)
 
         run_report.visualization_url = urllib.parse.urlparse(parameters_parsed['ARGO_BASE_URL'])._replace(path='/workflows/%s/%s' % (namespace, result['metadata']['name'])).geturl()
-        run_report.monitor_url = 'http://asdf.com'
+        run_report.monitor_url = None
         run_report.client_status='SUBMITTED'
         run_report.save()
 
