@@ -1044,6 +1044,19 @@ PAR1,PAR2
 6,12
 ```
 
+Ranges can be mixed with simple keywords for example:
+
+```bash
+VARIABLES="
+PAR1,PAR2
+10:15,test
+"
+```
+
+This defines a parallel set of 6 steps where `PAR1` takes values from `10` to `15` and `PAR2` takes the value `test` in all steps. 
+
+
+
 # The `REPORT` command
 During the execution of the workflow an html file that contains logs and results is generated. The path of this file is `${OBC_WORK_PATH}/<NICE_ID>.html` and is printed at the end of the execution. The `REPORT` is another reserved word (aside from `PARALLEL`) with which you can add data in this file. You can use this command at any place in your BASH scripts. The syntax of the `REPORT` command is:
 
