@@ -482,7 +482,13 @@
                     <a class="btn tooltipped" data-position="bottom" data-tooltip="Delete" style="margin-bottom:2px"
                         ng-show="workflows_info_draft && workflows_info_username==username && !workflows_info_editable"
                         ng-click="ro_finalize_delete_pressed('workflow', 'DELETE', false)">Delete</a>
-                    <a class="dropdown-trigger btn" data-target='runDropdownWorkflow' style="margin-bottom:2px" ng-disabled="(profile_clients.length<=1) || workflow_run_disabled || workflows_info_editable">Run</a>
+
+                    <a ng-if="profile_clients.length != 2" class="dropdown-trigger btn" data-target='runDropdownWorkflow' style="margin-bottom:2px" ng-disabled="(profile_clients.length<=1) || workflow_run_disabled || workflows_info_editable">Run</a>
+                    <a ng-if="profile_clients.length == 2" class="btn tooltipped" data-position="bottom" data-tooltip="Run" style="margin-bottom:2px"
+                        ng-disabled="workflow_run_disabled || workflows_info_editable"
+                        ng-click="workflow_info_run_pressed(profile_clients[0].name)">Run</a>
+                    
+
                     <a class="dropdown-trigger btn" data-target='downloadDropdownWorkflow' ng-show="!workflows_info_editable" style="margin-bottom:2px">Download</a>
                     <a class="waves-effect waves-light btn tooltipped" style="margin-bottom:2px" data-position="bottom"
                         data-tooltip="Fit" ng-click="workflow_info_fit_pressed()">Fit</a>

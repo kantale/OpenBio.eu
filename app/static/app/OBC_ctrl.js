@@ -4880,7 +4880,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     $scope.workflow_info_run_pressed = function(profile_name) {
 
         $scope.workflow_run_disabled = true;
-        $scope.toast('Please wait while the workflow is submitted for execution..', 'success');
+        $scope.toast('Please wait while the workflow is submitted for execution to ' + profile_name + ' ..', 'success');
 
         $scope.ajax(
             'run_workflow/',
