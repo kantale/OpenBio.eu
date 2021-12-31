@@ -3895,8 +3895,6 @@ process {PROCESS_NAME} {{
 
             tool_ids.append(tool_id)
 
-            #argo_dags.append(tool_id)
-
             previous_tools.append(tool_vars_filename)
 
 
@@ -4195,10 +4193,6 @@ def create_bash_script(workflow_object, server, output_format,
         w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
         e = AirflowExecutor(w)
         return e.build(output=None, output_format='airflow', workflow_id=workflow_id, obc_client=obc_client)
-    elif output_format in ['argo']:
-        w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
-        e = ArgoExecutor(w, executor_parameters)
-        return e.build(output=None, output_format='argo', workflow_id=workflow_id, obc_client=obc_client)
     elif output_format in ['nextflow']:
         w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server, workflow_id=workflow_id)
         e = NextflowExecutor(w)
@@ -4263,8 +4257,7 @@ if __name__ == '__main__':
 'cwltargz: Same as cwl but create a tar.gz file\n' \
 'cwlzip: Same as cwl but create a zip file\n' \
 'airflow: Create airflow bashoperator scripts\n' \
-'argo: Create ARGO workflow (YAML)\n'
-'nextflow: Create NEXTFLOW workflow\n'
+'nextflow: Create NEXTFLOW workflow\n' \
 'snakemake: Create a Snakemake workflow\n',
         default='sh')
     parser.add_argument('-O', '--output', dest='output', help='The output filename. default is script.sh, workflow.cwl and workflow.tar.gz, depending on the format', default='script')
@@ -4315,9 +4308,6 @@ if __name__ == '__main__':
         e.build(output = args.output, output_format=args.format)
     elif args.format in ['airflow']:
         e = AirflowExecutor(w)
-        e.build(output = args.output)
-    elif args.format in ['argo']:
-        e = ArgoExecutor(w)
         e.build(output = args.output)
     elif args.format in ['nextflow']:
         e = NextflowExecutor(w)
