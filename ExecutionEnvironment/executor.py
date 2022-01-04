@@ -2393,15 +2393,34 @@ ENDOFFILE
                     header = last_assignment['header']
                     this_parallel_steps = []
 
-                    if ( # Try to match something like this: ['1:10', '2:20'] 
+                    if ( # Try to match something like: 
+                        # ['1:10', '2:20']
+                        # ['1:10', '  10'] 
+                        # ['1:10'. 'test']
                         len(last_assignment['content'])==1 and 
                         len(last_assignment['content'][0]) > 0 and # avoid all([]) --> True !
-                        all(re.fullmatch(r'\d+:\d+', x) for x in last_assignment['content'][0])
+                        all(re.fullmatch(r'(\d+:\d+)|(\w+)', x.strip()) for x in last_assignment['content'][0])
                     ):
                         # 1:10,2:20,6:33
                         # this is a range. Create a lazy iterator
-                        ranges = [list(map(int, x.split(':'))) for x in last_assignment['content'][0]] # [[1, 10], [2, 20], [6, 33]]
-                        ranges = [range(x[0], x[1]+1) for x in ranges] # [range(1, 11), range(2, 21), range(6, 34)] 
+
+                        # Convert to lists # [[1, 10], [2, 20], [6, 33]]
+                        ranges = [
+                            (list(map(int, x.strip().split(':'))))   # '1:10' --> [1, 10]
+                                if ':' in x 
+                                else 
+                            [x.strip()]                              # 'test' --> ['test']
+                            for x in last_assignment['content'][0]
+                        ] 
+
+                        # Convert lists to ranges
+                        ranges = [
+                            range(x[0], x[1]+1) # [1,10] --> range(1, 11), 
+                                if len(x) == 2 
+                                else 
+                            x                   # ['test'] --> ['test']
+                            for x in ranges
+                        ] 
                         last_assignment['content'] = product(*ranges)
 
                     for values in last_assignment['content']:
