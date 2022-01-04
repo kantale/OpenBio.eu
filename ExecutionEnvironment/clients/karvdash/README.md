@@ -2,7 +2,7 @@
 Add the following parameters in OpenBio (Profile --> Execution Environment). Don't forget to change the IP.
 
 
-``json
+```json
 {
     "type": "karvdash",
     "namespace": "karvdash-admin",
