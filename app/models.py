@@ -1,10 +1,16 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.auth.signals import user_logged_in
+from django.dispatch import receiver
+from django.core.exceptions import ObjectDoesNotExist
+from urllib.parse import urlparse
 
 import re
 import uuid
 import random
 import string
+import json
+
 
 '''
 After making changes here run:
@@ -19,7 +25,7 @@ Important:
 class ExecutionClient(models.Model):
 
     name = models.CharField(max_length=256, null=False)
-    parameters = models.TextField(null=False) # The parameters of the client in json 
+    parameters = models.TextField(null=False) # The parameters of the client in json
     created_at = models.DateTimeField(auto_now_add=True) # https://docs.djangoproject.com/en/2.1/ref/models/fields/#datefield
 
 
@@ -49,6 +55,52 @@ class OBC_user(models.Model):
     # A user can have many References
     references = models.ManyToManyField(to='Reference', related_name='users_authored_me')
 
+
+@receiver(user_logged_in)
+def post_login(sender, user, request, **kwargs):
+    social = user.social_auth.get(provider='karvdash')
+    if social:
+        # Fetch Karvdash deployment settings from extra data returned with OIDC.
+        try:
+            registry_url = urlparse(social.extra_data['karvdash_registry_url'])
+            parameters = {'type': 'karvdash',
+                          'argo_url': social.extra_data['karvdash_argo_workflows_url'],
+                          'namespace': social.extra_data['karvdash_namespace'],
+                          'image_registry': '%s:%s' % (registry_url.hostname, registry_url.port),
+                          'image_cache_path': '/private/.imagecache',
+                          'work_path': '/private/openbio'}
+        except KeyError:
+            print('Missing required parameters from extra data returned with OIDC. Skipping setting up execution client...')
+            return
+
+        # Get or create user.
+        try:
+            obc_user = OBC_user.objects.get(user=user)
+        except ObjectDoesNotExist as e:
+            obc_user = OBC_user(user=user, email_validated=True, email_validation_token=None)
+            obc_user.save()
+
+        # Add a default execution client.
+        profile_name = 'karvdash'
+        parameters_json = json.dumps(parameters)
+        try:
+            client = obc_user.clients.get(name=profile_name)
+        except ObjectDoesNotExist as e:
+            try:
+                client = ExecutionClient.objects.get(name=profile_name)
+                print('FETCHING')
+            except ObjectDoesNotExist as e:
+                print('CREATING')
+                client = ExecutionClient(name=profile_name, parameters=parameters_json)
+                client.save()
+                obc_user.clients.add(client)
+
+        print('PARAMETERS OLD:', client.parameters)
+        print('PARAMETERS NEW:', client.parameters)
+        if client.parameters != parameters_json:
+            print('UPDATING')
+            client.parameters = parameters_json
+            client.save()
 
 class Keyword(models.Model):
     '''

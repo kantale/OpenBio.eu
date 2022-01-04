@@ -28,21 +28,21 @@ from django.test.client import RequestFactory # We need this to simulate a reque
 
 #Import database objects
 from app.models import (
-    OBC_user, 
-    Tool, 
-    Workflow, 
-    Variables, 
-    ToolValidations, 
-    OS_types, 
-    Keyword, 
-    Report, 
-    ReportToken, 
-    Reference, 
-    ReferenceField, 
+    OBC_user,
+    Tool,
+    Workflow,
+    Variables,
+    ToolValidations,
+    OS_types,
+    Keyword,
+    Report,
+    ReportToken,
+    Reference,
+    ReferenceField,
     Comment,
-    UpDownCommentVote, 
-    UpDownToolVote, 
-    UpDownWorkflowVote, 
+    UpDownCommentVote,
+    UpDownToolVote,
+    UpDownWorkflowVote,
     ExecutionClient,
     VisibilityOptions,
 )
@@ -53,7 +53,7 @@ from app.models import create_nice_id
 
 #Import executor
 from ExecutionEnvironment.executor import (
-    create_bash_script, 
+    create_bash_script,
     OBC_Executor_Exception,
     Workflow as Workflow_executor,
     dispatcher,
@@ -81,7 +81,7 @@ import hashlib
 import logging # https://docs.djangoproject.com/en/2.1/topics/logging/
 
 from collections import Counter, defaultdict
-from pprint import pprint 
+from pprint import pprint
 import urllib.parse # https://stackoverflow.com/questions/40557606/how-to-url-encode-in-python-3/40557716
 
 # Installed packages imports
@@ -171,7 +171,7 @@ g = {
     'create_client_resume_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'workflow/{NICE_ID}/paused/false'.format(NICE_ID=nice_id)),
     'create_client_abort_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'workflow/delete/{NICE_ID}'.format(NICE_ID=nice_id)),
     'create_client_airflow_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'admin/airflow/graph?dag_id={NICE_ID}&execution_date='.format(NICE_ID=nice_id)),
-    'maximum_workflow_file_upload': 1 , # Maximum file size for workflow upload in megabytes  
+    'maximum_workflow_file_upload': 1 , # Maximum file size for workflow upload in megabytes
 }
 
 ### HELPING FUNCTIONS AND DECORATORS #####
@@ -885,7 +885,7 @@ def tool_build_dependencies_jstree(tool_dependencies, add_variables=False, add_i
             to_append['description'] = tool_dependency['dependency'].description
             to_append['website'] = tool_dependency['dependency'].website
             to_append['keywords'] = [k.keyword for k in tool_dependency['dependency'].keywords.all()]
-            to_append['visibility'] = VisibilityOptions.VISIBILITY_OPTIONS_CODE_dic[tool_dependency['dependency'].visibility] 
+            to_append['visibility'] = VisibilityOptions.VISIBILITY_OPTIONS_CODE_dic[tool_dependency['dependency'].visibility]
 
         tool_dependencies_jstree.append(to_append)
 
@@ -1238,9 +1238,9 @@ def user_add_client(request, **kwargs):
     ret = {
         'profile_clients' : [
             {
-            'name': client.name, 
+            'name': client.name,
             'parameters': client.parameters
-            } 
+            }
             for client in obc_user.clients.all()
         ],
     }
@@ -2235,7 +2235,7 @@ def tools_add(request, **kwargs):
         return fail('Error 8777. Could not find tool dependencies.')
     tool_dependencies = kwargs['tool_dependencies']
 
-    #Check that dependencies are will formed 
+    #Check that dependencies are will formed
     tool_dependencies_objects = []
     for t in tool_dependencies:
         if not 'name' in t:
@@ -3214,7 +3214,7 @@ def set_edit_to_cytoscape_json(cy, edit, workflow_info_name, *,
             if not node['data']['belongto']['edit']:
                 node['data']['belongto'] = belongto
 
-        # Set the name in root 
+        # Set the name in root
         if 'name' in node['data']:
             if node['data']['name'] == 'root':
                 node['data']['name'] = workflow_info_name
@@ -3615,7 +3615,7 @@ def workflows_add(request, **kwargs):
 
 def tool_exists_in_db(tool):
     '''
-    Check if tool represented in cytoscape exists 
+    Check if tool represented in cytoscape exists
     '''
     return Tool.objects.filter(
         name = tool['name'],
@@ -3649,7 +3649,7 @@ def upload(request, **kwargs):
             return fail(f'Maximum file size: {g["maximum_workflow_file_upload"]} MB reached.')
 
     try:
-        complete_str = complete.decode("utf-8") 
+        complete_str = complete.decode("utf-8")
     except UnicodeDecodeError:
         return fail('Failed to convert file\'s content to Unicode UTF-8')
 
@@ -3675,10 +3675,10 @@ def upload(request, **kwargs):
     rf = RequestFactory()
 
     # All quality controls seem to be fine. Start importing!
-   
+
 
     # First, add tools
-    tools_added = [] # Keep records of which tools we have added 
+    tools_added = [] # Keep records of which tools we have added
     def tool_edit_getter(tool_request):
         '''
         This function takes an "artificial" tool_add request and submits it
@@ -3732,7 +3732,7 @@ def upload(request, **kwargs):
             #workflow_edit_getter = None,
         )
     except OBC_Executor_Exception as e:
-        #raise e 
+        #raise e
         error_message = str(e)
     except Exception as e:
         #raise e
@@ -4275,9 +4275,9 @@ def run_workflow(request, **kwargs):
         'token': token,
         'nice_id': nice_id,
     }
-    server_url = get_server_url(request) # http://0.0.0.0:8200/platform 
+    server_url = get_server_url(request) # http://0.0.0.0:8200/platform
     #server_url = 'http://192.168.1.7:8200/platform'
-  
+
     # Dispatch it!
     try:
         dispatched = dispatcher(
@@ -4290,7 +4290,7 @@ def run_workflow(request, **kwargs):
         return fail(f'Submission failed: {str(e)}')
 
     # Did we get a visualization and/or monitor url?
-    if isinstance(dispatched, dict): 
+    if isinstance(dispatched, dict):
         run_report.visualization_url = dispatched.get('visualization_url', None)
         run_report.monitor_url = dispatched.get('monitor_url', None)
     else:
@@ -4406,8 +4406,8 @@ def report(request, **kwargs):
     '''
     called from the workflows themeslves in order to update the current execution progress.
 
-    curl -X POST "http://0.0.0.0:8200/platform/report/" -H 'Content-Type: application/json' -d '{"token":"a2a71f56-2817-4e45-8f9e-72b1341cdfdc"}' 
-    curl -X POST "http://0.0.0.0:8200/platform/report/" -H 'Content-Type: application/json' -d '{"token":"a2a71f56-2817-4e45-8f9e-72b1341cdfdc", "status": "workflow started test4/1"}' 
+    curl -X POST "http://0.0.0.0:8200/platform/report/" -H 'Content-Type: application/json' -d '{"token":"a2a71f56-2817-4e45-8f9e-72b1341cdfdc"}'
+    curl -X POST "http://0.0.0.0:8200/platform/report/" -H 'Content-Type: application/json' -d '{"token":"a2a71f56-2817-4e45-8f9e-72b1341cdfdc", "status": "workflow started test4/1"}'
     '''
 
     #print (kwargs)
@@ -4616,8 +4616,8 @@ def reports_search_2(main_search, request):
 
     # We do not want reports that have only one tokens which is "unused"
     results = Report.objects.annotate(num_tokens=Count('tokens')).filter(
-        user_Q & 
-        (nice_id_Q | workflow_Q | username_Q) & 
+        user_Q &
+        (nice_id_Q | workflow_Q | username_Q) &
         (~(not_unused&count_1))
     )
 
@@ -4720,7 +4720,7 @@ def reports_refresh(request, **kwargs):
 
     * Reports --> Refresh --> button click
     * In cases when a workflow is executed from the OBC client. Update the status
-    * action: 
+    * action:
     * 1 --> refresh
     * 2 --> pause
     * 3 --> resume
@@ -4756,7 +4756,7 @@ def reports_refresh(request, **kwargs):
     if report_workflow_action == 4:
         # Delete it..
         report.delete()
-        return success()     
+        return success()
 
     # Get the url of the client
     client_url = report.client.client

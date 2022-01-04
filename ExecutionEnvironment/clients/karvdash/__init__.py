@@ -43,7 +43,7 @@ class ArgoExecutor(BaseExecutor):
         ret = cargo.pipeline(json_wf, self.workflow_name, self.image_registry, self.image_cache_path, self.work_path)
         #print ('ARGO WORKFLOW:')
         #print (ret)
-        
+
         return ret
 
 
@@ -56,12 +56,12 @@ def dispatch(*,
 
     executor_parameters = {
         'workflow_name': 'openbio-' + nice_id,
-        'image_registry': client_parameters['ARGO_IMAGE_REGISTRY'],
-        'image_cache_path': client_parameters['ARGO_IMAGE_CACHE_PATH'],
-        'work_path': os.path.join(client_parameters['ARGO_WORK_PATH'], nice_id)
+        'image_registry': client_parameters['image_registry'],
+        'image_cache_path': client_parameters['image_cache_path'],
+        'work_path': os.path.join(client_parameters['work_path'], nice_id)
     }
 
-    namespace = client_parameters['ARGO_NAMESPACE_PREFIX'] + 'admin' # self.request.user.username
+    namespace = client_parameters['namespace']
 
     # Setup bash scripts
     args = type('A', (), {
@@ -70,8 +70,8 @@ def dispatch(*,
     })
     setup_bash_patterns(args)
 
-    # Parse cytoscape workflow 
-    w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server_url, workflow_id=None) 
+    # Parse cytoscape workflow
+    w = Workflow(workflow_object = workflow_object, askinput='NO', obc_server=server_url, workflow_id=None)
 
     # Create argo scripts
     e = ArgoExecutor(w, executor_parameters)
@@ -82,7 +82,7 @@ def dispatch(*,
     result = couler.run(submitter=submitter)
 
     # Get visualization url
-    visualization_url = urllib.parse.urlparse(client_parameters['ARGO_BASE_URL'])._replace(path='/workflows/%s/%s' % (namespace, result['metadata']['name'])).geturl()
+    visualization_url = urllib.parse.urlparse(client_parameters['argo_url'])._replace(path='/workflows/%s/%s' % (namespace, result['metadata']['name'])).geturl()
 
 
     return {
