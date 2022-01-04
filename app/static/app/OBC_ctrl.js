@@ -358,6 +358,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
     /*
     * Profile --> Execution Clients --> '+' --> clicked 
+    * Add Execution Environment
+    * add client
     */
     $scope.profile_add_client = function(index) {
         //alert('hello!');
@@ -373,6 +375,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.toast('Execution Client added succesfully', 'success');
                 $scope.profile_clients = data['profile_clients'];
                 $scope.profile_clients.push({name: '', parameters: ''});
+
             },
             function(data) {
                 $scope.toast(data['error_message'], 'error');

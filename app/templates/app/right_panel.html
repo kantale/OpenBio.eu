@@ -483,8 +483,8 @@
                         ng-show="workflows_info_draft && workflows_info_username==username && !workflows_info_editable"
                         ng-click="ro_finalize_delete_pressed('workflow', 'DELETE', false)">Delete</a>
 
-                    <a ng-if="profile_clients.length != 2" class="dropdown-trigger btn" data-target='runDropdownWorkflow' style="margin-bottom:2px" ng-disabled="(profile_clients.length<=1) || workflow_run_disabled || workflows_info_editable">Run</a>
-                    <a ng-if="profile_clients.length == 2" class="btn tooltipped" data-position="bottom" data-tooltip="Run" style="margin-bottom:2px"
+                    <a ng-show="profile_clients.length != 2" class="dropdown-trigger btn" data-tooltip="Run" data-target='runDropdownWorkflow' style="margin-bottom:2px" ng-disabled="(profile_clients.length<=1) || workflow_run_disabled || workflows_info_editable">Run</a>
+                    <a ng-show="profile_clients.length == 2" class="btn tooltipped" data-position="bottom" data-tooltip="Run" style="margin-bottom:2px"
                         ng-disabled="workflow_run_disabled || workflows_info_editable"
                         ng-click="workflow_info_run_pressed(profile_clients[0].name)">Run</a>
                     
