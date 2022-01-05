@@ -919,10 +919,10 @@ class Workflow:
         return ret
 
     @staticmethod
-    def get_tool_cytoscape_id(tool):
+    def get_tool_cytoscape_id(tool, no_dots=True):
         '''
         '''
-        return f'{Workflow.get_tool_dash_id(tool, no_dots=True)}__2'
+        return f'{Workflow.get_tool_dash_id(tool, no_dots=no_dots)}__2'
 
     @staticmethod
     def create_tool_from_cytoscape_id(cytoscape_tool_id):
@@ -1513,7 +1513,7 @@ class Workflow:
                   if tool['type'] == 'tool'
         }
         old_tool_ids = {
-            self.get_tool_cytoscape_id(tool['old']): self.get_tool_cytoscape_id(tool['new'])
+            self.get_tool_cytoscape_id(tool['old'], no_dots=False): self.get_tool_cytoscape_id(tool['new'], no_dots=False)
             for tool in added_objects.values()
         }
 
@@ -1718,13 +1718,14 @@ class Workflow:
                 # Change tools dependencies
                 new_dependencies = []
                 for dependency in node['data']['dependencies']:
-                    dependency_id = Workflow.get_tool_cytoscape_id(dependency)
+                    dependency_id = Workflow.get_tool_cytoscape_id(dependency, no_dots=False)
                     if not dependency_id in old_tool_ids:
                         raise OBC_Executor_Exception('Could not resolve dependencies')
                     new_dependencies.append(Workflow.create_tool_from_cytoscape_id(old_tool_ids[dependency_id]))
                 node['data']['dependencies'] = new_dependencies
 
                 # Change tool id
+                print (old_tool_ids)
                 node['data']['id'] = old_tool_ids[node["data"]["id"]]
 
                 # Change edit
@@ -1745,7 +1746,7 @@ class Workflow:
 
                 # Change label and text
                 t1 = Workflow.tool_label_to_object(node['data']['label'])  # text': 'a2/1/1', 'label': 'a2/1/1',
-                t2 = Workflow.get_tool_cytoscape_id(t1) # a2__1__1__2
+                t2 = Workflow.get_tool_cytoscape_id(t1, no_dots=False) # a2__1__1__2
                 t3 = old_tool_ids[t2] # a2__1__1002__2
                 t4 = '__'.join(t3.split('__')[:-1])  # a2__1__1002
                 t5 = Workflow.tool_dash_id_to_object(t4) # {'name': 'a2', 'version': '1', 'edit': 1002}
