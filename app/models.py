@@ -64,7 +64,7 @@ def post_login(sender, user, request, **kwargs):
         return
 
     if not social:
-        return 
+        return
 
     # Fetch Karvdash deployment settings from extra data returned with OIDC.
     try:
@@ -92,21 +92,13 @@ def post_login(sender, user, request, **kwargs):
     try:
         client = obc_user.clients.get(name=profile_name)
     except ObjectDoesNotExist as e:
-        try:
-            client = ExecutionClient.objects.get(name=profile_name)
-            print('FETCHING')
-        except ObjectDoesNotExist as e:
-            print('CREATING')
-            client = ExecutionClient(name=profile_name, parameters=parameters_json)
-            client.save()
-            obc_user.clients.add(client)
-
-    print('PARAMETERS OLD:', client.parameters)
-    print('PARAMETERS NEW:', client.parameters)
-    if client.parameters != parameters_json:
-        print('UPDATING')
-        client.parameters = parameters_json
+        client = ExecutionClient(name=profile_name, parameters=parameters_json)
         client.save()
+        obc_user.clients.add(client)
+    else:
+        if client.parameters != parameters_json:
+            client.parameters = parameters_json
+            client.save()
 
 class Keyword(models.Model):
     '''
