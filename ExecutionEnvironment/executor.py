@@ -80,7 +80,7 @@ function update_server_status()
 
         if [[ $c == *'"success": true'* ]]; then
             obc_current_token=$(obc_parse_json "$c" "token")
-            echo obc_current_token=\"${obc_current_token}\" > ${OBC_WORK_PATH}/obc_current_token.sh 
+            echo obc_current_token=\"${obc_current_token}\" > ${OBC_WORK_PATH}/obc_current_token.sh
         else
 
             if [[ $c == *'"success": false'* ]]; then
@@ -1423,7 +1423,7 @@ class Workflow:
     def convert_tool_to_request(tool, added_objects):
         '''
         Takes a tool and creates a dictionary with the fields that can be used for a request to tools_add
-        added_objects: The tools that have been added alreadys
+        added_objects: The tools that have been added already
         '''
 
         #  "a1/1/1" --> {'name': 'a', 'version': '1', 'edit': 1}
@@ -1725,7 +1725,7 @@ class Workflow:
                 node['data']['dependencies'] = new_dependencies
 
                 # Change tool id
-                print (old_tool_ids)
+                # print (old_tool_ids)
                 node['data']['id'] = old_tool_ids[node["data"]["id"]]
 
                 # Change edit
@@ -2367,7 +2367,7 @@ ENDOFFILE
                 read_from = save_to_nodot
 
                 run_after.append(step_inter_id)
-                
+
                 # Are we calling another step? What is the id of this step?
                 if this_is_a_parallel_call_1:
                     step_to_call_id = parallel_call['step']
@@ -2390,15 +2390,15 @@ ENDOFFILE
                     # This is a parallel call. Iterate in all variable assignments in CSV
                     # As per the example:
                     # last_assignment['header'] --> ['VAR_1', 'VAR_2', 'VAR_3']
-                    # last_assignment['content'] --> [['VALUE_11', 'VALUE_12', 'VALUE_13'], ['VALUE_21', 'VALUE_22', 'VALUE_23'], ['VALUE_31', 'VALUE_32', 'VALUE_33'], ['VALUE_41', 'VALUE_42', 'VALUE_43'], ['VALUE_51', 'VALUE_52', 'VALUE_53']]  
+                    # last_assignment['content'] --> [['VALUE_11', 'VALUE_12', 'VALUE_13'], ['VALUE_21', 'VALUE_22', 'VALUE_23'], ['VALUE_31', 'VALUE_32', 'VALUE_33'], ['VALUE_41', 'VALUE_42', 'VALUE_43'], ['VALUE_51', 'VALUE_52', 'VALUE_53']]
                     header = last_assignment['header']
                     this_parallel_steps = []
 
-                    if ( # Try to match something like: 
+                    if ( # Try to match something like:
                         # ['1:10', '2:20']
-                        # ['1:10', '  10'] 
+                        # ['1:10', '  10']
                         # ['1:10'. 'test']
-                        len(last_assignment['content'])==1 and 
+                        len(last_assignment['content'])==1 and
                         len(last_assignment['content'][0]) > 0 and # avoid all([]) --> True !
                         all(re.fullmatch(r'(\d+:\d+)|(\w+)', x.strip()) for x in last_assignment['content'][0])
                     ):
@@ -2408,20 +2408,20 @@ ENDOFFILE
                         # Convert to lists # [[1, 10], [2, 20], [6, 33]]
                         ranges = [
                             (list(map(int, x.strip().split(':'))))   # '1:10' --> [1, 10]
-                                if ':' in x 
-                                else 
+                                if ':' in x
+                                else
                             [x.strip()]                              # 'test' --> ['test']
                             for x in last_assignment['content'][0]
-                        ] 
+                        ]
 
                         # Convert lists to ranges
                         ranges = [
-                            range(x[0], x[1]+1) # [1,10] --> range(1, 11), 
-                                if len(x) == 2 
-                                else 
+                            range(x[0], x[1]+1) # [1,10] --> range(1, 11),
+                                if len(x) == 2
+                                else
                             x                   # ['test'] --> ['test']
                             for x in ranges
-                        ] 
+                        ]
                         last_assignment['content'] = product(*ranges)
 
                     for values in last_assignment['content']:
@@ -2442,7 +2442,7 @@ ENDOFFILE
                     this_parallel_steps = []
                     for step_to_call in parallel_call_2: # ['step__stp2__test1__1', 'step__stp3__test1__1']
                         this_run_after = copy.deepcopy(run_after)
-                        
+
                         for item in break_down_step_recursive(self. step_ids[step_to_call], run_after=this_run_after, ):# + [step_inter_id]):
                             this_parallel_steps.append(item['step_inter_id'])
                             yield item
@@ -2766,7 +2766,7 @@ OBCENDOFFILE
 
     def create_environments(self,):
         '''
-        An empty tool_run_after: {'wget__latest__1': []} 
+        An empty tool_run_after: {'wget__latest__1': []}
 
         An example of what it might return:
     "environments": {
@@ -2806,7 +2806,7 @@ OBCENDOFFILE
 
         # It might be the case that the tool_run_afters do not contain dependencies. For example one (or more) tool(s) that do not have
         # any dependency or other tools are dependent from them. In that case we do not have a graph (graph=edges=dependencies) so
-        # this method fails.   
+        # this method fails.
         for tool, dependencies in self.workflow.tool_run_afters.items():
             if not tool in all_nodes:
                 # This tool is not in any environment
@@ -4227,9 +4227,9 @@ def create_bash_script(workflow_object, server, output_format,
         raise OBC_Executor_Exception('Error: 6912: Unknown output format: {}'.format(str(output_format)))
 
 
-def dispatcher(*, 
-    nice_id, 
-    client_parameters, 
+def dispatcher(*,
+    nice_id,
+    client_parameters,
     workflow_object,
     server_url,
     ):
@@ -4238,7 +4238,7 @@ def dispatcher(*,
 
     nice_id : Unique ID provided by OpenBio.eu
     client_parameters : The parameters declared in Profile/Execution Environments of the OenBio Interface
-    workflow_object : The workflow object as it is stored in OpenBio. 
+    workflow_object : The workflow object as it is stored in OpenBio.
                       This includes the cytoscape graph and can be passed to the ExecutionEnvironment
     server_url : The url of the server,
     '''
