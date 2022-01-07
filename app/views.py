@@ -4204,7 +4204,7 @@ def run_workflow(request, **kwargs):
 
     source: Where the request came from. If it from rest then source='frontend'
     '''
-    
+
     if request.user.is_anonymous: # Server should always check..
         return fail('Error 3291. User is anonymous')
 
@@ -4311,7 +4311,6 @@ def run_workflow(request, **kwargs):
 
     ############## HIGHLY EXPERIMENTAL ###############################
 
-# ...or continue with "experimental" code.
     run_url = urllib.parse.urljoin(url + '/', 'run') # https://stackoverflow.com/questions/8223939/how-to-join-absolute-and-relative-urls
 
     data_to_submit = {
