@@ -2253,7 +2253,6 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                     var_node.parent = this_node.id;
                     add_code(var_node, tree_nodes_ids[this_node.old_id], true);
                     $scope.tools_var_jstree_model.push(var_node);
-                    break;
                 }
             }
 
