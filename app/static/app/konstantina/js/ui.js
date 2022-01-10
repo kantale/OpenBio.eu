@@ -171,12 +171,14 @@ window.onload = function () {
                     }
                     if (event.id == 'toolsDataInstallation') {
                         $('#tool_os_choices_select').formSelect();
+                        tool_installation_editor.resize(); // See issue #247
+                        tool_validation_editor.resize(); // See issue #247
                     }
                     if ((event.id == 'workflowRightPanelGeneral') || (event.id == 'workflowRightPanelStep')) {
                         cy.resize();
                     }
                     if (event.id == 'workflowRightPanelStep') {
-
+                        workflow_step_editor.resize(); // See issue #247
                     }
                     if (event.id == 'reportsTimeline') {
                         window.OBCUI.timeline.redraw();
