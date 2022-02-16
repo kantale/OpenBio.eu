@@ -21,6 +21,12 @@ openbio:
   privacyURL: https://www.openbio.eu/static/static/static/docs/terms_privacy/OpenBio_Privacy_Policy.pdf
   showFundingLogos: true
 
+  # Settings for integration with Karvdash Oauth 2.0/OIDC authentication services.
+  karvdashEndpointURL:
+  karvdashClientID:
+  karvdashClientSecret:
+  karvdashVerifySSL: true
+
   # Extra settings (Python code).
   extraSettings:
 

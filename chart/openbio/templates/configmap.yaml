@@ -30,6 +30,30 @@ data:
     PRIVACY = {{ .Values.openbio.privacyURL | quote }}
     FUNDING_LOGOS = {{- if .Values.openbio.showFundingLogos }} True {{- else }} False {{- end }}
 
+    {{- if and .Values.openbio.ingressEnabled (eq (.Values.openbio.serverURL | urlParse).scheme "https") }}
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_SCHEME', 'https')
+    {{- end }}
+
+    {{- if .Values.openbio.karvdashEndpointURL }}
+    from social_core.backends.open_id_connect import OpenIdConnectAuth
+
+    class KarvdashConnect(OpenIdConnectAuth):
+        name = 'karvdash'
+        OIDC_ENDPOINT = {{ .Values.openbio.karvdashEndpointURL | quote }}
+        EXTRA_DATA = OpenIdConnectAuth.EXTRA_DATA + ['karvdash_namespace', 'karvdash_ingress_url', 'karvdash_registry_url', 'karvdash_argo_workflows_url']
+
+    AUTHENTICATION_BACKENDS = ('OpenBio.obc_private.KarvdashConnect',) + AUTHENTICATION_BACKENDS
+
+    SOCIAL_AUTH_POSTGRES_JSONFIELD = True
+    {{- if not .Values.openbio.karvdashVerifySSL }}
+    SOCIAL_AUTH_VERIFY_SSL = False
+    {{- end }}
+    SOCIAL_AUTH_KARVDASH_KEY = {{ required "You must set openbio.karvdashClientID" .Values.openbio.karvdashClientID | quote }}
+    SOCIAL_AUTH_KARVDASH_SECRET = {{ required "You must set openbio.karvdashClientSecret" .Values.openbio.karvdashClientSecret | quote }}
+
+    LOGIN_BACKEND = KarvdashConnect.name
+    {{- end }}
+
     {{- if .Values.openbio.extraSettings }}
     {{- .Values.openbio.extraSettings | nindent 4 }}
     {{- end }}
