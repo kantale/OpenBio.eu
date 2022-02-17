@@ -37,7 +37,6 @@ class workflow():
         self.containers: dict[container] = []
         self.dag = []
         self.image_registry = ""
-        self.image_cache_path = None
         self.work_path = ""
         self.builders = []
         simple_container = container("simple")
@@ -180,13 +179,11 @@ WORKDIR /root
     kaniko_args = [
         "--dockerfile=Dockerfile",
         "--cache=true",
+        "--cache-repo=%s/openbio-cache" % wfl.image_registry,
         "--context=dir://%s/" % wfl.work_path.rstrip("/"),
         "--insecure",
         "--destination=" + c.image
     ]
-    if wfl.image_cache_path:
-        kaniko_args += ["--cache-dir=%s" % wfl.image_cache_path]
-
     couler.run_container(image="gcr.io/kaniko-project/executor:latest",
                                 args=kaniko_args,
                                 input=c.artifacts,
@@ -290,14 +287,13 @@ def yaml():
     if states._enable_print_yaml:
         return yaml_str
       
-def pipeline(data:str, workflow_name:str, image_registry:str, image_cache_path:str, work_path:str):
+def pipeline(data:str, workflow_name:str, image_registry:str, work_path:str):
     couler._cleanup()
     sb_step.global_steps = []
     couler.workflow.name = workflow_name if workflow_name else "workflow"
 
     wfl = workflow()
     wfl.image_registry = image_registry
-    wfl.image_cache_path = image_cache_path
     wfl.work_path = work_path
     data = parse(data, wfl)
     couler.workflow.dag_mode = True
@@ -317,9 +313,9 @@ def pipeline(data:str, workflow_name:str, image_registry:str, image_cache_path:s
 
     return ret
 
-def pipeline_from_file(filename:str, workflow_name:str, image_registry:str, image_cache_path:str, work_path:str):
+def pipeline_from_file(filename:str, workflow_name:str, image_registry:str, work_path:str):
     with open(filename, 'r') as f:
-        return pipeline(f.read(), workflow_name, image_registry, image_cache_path, work_path)
+        return pipeline(f.read(), workflow_name, image_registry, work_path)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

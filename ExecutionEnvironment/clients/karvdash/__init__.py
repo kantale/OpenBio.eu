@@ -24,8 +24,6 @@ class ArgoExecutor(BaseExecutor):
             executor_parameters['workflow_name'] = ''
         if 'image_registry' not in executor_parameters:
             executor_parameters['image_registry'] = '127.0.0.1'
-        if 'image_cache_path' not in executor_parameters:
-            executor_parameters['image_cache_path'] = None
         if 'work_path' not in executor_parameters:
             executor_parameters['work_path'] = '/work'
 
@@ -40,7 +38,7 @@ class ArgoExecutor(BaseExecutor):
         #print ('JSON DAG:')
         #print (json.dumps(self.decomposed, indent=4))
 
-        ret = cargo.pipeline(json_wf, self.workflow_name, self.image_registry, self.image_cache_path, self.work_path)
+        ret = cargo.pipeline(json_wf, self.workflow_name, self.image_registry, self.work_path)
         #print ('ARGO WORKFLOW:')
         #print (ret)
 
@@ -57,7 +55,6 @@ def dispatch(*,
     executor_parameters = {
         'workflow_name': 'openbio-' + nice_id,
         'image_registry': client_parameters['image_registry'],
-        'image_cache_path': client_parameters['image_cache_path'],
         'work_path': os.path.join(client_parameters['work_path'], nice_id)
     }
 

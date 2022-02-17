@@ -73,7 +73,6 @@ def post_login(sender, user, request, **kwargs):
                       'argo_url': social.extra_data['karvdash_argo_workflows_url'],
                       'namespace': social.extra_data['karvdash_namespace'],
                       'image_registry': '%s:%s' % (registry_url.hostname, registry_url.port),
-                      'image_cache_path': '/private/.imagecache',
                       'work_path': '/private/openbio'}
     except KeyError:
         print('Missing required parameters from extra data returned with OIDC. Skipping setting up execution client...')
