@@ -4,6 +4,9 @@
 ## Documentation
 [Here is an incomplete documentation](https://kantale.github.io/OpenBio.eu/)
 
+## Discord 
+[Join our discord server](https://discord.com/invite/V6kVUDYHFC) for questions, suggestions and comments.
+
 ## Features
 Main features include:
 * No DSL (Domain Specific Language) required. Do you have a bash script that installs a tool (or dataset)? Just copy paste it!
