@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+#    'django_extensions', $ Use ./manage.py graph_models app -o my_project_visualized.png To visualize the graph 
+
     'social_django',  #  DO NOT FORGET TO: SOCIAL_AUTH_POSTGRES_JSONFIELD = True
                       # https://python-social-auth.readthedocs.io/en/latest/configuration/django.html
     'rest_framework',

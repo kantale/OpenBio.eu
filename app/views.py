@@ -172,6 +172,13 @@ g = {
     'create_client_abort_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'workflow/delete/{NICE_ID}'.format(NICE_ID=nice_id)),
     'create_client_airflow_url': lambda client_url, nice_id: urllib.parse.urljoin(client_url + '/', 'admin/airflow/graph?dag_id={NICE_ID}&execution_date='.format(NICE_ID=nice_id)),
     'maximum_workflow_file_upload': 1 , # Maximum file size for workflow upload in megabytes
+
+#expr = r'\s*\w+\s*=\s*((\"[\w ]+\")|(True)|(False)|(\d+\.\d+)|(\d+))'
+#q_expr = fr'\s*Q\s*\(\s*{expr}\s*\)\s*'
+#q_expr_p = fr'(\s*\(\s*)*{q_expr}(\s*\)\s*)*'
+#q_expr_p_and = fr'{q_expr_p}\s*((&|\|)\s*{q_expr_p})*'
+ 
+    'advanced_search_re' : re.compile(r'(\s*\(\s*)*\s*Q\s*\(\s*\s*\w+\s*=\s*((\"[\w ]+\")|(True)|(False)|(\d+\.\d+)|(\d+))\s*\)\s*(\s*\)\s*)*\s*((&|\|)\s*(\s*\(\s*)*\s*Q\s*\(\s*\s*\w+\s*=\s*((\"[\w ]+\")|(True)|(False)|(\d+\.\d+)|(\d+))\s*\)\s*(\s*\)\s*)*)*'),
 }
 
 ### HELPING FUNCTIONS AND DECORATORS #####
@@ -1324,11 +1331,14 @@ def users_search_2(
     Collect all users from main search
     '''
 
-    username_Q = Q(user__username__icontains=main_search)
-    affiliation_Q = Q(affiliation__icontains=main_search)
-    publicinfo_Q = Q(public_info__icontains=main_search)
+    results = evaluate_advanced_query(main_search, OBC_user, request=None, check_visibility=False)
+    if not results:
 
-    results = OBC_user.objects.filter(username_Q | affiliation_Q | publicinfo_Q)
+        username_Q = Q(user__username__icontains=main_search)
+        affiliation_Q = Q(affiliation__icontains=main_search)
+        publicinfo_Q = Q(public_info__icontains=main_search)
+
+        results = OBC_user.objects.filter(username_Q | affiliation_Q | publicinfo_Q)
 
     users_search_jstree = []
     for result in results:
@@ -1907,30 +1917,58 @@ def get_visibility_Q_objects(request):
 
     return [Q3]
 
+def evaluate_advanced_query(advanced_query, o, request, check_visibility=True):
+    '''
+    Check if the user has inserted an advanced Q expression
+    We *HAVE* to run the query (filter) here, because we also check if it raises an exception.
+    this function should not return a Q object (or a list of Q objects)
+    '''
+
+    results = None
+    if re.fullmatch(g['advanced_search_re'], advanced_query):
+        # This is an advanced search Q
+        # Hopefully this is not dangerous..
+        try:
+            Q_advanced = [eval(advanced_query)]
+            
+            if check_visibility:
+                Q_advanced.extend(get_visibility_Q_objects(request))
+
+            results = o.objects.filter(*Q_advanced).order_by('created_at')
+
+        except Exception as e:
+            #print (str(e))
+            pass
+
+    return results 
+
 
 def tools_search_2(tools_search_name, tools_search_version, tools_search_edit, *, request):
     '''
     This is triggered when there is a key-change on the main-search
     '''
 
-    Qs = []
-    if tools_search_name:
-        Q1 = Q(name__icontains=tools_search_name)
-        Q2 = Q(obc_user__user__username__icontains=tools_search_name)
-        Qs.append(Q1 | Q2)
+    results = evaluate_advanced_query(tools_search_name, Tool, request, check_visibility=True)
 
-    if tools_search_version:
-        Qs.append(Q(version__icontains=tools_search_version))
+    if not results:
+        Qs = []
+        if tools_search_name:
+            Q1 = Q(name__icontains=tools_search_name)
+            Q2 = Q(obc_user__user__username__icontains=tools_search_name)
+            Qs.append(Q1 | Q2)
 
-    if tools_search_edit:
-        Qs.append(Q(edit = int(tools_search_edit)))
+        if tools_search_version:
+            Qs.append(Q(version__icontains=tools_search_version))
 
-    # Extend with visibility (private/public) filters
-    Qs.extend(get_visibility_Q_objects(request))
+        if tools_search_edit:
+            Qs.append(Q(edit = int(tools_search_edit)))
 
-    # This applies an AND operator. https://docs.djangoproject.com/en/2.2/topics/db/queries/#complex-lookups-with-q-objects
-    # For the order_by part see issue #120
-    results = Tool.objects.filter(*Qs).order_by('created_at')
+        # Extend with visibility (private/public) filters
+        Qs.extend(get_visibility_Q_objects(request))
+
+        # This applies an AND operator. https://docs.djangoproject.com/en/2.2/topics/db/queries/#complex-lookups-with-q-objects
+        # For the order_by part see issue #120
+        results = Tool.objects.filter(*Qs).order_by('created_at')
 
     # { id : 'ajson1', parent : '#', text : 'KARAPIPERIM', state: { opened: true} }
 
@@ -1968,23 +2006,27 @@ def workflows_search_2(workflows_search_name, workflows_search_edit, *, request)
     Called by all_search_2
     '''
 
-    Qs = []
-    #workflows_search_name = kwargs.get('workflows_search_name', '')
-    if workflows_search_name:
-        Q1 = Q(name__icontains=workflows_search_name)
-        Q2 = Q(obc_user__user__username__icontains=workflows_search_name)
-        Qs.append(Q1 | Q2)
-
-    #workflows_search_edit = kwargs.get('workflows_search_edit', '')
-    if workflows_search_edit:
-        Qs.append(Q(edit = int(workflows_search_edit)))
-
-    # Extend with visibility (private/public) filters.
-    Qs.extend(get_visibility_Q_objects(request))
+    results = evaluate_advanced_query(workflows_search_name, Workflow, request, check_visibility=True)
 
 
-    # For the order_by part see issue #120
-    results = Workflow.objects.filter(*Qs).order_by('created_at')
+    if not results:
+        Qs = []
+        #workflows_search_name = kwargs.get('workflows_search_name', '')
+        if workflows_search_name:
+            Q1 = Q(name__icontains=workflows_search_name)
+            Q2 = Q(obc_user__user__username__icontains=workflows_search_name)
+            Qs.append(Q1 | Q2)
+
+        #workflows_search_edit = kwargs.get('workflows_search_edit', '')
+        if workflows_search_edit:
+            Qs.append(Q(edit = int(workflows_search_edit)))
+
+        # Extend with visibility (private/public) filters.
+        Qs.extend(get_visibility_Q_objects(request))
+
+
+        # For the order_by part see issue #120
+        results = Workflow.objects.filter(*Qs).order_by('created_at')
 
     obc_user = get_obc_user(request)
 
@@ -5036,11 +5078,15 @@ def references_search_2(
     Collect all references from main search
     '''
 
-    name_Q = Q(name__icontains=main_search)
-    html_Q = Q(html__icontains=main_search)
-    username_Q = Q(obc_user__user__username__icontains=main_search)
+    results = evaluate_advanced_query(main_search, Reference, request=None, check_visibility=False)
 
-    results = Reference.objects.filter(name_Q | html_Q | username_Q)
+    if not results:
+        name_Q = Q(name__icontains=main_search)
+        html_Q = Q(html__icontains=main_search)
+        username_Q = Q(obc_user__user__username__icontains=main_search)
+
+        results = Reference.objects.filter(name_Q | html_Q | username_Q)
+
     references_search_jstree = []
 
     for result in results:
