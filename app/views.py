@@ -1331,7 +1331,7 @@ def users_search_2(
     Collect all users from main search
     '''
 
-    results = evaluate_advanced_query(main_search, OBC_user, request=None, check_visibility=False)
+    results = evaluate_advanced_query(main_search, OBC_user, request=None, check_visibility=False, created_at=False)
     if not results:
 
         username_Q = Q(user__username__icontains=main_search)
@@ -1917,7 +1917,7 @@ def get_visibility_Q_objects(request):
 
     return [Q3]
 
-def evaluate_advanced_query(advanced_query, o, request, check_visibility=True):
+def evaluate_advanced_query(advanced_query, o, request, check_visibility=True, created_at=True):
     '''
     Check if the user has inserted an advanced Q expression
     We *HAVE* to run the query (filter) here, because we also check if it raises an exception.
@@ -1934,7 +1934,11 @@ def evaluate_advanced_query(advanced_query, o, request, check_visibility=True):
             if check_visibility:
                 Q_advanced.extend(get_visibility_Q_objects(request))
 
-            results = o.objects.filter(*Q_advanced).order_by('created_at')
+            if created_at:
+                results = o.objects.filter(*Q_advanced).order_by('created_at')
+            else:
+                results = o.objects.filter(*Q_advanced)
+
 
         except Exception as e:
             #print (str(e))
@@ -1948,7 +1952,7 @@ def tools_search_2(tools_search_name, tools_search_version, tools_search_edit, *
     This is triggered when there is a key-change on the main-search
     '''
 
-    results = evaluate_advanced_query(tools_search_name, Tool, request, check_visibility=True)
+    results = evaluate_advanced_query(tools_search_name, Tool, request, check_visibility=True, created_at=True)
 
     if not results:
         Qs = []
@@ -2006,7 +2010,7 @@ def workflows_search_2(workflows_search_name, workflows_search_edit, *, request)
     Called by all_search_2
     '''
 
-    results = evaluate_advanced_query(workflows_search_name, Workflow, request, check_visibility=True)
+    results = evaluate_advanced_query(workflows_search_name, Workflow, request, check_visibility=True, created_at=True)
 
 
     if not results:
@@ -5078,7 +5082,7 @@ def references_search_2(
     Collect all references from main search
     '''
 
-    results = evaluate_advanced_query(main_search, Reference, request=None, check_visibility=False)
+    results = evaluate_advanced_query(main_search, Reference, request=None, check_visibility=False, created_at=False)
 
     if not results:
         name_Q = Q(name__icontains=main_search)
