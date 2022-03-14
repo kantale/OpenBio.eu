@@ -175,10 +175,10 @@ g = {
 
 #expr = r'\s*\w+\s*=\s*((\"[\w ]+\")|(True)|(False)|(\d+\.\d+)|(\d+))'
 #q_expr = fr'\s*Q\s*\(\s*{expr}\s*\)\s*'
-#q_expr_p = fr'(\s*\(\s*)*{q_expr}(\s*\)\s*)*'
+#q_expr_p = fr'(\s*\~?\s*\(\s*)*\~?{q_expr}(\s*\)\s*)*'
 #q_expr_p_and = fr'{q_expr_p}\s*((&|\|)\s*{q_expr_p})*'
  
-    'advanced_search_re' : re.compile(r'(\s*\(\s*)*\s*Q\s*\(\s*\s*\w+\s*=\s*((\"[\w ]+\")|(True)|(False)|(\d+\.\d+)|(\d+))\s*\)\s*(\s*\)\s*)*\s*((&|\|)\s*(\s*\(\s*)*\s*Q\s*\(\s*\s*\w+\s*=\s*((\"[\w ]+\")|(True)|(False)|(\d+\.\d+)|(\d+))\s*\)\s*(\s*\)\s*)*)*'),
+    'advanced_search_re' : re.compile(r'(\s*\~?\s*\(\s*)*\~?\s*Q\s*\(\s*\s*\w+\s*=\s*((\"[\w ]+\")|(True)|(False)|(\d+\.\d+)|(\d+))\s*\)\s*(\s*\)\s*)*\s*((&|\|)\s*(\s*\~?\s*\(\s*)*\~?\s*Q\s*\(\s*\s*\w+\s*=\s*((\"[\w ]+\")|(True)|(False)|(\d+\.\d+)|(\d+))\s*\)\s*(\s*\)\s*)*)*'),
 }
 
 ### HELPING FUNCTIONS AND DECORATORS #####
