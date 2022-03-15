@@ -1353,12 +1353,12 @@ Graph 1:
 Tool_B --> Tool_A <-- Tool_C
 ```
 
-Graph_2
+Graph_2:
 ```text
 Tool_D --> Tool_E
 ```
 
-This means that when running in Karvdash, the tools: `Tool_A`, `Tool_B`, `Tool_C` will run in a single container (let's call it `environment_1`) and the tools `Tool_D`, `Tool_E` in another (let's call it `environment_2`). This has happened to reduce the overhed of creating containers for each different tools. Some tools (i.e. simple scripts) are very small, and dedicating a complete container would clutter the execution environment. 
+This means that when running in Karvdash, the tools: `Tool_A`, `Tool_B`, `Tool_C` will run in a single container (let's call it `environment_1`) and the tools `Tool_D`, `Tool_E` in another (let's call it `environment_2`). This has happened to reduce the overhead of creating containers for each different tools. Some tools (i.e. simple scripts) are very small, and dedicating a complete container would clutter the execution environment. 
 
 Now suppose that we have a step in a workflow that invokes any of these tools. Karvdash needs to know in which container this tool exists. In order to do this, it checks each command in the bash script of the step for the name of the command that it invokes. If this command matches the name of a tool's variable, then it runs this command in the container where this tool has been installed. If this command does not match any tool's variable then this command runs in a "generic" container (currently Ubuntu:18.04) which is called `environment_generic`.
 
@@ -1384,7 +1384,7 @@ when this step is converted to a DAG, the DAG will be split in the following sub
 * `sub_step_5` will contain the 6th command (`${Tool_B_executable} --params_3`) and it will run in the `environment_1` container. 
 * `sub_step_6` will contain the 7th and 8th commands (`echo "hello 4" ; echo "hello 5"`) and it will run in the `environment_generic` container. 
 
-### Some notes on this approach:
+### Some notes on this approach
 
 Notice that by implementing this heuristic, the container-agnostic status of OpenBio.eu is preserved. Users do not have to make dockerfiles, orchestrate containers, etc. Also the full power of the kubernetes / Argo orchestration can be used. 
 
