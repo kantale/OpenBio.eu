@@ -979,7 +979,7 @@ def get_doi_from_orcid(orcid_id):
 
 
         for index in indexes:
-            if index in ei:
+            if index in ei and ei[index]:
                 if 'value' in ei[index]:
                     ret.add(ei[index]['value'])
 
