@@ -1378,8 +1378,8 @@ echo "hello 5"
 when this step is converted to a DAG, the DAG will be split in the following sub-steps:
 
 * `sub_step_1` will contain the 1st command (`echo "hello 1"`) and it will run in the `environment_generic` container. 
-* `sub_step_2` will contain the 2nd command (`${Tool_A_executable} --params_1"`) and it will run in the `environment_1` container. 
-* `sub_step_3` will contain the 2nd command (`${Tool_D_executable} --params_2`) and it will run in the `environment_2` container. 
+* `sub_step_2` will contain the 2nd command (`${Tool_A_executable} --params_1`) and it will run in the `environment_1` container. 
+* `sub_step_3` will contain the 3nd command (`${Tool_D_executable} --params_2`) and it will run in the `environment_2` container. 
 * `sub_step_4` will contain the 4th and 5th commands (`echo "hello 2" ; echo "hello 3"`) and it will run in the `environment_generic` container. 
 * `sub_step_5` will contain the 6th command (`${Tool_B_executable} --params_3`) and it will run in the `environment_1` container. 
 * `sub_step_6` will contain the 7th and 8th commands (`echo "hello 4" ; echo "hello 5"`) and it will run in the `environment_generic` container. 
@@ -1390,7 +1390,7 @@ Notice that by implementing this heuristic, the container-agnostic status of Ope
 
 An important consideration is that in order to use/invoke a tool from a step, users have to explicitly use a variable of this tool as the first word of a command. For example suppose that `tool_wget` installs the tool wget with the `apt-get install -y wget` command. Also suppose that in a step of a workflow you have the following command `wget http://www.example.com`. These two command (`apt-get` and `wget`) will run in different containers! The first will run in `environment_1` (assuming only 1 group of tool dependencies) and the second will run in `environment_generic`. This is because the first word of the latter command (`wget`) is not a variable of any tool.
 
-To compensate for this you will have to declare a variable in tool `tool_wget` that contains the path to the executable of `wget` inside the container. For example the name of this variable can be `executable` and the value can be `/usr/bin/wget`. Now instead of `wget http://example.example.com` the command should be `${wgen__1__1__executable} -O ${OBC_WORK_PATH}/myfile http://www.example.com`. Now Karvdash knows in which container to run this command, judging from its first word. Notice also that you have to make sure that the files that are generated from this command are saved *outside* of the container in a directory in which this command is running. Otherwise the files will be lost once the command has finished running. 
+To compensate for this you will have to declare a variable (see chapter [Tool/Data Variables](https://github.com/kantale/OpenBio.eu/blob/master/docs/docs/index.md#tooldata-variables)) in tool `tool_wget` that contains the path to the executable of `wget` inside the container. For example the name of this variable can be `executable` and the value can be `/usr/bin/wget` (the result of `which wget`. Now instead of `wget http://example.example.com` the command should be `${wget__1__1__executable} -O ${OBC_WORK_PATH}/myfile http://www.example.com`. Now Karvdash knows in which container to run this command, judging from its first word. Notice also that you have to make sure that the files that are generated from this command are saved *outside* of the container in a directory in which this command is running. Otherwise the files will be lost once the command has finished running. 
 
 In general this approach requires a complete change of philosophy when writing workflows. You have to think of tools as completely isolated components that run on their own machine. 
 
