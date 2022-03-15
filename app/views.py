@@ -3781,6 +3781,8 @@ def upload(request, **kwargs):
         #raise e
         error_message = str(e)
     except Exception as e:
+        #import traceback
+        #print(traceback.format_exc())
         #raise e
         error_message = str(e)
 

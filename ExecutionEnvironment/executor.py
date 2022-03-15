@@ -1460,12 +1460,13 @@ class Workflow:
 
             return ret
 
+
         ret = {
             'tool_description': tool['description'],
             'tools_search_name': tool['name'],
             'tools_search_version': tool['version'],
             'tool_edit_state': False,
-            'tool_visibility': tool['visibility'],
+            'tool_visibility': tool.get('visibility', 'public'), # Visibility was not member of the data model in versions <0.2
             'tool_dependencies': change_tool_dependencies(tool['dependencies']), # "a1/1/1"
             'tool_os_choices': [{'value': x} for x in tool['os_choices']], # [{'value': 'posix'}],
             'tool_installation_commands': change_tool_variables_in_bash(tool['installation_commands'], tool['dependencies']),
