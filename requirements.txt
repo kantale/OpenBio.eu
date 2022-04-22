@@ -16,7 +16,7 @@ cwlref-runner==1.0
 cwltool==1.0.20191022103248
 decorator==4.4.1
 defusedxml==0.7.1
-Django==2.2.20
+Django==2.2.28
 djangorestframework==3.12.4
 ecdsa==0.17.0
 flake8==3.9.2
