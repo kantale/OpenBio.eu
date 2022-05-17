@@ -68,11 +68,12 @@ def post_login(sender, user, request, **kwargs):
 
     # Fetch Karvdash deployment settings from extra data returned with OIDC.
     try:
-        registry_url = urlparse(social.extra_data['karvdash_registry_url'])
+        registry_url = urlparse(social.extra_data['karvdash_private_registry_url'])
+        registry_host = '%s:%s' % (registry_url.hostname, registry_url.port) if registry_url.port else registry_url.hostname
         parameters = {'type': 'karvdash',
                       'argo_url': social.extra_data['karvdash_argo_workflows_url'],
                       'namespace': social.extra_data['karvdash_namespace'],
-                      'image_registry': '%s:%s' % (registry_url.hostname, registry_url.port),
+                      'image_registry': '%s/%s' % (registry_host, registry_url.path.lstrip('/')),
                       'work_path': '/private/openbio'}
     except KeyError:
         print('Missing required parameters from extra data returned with OIDC. Skipping setting up execution client...')

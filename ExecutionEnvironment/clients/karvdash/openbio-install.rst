@@ -20,7 +20,7 @@ from social_core.backends.open_id_connect import OpenIdConnectAuth
 class KarvdashConnect(OpenIdConnectAuth):
     name = 'karvdash'
     OIDC_ENDPOINT = 'https://139.91.210.46.nip.io/oauth'
-    EXTRA_DATA = OpenIdConnectAuth.EXTRA_DATA + ['karvdash_namespace', 'karvdash_ingress_url', 'karvdash_registry_url', 'karvdash_argo_workflows_url']
+    EXTRA_DATA = OpenIdConnectAuth.EXTRA_DATA + ['karvdash_namespace', 'karvdash_ingress_url', 'karvdash_private_registry_url', 'karvdash_argo_workflows_url']
 
 AUTHENTICATION_BACKENDS = ('OpenBio.obc_private.KarvdashConnect',) + AUTHENTICATION_BACKENDS
 

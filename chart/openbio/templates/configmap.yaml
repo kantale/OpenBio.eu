@@ -40,7 +40,7 @@ data:
     class KarvdashConnect(OpenIdConnectAuth):
         name = 'karvdash'
         OIDC_ENDPOINT = {{ .Values.openbio.karvdashEndpointURL | quote }}
-        EXTRA_DATA = OpenIdConnectAuth.EXTRA_DATA + ['karvdash_namespace', 'karvdash_ingress_url', 'karvdash_registry_url', 'karvdash_argo_workflows_url']
+        EXTRA_DATA = OpenIdConnectAuth.EXTRA_DATA + ['karvdash_namespace', 'karvdash_ingress_url', 'karvdash_private_registry_url', 'karvdash_argo_workflows_url']
 
     AUTHENTICATION_BACKENDS = ('OpenBio.obc_private.KarvdashConnect',) + AUTHENTICATION_BACKENDS
 

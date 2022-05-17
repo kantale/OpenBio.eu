@@ -16,7 +16,7 @@ from couler.core.templates.artifact import LocalArtifact
 from couler.core.templates.output import (_container_output, _job_output,
                                           _script_output)
 from couler.core.templates.step import Step
-from couler.core.templates.volume import VolumeMount
+from couler.core.templates.volume import Volume, VolumeMount
 from six import MAXSIZE
 
 try:
@@ -98,6 +98,24 @@ class rawArtifact(LocalArtifact):
 ##################### CLASS WORKFLOW #################################
 ######################################################################
 
+class SecretVolume(Volume):
+    def __init__(self, name, secret_name):
+        self.name = name
+        self.secret_name = secret_name
+
+    def to_dict(self):
+        return OrderedDict({'name': self.name,
+                            'secret': {'secretName': self.secret_name}})
+
+class VolumeMountWithSubPath(VolumeMount):
+    def __init__(self, name, mount_path, sub_path):
+        super().__init__(name, mount_path)
+        self.sub_path = sub_path
+
+    def to_dict(self):
+        result = super().to_dict()
+        result['subPath'] = self.sub_path
+        return result
 
 class workflow():
     def __init__(self):
@@ -109,6 +127,7 @@ class workflow():
         simple_container = container("simple")
         simple_container.image = "kantale/openbio-env:1"
         self.simple_container = simple_container
+        couler.add_volume(SecretVolume('docker-registry-secret', 'docker-registry-secret'))
         # couler.run_container()
 
     def parse(self, input:str, ):
@@ -135,7 +154,7 @@ class workflow():
                 s = tool_installation_step(step, data['steps'][step]['bash'])
                 installation_script_path = os.path.join(self.work_path, "install-tool-"+s.name+".sh")
                 artifact = rawArtifact(installation_script_path, s.bash)
-                for c in get_container_with_tool(s.tool_to_install):
+                for c in self.get_container_with_tool(s.tool_to_install):
                     idx = self.containers.index(c)
                     c.image = self.image_registry + ("/%s/image" % (couler.workflow.name)) + c.name + ":v1"
                     c.artifacts.append(artifact)
@@ -170,7 +189,7 @@ class workflow():
     def sb_step_call(self, step:sb_step):
         c = self.simple_container
         if(step.type == step_type.tool_invocation):
-            conts = get_container_with_tool(step.tool_to_call)
+            conts = self.get_container_with_tool(step.tool_to_call)
             c = conts[0]
         elif (step.type == step_type.tool_installation):
             return
@@ -188,7 +207,7 @@ class workflow():
     def dag_phase(self, data, last_builder):
         for step in sb_step.global_steps:
             if(step.type == tool_invocation_step):
-                step.container = get_container_with_tool(step.tool_to_call)
+                step.container = self.get_container_with_tool(step.tool_to_call)
             else:
                 step.container = self.simple_container
         last_elem = None
@@ -264,13 +283,15 @@ class workflow():
             "--cache-repo=%s/openbio-cache" % self.image_registry,
             "--context=dir://%s/" % self.work_path.rstrip("/"),
             "--insecure",
+            "--skip-tls-verify",
             "--destination=" + c.image
         ]
         couler.run_container(image="gcr.io/kaniko-project/executor:latest",
-                                    args=kaniko_args,
-                                    input=c.artifacts,
-                                    step_name="builder"+c.name,
-                                    env=obc_env)
+                             args=kaniko_args,
+                             volume_mounts=[VolumeMountWithSubPath('docker-registry-secret', '/kaniko/.docker/config.json', '.dockerconfigjson')],
+                             input=c.artifacts,
+                             step_name="builder"+c.name,
+                             env=obc_env)
 
 
 
