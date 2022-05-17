@@ -1059,6 +1059,46 @@ Workflow submitted for execution with a Report id: kge7p
 <p>The <code>MONITOR RESOURCES</code> is a link to the resource manager (currently: netdata). It might look like this:</p>
 <p><img alt="img" src="screenshots/screen_44.png" /></p>
 <p>After execution you can have access to the generated logs and to the HTML report that the workflow creates by default. You can also delete a report. </p>
+<h2 id="argo-workflows-and-the-karvdash-integration">Argo Workflows and the Karvdash integration</h2>
+<p>One of the Execution environments that OpenBio.eu supports is <a href="https://github.com/CARV-ICS-FORTH/karvdash">Karvdash</a>. Karvdash is a frontend for cluster management through kubernetes which uses Argo as a workflow execution engine. In this setup, <strong>every</strong> step in a workflow should run in some docker container. So in order for an OpenBio.eu workflow to run in Karvdash, it has to "declare" the containers where each tool should be installed. Moreover it has to declare the containers where each command in the steps of a workflow should be executed. Notice that workflows in OpenBio.eu are "container agnostic", meaning that the user isn't declaring any container in any place. This means that there should be a heuristic that splits tools in containers in order to make Karvdash work with OpenBio.eu. </p>
+<p>The general philosophy of this heuristic is that tools are grouped according to their dependency tree and each group is running in a different docker container. In this documentation (and also in the source code) we call these groups as "environments". Let's explore this. Suppose that we have the following tool dependencies:</p>
+<pre><code>Tool_A --&gt; Tool_B
+Tool_A --&gt; Tool_C
+Tool_D --&gt; Tool_E
+</code></pre>
+<p>Here <code>--&gt;</code> means "depends from". If we form the dependency tree of this set of tools we will notice that it contains two disjoint graphs:</p>
+<p>Graph 1:</p>
+<pre><code class="language-text">Tool_B --&gt; Tool_A &lt;-- Tool_C
+</code></pre>
+<p>Graph_2:</p>
+<pre><code class="language-text">Tool_D --&gt; Tool_E
+</code></pre>
+<p>This means that when running in Karvdash, the tools: <code>Tool_A</code>, <code>Tool_B</code>, <code>Tool_C</code> will run in a single container (let's call it <code>environment_1</code>) and the tools <code>Tool_D</code>, <code>Tool_E</code> in another (let's call it <code>environment_2</code>). This has happened to reduce the overhead of creating containers for each different tools. Some tools (i.e. simple scripts) are very small, and dedicating a complete container would clutter the execution environment. </p>
+<p>Now suppose that we have a step in a workflow that invokes any of these tools. Karvdash needs to know in which container this tool exists. In order to do this, it checks each command in the bash script of the step for the name of the command that it invokes. If this command matches the name of a tool's variable, then it runs this command in the container where this tool has been installed. If this command does not match any tool's variable then this command runs in a "generic" container (currently Ubuntu:18.04) which is called <code>environment_generic</code>.</p>
+<p>Let's see an example. Suppose that <code>Tool_A</code> has the variable <code>Tool_A_executable</code> and <code>Tool_D</code> has the variable <code>Tool_D_executable</code>. Also suppose that a step in a workflow has the following commands:</p>
+<pre><code>echo &quot;hello 1&quot;
+${Tool_A_executable} --params_1
+${Tool_D_executable} --params_2
+echo &quot;hello 2&quot;
+echo &quot;hello 3&quot;
+${Tool_B_executable} --params_3
+echo &quot;hello 4&quot;
+echo &quot;hello 5&quot;
+</code></pre>
+<p>when this step is converted to a DAG, the DAG will be split in the following sub-steps:</p>
+<ul>
+<li><code>sub_step_1</code> will contain the 1st command (<code>echo "hello 1"</code>) and it will run in the <code>environment_generic</code> container. </li>
+<li><code>sub_step_2</code> will contain the 2nd command (<code>${Tool_A_executable} --params_1</code>) and it will run in the <code>environment_1</code> container. </li>
+<li><code>sub_step_3</code> will contain the 3nd command (<code>${Tool_D_executable} --params_2</code>) and it will run in the <code>environment_2</code> container. </li>
+<li><code>sub_step_4</code> will contain the 4th and 5th commands (<code>echo "hello 2" ; echo "hello 3"</code>) and it will run in the <code>environment_generic</code> container. </li>
+<li><code>sub_step_5</code> will contain the 6th command (<code>${Tool_B_executable} --params_3</code>) and it will run in the <code>environment_1</code> container. </li>
+<li><code>sub_step_6</code> will contain the 7th and 8th commands (<code>echo "hello 4" ; echo "hello 5"</code>) and it will run in the <code>environment_generic</code> container. </li>
+</ul>
+<h3 id="some-notes-on-this-approach">Some notes on this approach</h3>
+<p>Notice that by implementing this heuristic, the container-agnostic status of OpenBio.eu is preserved. Users do not have to make dockerfiles, orchestrate containers, etc. Also the full power of the kubernetes / Argo orchestration can be used. </p>
+<p>An important consideration is that in order to use/invoke a tool from a step, users have to explicitly use a variable of this tool as the first word of a command. For example suppose that <code>tool_wget</code> installs the tool wget with the <code>apt-get install -y wget</code> command. Also suppose that in a step of a workflow you have the following command <code>wget http://www.example.com</code>. These two command (<code>apt-get</code> and <code>wget</code>) will run in different containers! The first will run in <code>environment_1</code> (assuming only 1 group of tool dependencies) and the second will run in <code>environment_generic</code>. This is because the first word of the latter command (<code>wget</code>) is not a variable of any tool.</p>
+<p>To compensate for this you will have to declare a variable (see chapter <a href="https://github.com/kantale/OpenBio.eu/blob/master/docs/docs/index.md#tooldata-variables">Tool/Data Variables</a>) in tool <code>tool_wget</code> that contains the path to the executable of <code>wget</code> inside the container. For example the name of this variable can be <code>executable</code> and the value can be <code>/usr/bin/wget</code> (the result of <code>which wget</code>). Now instead of <code>wget http://example.example.com</code> the command should be <code>${wget__1__1__executable} -O ${OBC_WORK_PATH}/myfile http://www.example.com</code>. Now Karvdash knows in which container to run this command, judging from its first word. Notice also that you have to make sure that the files that are generated from this command are saved <em>outside</em> of the container in a directory in which this command is running. Otherwise the files will be lost once the command has finished running. </p>
+<p>In general this approach requires a complete change of philosophy when writing workflows. You have to think of tools as completely isolated components that run on their own machine. </p>
 <h2 id="bash-script">BASH script</h2>
 <p>The BASH script is a directly executable file. Assuming the BASH script filename is bash_7Lt2o.sh and you are in a BASH shell you can type:</p>
 <pre><code class="language-bash">bash script_7Lt2o.sh
@@ -1368,5 +1408,5 @@ echo &quot;after tool execution&quot;
 
 <!--
 MkDocs version : 1.2.2
-Build Date UTC : 2022-02-17 21:03:08.105605+00:00
+Build Date UTC : 2022-05-17 09:21:09.401695+00:00
 -->
