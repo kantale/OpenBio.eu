@@ -50,7 +50,7 @@ pybtex==0.22.2
 pycodestyle==2.7.0
 pycparser==2.19
 pyflakes==2.3.1
-PyJWT==2.0.1
+PyJWT==2.4.0
 pyOpenSSL==19.0.0
 pyparsing==2.4.2
 PySocks==1.6.8
