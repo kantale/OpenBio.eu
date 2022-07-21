@@ -59,20 +59,20 @@ class OBC_user(models.Model):
 @receiver(user_logged_in)
 def post_login(sender, user, request, **kwargs):
     try:
-        social = user.social_auth.get(provider='karvdash')
+        social = user.social_auth.get(provider='knot')
     except ObjectDoesNotExist:
         return
 
     if not social:
         return
 
-    # Fetch Karvdash deployment settings from extra data returned with OIDC.
+    # Fetch Knot deployment settings from extra data returned with OIDC.
     try:
-        registry_url = urlparse(social.extra_data['karvdash_private_registry_url'])
+        registry_url = urlparse(social.extra_data['knot_private_registry_url'])
         registry_host = '%s:%s' % (registry_url.hostname, registry_url.port) if registry_url.port else registry_url.hostname
-        parameters = {'type': 'karvdash',
-                      'argo_url': social.extra_data['karvdash_argo_workflows_url'],
-                      'namespace': social.extra_data['karvdash_namespace'],
+        parameters = {'type': 'knot',
+                      'argo_url': social.extra_data['knot_argo_workflows_url'],
+                      'namespace': social.extra_data['knot_namespace'],
                       'image_registry': '%s/%s' % (registry_host, registry_url.path.lstrip('/')),
                       'work_path': '/private/openbio'}
     except KeyError:
@@ -87,7 +87,7 @@ def post_login(sender, user, request, **kwargs):
         obc_user.save()
 
     # Add a default execution client.
-    profile_name = 'karvdash'
+    profile_name = 'knot'
     parameters_json = json.dumps(parameters)
     try:
         client = obc_user.clients.get(name=profile_name)

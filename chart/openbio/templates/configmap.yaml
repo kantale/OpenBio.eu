@@ -34,24 +34,24 @@ data:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_SCHEME', 'https')
     {{- end }}
 
-    {{- if .Values.openbio.karvdashEndpointURL }}
+    {{- if .Values.openbio.knotEndpointURL }}
     from social_core.backends.open_id_connect import OpenIdConnectAuth
 
-    class KarvdashConnect(OpenIdConnectAuth):
-        name = 'karvdash'
-        OIDC_ENDPOINT = {{ .Values.openbio.karvdashEndpointURL | quote }}
-        EXTRA_DATA = OpenIdConnectAuth.EXTRA_DATA + ['karvdash_namespace', 'karvdash_ingress_url', 'karvdash_private_registry_url', 'karvdash_argo_workflows_url']
+    class KnotConnect(OpenIdConnectAuth):
+        name = 'knot'
+        OIDC_ENDPOINT = {{ .Values.openbio.knotEndpointURL | quote }}
+        EXTRA_DATA = OpenIdConnectAuth.EXTRA_DATA + ['knot_namespace', 'knot_ingress_url', 'knot_private_registry_url', 'knot_argo_workflows_url']
 
-    AUTHENTICATION_BACKENDS = ('OpenBio.obc_private.KarvdashConnect',) + AUTHENTICATION_BACKENDS
+    AUTHENTICATION_BACKENDS = ('OpenBio.obc_private.KnotConnect',) + AUTHENTICATION_BACKENDS
 
     SOCIAL_AUTH_POSTGRES_JSONFIELD = True
-    {{- if not .Values.openbio.karvdashVerifySSL }}
+    {{- if not .Values.openbio.knotVerifySSL }}
     SOCIAL_AUTH_VERIFY_SSL = False
     {{- end }}
-    SOCIAL_AUTH_KARVDASH_KEY = {{ required "You must set openbio.karvdashClientID" .Values.openbio.karvdashClientID | quote }}
-    SOCIAL_AUTH_KARVDASH_SECRET = {{ required "You must set openbio.karvdashClientSecret" .Values.openbio.karvdashClientSecret | quote }}
+    SOCIAL_AUTH_KNOT_KEY = {{ required "You must set openbio.knotClientID" .Values.openbio.knotClientID | quote }}
+    SOCIAL_AUTH_KNOT_SECRET = {{ required "You must set openbio.knotClientSecret" .Values.openbio.knotClientSecret | quote }}
 
-    LOGIN_BACKEND = KarvdashConnect.name
+    LOGIN_BACKEND = KnotConnect.name
     {{- end }}
 
     {{- if .Values.openbio.extraSettings }}

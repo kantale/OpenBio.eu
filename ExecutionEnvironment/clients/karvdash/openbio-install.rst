@@ -2,11 +2,11 @@ OpenBio
 --------
 
 
-Add an application for OpenBio by going to https://139.91.210.46.nip.io/admin/oauth2_provider/application/. Set the redirect URI to https://openbio.139.91.210.46.nip.io/platform/complete/karvdash/.
+Add an application for OpenBio by going to https://139.91.210.46.nip.io/admin/oauth2_provider/application/. Set the redirect URI to https://openbio.139.91.210.46.nip.io/platform/complete/knot/.
 
 Create a folder for the database::
 
-    mkdir $HOME/karvdash/db/openbio
+    mkdir $HOME/knot/db/openbio
 
 Install::
 
@@ -17,23 +17,23 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_SCHEME', 'https')
 
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 
-class KarvdashConnect(OpenIdConnectAuth):
-    name = 'karvdash'
+class KnotConnect(OpenIdConnectAuth):
+    name = 'knot'
     OIDC_ENDPOINT = 'https://139.91.210.46.nip.io/oauth'
-    EXTRA_DATA = OpenIdConnectAuth.EXTRA_DATA + ['karvdash_namespace', 'karvdash_ingress_url', 'karvdash_private_registry_url', 'karvdash_argo_workflows_url']
+    EXTRA_DATA = OpenIdConnectAuth.EXTRA_DATA + ['knot_namespace', 'knot_ingress_url', 'knot_private_registry_url', 'knot_argo_workflows_url']
 
-AUTHENTICATION_BACKENDS = ('OpenBio.obc_private.KarvdashConnect',) + AUTHENTICATION_BACKENDS
+AUTHENTICATION_BACKENDS = ('OpenBio.obc_private.KnotConnect',) + AUTHENTICATION_BACKENDS
 
 SOCIAL_AUTH_POSTGRES_JSONFIELD = True
 SOCIAL_AUTH_VERIFY_SSL = False
-SOCIAL_AUTH_KARVDASH_KEY = 'XYZ'
-SOCIAL_AUTH_KARVDASH_SECRET = 'XXYYZZ'
+SOCIAL_AUTH_KNOT_KEY = 'XYZ'
+SOCIAL_AUTH_KNOT_SECRET = 'XXYYZZ'
 
-LOGIN_BACKEND = KarvdashConnect.name
+LOGIN_BACKEND = KnotConnect.name
 EOF
     helm install openbio ./chart/openbio --namespace openbio \
         --set image="kantale/openbio:0.2.1b3" \
-        --set openbio.databaseHostPath="$HOME/karvdash/db/openbio" \
+        --set openbio.databaseHostPath="$HOME/knot/db/openbio" \
         --set openbio.djangoSecret="zr14+4kz*d@f1ce\!sxzk*unwnhpvrwttxpizxu^r^c729gl4(a" \
         --set openbio.djangoDebug="1" \
         --set openbio.title="OpenBio" \

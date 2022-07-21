@@ -4,8 +4,8 @@ Add the following parameters in OpenBio (Profile --> Execution Environment). Don
 
 ```json
 {
-    "type": "karvdash",
-    "namespace": "karvdash-admin",
+    "type": "knot",
+    "namespace": "knot-admin",
     "argo_url": "https://argo.192.168.1.7.nip.io",
     "image_registry": "192.168.1.7:5000",
     "work_path": "/private/openbio"
