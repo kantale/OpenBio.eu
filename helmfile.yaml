@@ -1,0 +1,121 @@
+environments:
+  default:
+    values:
+    - storage:
+        # The volume to use for storing state across all applications.
+        stateVolume:
+          existingClaim:
+          hostPath:
+          size: 10Gi
+        # The volume to use for storing user files.
+        filesVolume:
+          existingClaim:
+          hostPath:
+          size: 10Gi
+    - ingress:
+        host: {{ requiredEnv "KNOT_HOST" }}
+        service:
+          type: LoadBalancer
+        createSelfsignedCertificate: true
+    - openBio:
+        version: 0.2.4
+        clientSecret: FR6HjKUVFo4AoJbN56PPC1nvoaQ9XHm3eMQz8pxRKddhJjh8dWCum5AUyKStEFFnkqzH3KWb8Jhal9OhRYCh6JKclYeF9M2TL4oPL95s4M3iArNrE6M8EMqU7lrEDYYD
+---
+helmfiles:
+- path: git::https://github.com/CARV-ICS-FORTH/knot.git@helmfile.yaml
+  values:
+  - storage:
+    {{ toYaml .Values.storage | nindent 6 }}
+  - ingress:
+    {{ toYaml .Values.ingress | nindent 6 }}
+  - openBio:
+      enabled: true
+  - knot:
+      issuesURL: https://github.com/CARV-ICS-FORTH/knot/issues
+      localImage: false
+releases:
+- name: openbio
+  namespace: openbio
+  createNamespace: true
+  chart: chart/openbio
+  values:
+  - image: kantale/openbio:{{ .Values.openBio.version }}
+  - openbio:
+      {{- if .Values.storage.stateVolume.hostPath }}
+      databaseHostPath: {{ .Values.storage.stateVolume.hostPath }}/openbio
+      {{- else }}
+      databaseVolumeClaim: openbio-state-pvc
+      {{- end }}
+      djangoSecret: {{ .Values.openBio | get "djangoSecret" "" | quote }}
+      djangoDebug: {{ .Values.openBio | get "djangoDebug" "0" | quote }}
+      title: {{ .Values.openBio | get "title" "OpenBio" | quote }}
+      serverURL: https://openbio.{{ .Values.ingress.host }}
+      fromEmail: admin@{{ .Values.ingress.host }}
+      adminEmail: admin@{{ .Values.ingress.host }}
+      termsURL: ""
+      privacyURL: ""
+      showFundingLogos: false
+      knotEndpointURL: https://{{ .Values.ingress.host }}/oauth
+      knotClientID: {{ "openbio" | quote }}
+      knotClientSecret: {{ .Values.openBio.clientSecret | quote }}
+      {{- if .Values.ingress.createSelfsignedCertificate }}
+      knotVerifySSL: false
+      {{- end }}
+      ingressEnabled: true
+      ingressURL: https://openbio.{{ .Values.ingress.host }}
+{{- if not .Values.storage.stateVolume.hostPath }}
+- name: openbio-state-pvc
+  namespace: openbio
+  createNamespace: true
+  chart: bedag/raw
+  version: 1.1.0
+  needs:
+  - nfs/nfs-server-state
+  values:
+  - resources:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: openbio-state-pvc
+      spec:
+        storageClassName: nfs-state
+        accessModes:
+          - ReadWriteMany
+        resources:
+          requests:
+            storage: 10Gi
+{{- end }}
+- name: openbio-clusterrolebinding
+  namespace: openbio
+  createNamespace: true
+  chart: bedag/raw
+  version: 1.1.0
+  values:
+  - resources:
+    - apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: openbio-cluster-admin
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: cluster-admin
+      subjects:
+      - kind: ServiceAccount
+        name: default
+        namespace: openbio
+- name: openbio-oauth-secret
+  namespace: openbio
+  createNamespace: true
+  chart: bedag/raw
+  version: 1.1.0
+  values:
+  - resources:
+    - apiVersion: v1
+      kind: Secret
+      metadata:
+        name: knot-oauth-openbio
+      type: Opaque
+      data:
+        client-id: {{ "openbio" | b64enc }}
+        client-secret: {{ .Values.openBio.clientSecret | b64enc }}
