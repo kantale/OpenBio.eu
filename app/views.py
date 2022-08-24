@@ -140,7 +140,7 @@ g = {
     },
     'instance_setting_not_found_printed': False,
     'ansi2html_converter': Ansi2HTMLConverter(), # https://github.com/ralphbean/ansi2html/
-    'markdown': mistune.Markdown(escape=True), # If you care about performance, it is better to re-use the Markdown instance:
+    'markdown': mistune.create_markdown(escape=True), # If you care about performance, it is better to re-use the Markdown instance:
                                                 # escape=True should be the default option for mistune...
 
 #    'pybtex': {
