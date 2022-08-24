@@ -164,6 +164,9 @@ REST_FRAMEWORK = {
 }
 
 
+# Enable stats visualization. This is a work done by Konstantina Pitianou 
+STATS_ENABLED = True 
+
 # Interface customization
 
 TITLE = 'OpenBio.eu'

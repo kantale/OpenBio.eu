@@ -64,6 +64,24 @@ Part taken from: https://bootstrapious.com/p/bootstrap-sidebar
     
 }
 
+/* STATS VISUALIZATION */
+#tool_dataset_editor { 
+  height: 500px;
+  border: 1px solid #DDD;
+  border-radius: 4px;
+  border-bottom-right-radius: 0px;
+  margin-top: 5px;
+}
+
+#workflow_dataset_editor { 
+  height: 500px;
+  border: 1px solid #DDD;
+  border-radius: 4px;
+  border-bottom-right-radius: 0px;
+  margin-top: 5px;
+}
+/* END OF STATS VISUALIZATION */
+
 /* https://stackoverflow.com/a/8306643/5626738 */ 
 pre {
     white-space: pre-wrap;

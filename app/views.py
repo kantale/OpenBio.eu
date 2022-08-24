@@ -1187,6 +1187,23 @@ def users_search_3(request, **kwargs):
         'profile_access_token' : getattr(get_user_access_token(u), 'key', None),
     }
 
+    if settings.STATS_ENABLED:
+        ret |= {
+            'user_tags': list(set().union(*[q.values_list('keyword', flat=True) for q in [x.keywords.all() for x in Tool.objects.filter(obc_user=u)] + [x.keywords.all() for x in Workflow.objects.filter(obc_user=u)] if q])),
+            'user_reputation_number': (((UpDownToolVote.objects.filter(tool__obc_user=u, upvote=True).count() + UpDownWorkflowVote.objects.filter(workflow__obc_user=u, upvote=True).count() + UpDownCommentVote.objects.filter(comment__in=Comment.objects.filter(obc_user=u).exclude(pk__in=[x for x in Tool.objects.filter(obc_user=u).values_list('comment', flat=True) if x]).exclude(pk__in=[x for x in Workflow.objects.filter(obc_user=u).values_list('comment', flat=True) if x]),upvote=True).count())  10) - ((UpDownToolVote.objects.filter(tool__obc_user=u, upvote=False).count() + UpDownWorkflowVote.objects.filter(workflow__obc_user=u, upvote=False).count() + UpDownCommentVote.objects.filter(comment__in=Comment.objects.filter(obc_user=u).exclude(pk__in=[x for x in Tool.objects.filter(obc_user=u).values_list('comment', flat=True) if x]).exclude(pk__in=[x for x in Workflow.objects.filter(obc_user=u).values_list('comment', flat=True) if x]),upvote=False).count())  2)),
+            'user_comments_number': Comment.objects.filter(obc_user=u).exclude(pk__in=[x for x in Tool.objects.filter(obc_user=u).values_list('comment', flat=True) if x]).exclude(pk__in=[x for x in Workflow.objects.filter(obc_user=u).values_list('comment', flat=True) if x]).count(),
+            'user_created_references_number': Reference.objects.filter(obc_user=u).count(),
+            'user_claimed_references_number': u.references.count(),
+            'user_created_tools_number': Tool.objects.filter(obc_user=u).count(),
+            'user_upvotes_tools_number': UpDownToolVote.objects.filter(tool__obc_user=u, upvote=True).count(),
+            'user_downvotes_tools_number': UpDownToolVote.objects.filter(tool__obc_user=u, upvote=False).count(),
+            'user_forked_tools_number': Tool.objects.filter(obc_user=u).exclude(forked_from=None).count(),
+            'user_created_workflows_number': Workflow.objects.filter(obc_user=u).count(),
+            'user_upvotes_workflows_number': UpDownWorkflowVote.objects.filter(workflow__obc_user=u, upvote=True).count(),
+            'user_downvotes_workflows_number': UpDownWorkflowVote.objects.filter(workflow__obc_user=u, upvote=False).count(),
+            'user_forked_workflows_number': Workflow.objects.filter(obc_user=u).exclude(forked_from=None).count(),
+        }
+
     # only for registered user:
     # * get mail
     # * get ExecutionClients
@@ -1437,6 +1454,7 @@ def index(request, **kwargs):
     context['TERMS'] = g.get('TERMS')
     context['PRIVACY'] = g.get('PRIVACY')
     context['FUNDING_LOGOS'] = g.get('FUNDING_LOGOS')
+    context['STATS_ENABLED'] = settings.STATS_ENABLED
 
 
     #print (social_core.pipeline.social_auth.social_details)
@@ -2151,9 +2169,14 @@ def tools_search_3(request, **kwargs):
         'tool_comment_username': tool.comment.obc_user.user.username,
 
         'draft': tool.draft,
-
-
     }
+
+    if settings.STATS_ENABLED:
+        ret |= {
+            # Statistics collaspible - charts data
+            'tool_comments_chart': qa_create_thread(tool.comment),
+            'tool_standard_chart': [{'upvote': toolvote.upvote, 'created_at': datetime_to_str(toolvote.created_at)} for toolvote in UpDownToolVote.objects.filter(tool=tool)],
+        }
 
     #print ('LOGGG DEPENDENCIES + VARIABLES')
     #print (simplejson.dumps(tool_variables_jstree, indent=4))
@@ -3866,8 +3889,14 @@ def workflows_search_3(request, **kwargs):
         'workflow_comment_created_at': datetime_to_str(workflow.comment.created_at),
         'workflow_comment_username': workflow.comment.obc_user.user.username,
         'draft': workflow.draft, # Is this a draft workflow?
-
     }
+
+    if settings.STATS_ENABLED:
+        ret |= {
+            # Statistics collaspible - charts data
+            'workflow_comments_chart': qa_create_thread(workflow.comment),
+            'workflow_standard_chart': [{'upvote': workflowvote.upvote, 'created_at': datetime_to_str(workflowvote.created_at)} for workflowvote in UpDownWorkflowVote.objects.filter(workflow=workflow)],
+        }
 
     return success(ret)
 

@@ -99,6 +99,17 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         
         $scope.tool_installation_init = '# Insert the BASH commands that install this tool\n# You can use these environment variables: \n# ${OBC_TOOL_PATH}: path to tools directory \n# ${OBC_DATA_PATH}: path to data directory\n\n';
         $scope.tool_validation_init = '# Insert the BASH commands that confirm that this tool is correctly installed\n# In success, this script should return 0 exit code.\n# A non-zero exit code, means failure to validate installation.\n\nexit 1\n';
+
+        if (window.STATS_ENABLED) {
+            $scope.STATS_ENABLED = true;
+
+            $scope.tool_dataset_init = "data: {\n\tlabels: ['1/1/2021', '1/2/2021', '1/3/2021', '1/4/2021', '1/5/2021', '1/6/2021', '1/7/2021', '1/8/2021', '1/9/2021', '1/10/2021']\n\tdatasets: [\n\t\t{\n\t\t\ttype: 'line',\n\t\t\tlabel: 'p-Value',\n\t\t\tdata: [502, 510, 511, 514, 520, 525, 540, 548, 550, 552]\n\t\t},\n\t\t{\n\t\t\ttype: 'line',\n\t\t\tlabel: 'Affinity',\n\t\t\tdata: [540, 552, 553, 550, 550, 526, 526, 526, 526, 495]\n\t\t},\n\t\t{\n\t\t\ttype: 'bar',\n\t\t\tlabel: 'CPU Time',\n\t\t\tdata: [709, 748.3, null, null, null, null, null, 572.3, null, null]\n\t\t},\n\t\t{\n\t\t\ttype: 'bar',\n\t\t\tlabel: 'Memory',\n\t\t\tdata: [531.3, 690, null, null, null, null, null, 252, null, null]\n\t\t}\n\t]\n}";
+            $scope.workflow_dataset_init = "data: {\n\tlabels: ['1/1/2021', '1/2/2021', '1/3/2021', '1/4/2021', '1/5/2021', '1/6/2021', '1/7/2021', '1/8/2021', '1/9/2021', '1/10/2021']\n\tdatasets: [\n\t\t{\n\t\t\ttype: 'line',\n\t\t\tlabel: 'p-Value',\n\t\t\tdata: [502, 510, 511, 514, 520, 525, 540, 548, 550, 552]\n\t\t},\n\t\t{\n\t\t\ttype: 'line',\n\t\t\tlabel: 'Affinity',\n\t\t\tdata: [540, 552, 553, 550, 550, 526, 526, 526, 526, 495]\n\t\t},\n\t\t{\n\t\t\ttype: 'bar',\n\t\t\tlabel: 'CPU Time',\n\t\t\tdata: [709, 748.3, null, null, null, null, null, 572.3, null, null]\n\t\t},\n\t\t{\n\t\t\ttype: 'bar',\n\t\t\tlabel: 'Memory',\n\t\t\tdata: [531.3, 690, null, null, null, null, null, 252, null, null]\n\t\t}\n\t]\n}";
+        }
+
+        else {
+            $scope.STATS_ENABLED = false;
+        }
     
         $scope.tool_variables = [{name: '', value: '', description: ''}];
         $scope.tools_var_jstree_id_show = true;
@@ -306,6 +317,22 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.profile_ORCID = data['profile_ORCID'];
                 $scope.profile_ORCID_url = data['profile_ORCID'] ? "https://orcid.org/" + data['profile_ORCID'] : null;
                 $scope.profile_access_token = data['profile_access_token'];
+
+                if ($scope.STATS_ENABLED) {
+                    $scope.profile_tags = data['user_tags'];
+                    $scope.profile_reputation_number = data['user_reputation_number'];
+                    $scope.profile_comments_number = data['user_comments_number'];
+                    $scope.profile_created_references_number = data['user_created_references_number'];
+                    $scope.profile_claimed_references_number = data['user_claimed_references_number'];
+                    $scope.profile_created_tools_number = data['user_created_tools_number'];
+                    $scope.profile_upvotes_tools_number = data['user_upvotes_tools_number'];
+                    $scope.profile_downvotes_tools_number = data['user_downvotes_tools_number'];
+                    $scope.profile_forked_tools_number = data['user_forked_tools_number'];
+                    $scope.profile_created_workflows_number = data['user_created_workflows_number'];
+                    $scope.profile_upvotes_workflows_number = data['user_upvotes_workflows_number'];
+                    $scope.profile_downvotes_workflows_number = data['user_downvotes_workflows_number'];
+                    $scope.profile_forked_workflows_number = data['user_forked_workflows_number'];
+                }
 
                 //If the server did not return any client. Add an empty placeholder
                 if (!$scope.profile_clients.length) {
@@ -1173,6 +1200,17 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 tool_validation_editor.setValue(data['validation_commands'], -1);
                 tool_installation_editor.setReadOnly(true);
                 tool_validation_editor.setReadOnly(true);
+
+                if ($scope.STATS_ENABLED) {
+                    tool_dataset_editor.setValue($scope.tool_dataset_init, -1); // Tool statistics collapsible
+                    tool_dataset_editor.setReadOnly(false);  // Tool statistics collapsible
+
+
+                    // Tool Statistics Charts
+                    getCommentsData('tool', data['tool_comments_chart'], data['created_at']);
+                    getStandardData('tool', data['tool_standard_chart'], data['created_at']);
+                }
+
                 $scope.tools_var_jstree_id_show = true; // Show variable/dependency tree
 
                 $scope.tool_info_validation_status = data.validation_status;
@@ -1361,6 +1399,11 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         tool_installation_editor.setReadOnly(false);
         tool_validation_editor.setValue($scope.tool_validation_init, -1);
         tool_validation_editor.setReadOnly(false);
+
+        if ($scope.STATS_ENABLED) {
+            tool_dataset_editor.setValue($scope.tool_dataset_init, -1);     // Tool statistics collapsible
+            tool_dataset_editor.setReadOnly(false);     // Tool statistics collapsible
+        }
 
         $scope.tools_var_jstree_id_show = true; // Show variable/dependency tree
         //Empty validation status
@@ -1560,6 +1603,11 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         //By default we Add a step.
         $scope.workflow_step_add_update_label = 'Add';
+
+        if ($scope.STATS_ENABLED) {
+            workflow_dataset_editor.setValue($scope.workflow_dataset_init, -1);     // Workflow statistics collapsible
+            workflow_dataset_editor.setReadOnly(false);     // Workflow statistics collapsible
+        }
     };
 
     /*
@@ -1669,6 +1717,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 //Set installation and validation editors to readonle 
                 tool_installation_editor.setReadOnly(true);
                 tool_validation_editor.setReadOnly(true);
+                if ($scope.STATS_ENABLED) {tool_dataset_editor.setReadOnly(false);}  // Tool statistics collapsible
                 $scope.tools_var_jstree_id_show = false;  // Hide tool + variables dependency tree
 
                 //Load Chips
@@ -1716,6 +1765,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         tool_installation_editor.setReadOnly(false);
         tool_validation_editor.setReadOnly(false);
 
+        if ($scope.STATS_ENABLED) {tool_dataset_editor.setReadOnly(false);}     // Tool statistics collapsible
+
         //If the variables fetched are empty, add a dummy variable for the UI
         if (!$scope.tool_variables.length) {
             $scope.tool_variables = [{name: '', value: '', description: ''}];
@@ -1734,6 +1785,9 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     $scope.workflow_edit_pressed = function() {
         $scope.workflows_info_edit_state = true;
         $scope.workflows_info_fork_pressed('EDIT');
+
+        if ($scope.STATS_ENABLED) {workflow_dataset_editor.setReadOnly(false);}     // Workflow statistics collapsible
+
         // Visibility select form update field
         $('#workflowVisibility').formSelect();
     };
@@ -1897,6 +1951,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         }
         tool_installation_editor.setReadOnly(false);
         tool_validation_editor.setReadOnly(false);
+        if ($scope.STATS_ENABLED) {tool_dataset_editor.setReadOnly(false);}     // Tool statistics collapsible
         $scope.tools_var_jstree_id_show = true; // Show variable/dependency tree
 
         // Set the operating system. Practically we are setting tool_os_choices = tool_os_choices ... But that was the only way I could do it
@@ -2584,6 +2639,22 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 $scope.user_ORCID = data['profile_ORCID'];
                 $scope.user_ORCID_url = data['profile_ORCID'] ? "https://orcid.org/" + data['profile_ORCID'] : null;
 
+                if ($scope.STATS_ENABLED) {
+                    $scope.user_tags = data['user_tags'];
+                    $scope.user_reputation_number = data['user_reputation_number'];
+                    $scope.user_comments_number = data['user_comments_number'];
+                    $scope.user_created_references_number = data['user_created_references_number'];
+                    $scope.user_claimed_references_number = data['user_claimed_references_number'];
+                    $scope.user_created_tools_number = data['user_created_tools_number'];
+                    $scope.user_upvotes_tools_number = data['user_upvotes_tools_number'];
+                    $scope.user_downvotes_tools_number = data['user_downvotes_tools_number'];
+                    $scope.user_forked_tools_number = data['user_forked_tools_number'];
+                    $scope.user_created_workflows_number = data['user_created_workflows_number'];
+                    $scope.user_upvotes_workflows_number = data['user_upvotes_workflows_number'];
+                    $scope.user_downvotes_workflows_number = data['user_downvotes_workflows_number'];
+                    $scope.user_forked_workflows_number = data['user_forked_workflows_number'];
+                }
+
                 //Open right panel
                 document.getElementById('userDataDiv').style.display = 'block';
                 M.Collapsible.getInstance($('#userDataAccordion')).open(0);
@@ -2629,6 +2700,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 //                ];
                 
                 $scope.qa_thread = data['qa_thread'];
+                console.log('111');
+                console.log($scope.qa_thread);
                 $scope.qa_visualize_pressed();
             },
             function(data) {
@@ -3616,6 +3689,17 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                 // This is a fresh WF. There is no "previous step"
                 $scope.workflow_step_previous_step = false;
 
+                if ($scope.STATS_ENABLED) {
+                    workflow_dataset_editor.setValue($scope.workflow_dataset_init, -1); // Workflow statistics collapsible
+                    workflow_dataset_editor.setReadOnly(false);  // Workflow statistics collapsible
+
+                    // Workflow Comments Chart
+                    getCommentsData('workflow', data['workflow_comments_chart'], data['created_at']);
+
+                    // Workflow Standard Chart
+                    getStandardData('workflow', data['workflow_standard_chart'], data['created_at']);
+                }
+
                 // Update text fields
                 $timeout(function(){M.updateTextFields()}, 10);
 
@@ -4493,6 +4577,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
                 $scope.workflow_keywords = window.OBCUI.get_chip_data('workflowChips');
 
+                if ($scope.STATS_ENABLED) {workflow_dataset_editor.setReadOnly(false);}  // Workflow statistics collapsible
+
                 //Load comment thread
                 $scope.qa_gen['workflow'].object_pk = data['workflow_pk'];
                 $scope.qa_gen['workflow'].qa_thread = data['workflow_thread'];
@@ -4567,6 +4653,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
         //Update Step Editor Tab completion 
         $scope.workflow_update_tab_completion_info_to_step();
+
+        if ($cope.STATS_ENABLED) {workflow_dataset_editor.setReadOnly(false);}     // Workflow statistics collapsible
 
         //Every fork is a draft
         $scope.workflows_info_draft = true;
@@ -5182,6 +5270,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
     * Q&A --> Show Thread --> reply to a comment --> add text --> Cancel button --> Clicked 
     */
     $scope.qa_reply_cancel_button_pressed = function(id) {
+        console.log('222');
+        console.log($scope.qa_thread);
         $scope.qa_set_replying($scope.qa_thread, id, false);
     };
 

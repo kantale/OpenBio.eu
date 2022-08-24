@@ -33,6 +33,7 @@
 		window.menu = null;
 		window.input_menu = null;
 		window.orcid_success = "{{orcid_success}}";
+		window.STATS_ENABLED = {% if STATS_ENABLED %}true;{% else %}false;{% endif %}
 	</script>
 
 	<script src="/static/app/node_modules/jquery/dist/jquery.min.js"></script>

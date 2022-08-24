@@ -13,6 +13,18 @@ var workflow_step_editor = ace.edit("workflow_step_editor");
 workflow_step_editor.setTheme("ace/theme/textmate");
 workflow_step_editor.session.setMode("ace/mode/sh");
 
+/* STATS VISUALIZATION EDITOR. SET FALSE TO DISABLE */
+if (true) {
+  var tool_dataset_editor = ace.edit("tool_dataset_editor");  //Tool statistics collapsible
+  tool_dataset_editor.setTheme("ace/theme/textmate");  //Tool statistics collapsible
+  tool_dataset_editor.session.setMode("ace/mode/sh");  //Tool statistics collapsible
+
+  var workflow_dataset_editor = ace.edit("workflow_dataset_editor");  //Workflow statistics collapsible
+  workflow_dataset_editor.setTheme("ace/theme/textmate");  //Workflow statistics collapsible
+  workflow_dataset_editor.session.setMode("ace/mode/sh");  //Workflow statistics collapsible
+}
+/* END STATS VISUALIZATION EDITOR */
+
 workflow_step_editor.setOptions({
     enableBasicAutocompletion: true,
     enableSnippets: true,
