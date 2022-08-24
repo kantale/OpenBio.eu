@@ -987,6 +987,7 @@ function getStandardData (roType, data, ro_created_at) {
         switch (data[i].upvote) {
             case true:
                 roStandardValues.upvotes = incrementSubarray(roStandardValues.upvotes, index, 1);
+                break;
             case false:
                 roStandardValues.downvotes = incrementSubarray(roStandardValues.downvotes, index, 1);
                 break;

@@ -330,6 +330,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
                     $scope.profile_forked_tools_number = data['user_forked_tools_number'];
                     $scope.profile_created_workflows_number = data['user_created_workflows_number'];
                     $scope.profile_upvotes_workflows_number = data['user_upvotes_workflows_number'];
+                    console.log($scope.profile_upvotes_workflows_number);
                     $scope.profile_downvotes_workflows_number = data['user_downvotes_workflows_number'];
                     $scope.profile_forked_workflows_number = data['user_forked_workflows_number'];
                 }
