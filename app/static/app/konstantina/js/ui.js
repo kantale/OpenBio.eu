@@ -202,6 +202,20 @@ window.onload = function () {
                             angular.element($('#angular_div')).scope().workflow_visualize_pressed();
                         });
                     }
+                    /* STATISTICS */
+                    if (event.id == 'toolStatistics') {
+                        fetchToolStats();
+                        updateCustomChart(toolCustomChartVar, 'tool');
+                        updateStandardChart('tool', toolStandardChartVar, toolStandardValues);
+                        updateCommentsChart('tool', toolCommentsChartVar, toolCommentsValues);
+                    }
+                    if (event.id == 'workflowStatistics') {
+                        fetchWorkflowStats();
+                        updateCustomChart(workflowCustomChartVar, 'workflow');
+                        updateStandardChart('workflow', workflowStandardChartVar, workflowStandardValues);
+                        updateCommentsChart('workflow', workflowCommentsChartVar, workflowCommentsValues);
+                    }
+                    /* END OF STATISTICS */
 
                 },
                 // Callback function called before collapsible is closed

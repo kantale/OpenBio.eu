@@ -4,6 +4,8 @@
 		"ace-builds": "^1.4.1",
 		"angular": "^1.7.2",
 		"angular-sanitize": "^1.7.2",
+		"chart.js": "^3.9.1",
+		"chartjs-adapter-date-fns": "^2.0.0",
 		"cytoscape-cxtmenu": "^3.0.2",
 		"cytoscape": "^3.4.0",
 		"cytoscape-popper": "^1.0.4",

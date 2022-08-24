@@ -19,6 +19,7 @@
                 <li><a class="lien_projet" href="#changePasswordCard">Change Password</a></li>
                 <li><a class="lien_projet" href="#accessTokenCard">Access Token</a></li>
                 <li><a class="lien_projet" href="#executionCard">Execution Environment</a></li>
+                {% if STATS_ENABLED %}<li><a class="lien_projet" href="#metricsCard">User Metrics</a></li>{% endif %}
                 <li><a class="lien_projet" href="#notificationsCard" ng-show="false">Notifications</a></li>
                 <li><a class="lien_projet" href="#settingsCard" ng-show="false">Settings</a></li>
             </ul>
@@ -223,6 +224,123 @@
                         </div>
                     </section>
                 </div>
+
+                {% if STATS_ENABLED %}
+                <!-- --------------------------------------------------------------------------------------- -->
+                <!-- ----------------------------------- Metrics Card -------------------------------------- -->
+                <!-- --------------------------------------------------------------------------------------- -->
+                <div class="col s12">
+                    <section id="metricsCard" class="scrollspy section_projet">
+                        <div class="card">
+                            <div class="card-content">
+                                <div class="row">
+                                    <blockquote><span class="card-title">User Metrics</span></blockquote>
+                                    <div class="col s12">
+                                        <div class="card-panel center-align" style="padding: 10px; background: #f7f7f7; height: 129px;">
+                                            <div class="row" style="margin: 0px;">
+                                                <div style="margin-bottom: 10px; font-weight: 500;">
+                                                    <span>Tags</span>
+                                                </div>
+                                                <div class="col s12" style="padding-top: 12px;">
+                                                    <div class="chip teal white-text" ng-repeat="x in profile_tags">
+                                                        <span ng-bind="x"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col s12">
+                                        <div class="card-panel center-align" style="padding: 10px; background: #f7f7f7;">
+                                            <div class="row" style="margin: 0px; padding-bottom: 8px;">
+                                                <div style="margin-bottom: 10px; font-weight: 500;">
+                                                    <span>Account</span>
+                                                </div>
+                                                <div class="col s12 m6 tooltipped" data-position="bottom" data-tooltip="The user's reputation">
+                                                    <span style="font-size: 18px; font-weight: 500;" ng-bind="profile_reputation_number">1213</span><br>
+                                                    <span>Reputation</span>
+                                                </div>
+                                                <div class="col s12 m6 tooltipped" data-position="bottom" data-tooltip="The number of comments the user has posted">
+                                                    <span style="font-size: 18px; font-weight: 500;" ng-bind="profile_comments_number"></span><br>
+                                                    <span>Comments</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col s12">
+                                        <div class="card-panel center-align" style="padding: 10px; background: #f7f7f7;">
+                                            <div class="row" style="margin: 0px; padding-bottom: 8px;">
+                                                <div style="margin-bottom: 10px; font-weight: 500;">
+                                                    <span>References</span>
+                                                </div>
+                                                <div class="col s12 m6 tooltipped" data-position="bottom" data-tooltip="The number of references the user has created">
+                                                    <span style="font-size: 18px; font-weight: 500;" ng-bind="profile_created_references_number"></span><br>
+                                                    <span>Created</span>
+                                                </div>
+                                                <div class="col s12 m6 tooltipped" data-position="bottom" data-tooltip="The number of references the user has claimed">
+                                                    <span style="font-size: 18px; font-weight: 500;" ng-bind="profile_claimed_references_number"></span><br>
+                                                    <span>Claimed</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col s12">
+                                        <div class="card-panel center-align" style="padding: 10px; background: #f7f7f7;">
+                                            <div class="row" style="margin: 0px; padding-bottom: 8px;">
+                                                <div style="margin-bottom: 10px; font-weight: 500;">
+                                                    <span>Tools</span>
+                                                </div>
+                                                <div class="col s12 m3 tooltipped" data-position="bottom" data-tooltip="The number of tools the user has created">
+                                                    <span style="font-size: 18px; font-weight: 500;" ng-bind="profile_created_tools_number"></span><br>
+                                                    <span>Created</span>
+                                                </div>
+                                                <div class="col s12 m3 tooltipped" data-position="bottom" data-tooltip="The number of upvotes the user's tools have received">
+                                                    <span style="font-size: 18px; font-weight: 500;" ng-bind="profile_upvotes_tools_number"></span><br>
+                                                    <span>Upvotes</span>
+                                                </div>
+                                                <div class="col s12 m3 tooltipped" data-position="bottom" data-tooltip="The number of downvotes the user's tools have received">
+                                                    <span style="font-size: 18px; font-weight: 500;" ng-bind="profile_downvotes_tools_number"></span><br>
+                                                    <span>Downvotes</span>
+                                                </div>
+                                                <div class="col s12 m3 tooltipped" data-position="bottom" data-tooltip="The number of forks the user's tools have received">
+                                                    <span style="font-size: 18px; font-weight: 500;" ng-bind="profile_forked_tools_number"></span><br>
+                                                    <span>Forks</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col s12">
+                                        <div class="card-panel center-align" style="padding: 10px; background: #f7f7f7;">
+                                            <div class="row" style="margin: 0px; padding-bottom: 8px;">
+                                                <div style="margin-bottom: 10px; font-weight: 500;">
+                                                    <span>Workflows</span>
+                                                </div>
+                                                <div class="col s12 m3 tooltipped" data-position="bottom" data-tooltip="The number of workflows the user has created">
+                                                    <span style="font-size: 18px; font-weight: 500;" ng-bind="profile_created_workflows_number"></span><br>
+                                                    <span>Created</span>
+                                                </div>
+                                                <div class="col s12 m3 tooltipped" data-position="bottom" data-tooltip="The number of upvotes the user's workflows have received">
+                                                    <span style="font-size: 18px; font-weight: 500;" ng-bind="profile_upvotes_workflows_number"></span><br>
+                                                    <span>Upvotes</span>
+                                                </div>
+                                                <div class="col s12 m3 tooltipped" data-position="bottom" data-tooltip="The number of downvotes the user's workflows have received">
+                                                    <span style="font-size: 18px; font-weight: 500;" ng-bind="profile_downvotes_workflows_number"></span><br>
+                                                    <span>Downvotes</span>
+                                                </div>
+                                                <div class="col s12 m3 tooltipped" data-position="bottom" data-tooltip="The number of forks the user's workflows have received">
+                                                    <span style="font-size: 18px; font-weight: 500;" ng-bind="user_forked_workflows_number"></span><br>
+                                                    <span>Forks</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                 {% endif %}
+
+
                 <!-- --------------------------------------------------------------------------------------- -->
                 <!-- -------------------------------- Notifications Card ----------------------------------- -->
                 <!-- --------------------------------------------------------------------------------------- -->

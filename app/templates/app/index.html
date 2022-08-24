@@ -207,6 +207,17 @@
 	<!-- Pell js 1.0.6 Discourse graph Editor -->
 	<link rel="stylesheet" type="text/css" href="/static/app/node_modules/pell/dist/pell.min.css">
 
+	{% if STATS_ENABLED %}
+		<!-- Statistics -->
+		<!-- Chart CSS -->
+	    <link rel="stylesheet" href="/static/app/node_modules/chart.js/dist/Chart.min.css">
+		<!-- Chart JS -->
+	  <script src="/static/app/node_modules/chart.js/dist/Chart.min.js"></script>
+		<script src="/static/app/node_modules/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.js"></script>
+	  <!-- statistics custom JS -->
+	  <script src="/static/app/statistics/js/statistics.js"></script>
+	  <!-- END OF STATISTICS-->
+  {% endif %}
 
 </head>
 
