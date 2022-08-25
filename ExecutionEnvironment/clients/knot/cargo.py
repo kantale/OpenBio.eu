@@ -366,16 +366,15 @@ def pipeline_from_file(filename:str, workflow_name:str, image_registry:str, work
         return pipeline(f.read(), workflow_name, image_registry, work_path)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description='Add a json workflow to be converted into argo')
-
-    parser.add_argument('-f', metavar='<file_path>', type=str, required=False)
-    parser.add_argument('-r', metavar='<image_registry>', type=str, required=False)
-    args = parser.parse_args()
     logging.basicConfig(level=logging.DEBUG)
-    if args.f is not None:
-        print(pipeline_from_file(args.f,"", args.r,"/private/.cache","/private"))
-    else:
-        parser.print_help()
+
+    parser = argparse.ArgumentParser(description='Convert a JSON workflow into Argo YAML', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--name', '-n', metavar='<workflow_name>', type=str, required=False, default='test-workflow', help='unique name for the workflow')
+    parser.add_argument('--registry', '-r', metavar='<image_registry>', type=str, required=False, default='127.0.0.1:5000', help='image registry host and port')
+    parser.add_argument('--path', '-p', metavar='<work_path>', type=str, required=False, default='/private/test-workflow', help='folder for intermediate files')
+    parser.add_argument('file_path', metavar='<file_path>', type=str)
+    args = parser.parse_args()
+
+    print(pipeline_from_file(args.file_path, args.name, args.registry, args.path))
 
 # atexit._clear()
