@@ -2,125 +2,149 @@ import logging
 import argparse
 import base64
 import yaml
+import boto3
+import botocore
 
 import kubernetes.client
 import kubernetes.config
-import kubernetes.stream
 
 from urllib.parse import urlparse
 
 
 class KubernetesClient(object):
-    def __init__(self):
-        self._config_loaded = False
-        self._core_client = None
+    def __init__(self, namespace):
+        self.namespace = namespace
 
-    def _load_config(self):
-        if self._config_loaded:
-            return
         try:
             kubernetes.config.load_kube_config()
         except:
             kubernetes.config.load_incluster_config()
-        self._config_loaded = True
+        self._core_api = kubernetes.client.CoreV1Api()
+
+    def list_config_maps(self, label_selector=None):
+        return self._core_api.list_namespaced_config_map(namespace=self.namespace, label_selector=label_selector).items
+
+    def list_secrets(self, label_selector=None):
+        return self._core_api.list_namespaced_secret(namespace=self.namespace, label_selector=label_selector).items
+
+    def create_config_map(self, name, data, labels={}, annotations={}):
+        metadata = kubernetes.client.V1ObjectMeta(name=name, labels=labels, annotations=annotations, namespace=self.namespace)
+        body = kubernetes.client.V1ConfigMap(api_version='v1', kind='ConfigMap', metadata=metadata, data=data)
+        self._core_api.create_namespaced_config_map(namespace=self.namespace, body=body)
+
+    def create_secret(self, name, data, labels={}, annotations={}):
+        metadata = kubernetes.client.V1ObjectMeta(name=name, labels=labels, annotations=annotations, namespace=self.namespace)
+        body = kubernetes.client.V1Secret(api_version='v1', kind='Secret', metadata=metadata, data=data)
+        self._core_api.create_namespaced_secret(namespace=self.namespace, body=body)
+
+    def delete_config_map(self, name):
+        self._core_api.delete_namespaced_config_map(name, namespace=self.namespace)
+
+    def delete_secret(self, name):
+        self._core_api.delete_namespaced_secret(name, namespace=self.namespace)
+
+class S3Client(object):
+    def __init__(self, url):
+        self._url = urlparse(url)
+        if self._url.scheme not in ('s3'):
+            raise ValueError('Unsupported URL')
+
+        # Start an S3 session.
+        configuration = {'aws_access_key_id': self.username,
+                         'aws_secret_access_key': self.password}
+        configuration['endpoint_url'] = 'http://%s' % (self.endpoint)
+        configuration['config'] = botocore.client.Config(signature_version='s3v4')
+        self._s3 = boto3.resource('s3', **configuration)
+
+        self._bucket_object = self._s3.Bucket(self.bucket)
+        if not self._bucket_object.creation_date:
+            self._s3.create_bucket(Bucket=self.bucket)
 
     @property
-    def core_client(self):
-        if not self._core_client:
-            self._load_config()
-            self._core_client = kubernetes.client.CoreV1Api()
-        return self._core_client
+    def username(self):
+        return self._url.username
 
-    def list_config_maps(self, namespace='default', label_selector=None):
-        return self.core_client.list_namespaced_config_map(namespace=namespace, label_selector=label_selector).items
+    @property
+    def password(self):
+        return self._url.password
 
-    def list_secrets(self, namespace='default', label_selector=None):
-        return self.core_client.list_namespaced_secret(namespace=namespace, label_selector=label_selector).items
+    @property
+    def bucket(self):
+        return self._url.path.strip('/')
 
-    def create_config_map(self, name, data, labels={}, annotations={}, namespace='default'):
-        metadata = kubernetes.client.V1ObjectMeta(name=name, labels=labels, annotations=annotations, namespace=namespace)
-        body = kubernetes.client.V1ConfigMap(api_version='v1', kind='ConfigMap', metadata=metadata, data=data)
-        self.core_client.create_namespaced_config_map(namespace=namespace, body=body)
+    @property
+    def endpoint(self):
+        return '%s:%s' % (self._url.hostname, self._url.port)
 
-    def create_secret(self, name, data, labels={}, annotations={}, namespace='default'):
-        metadata = kubernetes.client.V1ObjectMeta(name=name, labels=labels, annotations=annotations, namespace=namespace)
-        body = kubernetes.client.V1Secret(api_version='v1', kind='Secret', metadata=metadata, data=data)
-        self.core_client.create_namespaced_secret(namespace=namespace, body=body)
+    def upload(self, name, data):
+        self._bucket_object.Object(name).put(Body=data)
 
-    def delete_config_map(self, name, namespace='default'):
-        self.core_client.delete_namespaced_config_map(name, namespace=namespace)
+class S3ArtifactRepository(object):
+    def __init__(self, url, namespace):
+        self._s3_client = S3Client(url)
+        self._kubernetes_client = KubernetesClient(namespace)
 
-    def delete_secret(self, name, namespace='default'):
-        self.core_client.delete_namespaced_secret(name, namespace=namespace)
+        self._setup_secret()
+        self._setup_config_map()
 
-def setup_secret(kubernetes_client, artifacts_url, namespace):
-    s3_access_key = base64.b64encode(artifacts_url.username.encode()).decode()
-    s3_secret_key = base64.b64encode(artifacts_url.password.encode()).decode()
+    def _setup_secret(self):
+        s3_access_key = base64.b64encode(self._s3_client.username.encode()).decode()
+        s3_secret_key = base64.b64encode(self._s3_client.password.encode()).decode()
 
-    secrets = kubernetes_client.list_secrets(namespace=namespace, label_selector='app.kubernetes.io/managed-by=openbio')
-    existing_secret = next((s for s in secrets if s.metadata.name == 'openbio-artifact-repository'), None)
-    try:
-        if (existing_secret and
-            existing_secret.data['accesskey'] == s3_access_key and
-            existing_secret.data['secretkey'] == s3_secret_key):
-            logging.debug('Found existing secret openbio-artifact-repository...')
-            return
-    except:
-        pass
-
-    if existing_secret:
-        logging.debug('Deleting previous secret openbio-artifact-repository...')
-        kubernetes_client.delete_secret(name='openbio-artifact-repository', namespace=namespace)
-
-    logging.debug('Creating new secret openbio-artifact-repository...')
-    kubernetes_client.create_secret(name='openbio-artifact-repository',
-                                    data={'accesskey': s3_access_key,
-                                          'secretkey': s3_secret_key},
-                                    labels={'app.kubernetes.io/managed-by': 'openbio'},
-                                    namespace=namespace)
-
-def setup_config_map(kubernetes_client, artifacts_url, namespace):
-    s3_repository_data = {'s3': {'bucket': artifacts_url.path.strip('/'),
-                                 'endpoint': '%s:%s' % (artifacts_url.hostname, artifacts_url.port),
-                                 'insecure': True,
-                                 'accessKeySecret': {'name': 'openbio-artifact-repository',
-                                                     'key': 'accesskey'},
-                                 'secretKeySecret': {'name': 'openbio-artifact-repository',
-                                                     'key': 'accesskey'}}}
-
-    config_maps = kubernetes_client.list_config_maps(namespace=namespace, label_selector='app.kubernetes.io/managed-by=openbio')
-    existing_config_map = next((c for c in config_maps if c.metadata.name == 'openbio-artifact-repository'), None)
-    try:
-        if existing_config_map:
-            existing_s3_repository_data = yaml.safe_load(existing_config_map.data['s3-repository'])
-            if (existing_s3_repository_data['s3']['bucket'] == s3_repository_data['s3']['bucket'] and
-                existing_s3_repository_data['s3']['endpoint'] == s3_repository_data['s3']['endpoint']):
-                logging.debug('Found existing config map openbio-artifact-repository...')
+        secrets = self._kubernetes_client.list_secrets(label_selector='app.kubernetes.io/managed-by=openbio')
+        existing_secret = next((s for s in secrets if s.metadata.name == 'openbio-artifact-repository'), None)
+        try:
+            if existing_secret and \
+               existing_secret.data['accesskey'] == s3_access_key and \
+               existing_secret.data['secretkey'] == s3_secret_key:
+                logging.debug('Found existing secret openbio-artifact-repository...')
                 return
-    except:
-        pass
+        except:
+            pass
 
-    if existing_config_map:
-        logging.debug('Deleting previous config map openbio-artifact-repository...')
-        kubernetes_client.delete_config_map(name='openbio-artifact-repository', namespace=namespace)
+        if existing_secret:
+            logging.debug('Deleting previous secret openbio-artifact-repository...')
+            self._kubernetes_client.delete_secret(name='openbio-artifact-repository')
 
-    logging.debug('Creating new config map openbio-artifact-repository...')
-    kubernetes_client.create_config_map(name='openbio-artifact-repository',
-                                        data={'s3-repository': yaml.dump(s3_repository_data)},
-                                        labels={'app.kubernetes.io/managed-by': 'openbio'},
-                                        annotations={'workflows.argoproj.io/default-artifact-repository': 's3-repository'},
-                                        namespace=namespace)
+        logging.debug('Creating new secret openbio-artifact-repository...')
+        self._kubernetes_client.create_secret(name='openbio-artifact-repository',
+                                              data={'accesskey': s3_access_key,
+                                                    'secretkey': s3_secret_key},
+                                              labels={'app.kubernetes.io/managed-by': 'openbio'})
 
-def setup_artifact_repository(artifact_repository_url, namespace):
-    logging.debug('Setting up artifact repository...')
-    kubernetes_client = KubernetesClient()
+    def _setup_config_map(self):
+        s3_repository_data = {'s3': {'bucket': self._s3_client.bucket,
+                                     'endpoint': self._s3_client.endpoint,
+                                     'insecure': True,
+                                     'accessKeySecret': {'name': 'openbio-artifact-repository',
+                                                         'key': 'accesskey'},
+                                     'secretKeySecret': {'name': 'openbio-artifact-repository',
+                                                         'key': 'accesskey'}}}
 
-    artifacts_url = urlparse(artifact_repository_url)
-    if artifacts_url.scheme != 's3':
-        raise SystemError('Only S3 URLs are supported for artifacts')
+        config_maps = self._kubernetes_client.list_config_maps(label_selector='app.kubernetes.io/managed-by=openbio')
+        existing_config_map = next((c for c in config_maps if c.metadata.name == 'openbio-artifact-repository'), None)
+        try:
+            if existing_config_map:
+                existing_s3_repository_data = yaml.safe_load(existing_config_map.data['s3-repository'])
+                if existing_s3_repository_data['s3']['bucket'] == s3_repository_data['s3']['bucket'] and \
+                   existing_s3_repository_data['s3']['endpoint'] == s3_repository_data['s3']['endpoint']:
+                    logging.debug('Found existing config map openbio-artifact-repository...')
+                    return
+        except:
+            pass
 
-    setup_secret(kubernetes_client, artifacts_url, namespace)
-    setup_config_map(kubernetes_client, artifacts_url, namespace)
+        if existing_config_map:
+            logging.debug('Deleting previous config map openbio-artifact-repository...')
+            self._kubernetes_client.delete_config_map(name='openbio-artifact-repository')
+
+        logging.debug('Creating new config map openbio-artifact-repository...')
+        self._kubernetes_client.create_config_map(name='openbio-artifact-repository',
+                                                  data={'s3-repository': yaml.dump(s3_repository_data)},
+                                                  labels={'app.kubernetes.io/managed-by': 'openbio'},
+                                                  annotations={'workflows.argoproj.io/default-artifact-repository': 's3-repository'})
+
+    def upload_data(self, name, data):
+        self._s3_client.upload(name, data)
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
@@ -129,4 +153,6 @@ if __name__ == "__main__":
     parser.add_argument('artifact_repository_url', metavar='<artifact_repository_url>', type=str)
     args = parser.parse_args()
 
-    setup_artifact_repository(args.artifact_repository_url, 'default')
+    artifact_repository = S3ArtifactRepository(args.artifact_repository_url, 'default')
+    artifact_repository.upload_data('test.txt', 'this is sample content')
+    artifact_repository.upload_data('dir/test.txt', 'this is sample content')
