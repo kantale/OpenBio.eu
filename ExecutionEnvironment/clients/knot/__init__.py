@@ -10,7 +10,7 @@ import urllib
 
 import couler.argo as couler
 from couler.argo_submitter import ArgoSubmitter
-from . import cargo
+from . import argo
 
 from ExecutionEnvironment.executor import (
     setup_bash_patterns,
@@ -43,7 +43,7 @@ class ArgoExecutor(BaseExecutor):
         print (json.dumps(self.decomposed, indent=4))
         print ('='*20)
 
-        ret = cargo.pipeline(json_wf, self.workflow_name, self.image_registry, self.work_path)
+        ret = argo.pipeline(json_wf, self.workflow_name, self.image_registry, self.work_path)
         print ('ARGO WORKFLOW:')
         print (ret)
         print ('='*20)

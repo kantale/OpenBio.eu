@@ -87,60 +87,72 @@ class S3ArtifactRepository(object):
         self._setup_secret()
         self._setup_config_map()
 
+    @property
+    def managed_by(self):
+        return 'openbio'
+
+    @property
+    def secret(self):
+        return 'openbio-artifact-repository'
+
+    @property
+    def config_map(self):
+        return 'openbio-artifact-repository'
+
     def _setup_secret(self):
         s3_access_key = base64.b64encode(self._s3_client.username.encode()).decode()
         s3_secret_key = base64.b64encode(self._s3_client.password.encode()).decode()
 
-        secrets = self._kubernetes_client.list_secrets(label_selector='app.kubernetes.io/managed-by=openbio')
-        existing_secret = next((s for s in secrets if s.metadata.name == 'openbio-artifact-repository'), None)
+        secrets = self._kubernetes_client.list_secrets(label_selector='app.kubernetes.io/managed-by=%s' % self.managed_by)
+        existing_secret = next((s for s in secrets if s.metadata.name == self.secret), None)
         try:
             if existing_secret and \
                existing_secret.data['accesskey'] == s3_access_key and \
                existing_secret.data['secretkey'] == s3_secret_key:
-                logging.debug('Found existing secret openbio-artifact-repository...')
+                logging.debug('Found existing secret...')
                 return
         except:
             pass
 
         if existing_secret:
-            logging.debug('Deleting previous secret openbio-artifact-repository...')
-            self._kubernetes_client.delete_secret(name='openbio-artifact-repository')
+            logging.debug('Deleting previous secret...')
+            self._kubernetes_client.delete_secret(name=self.secret)
 
-        logging.debug('Creating new secret openbio-artifact-repository...')
-        self._kubernetes_client.create_secret(name='openbio-artifact-repository',
+        logging.debug('Creating new secret...')
+        self._kubernetes_client.create_secret(name=self.secret,
                                               data={'accesskey': s3_access_key,
                                                     'secretkey': s3_secret_key},
-                                              labels={'app.kubernetes.io/managed-by': 'openbio'})
+                                              labels={'app.kubernetes.io/managed-by': self.managed_by})
 
     def _setup_config_map(self):
         s3_repository_data = {'s3': {'bucket': self._s3_client.bucket,
                                      'endpoint': self._s3_client.endpoint,
                                      'insecure': True,
-                                     'accessKeySecret': {'name': 'openbio-artifact-repository',
+                                     'accessKeySecret': {'name': self.secret,
                                                          'key': 'accesskey'},
-                                     'secretKeySecret': {'name': 'openbio-artifact-repository',
+                                     'secretKeySecret': {'name': self.secret,
                                                          'key': 'accesskey'}}}
 
-        config_maps = self._kubernetes_client.list_config_maps(label_selector='app.kubernetes.io/managed-by=openbio')
-        existing_config_map = next((c for c in config_maps if c.metadata.name == 'openbio-artifact-repository'), None)
+        config_maps = self._kubernetes_client.list_config_maps(label_selector='app.kubernetes.io/managed-by=%s' % self.managed_by)
+        existing_config_map = next((c for c in config_maps if c.metadata.name == self.config_map), None)
         try:
             if existing_config_map:
                 existing_s3_repository_data = yaml.safe_load(existing_config_map.data['s3-repository'])
                 if existing_s3_repository_data['s3']['bucket'] == s3_repository_data['s3']['bucket'] and \
                    existing_s3_repository_data['s3']['endpoint'] == s3_repository_data['s3']['endpoint']:
-                    logging.debug('Found existing config map openbio-artifact-repository...')
+                    logging.debug('Found existing config map...')
                     return
         except:
             pass
 
         if existing_config_map:
-            logging.debug('Deleting previous config map openbio-artifact-repository...')
-            self._kubernetes_client.delete_config_map(name='openbio-artifact-repository')
+            logging.debug('Deleting previous config map...')
+            self._kubernetes_client.delete_config_map(name=self.config_map)
 
-        logging.debug('Creating new config map openbio-artifact-repository...')
-        self._kubernetes_client.create_config_map(name='openbio-artifact-repository',
+        logging.debug('Creating new config map...')
+        self._kubernetes_client.create_config_map(name=self.config_map,
                                                   data={'s3-repository': yaml.dump(s3_repository_data)},
-                                                  labels={'app.kubernetes.io/managed-by': 'openbio'},
+                                                  labels={'app.kubernetes.io/managed-by': self.managed_by},
                                                   annotations={'workflows.argoproj.io/default-artifact-repository': 's3-repository'})
 
     def upload_data(self, name, data):

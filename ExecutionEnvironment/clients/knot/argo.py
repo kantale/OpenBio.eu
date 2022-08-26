@@ -3,26 +3,15 @@ import argparse
 import enum
 import json
 import logging
-from collections import OrderedDict, defaultdict
-from pathlib import Path
-import atexit
-
-import couler.argo as couler
 import pyaml
-from couler.core import states, step_update_utils, utils
-from couler.core.templates import (Container, Job, Output, OutputArtifact,
-                                   OutputJob, Script)
-from couler.core.templates.artifact import LocalArtifact
-from couler.core.templates.output import (_container_output, _job_output,
-                                          _script_output)
-from couler.core.templates.step import Step
-from couler.core.templates.volume import Volume, VolumeMount
-from six import MAXSIZE
+import couler.argo as couler
 
-try:
-    from couler.core import proto_repr
-except Exception:
-    proto_repr = None
+from collections import OrderedDict, defaultdict
+from couler.core import states, utils
+from couler.core.templates.artifact import TypedArtifact
+from couler.core.templates.volume import Volume, VolumeMount
+
+from artifacts import S3ArtifactRepository
 
 
 class step_type(enum.Enum):
@@ -37,7 +26,7 @@ class sb_step:
     '''
     global_steps = [] # all steps of the workflow
 
-    def __init__(self, name:str = "", bash:str = "", st_type: step_type = step_type.simple):
+    def __init__(self, name: str = "", bash: str = "", st_type: step_type = step_type.simple):
         self.name = name
         self.type = st_type
         self.bash = bash
@@ -45,47 +34,43 @@ class sb_step:
         self.global_steps.append(self)
         self.container: container = None
 
-
 class tool_installation_step(sb_step):
     '''
     Represents a tool installation step
     '''
     installation_steps = []
 
-    def __init__(self, name:str = "", bash:str = ""):
-        self.tool_to_install:str = name
+    def __init__(self, name: str = "", bash: str = ""):
+        self.tool_to_install: str = name
         self.installation_steps.append(self)
         super().__init__(name, bash, step_type.tool_installation)
-
 
 class tool_invocation_step(sb_step):
     '''
     Represents a tool invocation step
     '''
-    def __init__(self, name:str = "", bash:str = "", tool:str = ""):
-        self.tool_to_call:str = tool
+    def __init__(self, name: str = "", bash: str = "", tool: str = ""):
+        self.tool_to_call: str = tool
         super().__init__(name, bash, step_type.tool_invocation)
 
-
 class container:
-    def __init__(self, name:str = ""):
+    def __init__(self, name: str = ""):
         self.name = name
         self.tool_deps = []  # has to have dependencies in installation order
         self.image = ""  # to be generated
         self.artifacts = []
 
-    def add_dependency(self, dep:str):
+    def add_dependency(self, dep: str):
         if dep not in self.tool_deps:
             self.tool_deps.append(dep)
 
-class rawArtifact(LocalArtifact):
+class RawArtifact(TypedArtifact):
     '''
     Creates an artifact with a raw bash script
     '''
     def __init__(self, path, raw_data):
+        super().__init__(artifact_type=couler.ArtifactType.LOCAL, path=path, is_global=False)
         self.raw_data = raw_data
-        self.type = couler.ArtifactType.LOCAL
-        super().__init__(path, False)
         self.id = "input-local-" + utils._get_uuid()
 
     def to_yaml(self):
@@ -94,9 +79,32 @@ class rawArtifact(LocalArtifact):
         )
         return yaml_output
 
-######################################################################
-##################### CLASS WORKFLOW #################################
-######################################################################
+class RawArtifactFactory:
+    def new_artifact(self, path, raw_data):
+        return RawArtifact(path, raw_data)
+
+class S3Artifact(TypedArtifact):
+    def __init__(self, object_prefix, path):
+        super().__init__(artifact_type=couler.ArtifactType.S3, path=path, is_global=False)
+        self.object_prefix = object_prefix
+        self.id = "input-local-" + utils._get_uuid()
+        self.object_name = '%s/%s' % (self.object_prefix, self.id)
+
+    def to_yaml(self):
+        yaml_output = OrderedDict(
+            {"name": self.id, "path": self.path, "s3": {"key": self.object_name}}
+        )
+        return yaml_output
+
+class S3ArtifactFactory:
+    def __init__(self, workflow_name, artifact_repository_url, namespace):
+        self.workflow_name = workflow_name
+        self.artifact_repository = S3ArtifactRepository(artifact_repository_url, namespace)
+
+    def new_artifact(self, path, raw_data):
+        s3_artifact = S3Artifact(self.workflow_name, path)
+        self.artifact_repository.upload_data(s3_artifact.object_name, raw_data)
+        return s3_artifact
 
 class SecretVolume(Volume):
     def __init__(self, name, secret_name):
@@ -128,15 +136,18 @@ class workflow():
         simple_container.image = "kantale/openbio-env:1"
         self.simple_container = simple_container
         couler.add_volume(SecretVolume('docker-registry-secret', 'docker-registry-secret'))
-        # couler.run_container()
 
-    def parse(self, input:str, ):
+        self.artifact_factory = RawArtifactFactory()
+        # artifact_repository_url = 's3://username:password@127.0.0.1:9000/openbio'
+        # self.artifact_factory = S3ArtifactFactory(couler.workflow.name, artifact_repository_url, 'default')
+
+    def parse(self, input: str):
         data = json.loads(input)
         self.get_environment(data,)
         self.get_steps(data,)
         self.get_dag(data)
 
-    def get_environment(self, data,):
+    def get_environment(self, data):
         for env in data['environments']:
             c = container(env)
             for tool in data['environments'][env]:
@@ -148,12 +159,12 @@ class workflow():
                 c.add_dependency(tool)
             self.containers.append(c)
 
-    def get_steps(self, data, ):
+    def get_steps(self, data):
         for step in data['steps']:
             if data['steps'][step]['type'] == "tool_installation":
                 s = tool_installation_step(step, data['steps'][step]['bash'])
-                installation_script_path = os.path.join(self.work_path, "install-tool-"+s.name+".sh")
-                artifact = rawArtifact(installation_script_path, s.bash)
+                installation_script_path = os.path.join(self.work_path, "install-tool-" + s.name + ".sh")
+                artifact = self.artifact_factory.new_artifact(installation_script_path, s.bash)
                 for c in self.get_container_with_tool(s.tool_to_install):
                     idx = self.containers.index(c)
                     c.image = self.image_registry + ("/%s/image" % (couler.workflow.name)) + c.name + ":v1"
@@ -166,19 +177,18 @@ class workflow():
             else:
                 sb_step(step, data['steps'][step]['bash'])
 
-    def get_container_with_tool(self, tool:str) -> dict:
+    def get_container_with_tool(self, tool: str) -> dict:
         arr = []
         for c in self.containers:
             if tool in c.tool_deps:
                 arr.append(c)
         return arr
 
-    def find_step(self, given_name:str) -> sb_step:
+    def find_step(self, given_name: str) -> sb_step:
         for step in sb_step.global_steps:
             if step.name == given_name:
                 return step
         logging.error("Could not find step ", given_name)
-
 
     def get_dag(self, data):
         for dag_step in data['DAG']:
@@ -186,14 +196,14 @@ class workflow():
             for dag_step_dep in data['DAG'][dag_step]:
                 step.dependencies.append(self.find_step(dag_step_dep))
 
-    def sb_step_call(self, step:sb_step):
+    def sb_step_call(self, step: sb_step):
         c = self.simple_container
-        if(step.type == step_type.tool_invocation):
+        if (step.type == step_type.tool_invocation):
             conts = self.get_container_with_tool(step.tool_to_call)
             c = conts[0]
         elif (step.type == step_type.tool_installation):
             return
-        artifact = rawArtifact("/root/step_bash.sh", step.bash)
+        artifact = self.artifact_factory.new_artifact("/root/step_bash.sh", step.bash)
         sb_step_name = utils.argo_safe_name(step.name)
         obc_env = {
             "OBC_WORK_PATH": self.work_path,
@@ -202,24 +212,21 @@ class workflow():
         }
         return couler.run_container(c.image, command=["/bin/bash"], args="/root/step_bash.sh", input=[artifact], step_name=sb_step_name, env=obc_env)
 
-
-
     def dag_phase(self, data, last_builder):
         for step in sb_step.global_steps:
-            if(step.type == tool_invocation_step):
+            if (step.type == tool_invocation_step):
                 step.container = self.get_container_with_tool(step.tool_to_call)
             else:
                 step.container = self.simple_container
         last_elem = None
 
-        # Keys: Step nmes. Values a list with tuples: 
+        # Keys: Step nmes. Values a list with tuples:
         # A tuple contains the step object and the dependency
-        step_dependencies = defaultdict(list) 
+        step_dependencies = defaultdict(list)
 
         for step in sb_step.global_steps:
-            if(step.type == step_type.initial):
-                #print (last_builder, type(last_builder))
-                couler.set_dependencies(lambda:  self.sb_step_call(step), dependencies=last_builder)
+            if (step.type == step_type.initial):
+                couler.set_dependencies(lambda: self.sb_step_call(step), dependencies=last_builder)
                 continue
 
             if len(step.dependencies) == 0:
@@ -237,21 +244,20 @@ class workflow():
                             key = tmp
                         if tmp.type == step_type.initial:
                             initial = tmp
-                    if(key.type == step_type.tool_installation):
+                    if (key.type == step_type.tool_installation):
                         sb_step_name = utils.argo_safe_name(initial.name)
-                        couler.set_dependencies(lambda:  self.sb_step_call(step), dependencies=sb_step_name)
+                        couler.set_dependencies(lambda: self.sb_step_call(step), dependencies=sb_step_name)
                     else:
                         sb_step_name = utils.argo_safe_name(dep.name)
                         # Do not set dependencies here. This dependenciy might belong to more than on step
-                        #couler.set_dependencies(lambda:  sb_step_call(wfl, step), dependencies=sb_step_name)
-                        step_dependencies[step.name].append(( step, sb_step_name )) 
-                    # print(step.name, " depends on ", dep.name)
+                        # couler.set_dependencies(lambda:  sb_step_call(wfl, step), dependencies=sb_step_name)
+                        step_dependencies[step.name].append((step, sb_step_name))
 
         # Add step dependencies
-        for k,v in step_dependencies.items():
-            couler.set_dependencies(lambda:  self.sb_step_call(v[0][0]), dependencies=' && '.join( x[1] for x in v))
+        for k, v in step_dependencies.items():
+            couler.set_dependencies(lambda: self.sb_step_call(v[0][0]), dependencies=' && '.join(x[1] for x in v))
 
-    def builder_phase(self, c:container, ):
+    def builder_phase(self, c: container):
         obc_env = {
             "OBC_WORK_PATH": self.work_path,
             "OBC_TOOL_PATH": self.work_path,
@@ -260,7 +266,7 @@ class workflow():
         dockerfile_path = os.path.join(self.work_path, "Dockerfile")
         dockerfile = """
     FROM kantale/openbio-env:1
-    RUN apt-get update 
+    RUN apt-get update
 
     ADD . /root/
     WORKDIR /root
@@ -270,13 +276,9 @@ class workflow():
         dockerfile += "\nENV " + "OBC_DATA_PATH=" + obc_env["OBC_DATA_PATH"]
         for art in c.artifacts:
             dockerfile += "\nRUN chmod +x " + art.path + " && " + art.path
-        # print(dockerfile)
-        c.artifacts.append(rawArtifact(dockerfile_path, dockerfile))
+        c.artifacts.append(self.artifact_factory.new_artifact(dockerfile_path, dockerfile))
         self.builders.append("builder" + c.name)
 
-        # tmpl = Container("executor"+c.name,c.image, command=["/bin/bash", "-c"], env=obc_env)
-        # couler.workflow.add_template(tmpl)
-        # wfl.templates.append(tmpl)
         kaniko_args = [
             "--dockerfile=Dockerfile",
             "--cache=true",
@@ -290,37 +292,24 @@ class workflow():
                              args=kaniko_args,
                              volume_mounts=[VolumeMountWithSubPath('docker-registry-secret', '/kaniko/.docker/config.json', '.dockerconfigjson')],
                              input=c.artifacts,
-                             step_name="builder"+c.name,
+                             step_name="builder" + c.name,
                              env=obc_env)
 
-
-
-
-
-#########################################
-######### END OF CLASS workflow #########
-#########################################
-
-
-
-
-
-
-
-
 def workflow_yaml():
-    return states.workflow.to_dict()
+    result = states.workflow.to_dict()
+    # result['spec']['artifactRepositoryRef'] = {'configMap': 'openbio-artifact-repository'}
+    return result
 
 def yaml():
     yaml_str = pyaml.dump(workflow_yaml())
 
     # The maximum size of an etcd request is 1.5MiB:
     # https://github.com/etcd-io/etcd/blob/master/Documentation/dev-guide/limit.md#request-size-limit # noqa: E501
-    # if len(yaml_str) > 1573000:
-    #     raise ValueError(
-    #         "The size of workflow YAML file should not be more \
-    #         than 1.5MiB."
-    #     )
+    if len(yaml_str) > 1573000:
+        raise ValueError(
+            "The size of workflow YAML file should not be more \
+            than 1.5MiB."
+        )
 
     # TODO(weiyan): add unittest for verifying multiple secrets outputs
     for secret in states._secrets.values():
@@ -330,11 +319,10 @@ def yaml():
     if states._enable_print_yaml:
         return yaml_str
 
-
-def pipeline(data:str, workflow_name:str, image_registry:str, work_path:str):
+def pipeline(data: str, workflow_name: str, image_registry: str, work_path: str):
     '''
     This is the main entry point
-    Called from __init__ ArgoExecutor 
+    Called from __init__ ArgoExecutor
     '''
     couler._cleanup()
     sb_step.global_steps = []
@@ -349,19 +337,16 @@ def pipeline(data:str, workflow_name:str, image_registry:str, work_path:str):
     builder_as_deps = []
     for c in wfl.containers:
         couler.set_dependencies(lambda: wfl.builder_phase(c), dependencies=None)
-        # From cargo documntation: https://github.com/argoproj/argo-workflows/blob/master/docs/enhanced-depends-logic.md 
-        # Create a string representing the enhanced depends logic that specifies
-        # dependencies based on their statuses.
-        builder_as_deps.append(f"builder{c.name}.Succeeded") #  += " builder"+c.name+".Succeeded" + " &&"
-    builder_as_deps =  ' && '.join(builder_as_deps) # builder_as_deps[:len(builder_as_deps) - 2]
+        # From Argo documntation: https://github.com/argoproj/argo-workflows/blob/master/docs/enhanced-depends-logic.md
+        # Create a string representing the enhanced depends logic that specifies dependencies based on their statuses.
+        builder_as_deps.append(f"builder{c.name}.Succeeded")
+    builder_as_deps = ' && '.join(builder_as_deps)
     wfl.dag_phase(data, builder_as_deps)
     ret = yaml()
-    #couler._cleanup()
-
 
     return ret
 
-def pipeline_from_file(filename:str, workflow_name:str, image_registry:str, work_path:str):
+def pipeline_from_file(filename: str, workflow_name: str, image_registry: str, work_path: str):
     with open(filename, 'r') as f:
         return pipeline(f.read(), workflow_name, image_registry, work_path)
 
@@ -376,5 +361,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     print(pipeline_from_file(args.file_path, args.name, args.registry, args.path))
-
-# atexit._clear()
