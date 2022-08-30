@@ -30,6 +30,10 @@ class ArgoExecutor(BaseExecutor):
             executor_parameters['image_registry'] = '127.0.0.1'
         if 'work_path' not in executor_parameters:
             executor_parameters['work_path'] = '/work'
+        if 'argo_artifact_repository_url' not in executor_parameters:
+            executor_parameters['argo_artifact_repository_url'] = ''
+        if 'namespace' not in executor_parameters:
+            executor_parameters['namespace'] = ''
 
         super().__init__(workflow, executor_parameters)
 
@@ -43,7 +47,7 @@ class ArgoExecutor(BaseExecutor):
         print (json.dumps(self.decomposed, indent=4))
         print ('='*20)
 
-        ret = argo.pipeline(json_wf, self.workflow_name, self.image_registry, self.work_path)
+        ret = argo.pipeline(json_wf, self.workflow_name, self.image_registry, self.work_path, self.argo_artifact_repository_url, self.namespace)
         print ('ARGO WORKFLOW:')
         print (ret)
         print ('='*20)
@@ -61,7 +65,9 @@ def dispatch(*,
     executor_parameters = {
         'workflow_name': 'openbio-' + nice_id,
         'image_registry': client_parameters['image_registry'],
-        'work_path': os.path.join(client_parameters['work_path'], nice_id)
+        'work_path': os.path.join(client_parameters['work_path'], nice_id),
+        'argo_artifact_repository_url': client_parameters['argo_artifact_repository_url'],
+        'namespace': social.extra_data['knot_namespace']
     }
 
     namespace = client_parameters['namespace']

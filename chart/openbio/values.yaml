@@ -27,6 +27,9 @@ openbio:
   knotClientSecret:
   knotVerifySSL: true
 
+  # Artifact repository for Argo Workflows (optional).
+  argoArtifactRepositoryURL:
+
   # Extra settings (Python code).
   extraSettings:
 

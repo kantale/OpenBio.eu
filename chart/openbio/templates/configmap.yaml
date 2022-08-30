@@ -54,6 +54,8 @@ data:
     LOGIN_BACKEND = KnotConnect.name
     {{- end }}
 
+    ARGO_ARTIFACT_REPOSITORY_URL = {{ .Values.openbio.argoArtifactRepositoryURL }}
+
     {{- if .Values.openbio.extraSettings }}
     {{- .Values.openbio.extraSettings | nindent 4 }}
     {{- end }}

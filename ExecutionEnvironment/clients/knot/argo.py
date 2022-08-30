@@ -137,11 +137,14 @@ class workflow():
         self.simple_container = simple_container
         couler.add_volume(SecretVolume('docker-registry-secret', 'docker-registry-secret'))
 
-        self.artifact_factory = RawArtifactFactory()
-        # artifact_repository_url = 's3://username:password@127.0.0.1:9000/openbio'
-        # self.artifact_factory = S3ArtifactFactory(couler.workflow.name, artifact_repository_url, 'default')
+        self.artifact_factory = None # to be initialized later
 
     def parse(self, input: str):
+        if self.artifact_repository and self.namespace:
+            self.artifact_factory = S3ArtifactFactory(couler.workflow.name, self.artifact_repository, self.namespace)
+        else:
+            self.artifact_factory = RawArtifactFactory()
+
         data = json.loads(input)
         self.get_environment(data,)
         self.get_steps(data,)
@@ -295,13 +298,15 @@ class workflow():
                              step_name="builder" + c.name,
                              env=obc_env)
 
-def workflow_yaml():
+def workflow_yaml(uses_artifacts=False):
     result = states.workflow.to_dict()
-    # result['spec']['artifactRepositoryRef'] = {'configMap': 'openbio-artifact-repository'}
+    if uses_artifacts:
+        # XXX Get value from workflow.artifact_factory.artifact_repository.config_map...
+        result['spec']['artifactRepositoryRef'] = {'configMap': 'openbio-artifact-repository'}
     return result
 
-def yaml():
-    yaml_str = pyaml.dump(workflow_yaml())
+def yaml(uses_artifacts=False):
+    yaml_str = pyaml.dump(workflow_yaml(uses_artifacts))
 
     # The maximum size of an etcd request is 1.5MiB:
     # https://github.com/etcd-io/etcd/blob/master/Documentation/dev-guide/limit.md#request-size-limit # noqa: E501
@@ -319,7 +324,7 @@ def yaml():
     if states._enable_print_yaml:
         return yaml_str
 
-def pipeline(data: str, workflow_name: str, image_registry: str, work_path: str):
+def pipeline(data: str, workflow_name: str, image_registry: str, work_path: str, artifact_repository: str, namespace: str):
     '''
     This is the main entry point
     Called from __init__ ArgoExecutor
@@ -331,6 +336,8 @@ def pipeline(data: str, workflow_name: str, image_registry: str, work_path: str)
     wfl = workflow()
     wfl.image_registry = image_registry
     wfl.work_path = work_path
+    wfl.artifact_repository = artifact_repository
+    wfl.namespace = namespace
     data = wfl.parse(data)
     couler.workflow.dag_mode = True
 
@@ -342,22 +349,24 @@ def pipeline(data: str, workflow_name: str, image_registry: str, work_path: str)
         builder_as_deps.append(f"builder{c.name}.Succeeded")
     builder_as_deps = ' && '.join(builder_as_deps)
     wfl.dag_phase(data, builder_as_deps)
-    ret = yaml()
+    ret = yaml(uses_artifacts=(artifact_repository and namespace))
 
     return ret
 
-def pipeline_from_file(filename: str, workflow_name: str, image_registry: str, work_path: str):
+def pipeline_from_file(filename: str, workflow_name: str, image_registry: str, work_path: str, artifact_repository: str, namespace: str):
     with open(filename, 'r') as f:
-        return pipeline(f.read(), workflow_name, image_registry, work_path)
+        return pipeline(f.read(), workflow_name, image_registry, work_path, artifact_repository, namespace)
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
 
     parser = argparse.ArgumentParser(description='Convert a JSON workflow into Argo YAML', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--name', '-n', metavar='<workflow_name>', type=str, required=False, default='test-workflow', help='unique name for the workflow')
+    parser.add_argument('--identifier', '-i', metavar='<workflow_identifier>', type=str, required=False, default='test-workflow', help='unique identifier for the workflow')
     parser.add_argument('--registry', '-r', metavar='<image_registry>', type=str, required=False, default='127.0.0.1:5000', help='image registry host and port')
     parser.add_argument('--path', '-p', metavar='<work_path>', type=str, required=False, default='/private/test-workflow', help='folder for intermediate files')
+    parser.add_argument('--artifacts', '-a', metavar='<artifact_repository>', type=str, required=False, default='', help='artifact repository URL')
+    parser.add_argument('--namespace', '-n', metavar='<namespace>', type=str, required=False, default='', help='create artifact configuration in this namespace')
     parser.add_argument('file_path', metavar='<file_path>', type=str)
     args = parser.parse_args()
 
-    print(pipeline_from_file(args.file_path, args.name, args.registry, args.path))
+    print(pipeline_from_file(args.file_path, args.identifier, args.registry, args.path, args.artifacts, args.namespace))

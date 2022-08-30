@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.signals import user_logged_in
 from django.dispatch import receiver
 from django.core.exceptions import ObjectDoesNotExist
+from django.conf import settings
 from urllib.parse import urlparse
 
 import re
@@ -66,12 +67,19 @@ def post_login(sender, user, request, **kwargs):
     if not social:
         return
 
+    argo_artifact_repository_url = None
+    try:
+        argo_artifact_repository_url = settings.ARGO_ARTIFACT_REPOSITORY_URL
+    except:
+        pass
+
     # Fetch Knot deployment settings from extra data returned with OIDC.
     try:
         registry_url = urlparse(social.extra_data['knot_private_registry_url'])
         registry_host = '%s:%s' % (registry_url.hostname, registry_url.port) if registry_url.port else registry_url.hostname
         parameters = {'type': 'knot',
                       'argo_url': social.extra_data['knot_argo_workflows_url'],
+                      'argo_artifact_repository_url': argo_artifact_repository_url,
                       'namespace': social.extra_data['knot_namespace'],
                       'image_registry': '%s/%s' % (registry_host, registry_url.path.lstrip('/')),
                       'work_path': '/private/openbio'}
