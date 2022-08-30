@@ -59,6 +59,9 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
