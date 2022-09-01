@@ -11,7 +11,7 @@ from couler.core import states, utils
 from couler.core.templates.artifact import TypedArtifact
 from couler.core.templates.volume import Volume, VolumeMount
 
-from artifacts import S3ArtifactRepository
+from .artifacts import S3ArtifactRepository
 
 
 class step_type(enum.Enum):

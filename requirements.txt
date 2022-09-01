@@ -7,6 +7,7 @@ cryptography==37.0.4
 defusedxml==0.7.1
 Django==4.1
 djangorestframework==3.13.1
+psycopg2-binary==2.9.3
 idna==3.3
 latexcodec==2.0.1
 mistune==2.0.4
@@ -24,6 +25,7 @@ simplejson==3.17.6
 six==1.16.0
 social-auth-app-django==5.0.0
 social-auth-core==4.3.0
+python-jose==3.3.0
 sqlparse==0.4.2
 urllib3==1.26.12
 git+https://github.com/couler-proj/couler

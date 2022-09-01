@@ -83,7 +83,7 @@ releases:
       {{- if .Values.ingress.createSelfsignedCertificate }}
       knotVerifySSL: false
       {{- end }}
-      argoArtifactRepositoryURL: s3://{{ .Values.openBio.artifacts.accessKey }}:{{ .Values.openBio.artifacts.secretKey }}@openbio-artifacts.openbio.svc:9000
+      argoArtifactRepositoryURL: s3://{{ .Values.openBio.artifacts.accessKey }}:{{ .Values.openBio.artifacts.secretKey }}@openbio-artifacts.openbio.svc:9000/openbio
       ingressEnabled: true
       ingressURL: https://openbio.{{ .Values.ingress.host }}
 {{- if not .Values.storage.stateVolume.hostPath }}

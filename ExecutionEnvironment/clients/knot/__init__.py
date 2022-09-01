@@ -67,7 +67,7 @@ def dispatch(*,
         'image_registry': client_parameters['image_registry'],
         'work_path': os.path.join(client_parameters['work_path'], nice_id),
         'argo_artifact_repository_url': client_parameters['argo_artifact_repository_url'],
-        'namespace': social.extra_data['knot_namespace']
+        'namespace': client_parameters['namespace']
     }
 
     namespace = client_parameters['namespace']
