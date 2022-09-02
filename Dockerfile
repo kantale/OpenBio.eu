@@ -20,7 +20,7 @@ RUN apt-get update && \
         /usr/share/man \
         /usr/share/doc \
         /usr/share/doc-base
-RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x86; else ARCH=$TARGETARCH; fi && \
+RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH=x64; else ARCH=$TARGETARCH; fi && \
     curl -LO https://nodejs.org/dist/v14.17.4/node-v14.17.4-linux-${ARCH}.tar.xz && \
     tar -Jxvf node-v14.17.4-linux-${ARCH}.tar.xz -C /usr/local --strip-components=1 node-v14.17.4-linux-${ARCH}/bin node-v14.17.4-linux-${ARCH}/lib && \
     rm -rf node-v14.17.4-linux-${ARCH}.tar.xz
