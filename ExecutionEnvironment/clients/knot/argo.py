@@ -142,6 +142,7 @@ class workflow():
     def parse(self, input: str):
         if self.artifact_repository and self.namespace:
             self.artifact_factory = S3ArtifactFactory(couler.workflow.name, self.artifact_repository, self.namespace)
+            couler.workflow.set_artifact_repository_ref({'configMap': self.artifact_factory.artifact_repository.config_map})
         else:
             self.artifact_factory = RawArtifactFactory()
 
@@ -298,15 +299,12 @@ class workflow():
                              step_name="builder" + c.name,
                              env=obc_env)
 
-def workflow_yaml(uses_artifacts=False):
+def workflow_yaml():
     result = states.workflow.to_dict()
-    if uses_artifacts:
-        # XXX Get value from workflow.artifact_factory.artifact_repository.config_map...
-        result['spec']['artifactRepositoryRef'] = {'configMap': 'openbio-artifact-repository'}
     return result
 
-def yaml(uses_artifacts=False):
-    yaml_str = pyaml.dump(workflow_yaml(uses_artifacts))
+def yaml():
+    yaml_str = pyaml.dump(workflow_yaml())
 
     # The maximum size of an etcd request is 1.5MiB:
     # https://github.com/etcd-io/etcd/blob/master/Documentation/dev-guide/limit.md#request-size-limit # noqa: E501
@@ -349,7 +347,7 @@ def pipeline(data: str, workflow_name: str, image_registry: str, work_path: str,
         builder_as_deps.append(f"builder{c.name}.Succeeded")
     builder_as_deps = ' && '.join(builder_as_deps)
     wfl.dag_phase(data, builder_as_deps)
-    ret = yaml(uses_artifacts=(artifact_repository and namespace))
+    ret = yaml()
 
     return ret
 
