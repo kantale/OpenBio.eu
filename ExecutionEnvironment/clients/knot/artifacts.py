@@ -131,7 +131,7 @@ class S3ArtifactRepository(object):
                                      'accessKeySecret': {'name': self.secret,
                                                          'key': 'accesskey'},
                                      'secretKeySecret': {'name': self.secret,
-                                                         'key': 'accesskey'}}}
+                                                         'key': 'secretkey'}}}
 
         config_maps = self._kubernetes_client.list_config_maps(label_selector='app.kubernetes.io/managed-by=%s' % self.managed_by)
         existing_config_map = next((c for c in config_maps if c.metadata.name == self.config_map), None)

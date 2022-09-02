@@ -56,6 +56,9 @@ releases:
       hosts:
       - openbio-artifacts.{{ .Values.ingress.host }}
   - resources:
+  - environment:
+      MINIO_SERVER_URL: http://openbio-artifacts.openbio.svc:9000
+      MINIO_BROWSER_REDIRECT_URL: https://openbio-artifacts.{{ .Values.ingress.host }}
 - name: openbio
   namespace: openbio
   createNamespace: true
