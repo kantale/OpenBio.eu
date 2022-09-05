@@ -2699,10 +2699,11 @@ OBCENDOFFILE
         #Add 'OBC_AIRFLOW_FINAL' AFTER ALL STEPS
         run_afters[final_step_name] = step_inter_ids + [init_step_name]
 
-    def initial_variabes(self,):
+    def initial_variabes(self,add_nice_id=False):
         ret  = 'export OBC_WORKFLOW_NAME={}\n'.format(self.workflow.root_workflow['name'])
         ret += 'export OBC_WORKFLOW_EDIT={}\n'.format(self.workflow.root_workflow['edit'])
-        ret += 'export OBC_NICE_ID={}\n'.format(self.workflow.nice_id_global)
+        if add_nice_id:
+            ret += 'export OBC_NICE_ID={}\n'.format(self.workflow.nice_id_global)
         ret += 'export OBC_SERVER={}\n\n'.format(self.workflow.obc_server)
 
         return ret

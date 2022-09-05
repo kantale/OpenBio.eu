@@ -133,7 +133,7 @@ class workflow():
         self.work_path = ""
         self.builders = []
         simple_container = container("simple")
-        simple_container.image = "kantale/openbio-env:1"
+        simple_container.image = "chazapis/openbio-env:2"
         self.simple_container = simple_container
         couler.add_volume(SecretVolume('docker-registry-secret', 'docker-registry-secret'))
 
@@ -167,7 +167,7 @@ class workflow():
         for step in data['steps']:
             if data['steps'][step]['type'] == "tool_installation":
                 s = tool_installation_step(step, data['steps'][step]['bash'])
-                installation_script_path = os.path.join(self.work_path, "install-tool-" + s.name + ".sh")
+                installation_script_path = os.path.join("/private/openbio/tools", "install-tool-" + s.name + ".sh")
                 artifact = self.artifact_factory.new_artifact(installation_script_path, s.bash)
                 for c in self.get_container_with_tool(s.tool_to_install):
                     idx = self.containers.index(c)
@@ -202,19 +202,21 @@ class workflow():
 
     def sb_step_call(self, step: sb_step):
         c = self.simple_container
+        c_args = "/root/step_bash.sh"
         if (step.type == step_type.tool_invocation):
             conts = self.get_container_with_tool(step.tool_to_call)
             c = conts[0]
+            c_args = ["-c", "cp /openbio/work/* %s && /root/step_bash.sh" % self.work_path]
         elif (step.type == step_type.tool_installation):
             return
         artifact = self.artifact_factory.new_artifact("/root/step_bash.sh", step.bash)
         sb_step_name = utils.argo_safe_name(step.name)
+        nice_id = couler.workflow.name if not couler.workflow.name.startswith('openbio-') else couler.workflow.name[8:]
         obc_env = {
             "OBC_WORK_PATH": self.work_path,
-            "OBC_TOOL_PATH": self.work_path,
-            "OBC_DATA_PATH": self.work_path
+            "OBC_NICE_ID": nice_id
         }
-        return couler.run_container(c.image, command=["/bin/bash"], args="/root/step_bash.sh", input=[artifact], step_name=sb_step_name, env=obc_env)
+        return couler.run_container(c.image, command=["/bin/bash"], args=c_args, input=[artifact], step_name=sb_step_name, env=obc_env)
 
     def dag_phase(self, data, last_builder):
         for step in sb_step.global_steps:
@@ -262,22 +264,11 @@ class workflow():
             couler.set_dependencies(lambda: self.sb_step_call(v[0][0]), dependencies=' && '.join(x[1] for x in v))
 
     def builder_phase(self, c: container):
-        obc_env = {
-            "OBC_WORK_PATH": self.work_path,
-            "OBC_TOOL_PATH": self.work_path,
-            "OBC_DATA_PATH": self.work_path
-        }
         dockerfile_path = os.path.join(self.work_path, "Dockerfile")
         dockerfile = """
-    FROM kantale/openbio-env:1
-    RUN apt-get update
-
-    ADD . /root/
-    WORKDIR /root
-        """
-        dockerfile += "\nENV " + "OBC_WORK_PATH=" + obc_env["OBC_WORK_PATH"]
-        dockerfile += "\nENV " + "OBC_TOOL_PATH=" + obc_env["OBC_TOOL_PATH"]
-        dockerfile += "\nENV " + "OBC_DATA_PATH=" + obc_env["OBC_DATA_PATH"]
+FROM chazapis/openbio-env:2
+RUN apt-get update -y
+"""
         for art in c.artifacts:
             dockerfile += "\nRUN chmod +x " + art.path + " && " + art.path
         c.artifacts.append(self.artifact_factory.new_artifact(dockerfile_path, dockerfile))
@@ -296,8 +287,7 @@ class workflow():
                              args=kaniko_args,
                              volume_mounts=[VolumeMountWithSubPath('docker-registry-secret', '/kaniko/.docker/config.json', '.dockerconfigjson')],
                              input=c.artifacts,
-                             step_name="builder" + c.name,
-                             env=obc_env)
+                             step_name="builder" + c.name)
 
 def workflow_yaml():
     result = states.workflow.to_dict()
