@@ -8,3 +8,5 @@ ENV OBC_TOOL_PATH=/openbio/tools
 ENV OBC_DATA_PATH=/openbio/data
 
 WORKDIR /root
+COPY run.sh /root/
+CMD ["./run.sh"]

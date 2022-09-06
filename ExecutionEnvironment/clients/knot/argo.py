@@ -202,11 +202,9 @@ class workflow():
 
     def sb_step_call(self, step: sb_step):
         c = self.simple_container
-        c_args = "/root/step_bash.sh"
         if (step.type == step_type.tool_invocation):
             conts = self.get_container_with_tool(step.tool_to_call)
             c = conts[0]
-            c_args = ["-c", "cp /openbio/work/* %s && /root/step_bash.sh" % self.work_path]
         elif (step.type == step_type.tool_installation):
             return
         artifact = self.artifact_factory.new_artifact("/root/step_bash.sh", step.bash)
@@ -216,7 +214,7 @@ class workflow():
             "OBC_WORK_PATH": self.work_path,
             "OBC_NICE_ID": nice_id
         }
-        return couler.run_container(c.image, command=["/bin/bash"], args=c_args, input=[artifact], step_name=sb_step_name, env=obc_env)
+        return couler.run_container(c.image, input=[artifact], step_name=sb_step_name, env=obc_env)
 
     def dag_phase(self, data, last_builder):
         for step in sb_step.global_steps:
