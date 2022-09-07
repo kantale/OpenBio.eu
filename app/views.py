@@ -1171,9 +1171,11 @@ def users_search_3(request, **kwargs):
     if not username:
         return fail('Could not get username')
 
-    u = get_obc_user(request)
-    if not u:
-        return fail('Could not find user with this username')
+    # Get the user object for this username
+    try:
+        u = OBC_user.objects.get(user__username=username)
+    except ObjectDoesNotExist:
+        return fail('Error 8122. User does not exist')
 
     ret = {
         'profile_username': username,
