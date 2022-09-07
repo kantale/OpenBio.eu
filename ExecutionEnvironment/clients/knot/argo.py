@@ -2,12 +2,12 @@ import os
 import argparse
 import json
 import logging
-import pyaml
+import yaml
 import random
 import string
 import re
 
-from artifacts import S3ArtifactRepository
+from .artifacts import S3ArtifactRepository
 
 class WorkflowPart:
     def compile(self):
@@ -158,7 +158,7 @@ class Workflow(WorkflowPart):
         # Get environments.
         self.environments = {}
         for env in self.data['environments']:
-            environment = Environment(env)
+            environment = Environment(str(env))
             for tool in self.data['environments'][env]:
                 # Install dependencies first.
                 for dependency in self.data['environments'][env][tool]:
@@ -198,7 +198,7 @@ class Workflow(WorkflowPart):
                         'container': {'image': environment.image_name(self.name, self.image_registry),
                                       'command': ['/bin/bash'],
                                       'args': ['-c',
-                                               'cp -r /private/openbio/work/. $OBC_WORK_PATH'],
+                                               'cp -r /openbio/work/. $OBC_WORK_PATH'],
                                       'env': [{'name': 'OBC_WORK_PATH', 'value': self.work_path}]}}
 
             templates.append(template)
@@ -252,7 +252,7 @@ def pipeline(data, workflow_name, image_registry, work_path, artifact_repository
     name = workflow_name if workflow_name else "workflow"
     workflow = Workflow(name, data, image_registry, work_path, artifact_repository, namespace)
 
-    return pyaml.dumps(workflow.compile()).decode()
+    return yaml.dump(workflow.compile())
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)

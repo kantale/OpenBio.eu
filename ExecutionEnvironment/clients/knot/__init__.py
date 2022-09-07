@@ -1,15 +1,12 @@
 '''
 Create and run workflow
-Uses
-https://github.com/couler-proj/couler
 '''
 
 import os
 import json
 import urllib
+import tempfile
 
-import couler.argo as couler
-from couler.argo_submitter import ArgoSubmitter
 from . import argo
 
 from ExecutionEnvironment.executor import (
@@ -42,18 +39,26 @@ class ArgoExecutor(BaseExecutor):
             break_down_on_tools=True,
             update_server_status=True,
         )
-        # json_wf = json.dumps(self.decomposed)
-        # print ('JSON DAG:')
-        # print (json.dumps(self.decomposed, indent=4))
-        # print ('='*20)
+        json_wf = json.dumps(self.decomposed)
+        print('JSON DAG:')
+        print(json.dumps(self.decomposed, indent=4))
+        print('='*20)
 
         ret = argo.pipeline(self.decomposed, self.workflow_name, self.image_registry, self.work_path, self.argo_artifact_repository_url, self.namespace)
-        # print ('ARGO WORKFLOW:')
-        # print (ret)
-        # print ('='*20)
+        print('ARGO WORKFLOW:')
+        print(ret)
+        print('='*20)
 
         return ret
 
+def apply_yaml_data(yaml_data, namespace=None):
+    with tempfile.NamedTemporaryFile() as f:
+        f.write(yaml_data.encode())
+        f.seek(0)
+        command = 'kubectl apply -f %s' % f.name
+        if namespace:
+            command += ' -n %s' % namespace
+        os.system(command)
 
 def dispatch(*,
     nice_id,
@@ -70,8 +75,6 @@ def dispatch(*,
         'namespace': client_parameters['namespace']
     }
 
-    namespace = client_parameters['namespace']
-
     # Setup bash scripts
     args = type('A', (), {
         'server': server_url,
@@ -84,17 +87,12 @@ def dispatch(*,
 
     # Create argo scripts
     e = ArgoExecutor(w, executor_parameters)
-    e.build(output=None, output_format='argo', workflow_id=None, obc_client=server_url)
-
-    # Submit with couler
-    submitter = ArgoSubmitter(namespace=namespace)
-    result = couler.run(submitter=submitter)
+    argo_workflow = e.build(output=None, output_format='argo', workflow_id=None, obc_client=server_url)
+    apply_yaml_data(argo_workflow, executor_parameters['namespace'])
 
     # Get visualization url
-    visualization_url = urllib.parse.urlparse(client_parameters['argo_url'])._replace(path='/workflows/%s/%s' % (namespace, result['metadata']['name'])).geturl()
-
+    visualization_url = urllib.parse.urlparse(client_parameters['argo_url'])._replace(path='/workflows/%s/%s' % (executor_parameters['namespace'], executor_parameters['workflow_name'])).geturl()
 
     return {
         'visualization_url': visualization_url,
     }
-
