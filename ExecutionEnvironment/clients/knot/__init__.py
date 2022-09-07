@@ -42,15 +42,15 @@ class ArgoExecutor(BaseExecutor):
             break_down_on_tools=True,
             update_server_status=True,
         )
-        json_wf = json.dumps(self.decomposed)
-        print ('JSON DAG:')
-        print (json.dumps(self.decomposed, indent=4))
-        print ('='*20)
+        # json_wf = json.dumps(self.decomposed)
+        # print ('JSON DAG:')
+        # print (json.dumps(self.decomposed, indent=4))
+        # print ('='*20)
 
-        ret = argo.pipeline(json_wf, self.workflow_name, self.image_registry, self.work_path, self.argo_artifact_repository_url, self.namespace)
-        print ('ARGO WORKFLOW:')
-        print (ret)
-        print ('='*20)
+        ret = argo.pipeline(self.decomposed, self.workflow_name, self.image_registry, self.work_path, self.argo_artifact_repository_url, self.namespace)
+        # print ('ARGO WORKFLOW:')
+        # print (ret)
+        # print ('='*20)
 
         return ret
 
