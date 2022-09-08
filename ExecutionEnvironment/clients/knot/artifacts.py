@@ -20,12 +20,16 @@ class KubernetesClient(object):
         except:
             kubernetes.config.load_incluster_config()
         self._core_api = kubernetes.client.CoreV1Api()
+        self._custom_objects_api = kubernetes.client.CustomObjectsApi()
 
     def list_config_maps(self, label_selector=None):
         return self._core_api.list_namespaced_config_map(namespace=self.namespace, label_selector=label_selector).items
 
     def list_secrets(self, label_selector=None):
         return self._core_api.list_namespaced_secret(namespace=self.namespace, label_selector=label_selector).items
+
+    def list_crds(self, group, version, plural):
+        return self._custom_objects_api.list_namespaced_custom_object(group=group, version=version, namespace=self.namespace, plural=plural)['items']
 
     def create_config_map(self, name, data, labels={}, annotations={}):
         metadata = kubernetes.client.V1ObjectMeta(name=name, labels=labels, annotations=annotations, namespace=self.namespace)
@@ -37,11 +41,17 @@ class KubernetesClient(object):
         body = kubernetes.client.V1Secret(api_version='v1', kind='Secret', metadata=metadata, data=data)
         self._core_api.create_namespaced_secret(namespace=self.namespace, body=body)
 
+    def apply_crd(self, group, version, plural, yaml):
+        return self._custom_objects_api.create_namespaced_custom_object(group=group, version=version, namespace=self.namespace, plural=plural, body=yaml)
+
     def delete_config_map(self, name):
         self._core_api.delete_namespaced_config_map(name, namespace=self.namespace)
 
     def delete_secret(self, name):
         self._core_api.delete_namespaced_secret(name, namespace=self.namespace)
+
+    def delete_crd(self, group, version, plural, name):
+        return self._custom_objects_api.delete_namespaced_custom_object(group=group, version=version, namespace=self.namespace, plural=plural, name=name, body={})
 
 class S3Client(object):
     def __init__(self, url):

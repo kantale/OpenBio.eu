@@ -36,10 +36,6 @@ RUN pip install --upgrade pip && \
     pip install /tmp/*.whl && \
     pip install -r requirements.txt
 
-ARG KUBECTL_VERSION=v1.22.4
-RUN curl -Lo /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/${TARGETARCH}/kubectl && \
-    chmod +x /usr/local/bin/kubectl
-
 EXPOSE 8200
 
 CMD ./start.sh

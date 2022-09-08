@@ -5,9 +5,12 @@ Create and run workflow
 import os
 import json
 import urllib
-import tempfile
+import yaml
+
+import kubernetes.client
 
 from . import argo
+from . import artifacts
 
 from ExecutionEnvironment.executor import (
     setup_bash_patterns,
@@ -51,15 +54,6 @@ class ArgoExecutor(BaseExecutor):
 
         return ret
 
-def apply_yaml_data(yaml_data, namespace=None):
-    with tempfile.NamedTemporaryFile() as f:
-        f.write(yaml_data.encode())
-        f.seek(0)
-        command = 'kubectl apply -f %s' % f.name
-        if namespace:
-            command += ' -n %s' % namespace
-        os.system(command)
-
 def dispatch(*,
     nice_id,
     client_parameters,
@@ -88,7 +82,17 @@ def dispatch(*,
     # Create argo scripts
     e = ArgoExecutor(w, executor_parameters)
     argo_workflow = e.build(output=None, output_format='argo', workflow_id=None, obc_client=server_url)
-    apply_yaml_data(argo_workflow, executor_parameters['namespace'])
+
+    # Submit
+    kubernetes_client = artifacts.KubernetesClient(executor_parameters['namespace'])
+    try:
+        kubernetes_client.apply_crd(group='argoproj.io', version='v1alpha1', plural='workflows', yaml=yaml.load(argo_workflow, Loader=yaml.FullLoader))
+    except kubernetes.client.rest.ApiException as e:
+        try:
+            message = json.loads(e.body)['message']
+        except:
+            message = str(e)
+        raise Exception(message)
 
     # Get visualization url
     visualization_url = urllib.parse.urlparse(client_parameters['argo_url'])._replace(path='/workflows/%s/%s' % (executor_parameters['namespace'], executor_parameters['workflow_name'])).geturl()
