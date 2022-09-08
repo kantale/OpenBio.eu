@@ -49,6 +49,8 @@ releases:
   - mode: standalone
   - rootUser: {{ .Values.openBio.artifacts.accessKey }}
   - rootPassword: {{ .Values.openBio.artifacts.secretKey }}
+  - persistence:
+      existingClaim: openbio-artifacts-state-pvc
   - consoleIngress:
       enabled: true
       annotations:
@@ -59,6 +61,43 @@ releases:
   - environment:
       MINIO_SERVER_URL: http://openbio-artifacts.openbio.svc:9000
       MINIO_BROWSER_REDIRECT_URL: https://openbio-artifacts.{{ .Values.ingress.host }}
+- name: openbio-artifacts-state-pvc
+  namespace: openbio
+  createNamespace: true
+  chart: bedag/raw
+  version: 1.1.0
+  values:
+  - resources:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: openbio-artifacts-state-pvc
+      spec:
+        {{- if not .Values.storage.stateVolume.hostPath }}
+        storageClassName: nfs-state
+        {{- else }}
+        storageClassName: ""
+        volumeName: openbio-artifacts-state-pv
+        {{- end }}
+        accessModes:
+          - ReadWriteMany
+        resources:
+          requests:
+            storage: 10Gi
+    {{- if .Values.storage.stateVolume.hostPath }}
+    - apiVersion: v1
+      kind: PersistentVolume
+      metadata:
+        name: openbio-artifacts-state-pv
+      spec:
+        accessModes:
+          - ReadWriteMany
+        capacity:
+          storage: 10Gi
+        persistentVolumeReclaimPolicy: Retain
+        hostPath:
+          path: {{ .Values.storage.stateVolume.hostPath }}/openbio-artifacts
+    {{- end }}
 - name: openbio
   namespace: openbio
   createNamespace: true

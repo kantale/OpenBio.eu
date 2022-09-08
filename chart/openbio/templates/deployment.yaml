@@ -25,6 +25,12 @@ spec:
         ports:
         - containerPort: 8200
           name: http
+        livenessProbe:
+          httpGet:
+            path: /platform
+            port: 8200
+          initialDelaySeconds: 3
+          periodSeconds: 3
         volumeMounts:
         - name: {{ .Release.Name }}-config
           mountPath: /app/OpenBio/obc_private.py
