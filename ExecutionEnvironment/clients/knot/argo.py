@@ -6,8 +6,10 @@ import yaml
 import random
 import string
 import re
+import hashlib
 
 from .artifacts import S3ArtifactRepository
+#from artifacts import S3ArtifactRepository
 
 class WorkflowPart:
     def compile(self):
@@ -68,6 +70,7 @@ class Environment(WorkflowPart):
         self.name = name
         self.dependencies = [] # Dependencies in installation order.
         self.artifacts = {}
+        self.hashes = {}
 
     def add_dependency(self, dependency):
         if dependency not in self.dependencies:
@@ -76,8 +79,10 @@ class Environment(WorkflowPart):
     def has_dependency(self, dependency):
         return dependency in self.dependencies
 
-    def add_artifact(self, dependency, artifact):
+    def add_artifact(self, dependency, artifact, artifact_hash):
         self.artifacts[dependency] = artifact
+        self.hashes[dependency] = artifact_hash
+
 
     def image_name(self, workflow_name, image_registry):
         return '%s/%s/env%s:1' % (image_registry, workflow_name, self.name)
@@ -88,9 +93,10 @@ class Environment(WorkflowPart):
         for dependency in self.dependencies:
             try:
                 artifact = self.artifacts[dependency]
+                artifact_hash = self.hashes[dependency]
             except:
                 continue
-            dockerfile_data += "\nRUN chmod +x " + artifact.path + " && " + artifact.path
+            dockerfile_data += "\nRUN chmod +x " + artifact.path + " && " + artifact.path + ' # ' + artifact_hash
         dockerfile_artifact = artifact_factory.new_artifact(dockerfile_path, dockerfile_data)
 
         result = {'name': 'builder' + self.name,
@@ -146,6 +152,10 @@ class Workflow(WorkflowPart):
         else:
             self.artifact_factory = RawArtifactFactory()
 
+    @staticmethod
+    def get_hash(s):
+        return hashlib.md5(s.encode('utf8')).hexdigest()
+
     def get_environment_with_tool(self, tool_name):
         for environment in self.environments.values():
             if environment.has_dependency(tool_name):
@@ -171,10 +181,11 @@ class Workflow(WorkflowPart):
             if self.data['steps'][step]['type'] == 'tool_installation':
                 script_name = step
                 script_data = self.data['steps'][step]['bash']
+                script_hash = self.get_hash(script_data) 
                 script_path = '/private/openbio/tools/install-%s.sh' % script_name
 
                 environment = self.get_environment_with_tool(script_name)
-                environment.add_artifact(script_name, self.artifact_factory.new_artifact(script_path, script_data))
+                environment.add_artifact(script_name, self.artifact_factory.new_artifact(script_path, script_data), script_hash)
 
         # Start populating workflow.
         tasks = []
