@@ -66,18 +66,18 @@ class SecretVolume(WorkflowPart):
 class Environment(WorkflowPart):
     def __init__(self, name):
         self.name = name
-        self.dependencies = [] # Dependencies in installation order.
-        self.artifacts = {}
+        self.tools = []
+        self.artifacts = [] # Artifacts in installation order.
 
-    def add_dependency(self, dependency):
-        if dependency not in self.dependencies:
-            self.dependencies.append(dependency)
+    def add_tool(self, tool):
+        if tool not in self.tools:
+            self.tools.append(tool)
 
-    def has_dependency(self, dependency):
-        return dependency in self.dependencies
+    def has_tool(self, tool):
+        return tool in self.tools
 
-    def add_artifact(self, dependency, artifact):
-        self.artifacts[dependency] = artifact
+    def add_artifact(self, artifact):
+        self.artifacts.append(artifact)
 
     def image_name(self, workflow_name, image_registry):
         return '%s/%s/env%s:1' % (image_registry, workflow_name, self.name)
@@ -85,16 +85,14 @@ class Environment(WorkflowPart):
     def compile(self, workflow_name, image_registry, work_path, artifact_factory):
         dockerfile_path = os.path.join(work_path, 'Dockerfile.env%s' % self.name)
         dockerfile_data = 'FROM chazapis/openbio-env:2\nRUN apt-get update -y\n'
-        for dependency in self.dependencies:
-            try:
-                artifact = self.artifacts[dependency]
-            except:
-                continue
-            dockerfile_data += "\nRUN chmod +x " + artifact.path + " && " + artifact.path
+        for artifact in self.artifacts:
+            artifact_filename = os.path.basename(artifact.path)
+            dockerfile_data += '\nADD tools/' + artifact_filename + ' .'
+            dockerfile_data += '\nRUN chmod +x ' + artifact_filename + ' && ./' + artifact_filename
         dockerfile_artifact = artifact_factory.new_artifact(dockerfile_path, dockerfile_data)
 
         result = {'name': 'builder' + self.name,
-                  'inputs': {'artifacts': [artifact.compile() for artifact in self.artifacts.values()] + [dockerfile_artifact.compile()]},
+                  'inputs': {'artifacts': [artifact.compile() for artifact in self.artifacts] + [dockerfile_artifact.compile()]},
                   'container': {'image': 'gcr.io/kaniko-project/executor:latest',
                                 'args': ['--dockerfile=Dockerfile.env%s' % self.name,
                                          '--cache=true',
@@ -146,13 +144,13 @@ class Workflow(WorkflowPart):
         else:
             self.artifact_factory = RawArtifactFactory()
 
-    def get_environment_with_tool(self, tool_name):
+    def get_environment_with_tool(self, tool):
         for environment in self.environments.values():
-            if environment.has_dependency(tool_name):
+            if environment.has_tool(tool):
                 return environment
 
     def safe_name(self, name):
-        return re.sub(r"_|\.", "-", name)
+        return re.sub(r'_|\.', '-', name)
 
     def compile(self):
         # Get environments.
@@ -160,10 +158,9 @@ class Workflow(WorkflowPart):
         for env in self.data['environments']:
             environment = Environment(str(env))
             for tool in self.data['environments'][env]:
-                # Install dependencies first.
-                for dependency in self.data['environments'][env][tool]:
-                    environment.add_dependency(dependency)
-                environment.add_dependency(tool)
+                for tool_dependency in self.data['environments'][env][tool]:
+                    environment.add_tool(tool_dependency)
+                environment.add_tool(tool)
             self.environments[env] = environment
 
         # Get tools to install in each environment.
@@ -171,10 +168,10 @@ class Workflow(WorkflowPart):
             if self.data['steps'][step]['type'] == 'tool_installation':
                 script_name = step
                 script_data = self.data['steps'][step]['bash']
-                script_path = '/private/openbio/tools/install-%s.sh' % script_name
+                script_path = os.path.join(self.work_path, 'tools/install-%s.sh' % script_name)
 
                 environment = self.get_environment_with_tool(script_name)
-                environment.add_artifact(script_name, self.artifact_factory.new_artifact(script_path, script_data))
+                environment.add_artifact(self.artifact_factory.new_artifact(script_path, script_data))
 
         # Start populating workflow.
         tasks = []
@@ -249,12 +246,12 @@ class Workflow(WorkflowPart):
         return result
 
 def pipeline(data, workflow_name, image_registry, work_path, artifact_repository, namespace):
-    name = workflow_name if workflow_name else "workflow"
+    name = workflow_name if workflow_name else 'workflow'
     workflow = Workflow(name, data, image_registry, work_path, artifact_repository, namespace)
 
     return yaml.dump(workflow.compile())
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
 
     parser = argparse.ArgumentParser(description='Convert a JSON workflow into Argo YAML', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
