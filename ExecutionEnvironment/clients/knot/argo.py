@@ -9,40 +9,48 @@ import re
 
 from .artifacts import S3ArtifactRepository
 
-class WorkflowPart:
-    def compile(self):
-        raise NotImplementedError
-
-class RawArtifact(WorkflowPart):
+class RawArtifact:
     '''
     An artifact with an embedded file.
     '''
-    def __init__(self, path, raw_data):
+    def __init__(self, factory, path, raw_data):
+        self.factory = factory
         self.path = path
         self.raw_data = raw_data
         self.id = 'input-' + ''.join([random.choice(string.ascii_lowercase) for i in range(8)])
 
+    @property
+    def parameter_value(self):
+        return self.raw_data
+
     def compile(self):
-        result = {'name': self.id, 'path': self.path, 'raw': {'data': self.raw_data}}
-        return result
+        return self.factory.compile(self.id, self.path, self.raw_data)
 
 class RawArtifactFactory:
     def new_artifact(self, path, raw_data):
-        return RawArtifact(path, raw_data)
+        return RawArtifact(self, path, raw_data)
 
-class S3Artifact(WorkflowPart):
+    def compile(self, name, path, parameter):
+        result = {'name': name, 'path': path, 'raw': {'data': parameter}}
+        return result
+
+class S3Artifact:
     '''
     An artifact that references an S3 object.
     '''
-    def __init__(self, object_prefix, path):
+    def __init__(self, factory, object_prefix, path):
+        self.factory = factory
         self.path = path
         self.object_prefix = object_prefix
         self.id = 'input-' + ''.join([random.choice(string.ascii_lowercase) for i in range(8)])
         self.object_name = '%s/%s' % (self.object_prefix, self.id)
 
+    @property
+    def parameter_value(self):
+        return self.object_name
+
     def compile(self):
-        result = {'name': self.id, 'path': self.path, 's3': {'key': self.object_name}}
-        return result
+        return self.factory.compile(self.id, self.path, self.object_name)
 
 class S3ArtifactFactory:
     def __init__(self, workflow_name, artifact_repository_url, namespace):
@@ -50,11 +58,15 @@ class S3ArtifactFactory:
         self.artifact_repository = S3ArtifactRepository(artifact_repository_url, namespace)
 
     def new_artifact(self, path, raw_data):
-        s3_artifact = S3Artifact(self.workflow_name, path)
+        s3_artifact = S3Artifact(self, self.workflow_name, path)
         self.artifact_repository.upload_data(s3_artifact.object_name, raw_data)
         return s3_artifact
 
-class SecretVolume(WorkflowPart):
+    def compile(self, name, path, parameter):
+        result = {'name': name, 'path': path, 's3': {'key': parameter}}
+        return result
+
+class SecretVolume:
     def __init__(self, name, secret_name):
         self.name = name
         self.secret_name = secret_name
@@ -63,7 +75,7 @@ class SecretVolume(WorkflowPart):
         result = {'name': self.name, 'secret': {'secretName': self.secret_name}}
         return result
 
-class Environment(WorkflowPart):
+class Environment:
     def __init__(self, name):
         self.name = name
         self.tools = []
@@ -106,26 +118,26 @@ class Environment(WorkflowPart):
                                                   'subPath': '.dockerconfigjson'}]}}
         return result
 
-class StepTemplate(WorkflowPart):
-    def __init__(self, name, image_name, script_data):
+class Step:
+    def __init__(self, name, dependencies, image_name, script_data):
         self.name = name
+        self.dependencies = dependencies
         self.image_name = image_name
         self.script_data = script_data
 
-    def compile(self, workflow_name, work_path, artifact_factory):
+    def compile(self, work_path, artifact_factory):
         script_artifact = artifact_factory.new_artifact('/root/step.sh', self.script_data)
-        nice_id = workflow_name if not workflow_name.startswith('openbio-') else workflow_name[8:]
 
         result = {'name': self.name,
-                  'inputs': {'artifacts': [script_artifact.compile()]},
-                  'container': {'image': self.image_name,
-                                'command': ['/bin/bash'],
-                                'args': ['/root/step.sh'],
-                                'env': [{'name': 'OBC_NICE_ID', 'value': nice_id},
-                                        {'name': 'OBC_WORK_PATH', 'value': work_path}]}}
+                  'template': 'run-environment',
+                  'depends': self.dependencies,
+                  'arguments': {'parameters': [{'name': 'environment-image',
+                                                'value': self.image_name},
+                                               {'name': 'script-data',
+                                                'value': script_artifact.parameter_value}]}}
         return result
 
-class Workflow(WorkflowPart):
+class Workflow:
     '''
     A Workflow in Argo format.
     '''
@@ -153,6 +165,29 @@ class Workflow(WorkflowPart):
         return re.sub(r'_|\.', '-', name)
 
     def compile(self):
+        # The templates and volumes for implementing steps.
+        nice_id = self.name if not self.name.startswith('openbio-') else self.name[8:]
+        templates = [{'name': 'copy-variables',
+                      'inputs': {'parameters': [{'name': 'environment-image'}]},
+                      'container': {'image': '{{inputs.parameters.environment-image}}',
+                                    'command': ['/bin/bash'],
+                                    'args': ['-c',
+                                             'cp -r /openbio/work/. $OBC_WORK_PATH'],
+                                    'env': [{'name': 'OBC_WORK_PATH', 'value': self.work_path}]}},
+                     {'name': 'run-environment',
+                      'inputs': {'parameters': [{'name': 'environment-image'},
+                                                {'name': 'script-data'}],
+                                 'artifacts': [self.artifact_factory.compile('step-script', '/root/step.sh', '{{inputs.parameters.script-data}}')]},
+                      'container': {'image': '{{inputs.parameters.environment-image}}',
+                                    'command': ['/bin/bash'],
+                                    'args': ['/root/step.sh'],
+                                    'env': [{'name': 'OBC_NICE_ID', 'value': nice_id},
+                                            {'name': 'OBC_WORK_PATH', 'value': self.work_path}]}}]
+        volumes = [SecretVolume('docker-registry-secret', 'docker-registry-secret').compile()]
+
+        # Start populating workflow.
+        tasks = []
+
         # Get environments.
         self.environments = {}
         for env in self.data['environments']:
@@ -173,14 +208,9 @@ class Workflow(WorkflowPart):
                 environment = self.get_environment_with_tool(script_name)
                 environment.add_artifact(self.artifact_factory.new_artifact(script_path, script_data))
 
-        # Start populating workflow.
-        tasks = []
-        templates = []
-        volumes = [SecretVolume('docker-registry-secret', 'docker-registry-secret').compile()]
-
-        # First add the build and variable copy phases (one for each environment).
+        # Add a build and variable copy step for each environment.
         for environment in self.environments.values():
-            # Build task.
+            # Build task. For environments we use a simple task and a verbose template which includes all the artifacts directly.
             task = {'name': 'builder' + environment.name,
                     'template': 'builder' + environment.name}
             tasks.append(task)
@@ -188,50 +218,43 @@ class Workflow(WorkflowPart):
 
             # Copy task.
             task = {'name': 'copyvars' + environment.name,
-                    'template': 'copyvars' + environment.name,
-                    'depends': 'builder%s.Succeeded' % environment.name}
+                    'template': 'copy-variables',
+                    'depends': 'builder%s.Succeeded' % environment.name,
+                    'arguments': {'parameters': [{'name': 'environment-image',
+                                                  'value': environment.image_name(self.name, self.image_registry)}]}}
             tasks.append(task)
-            template = {'name': 'copyvars' + environment.name,
-                        'container': {'image': environment.image_name(self.name, self.image_registry),
-                                      'command': ['/bin/bash'],
-                                      'args': ['-c',
-                                               'cp -r /openbio/work/. $OBC_WORK_PATH'],
-                                      'env': [{'name': 'OBC_WORK_PATH', 'value': self.work_path}]}}
-
-            templates.append(template)
 
         # Find initial step.
         for step in self.data['steps']:
             if self.data['steps'][step]['type'] == 'initial':
                 initial_step = step
 
-        # Then add the other steps.
+        # Add all other steps.
         for step in self.data['steps']:
             if self.data['steps'][step]['type'] == 'tool_installation':
                 continue
 
+            # Get dependencies.
             if self.data['steps'][step]['type'] == 'initial':
                 # Depend on completion of all previous copy phases.
-                step_dependencies = ' && '.join([('copyvars%s.Succeeded' % environment.name) for environment in self.environments.values()])
+                dependencies = ' && '.join([('copyvars%s.Succeeded' % environment.name) for environment in self.environments.values()])
             else:
                 if step == self.data['first_step']:
-                    step_dependencies = self.safe_name(initial_step)
+                    dependencies = self.safe_name(initial_step)
                 else:
-                    step_dependencies = ' && '.join([self.safe_name(s) for s in self.data['DAG'][step]])
-            step_name = self.safe_name(step) # For Argo safety.
-            task = {'name': step_name,
-                    'template': step_name,
-                    'depends': step_dependencies}
-            tasks.append(task)
+                    dependencies = ' && '.join([self.safe_name(s) for s in self.data['DAG'][step]])
 
+            # Get image for environment.
             if self.data['steps'][step]['type'] == 'tool_invocation':
                 environment = self.get_environment_with_tool(self.data['steps'][step]['tool_to_call'])
                 image_name = environment.image_name(self.name, self.image_registry)
             else:
                 image_name = 'chazapis/openbio-env:2'
+
+            step_name = self.safe_name(step) # For Argo safety.
             script_data = self.data['steps'][step]['bash']
-            step_template = StepTemplate(step_name, image_name, script_data)
-            templates.append(step_template.compile(self.name, self.work_path, self.artifact_factory))
+            step_task = Step(step_name, dependencies, image_name, script_data)
+            tasks.append(step_task.compile(self.work_path, self.artifact_factory))
 
         # Compile.
         result = {'apiVersion': 'argoproj.io/v1alpha1',
