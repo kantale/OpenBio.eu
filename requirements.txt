@@ -11,7 +11,7 @@ idna==3.3
 latexcodec==2.0.1
 mistune==2.0.4
 networkx==2.8.6
-oauthlib==3.2.0
+oauthlib==3.2.1
 pybtex==0.24.0
 pycparser==2.21
 PyJWT==2.4.0
