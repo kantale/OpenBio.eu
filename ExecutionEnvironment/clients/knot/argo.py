@@ -96,7 +96,7 @@ class Environment:
 
     def compile(self, workflow_name, image_registry, work_path, artifact_factory):
         dockerfile_path = os.path.join(work_path, 'Dockerfile.env%s' % self.name)
-        dockerfile_data = 'FROM chazapis/openbio-env:2\nRUN apt-get update -y\n'
+        dockerfile_data = 'FROM chazapis/openbio-env:3\nRUN apt-get update -y\n'
         for artifact in self.artifacts:
             artifact_filename = os.path.basename(artifact.path)
             dockerfile_data += '\nADD tools/' + artifact_filename + ' .'
@@ -249,7 +249,7 @@ class Workflow:
                 environment = self.get_environment_with_tool(self.data['steps'][step]['tool_to_call'])
                 image_name = environment.image_name(self.name, self.image_registry)
             else:
-                image_name = 'chazapis/openbio-env:2'
+                image_name = 'chazapis/openbio-env:3'
 
             step_name = self.safe_name(step) # For Argo safety.
             script_data = self.data['steps'][step]['bash']
