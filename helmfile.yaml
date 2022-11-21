@@ -20,6 +20,9 @@ environments:
     - openBio:
         version: 0.2.4
         clientSecret: FR6HjKUVFo4AoJbN56PPC1nvoaQ9XHm3eMQz8pxRKddhJjh8dWCum5AUyKStEFFnkqzH3KWb8Jhal9OhRYCh6JKclYeF9M2TL4oPL95s4M3iArNrE6M8EMqU7lrEDYYD
+        artifacts:
+          accessKey: 4En0yHGi2jInAExZTxSw
+          secretKey: Pn8nJQRsFqiiKRwW2O7RzkQQfdGYRqtGceqcbRor
 ---
 helmfiles:
 - path: git::https://github.com/CARV-ICS-FORTH/knot.git@helmfile.yaml
@@ -33,7 +36,68 @@ helmfiles:
   - knot:
       issuesURL: https://github.com/CARV-ICS-FORTH/knot/issues
       localImage: false
+repositories:
+- name: minio
+  url: https://charts.min.io/
 releases:
+- name: openbio-artifacts
+  namespace: openbio
+  createNamespace: true
+  chart: minio/minio
+  values:
+  - fullnameOverride: openbio-artifacts
+  - mode: standalone
+  - rootUser: {{ .Values.openBio.artifacts.accessKey }}
+  - rootPassword: {{ .Values.openBio.artifacts.secretKey }}
+  - persistence:
+      existingClaim: openbio-artifacts-state-pvc
+  - consoleIngress:
+      enabled: true
+      annotations:
+        nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      hosts:
+      - openbio-artifacts.{{ .Values.ingress.host }}
+  - resources:
+  - environment:
+      MINIO_SERVER_URL: http://openbio-artifacts.openbio.svc:9000
+      MINIO_BROWSER_REDIRECT_URL: https://openbio-artifacts.{{ .Values.ingress.host }}
+- name: openbio-artifacts-state-pvc
+  namespace: openbio
+  createNamespace: true
+  chart: bedag/raw
+  version: 1.1.0
+  values:
+  - resources:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: openbio-artifacts-state-pvc
+      spec:
+        {{- if not .Values.storage.stateVolume.hostPath }}
+        storageClassName: nfs-state
+        {{- else }}
+        storageClassName: ""
+        volumeName: openbio-artifacts-state-pv
+        {{- end }}
+        accessModes:
+          - ReadWriteMany
+        resources:
+          requests:
+            storage: 10Gi
+    {{- if .Values.storage.stateVolume.hostPath }}
+    - apiVersion: v1
+      kind: PersistentVolume
+      metadata:
+        name: openbio-artifacts-state-pv
+      spec:
+        accessModes:
+          - ReadWriteMany
+        capacity:
+          storage: 10Gi
+        persistentVolumeReclaimPolicy: Retain
+        hostPath:
+          path: {{ .Values.storage.stateVolume.hostPath }}/openbio-artifacts
+    {{- end }}
 - name: openbio
   namespace: openbio
   createNamespace: true
@@ -61,6 +125,7 @@ releases:
       {{- if .Values.ingress.createSelfsignedCertificate }}
       knotVerifySSL: false
       {{- end }}
+      argoArtifactRepositoryURL: s3://{{ .Values.openBio.artifacts.accessKey }}:{{ .Values.openBio.artifacts.secretKey }}@openbio-artifacts.openbio.svc:9000/openbio
       ingressEnabled: true
       ingressURL: https://openbio.{{ .Values.ingress.host }}
 {{- if not .Values.storage.stateVolume.hostPath }}
