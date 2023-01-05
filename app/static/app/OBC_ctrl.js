@@ -5172,6 +5172,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
         // $scope.gen_qa_add_comment = function(comment_pk, object_pk, comment, qa_type) 
 
         $scope.gen_qa_add_comment(id, $scope.qa_gen[qa_type].object_pk, comment, opinion, qa_type);
+
+        // Empty the text in reply textfield
         $scope.qa_gen[qa_type].qa_current_reply_1 = '';
         $scope.qa_gen[qa_type].qa_current_reply_2 = '';
         $scope.qa_gen[qa_type].qa_current_reply_3 = '';
@@ -5287,7 +5289,7 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
 
     /*
     * Generic version of qa_comment_cancel_button_pressed
-    * Tool/WG --> Q&A --> Show Thread --> Add Comment -(!NOT REPLY!) -> Add text --> Cancel button --> Clicked 
+    * Tool/WF --> Q&A --> Show Thread --> Add Comment -(!NOT REPLY!) -> Add text --> Cancel button --> Clicked 
     */
     $scope.gen_qa_comment_cancel_button_pressed = function(qa_type) {
         $scope.qa_gen[qa_type].qa_show_new_comment= false;

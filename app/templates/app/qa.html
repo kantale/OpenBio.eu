@@ -1,8 +1,6 @@
 <div class="row" ng-show="!{{qa_type}}s_info_editable">
 
 
-
-
     <div class="row right-align" style="margin-bottom: 15px;" ng-show="!qa_gen['{{ qa_type }}'].qa_show_new_comment">
         <a href="/platform/c/
 {% verbatim %}{{
@@ -121,7 +119,7 @@
                 <a class="waves-effect waves-light btn-small" href=""
                     ng-click="gen_qa_reply_save_button_pressed(post.id, qa_current_reply_1, qa_gen['{{qa_type}}'].qa_reply_opinion, '{{ qa_type }}')">Save</a>
                 <a class="waves-effect waves-light btn-small" href=""
-                    ng-click="qa_reply_cancel_button_pressed(post.id)">Cancel</a>
+                    ng-click="gen_qa_reply_cancel_button_pressed(post.id, '{{ qa_type }}')">Cancel</a>
             </div>
             <ul class="collection">
                 <li class="collection-item qaCollectionItem" ng-repeat="post2 in post.children track by post2.id">
@@ -163,7 +161,7 @@
                         <a class="waves-effect waves-light btn-small" href=""
                             ng-click="gen_qa_reply_save_button_pressed(post2.id, qa_current_reply_2, qa_gen['{{ qa_type }}'].qa_reply_opinion, '{{ qa_type }}')">Save</a>
                         <a class="waves-effect waves-light btn-small" href=""
-                            ng-click="qa_reply_cancel_button_pressed(post2.id)">Cancel</a>
+                            ng-click="gen_qa_reply_cancel_button_pressed(post2.id, '{{ qa_type }}')">Cancel</a>
                     </div>
                     <ul class="collection">
                         <li class="collection-item qaCollectionItem"
@@ -206,7 +204,7 @@
                                 <a class="waves-effect waves-light btn-small" href=""
                                     ng-click="gen_qa_reply_save_button_pressed(post3.id, qa_current_reply_3, qa_gen['{{ qa_type }}'].qa_reply_opinion, '{{ qa_type }}')">Save</a>
                                 <a class="waves-effect waves-light btn-small" href=""
-                                    ng-click="qa_reply_cancel_button_pressed(post3.id)">Cancel</a>
+                                    ng-click="gen_qa_reply_cancel_button_pressed(post3.id, '{{ qa_type }}')">Cancel</a>
                             </div>
                             <ul class="collection">
                                 <li class="collection-item qaCollectionItem"
@@ -249,7 +247,7 @@
                                         <a class="waves-effect waves-light btn-small" href=""
                                             ng-click="gen_qa_reply_save_button_pressed(post4.id, qa_current_reply_4, qa_gen['{{ qa_type }}'].qa_reply_opinion, '{{ qa_type }}')">Save</a>
                                         <a class="waves-effect waves-light btn-small" href=""
-                                            ng-click="qa_reply_cancel_button_pressed(post4.id)">Cancel</a>
+                                            ng-click="gen_qa_reply_cancel_button_pressed(post4.id, '{{ qa_type }}')">Cancel</a>
                                     </div>
                                     <ul class="collection">
                                         <li class="collection-item qaCollectionItem"
