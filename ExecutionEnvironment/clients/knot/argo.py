@@ -8,8 +8,10 @@ import string
 import re
 import hashlib
 
-from .artifacts import S3ArtifactRepository
-#from artifacts import S3ArtifactRepository
+try:
+    from .artifacts import S3ArtifactRepository
+except ImportError:
+    from artifacts import S3ArtifactRepository
 
 class WorkflowPart:
     def compile(self):
