@@ -3,7 +3,7 @@ asgiref==3.5.2
 bashlex==0.16
 cffi==1.15.1
 charset-normalizer==2.1.1
-cryptography==37.0.4
+cryptography==39.0.1
 defusedxml==0.7.1
 Django==4.1.7
 djangorestframework==3.13.1
