@@ -119,11 +119,13 @@ class Environment:
         return result
 
 class Step:
-    def __init__(self, name, dependencies, image_name, script_data):
+    def __init__(self, name, dependencies, image_name, script_data, cpu_limit, memory_limit):
         self.name = name
         self.dependencies = dependencies
         self.image_name = image_name
         self.script_data = script_data
+        self.cpu_limit = cpu_limit
+        self.memory_limit = memory_limit
 
     def compile(self, work_path, artifact_factory):
         script_artifact = artifact_factory.new_artifact('/root/step.sh', self.script_data)
@@ -134,7 +136,11 @@ class Step:
                   'arguments': {'parameters': [{'name': 'environment-image',
                                                 'value': self.image_name},
                                                {'name': 'script-data',
-                                                'value': script_artifact.parameter_value}]}}
+                                                'value': script_artifact.parameter_value},
+                                               {'name': 'cpu-limit',
+                                                'value': self.cpu_limit},
+                                               {'name': 'memory-limit',
+                                                'value': self.memory_limit}]}}
         return result
 
 class Workflow:
@@ -176,8 +182,11 @@ class Workflow:
                                     'env': [{'name': 'OBC_WORK_PATH', 'value': self.work_path}]}},
                      {'name': 'run-environment',
                       'inputs': {'parameters': [{'name': 'environment-image'},
-                                                {'name': 'script-data'}],
+                                                {'name': 'script-data'},
+                                                {'name': 'cpu-limit'},
+                                                {'name': 'memory-limit'}],
                                  'artifacts': [self.artifact_factory.compile('step-script', '/root/step.sh', '{{inputs.parameters.script-data}}')]},
+                      'podSpecPatch': '{"containers":[{"name": "main", "resources": {"limits": {"cpu": "{{inputs.parameters.cpu-limit}}", "memory": "{{inputs.parameters.memory-limit}}"}}}]}',
                       'container': {'image': '{{inputs.parameters.environment-image}}',
                                     'command': ['/bin/bash'],
                                     'args': ['/root/step.sh'],
@@ -253,7 +262,9 @@ class Workflow:
 
             step_name = self.safe_name(step) # For Argo safety.
             script_data = self.data['steps'][step]['bash']
-            step_task = Step(step_name, dependencies, image_name, script_data)
+            cpu_limit = self.data['steps'][step].get('cpu_limit', '1')
+            memory_limit = self.data['steps'][step].get('memory_limit', '1Gi')
+            step_task = Step(step_name, dependencies, image_name, script_data, cpu_limit, memory_limit)
             tasks.append(step_task.compile(self.work_path, self.artifact_factory))
 
         # Compile.
