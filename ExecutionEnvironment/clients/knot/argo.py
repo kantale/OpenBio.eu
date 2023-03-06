@@ -7,7 +7,11 @@ import random
 import string
 import re
 
-from .artifacts import S3ArtifactRepository
+try:
+    from .artifacts import S3ArtifactRepository
+except ImportError:
+    # Making sure that it can import this when running from command line
+    from artifacts import S3ArtifactRepository  
 
 class RawArtifact:
     '''
@@ -286,6 +290,11 @@ def pipeline(data, workflow_name, image_registry, work_path, artifact_repository
     return yaml.dump(workflow.compile())
 
 if __name__ == '__main__':
+    '''
+    Example:
+    python argo.py workflow_dag.json
+    '''
+
     logging.basicConfig(level=logging.DEBUG)
 
     parser = argparse.ArgumentParser(description='Convert a JSON workflow into Argo YAML', formatter_class=argparse.ArgumentDefaultsHelpFormatter)

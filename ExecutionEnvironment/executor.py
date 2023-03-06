@@ -2099,6 +2099,47 @@ class Workflow:
                 return m.group('steps').strip().split()
             return []
 
+        def parse_limits(limits):
+            '''
+            CPU: 1
+            Memory: 1Gi
+            Same format as: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/ 
+            '''
+
+            # https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-cpu
+            cpu = None
+            s = re.findall(r'cpu\s([\d\.]+)(m?)', limits, re.I)
+            if s:
+                if len(s) > 1:
+                    raise OBC_Executor_Exception(f'More than one CPU limits found in LIMITS')
+
+                try:
+                    cpu = float(s[0][0])
+                except ValueError:
+                    raise OBC_Executor_Exception(f'Could not extract CPU number from LIMITS')
+                if cpu == int(cpu): 
+                    cpu = str(int(cpu))
+                else:
+                    cpu = str(cpu)
+                if s[0][1]:
+                    cpu += 'm'
+
+            # https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory
+            memory = None
+            s = re.findall(r'mem(ory)?\s(\d+([EPTGMK]i?)?)', limits)
+            if s:
+                if len(s) > 1:
+                    raise OBC_Executor_Exception(f'More than one memory limits found in LIMITS')
+                memory=s[0][1]
+
+            if cpu or memory:
+                return {
+                    'memory': memory,
+                    'cpu': cpu,
+                }
+
+            raise OBC_Executor_Exception('Could not find CPU or memory limits in LIMITS command')
+
 
         def create_json(*, bash, step, step_breaked_id, is_last, output_variables):
             '''
@@ -2270,16 +2311,42 @@ ENDOFFILE
                     not step.get("tool_invocation") and # If this step is an artificial step, do not go into infinite recursion
                     hasattr(main_command, 'parts') and
                     len(main_command.parts) > 0 and
-                    hasattr(main_command.parts[0], 'parts') and
-                    len(main_command.parts[0].parts) > 0 and
-                    main_command.parts[0].parts[0].kind == 'parameter' and
-                    main_command.parts[0].parts[0].value in self.tool_variables_ids # Belongs in tool variables
+                    (
+                        (
+                            hasattr(main_command.parts[0], 'parts') and
+                            len(main_command.parts[0].parts) > 0 and
+                            main_command.parts[0].parts[0].kind == 'parameter' and
+                            main_command.parts[0].parts[0].value in self.tool_variables_ids # First word Belongs in tool variables 
+                        )
+                        or 
+                        (
+                            len(main_command.parts) > 2 and
+                            hasattr(main_command.parts[0], 'word') and
+                            main_command.parts[0].word == 'LIMITS' and
+                            hasattr(main_command.parts[1], 'word') and
+                            parse_limits(main_command.parts[1].word) and
+                            main_command.parts[2].parts[0].kind == 'parameter' and
+                            main_command.parts[2].parts[0].value in self.tool_variables_ids
+                        )
+                    )
+
                 ):
+
 
                     this_is_a_tool_invocation = True
                     positions = [part.pos for part in main_command.parts]
-                    pos = (positions[0][0], positions[-1][1])
-                    this_var = main_command.parts[0].parts[0].value
+
+                    if hasattr(main_command.parts[0], 'word'):
+                        # This is a LIMITS CALL
+                        this_var = main_command.parts[2].parts[0].value
+                        pos = (positions[2][0], positions[-1][1]) # Removing first 2 words
+
+                    else:
+                        # This is not a LIMITS CALL
+                        this_var = main_command.parts[0].parts[0].value
+                        pos = (positions[0][0], positions[-1][1])
+
+
                     tool_to_call = self.tool_variables_ids[this_var]
                     tool_to_call_id = self.get_tool_dash_id(tool_to_call, no_dots=True)
 
