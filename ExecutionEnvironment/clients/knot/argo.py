@@ -151,6 +151,10 @@ class Workflow:
     '''
     A Workflow in Argo format.
     '''
+
+    DEFAULT_CPU_LIMIT = '1'
+    DEFAULT_MEMORY_LIMIT = '1Gi'
+
     def __init__(self, name, data, image_registry, work_path, artifact_repository='', namespace=''):
         self.name = name
         self.data = data
@@ -266,8 +270,18 @@ class Workflow:
 
             step_name = self.safe_name(step) # For Argo safety.
             script_data = self.data['steps'][step]['bash']
-            cpu_limit = self.data['steps'][step].get('cpu_limit', '1')
-            memory_limit = self.data['steps'][step].get('memory_limit', '1Gi')
+
+            cpu_limit = Workflow.DEFAULT_CPU_LIMIT
+            memory_limit = Workflow.DEFAULT_MEMORY_LIMIT
+            if 'limits' in self.data['steps'][step]:
+                limits = self.data['steps'][step]['limits']
+                if 'cpu' in limits:
+                    cpu_limit = limits['cpu']
+                if 'memory' in limits:
+                    memory_limit = limits['memory']
+            #cpu_limit = self.data['steps'][step].get('limits', {'cpu': Workflow.DEFAULT_CPU_LIMIT}).get('cpu', Workflow.DEFAULT_CPU_LIMIT) # ('cpu_limit', '1')
+            #memory_limit = self.data['steps'][step].get('limits', {'memory': Workflow.DEFAULT_CPU_LIMIT}).get('memory', Workflow.DEFAILT_MEMORY_LIMIT) #('memory_limit', '1Gi')
+
             step_task = Step(step_name, dependencies, image_name, script_data, cpu_limit, memory_limit)
             tasks.append(step_task.compile(self.work_path, self.artifact_factory))
 

@@ -2335,16 +2335,26 @@ ENDOFFILE
 
                     this_is_a_tool_invocation = True
                     positions = [part.pos for part in main_command.parts]
+                    limits = {}
 
-                    if hasattr(main_command.parts[0], 'word'):
+                    if (
+                        hasattr(main_command.parts[0], 'word') and 
+                        hasattr(main_command.parts[0], 'parts') and
+                        len(main_command.parts[0].parts) == 0
+                    ): 
                         # This is a LIMITS CALL
                         this_var = main_command.parts[2].parts[0].value
                         pos = (positions[2][0], positions[-1][1]) # Removing first 2 words
+                        #logging.debug (f'   Command: {bash_to_parse[pos[0]:pos[1]]}')
+                        limits = parse_limits(main_command.parts[1].word)
+                        if not limits:
+                            raise OBC_Executor_Exception('Error 9812. Could not parse limits') # This should never happen
 
                     else:
                         # This is not a LIMITS CALL
                         this_var = main_command.parts[0].parts[0].value
                         pos = (positions[0][0], positions[-1][1])
+                        #logging.debug (f'   Command: {bash_to_parse[pos[0]:pos[1]]}')
 
 
                     tool_to_call = self.tool_variables_ids[this_var]
@@ -2357,6 +2367,7 @@ ENDOFFILE
                         "label": None, # "RANDOM",
                         "type": "step",
                         "bash": '\n' + bash_to_parse[pos[0]:pos[1]] + '\n',
+                        "limits": limits,
                         "main": False,
                         "sub_main": False,
                         "tools": [
@@ -2376,7 +2387,6 @@ ENDOFFILE
                         "outputs_reads": [],
                         "tool_invocation": tool_to_call_id,
                     }
-
 
 
                 if not (this_is_a_parallel_call_1 or this_is_a_parallel_call_2 or this_is_a_tool_invocation):
@@ -2430,6 +2440,7 @@ ENDOFFILE
                     'output_variables': output_workflow_variables,
                     'run_after': run_after,
                     'tool_invocation': step.get('tool_invocation'),
+                    'limits': step.get('limits'),
                 }
                 #read_from = save_to
                 read_from = save_to_nodot
@@ -2556,6 +2567,7 @@ ENDOFFILE
                 'output_variables': output_workflow_variables,
                 'run_after': run_after,
                 'tool_invocation': step.get('tool_invocation'),
+                'limits': step.get('limits'),
             }
 
             run_after.append(step_inter_id)
@@ -3103,7 +3115,7 @@ digraph G {{
             }
             if tool_invocation:
                 self.decomposed['steps'][step_inter_id]['tool_to_call'] = tool_invocation
-
+                self.decomposed['steps'][step_inter_id]['limits'] = step.get('limits')
 
 
         # FINAL STEP
