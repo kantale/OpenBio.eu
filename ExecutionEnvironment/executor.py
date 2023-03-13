@@ -332,6 +332,8 @@ class Workflow:
         'OBC_WORK_PATH',
     ]
 
+    EXIT_ON_ERROR = True # Should the workflow exit on error?
+
 
     def __init__(self,
         workflow_filename=None,
@@ -790,6 +792,10 @@ class Workflow:
                 ret += '### READING VARIABLES FROM {}\n'.format(filename)
                 ret += '. {}\n\n'.format(filename)
 
+        # Do we exit on commands?
+        if Workflow.EXIT_ON_ERROR:
+            tool['installation_commands'] = f'\nset -e\n{tool["installation_commands"]}\nset +x\n'
+
         # We are adding the installation commands in parenthesis.
         # By doing so, we are isolating the raw installation commands with the rest pre- and post- commands
         ret += '(\n:\n' + tool['installation_commands'] + '\n)\n' # Add A bash no-op command (:) to avoid empty installation instructions
@@ -803,6 +809,10 @@ class Workflow:
             #ret += tool['validation_commands'] + '\n'
             #validation_script_filename = tool['label'].replace('/', '__') + '__validation.sh'
             #ret += "cat > {} << ENDOFFILE\n".format(validation_script_filename) # Add 'ENDOFFILE' in single quotes to have raw input
+
+            if Workflow.EXIT_ON_ERROR:
+                tool['validation_commands'] = f'\nset -e\n{tool["validation_commands"]}\nset +e\n'
+
             ret += '(\n:\n' + tool['validation_commands'] + '\n)\n' # Run validation commands in a dedicated environment  () . Add A bash no-op command (:) to avoid empty installation instructions
             #ret += 'ENDOFFILE\n\n'
             #ret += 'chmod +x {}\n'.format(validation_script_filename)
@@ -3081,6 +3091,9 @@ digraph G {{
                 run_afters[step_inter_id] += step['run_after']
 
             #print (f'{step_inter_id} --> {step["run_after"]}')
+
+            if Workflow.EXIT_ON_ERROR:
+                bash = f'set -e\n{bash}\nset +x\n'
 
             # Add declare. This should be first
             bash = self.workflow.declare_decorate_bash(bash, step_vars_filename)
