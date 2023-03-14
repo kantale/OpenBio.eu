@@ -3093,7 +3093,7 @@ digraph G {{
             #print (f'{step_inter_id} --> {step["run_after"]}')
 
             if Workflow.EXIT_ON_ERROR:
-                bash = f'set -e\n{bash}\nset +x\n'
+                bash = f'set -e\n{bash}\nset +e\n'
 
             # Add declare. This should be first
             bash = self.workflow.declare_decorate_bash(bash, step_vars_filename)
