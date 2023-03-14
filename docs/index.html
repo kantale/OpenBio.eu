@@ -859,6 +859,17 @@ PAR1,PAR2
 &quot;
 </code></pre>
 <p>This defines a parallel set of 6 steps where <code>PAR1</code> takes values from <code>10</code> to <code>15</code> and <code>PAR2</code> takes the value <code>test</code> in all steps. </p>
+<h1 id="the-limits-command">The <code>LIMITS</code> command</h1>
+<p>With the <code>LIMITS</code> command you can assign certain computatonal limts in a tool execution. The format of the command is:</p>
+<pre><code class="language-bash">LIMITS &quot; &lt;LIMITS&gt; &quot; ${tool_variable} PAR1 PAR2 ...
+</code></pre>
+<p>For example suppose that <code>Tool_A</code> has the variable <code>Tool_A_executable</code> and we want to run in under the requirement of 2 CPUs and 3Gi of memory. Then we could write:</p>
+<pre><code class="language-bash">LIMITS &quot; cpu 2  memory 3Gi &quot; ${tool_A_executable} PAR1 PAR2 ...
+</code></pre>
+<p>This declaration will add the apropriate annotation in the decomposed JSON DAG. The format of the <code>"&lt;LIMITS&gt;"</code> string has been taken from <a href="https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/">kubernetes' relative documentation</a>.</p>
+<p>Some limitations of.. <code>LIMITS</code>:
+* <code>LIMITS</code> and <code>PARALLEL</code> cannot be combined in a single command.
+* <code>LIMITS</code> will not work in bash execution. </p>
 <h1 id="the-report-command">The <code>REPORT</code> command</h1>
 <p>During the execution of the workflow an html file that contains logs and results is generated. The path of this file is <code>${OBC_WORK_PATH}/&lt;NICE_ID&gt;.html</code> and is printed at the end of the execution. The <code>REPORT</code> is another reserved word (aside from <code>PARALLEL</code>) with which you can add data in this file. You can use this command at any place in your BASH scripts. The syntax of the <code>REPORT</code> command is:</p>
 <pre><code>REPORT &lt;LABEL&gt; &lt;TEXT or FILENAME&gt; 
@@ -1319,10 +1330,12 @@ echo &quot;after tool execution&quot;
 </ul>
 </li>
 <li><code>steps</code>: Dictionary with the bash commands. Keys are unique IDs for each step. Each step is described with a dictionary with the following keys/values:</li>
+<li><code>type</code>: The type of the step. Values can be: <code>initial</code>, <code>tool_installation</code>, <code>simple</code>, <code>tool_invocation</code>,  <code>final</code> (see below for an explanation of each type).</li>
 <li><code>bash</code>: The bash commands of this step.</li>
 <li><code>run_after</code>: A list of IDs of the steps that need to run <strong>before</strong> this step. Or else this step should run <strong>after</strong> these steps. This list is empty for the step that runs first. Basically through the IDs in this field you can easily deduct the <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph]">directed acyclic graph</a>(DAG) of the workflow. It is important that this is <strong>NOT</strong> the <a href="https://en.wikipedia.org/wiki/Transitive_reduction">transitive reduction</a> of the DAG. This means that the <code>run_after</code> field contains <strong>ALL</strong> the IDs of the steps that have to be run before the step. For example if we have the workflow <code>A--&gt;B--&gt;C</code> the <code>run_after</code> of <code>A</code> is empty, the <code>run_after</code> of <code>B</code> is <code>[A]</code> and the <code>run_after</code> of <code>C</code> is <code>[A, B]</code>. Notice that in the transitive reduction of this DAG the <code>run_after</code> of <code>C</code> should be <code>[B]</code> and not <code>[A, B]</code>.</li>
-<li>Each step belongs to one of the following categories:<ul>
-<li>The step with ID <code>INIT_STEP</code>: This is the first step that should be run. This step:<ol>
+<li><code>limits</code>: Computation limits, if any, that have been declared with the <code>LIMITS</code> command.</li>
+<li>Each step belongs to one of the following types:<ul>
+<li><code>initial</code>: The step with ID <code>INIT_STEP</code>: This is the first step that should be run. This step:<ol>
 <li>Exports the environment variables: <code>OBC_WORKFLOW_NAME</code>, <code>OBC_WORKFLOW_EDIT</code>, <code>OBC_NICE_ID</code>, <code>OBC_SERVER</code>.</li>
 <li>Creates the directory: <code>OBC_REPORT_DIR=${OBC_WORK_PATH}/${OBC_NICE_ID}</code> . This directory will contain the files that will be included in the report.</li>
 <li>Creates the file: <code>OBC_REPORT_PATH=${OBC_WORK_PATH}/${OBC_NICE_ID}.html</code>. This file will contain the html with the report. The report will contain html links to the files in the <code>OBC_REPORT_DIR</code> directory, </li>
@@ -1330,7 +1343,7 @@ echo &quot;after tool execution&quot;
 <li>Creates the file <code>${OBC_WORK_PATH}/&lt;NICE_ID&gt;_inputs.sh</code>. This script exports the variables with the input parameters of the workflow. This script runs before every step.</li>
 </ol>
 </li>
-<li>The steps that have IDs with the following format: <code>ABC__KLM__123</code> are steps that install the tools that are required for the workflow to run. The <code>ABC__KLM__123</code>  ID format refers to the tool with name <code>ABC</code>, with version <code>KLM</code> and edit <code>123</code>. Of course the IDs in the <code>run_after</code> field of these steps respect the tool dependencies. These steps perform the following tasks:<ol>
+<li><code>tool_installation</code>: The steps that have IDs with the following format: <code>ABC__KLM__123</code> are steps that install the tools that are required for the workflow to run. The <code>ABC__KLM__123</code> ID format refers to the tool with name <code>ABC</code>, with version <code>KLM</code> and edit <code>123</code>. Of course the IDs in the <code>run_after</code> field of these steps respect the tool dependencies. These steps perform the following tasks:<ol>
 <li>export the environment_variables: <code>OBC_WORKFLOW_NAME</code>, <code>OBC_WORKFLOW_EDIT</code>, <code>OBC_NICE_ID</code> and <code>OBC_SERVER</code>. </li>
 <li>Runs the bash scripts that export the parameters of the previous tools. These are tools that were installed before this tool in the pipeline. See below for the <code>${OBC_WORK_PATH}/&lt;ID&gt;_VARS.sh</code> files. </li>
 <li>Run the tool installation commands</li>
@@ -1339,7 +1352,7 @@ echo &quot;after tool execution&quot;
 <li>Create a file called: <code>${OBC_WORK_PATH}/&lt;ID&gt;_VARS.sh</code>. This file is a bash script that when it runs, it exports the parameters of this tool. This script should be called before any other subsequent step, otherwise subsequent steps will not have access to the parameters of this tool. This is taken care within the bash scripts of the subsequent steps (no need to do anything).</li>
 </ol>
 </li>
-<li>The steps that have the IDs with the following format: <code>step__ABC__KLM__123__456</code>. These are steps of the workflows. <code>ABC</code> is the name of the step in the workflow. <code>KLM</code> is the name of the workflow. <code>123</code> is the edit of the workflow. <code>456</code> indicates the current number of sub-step that this step has been broken into. Notice in the 1st example that the commands in <code>step__1</code> have been broken in two DAG nodes (first and last). Also the commands of the step <code>step__1</code> have been broken in three DAG nodes (first, fifth, and last). So in order to DAG-ify a step we need to break it into several DAG nodes. The last digit in the STEP ID indicates the order of this node which contains the commands of the original step that has been broken into. 
+<li><code>simple</code>: The steps that have the IDs with the following format: <code>step__ABC__KLM__123__456</code>. These are steps of the workflows. <code>ABC</code> is the name of the step in the workflow. <code>KLM</code> is the name of the workflow. <code>123</code> is the edit of the workflow. <code>456</code> indicates the current number of sub-step that this step has been broken into. Notice in the 1st example that the commands in <code>step__1</code> have been broken in two DAG nodes (first and last). Also the commands of the step <code>step__1</code> have been broken in three DAG nodes (first, fifth, and last). So in order to DAG-ify a step we need to break it into several DAG nodes. The last digit in the STEP ID indicates the order of this node which contains the commands of the original step that has been broken into. 
   of this node. The bash script of a sub-step (or else DAG node) performs the following tasks:<ol>
 <li>Export the environment_variables: <code>OBC_WORKFLOW_NAME</code>, <code>OBC_WORKFLOW_EDIT</code>, <code>OBC_NICE_ID</code> and <code>OBC_SERVER</code>. </li>
 <li>Run the bash scripts that export the parameters of the tools of the workflow.</li>
@@ -1350,7 +1363,8 @@ echo &quot;after tool execution&quot;
 <li>Create a file called <code>${OBC_WORK_PATH}/&lt;ID&gt;_VARS.sh</code> with all the variables that have been defined in this sub-step.</li>
 </ol>
 </li>
-<li>The with the ID <code>FINAL_STEP</code>. This is the last step that should be run. This step:<ol>
+<li><code>tool_invocation</code>: These are steps that call a tool that has been installed in one of the environments. They have the same ID format as <code>simple</code> steps. They only contain a single line that invokes a tool. This distinction allows developers to treat differently simple bash commands in a step with commands that call a tool. This is useful for example in the Airflow executor.  </li>
+<li><code>final</code>: The step with ID <code>FINAL_STEP</code>. This is the last step that should be run. This step:<ol>
 <li>Exports the environment_variables: <code>OBC_WORKFLOW_NAME</code>, <code>OBC_WORKFLOW_EDIT</code>, <code>OBC_NICE_ID</code> and <code>OBC_SERVER</code>. </li>
 <li>Run the bash scripts that export the parameters of the tools of the workflow.</li>
 <li>Run the bash scripts that export the variables that have been defined from all the previous sub-steps of this sub-step in the DAG.</li>
@@ -1408,5 +1422,5 @@ echo &quot;after tool execution&quot;
 
 <!--
 MkDocs version : 1.2.3
-Build Date UTC : 2022-11-21 10:09:59.912756+00:00
+Build Date UTC : 2023-03-14 07:06:00.618235+00:00
 -->
