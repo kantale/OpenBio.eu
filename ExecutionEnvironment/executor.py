@@ -799,6 +799,14 @@ class Workflow:
         # We are adding the installation commands in parenthesis.
         # By doing so, we are isolating the raw installation commands with the rest pre- and post- commands
         ret += '(\n:\n' + tool['installation_commands'] + '\n)\n' # Add A bash no-op command (:) to avoid empty installation instructions
+
+        if Workflow.EXIT_ON_ERROR:
+            ret += 'EXITCODE=$?\n'
+            ret += 'if [ $EXITCODE -ne 0 ] ; then\n'
+            ret += '   echo OBC: INSTALLATION OF TOOL: {} FAILED\n'.format(tool['label'])
+            ret += '   exit $EXITCODE\n'
+            ret += 'fi\n'
+
         ret += 'echo "OBC: INSTALLATION OF TOOL: {} . COMPLETED"\n'.format(tool['label'])
         ret += '### END OF INSTALLATION COMMANDS FOR TOOL: {}\n\n'.format(tool['label'])
 
@@ -817,10 +825,13 @@ class Workflow:
             #ret += 'ENDOFFILE\n\n'
             #ret += 'chmod +x {}\n'.format(validation_script_filename)
             #ret += './{}\n'.format(validation_script_filename)
-            ret += 'if [ $? -eq 0 ] ; then\n'
+            ret += 'EXITCODE=$?\n'
+            ret += 'if [ $EXITCODE -eq 0 ] ; then\n'
             ret += '   echo "OBC: VALIDATION FOR TOOL: {} SUCCEEDED"\n'.format(tool['label'])
             ret += 'else\n'
             ret += '   echo "OBC: VALIDATION FOR TOOL: {} FAILED"\n'.format(tool['label'])
+            if Workflow.EXIT_ON_ERROR:
+                ret += '   exit $EXITCODE\n'
             ret += 'fi\n\n'
             ret += '### END OF VALIDATION COMMANDS FOR TOOL: {}\n\n'.format(tool['label'])
 
