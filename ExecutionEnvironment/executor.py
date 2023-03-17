@@ -2370,7 +2370,6 @@ ENDOFFILE
                                                                         # part_before_step_call = bash_to_parse[start: pos[0]]
                                                                         # Will be able to ignore the "LIMITS" part
                         pos = (positions[2][0], positions[-1][1]) # Removing first 2 words
-                        print (f'pos: {pos}')
                         #logging.debug (f'   Command: {bash_to_parse[pos[0]:pos[1]]}')
                         limits = parse_limits(main_command.parts[1].word)
                         if not limits:
