@@ -2147,13 +2147,14 @@ class Workflow:
 
             # https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory
             memory = None
-            s = re.findall(r'mem(ory)?\s(\d+([EPTGMK]i?)?)', limits)
+            s = re.findall(r'mem(ory)?\s(\d+([EPTGMK]i?)?)', limits, re.I)
             if s:
                 if len(s) > 1:
                     raise OBC_Executor_Exception(f'More than one memory limits found in LIMITS')
                 memory=s[0][1]
 
             if cpu or memory:
+
                 return {
                     'memory': memory,
                     'cpu': cpu,
@@ -2365,7 +2366,11 @@ ENDOFFILE
                     ): 
                         # This is a LIMITS CALL
                         this_var = main_command.parts[2].parts[0].value
+                        old_pos = (positions[0][0], positions[-1][1])   # We keep the positions of the whole command so that the command:
+                                                                        # part_before_step_call = bash_to_parse[start: pos[0]]
+                                                                        # Will be able to ignore the "LIMITS" part
                         pos = (positions[2][0], positions[-1][1]) # Removing first 2 words
+                        print (f'pos: {pos}')
                         #logging.debug (f'   Command: {bash_to_parse[pos[0]:pos[1]]}')
                         limits = parse_limits(main_command.parts[1].word)
                         if not limits:
@@ -2375,6 +2380,7 @@ ENDOFFILE
                         # This is not a LIMITS CALL
                         this_var = main_command.parts[0].parts[0].value
                         pos = (positions[0][0], positions[-1][1])
+                        old_pos = pos
                         #logging.debug (f'   Command: {bash_to_parse[pos[0]:pos[1]]}')
 
 
@@ -2387,7 +2393,7 @@ ENDOFFILE
                         "name": None, # "RANDOM",
                         "label": None, # "RANDOM",
                         "type": "step",
-                        "bash": '\n' + bash_to_parse[pos[0]:pos[1]] + '\n',
+                        "bash": '\n' + bash_to_parse[pos[0]:pos[1]] + '\n', # Here we need the positions of the command without the limits
                         "limits": limits,
                         "main": False,
                         "sub_main": False,
@@ -2408,6 +2414,7 @@ ENDOFFILE
                         "outputs_reads": [],
                         "tool_invocation": tool_to_call_id,
                     }
+                    pos = old_pos # Make sure that LIMITS is removed from the previous step 
 
 
                 if not (this_is_a_parallel_call_1 or this_is_a_parallel_call_2 or this_is_a_tool_invocation):
