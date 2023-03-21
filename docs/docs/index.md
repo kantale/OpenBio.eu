@@ -1073,6 +1073,7 @@ This declaration will add the apropriate annotation in the decomposed JSON DAG. 
 Some limitations of.. `LIMITS`:
 * `LIMITS` and `PARALLEL` cannot be combined in a single command.
 * `LIMITS` will not work in bash execution. 
+* According to Argo standard, if the `mem` limit has been defined, the `cpu` limit has to be defined as well. 
 
 # The `REPORT` command
 During the execution of the workflow an html file that contains logs and results is generated. The path of this file is `${OBC_WORK_PATH}/<NICE_ID>.html` and is printed at the end of the execution. The `REPORT` is another reserved word (aside from `PARALLEL`) with which you can add data in this file. You can use this command at any place in your BASH scripts. The syntax of the `REPORT` command is:
