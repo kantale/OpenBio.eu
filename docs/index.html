@@ -869,7 +869,8 @@ PAR1,PAR2
 <p>This declaration will add the apropriate annotation in the decomposed JSON DAG. The format of the <code>"&lt;LIMITS&gt;"</code> string has been taken from <a href="https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/">kubernetes' relative documentation</a>.</p>
 <p>Some limitations of.. <code>LIMITS</code>:
 * <code>LIMITS</code> and <code>PARALLEL</code> cannot be combined in a single command.
-* <code>LIMITS</code> will not work in bash execution. </p>
+* <code>LIMITS</code> will not work in bash execution. 
+* According to Argo standard, if the <code>mem</code> limit has been defined, the <code>cpu</code> limit has to be defined as well. </p>
 <h1 id="the-report-command">The <code>REPORT</code> command</h1>
 <p>During the execution of the workflow an html file that contains logs and results is generated. The path of this file is <code>${OBC_WORK_PATH}/&lt;NICE_ID&gt;.html</code> and is printed at the end of the execution. The <code>REPORT</code> is another reserved word (aside from <code>PARALLEL</code>) with which you can add data in this file. You can use this command at any place in your BASH scripts. The syntax of the <code>REPORT</code> command is:</p>
 <pre><code>REPORT &lt;LABEL&gt; &lt;TEXT or FILENAME&gt; 
@@ -1422,5 +1423,5 @@ echo &quot;after tool execution&quot;
 
 <!--
 MkDocs version : 1.2.3
-Build Date UTC : 2023-03-14 08:54:23.948370+00:00
+Build Date UTC : 2023-03-21 10:34:45.808165+00:00
 -->
