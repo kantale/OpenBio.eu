@@ -18,7 +18,7 @@ environments:
           type: LoadBalancer
         createSelfsignedCertificate: true
     - openBio:
-        version: 0.2.7
+        version: 0.2.8
         clientSecret: FR6HjKUVFo4AoJbN56PPC1nvoaQ9XHm3eMQz8pxRKddhJjh8dWCum5AUyKStEFFnkqzH3KWb8Jhal9OhRYCh6JKclYeF9M2TL4oPL95s4M3iArNrE6M8EMqU7lrEDYYD
         artifacts:
           accessKey: 4En0yHGi2jInAExZTxSw
