@@ -2459,10 +2459,14 @@ def tools_add(request, **kwargs):
         return fail('Error 8780. Could not find tool_variables field')
     tool_variables = [x for x in tool_variables if x['name'] and x['value'] and x['description']] # Filter out empty fields
 
-    # Check that variables do not have the same name
+    # Check that variables do not have the same name and validate variable name
     for variable_name, variable_name_counter in Counter([x['name'] for x in tool_variables]).items():
         if variable_name_counter>1:
             return fail('Two variables cannot have the same name!')
+
+        # Validate variable name (#270)
+        if not re.fullmatch(r'\w+', variable_name):
+            return fail(f'Invalid variable name: {variable_name}. Only a-z, A-Z, 0-9 and _ characters are allowed.')
 
 
     #Create new tool

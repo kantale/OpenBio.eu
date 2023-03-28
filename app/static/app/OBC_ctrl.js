@@ -2084,6 +2084,8 @@ app.controller("OBC_ctrl", function($scope, $sce, $http, $filter, $timeout, $log
             return;
         }
 
+        // Warning: This does not validate the last variable, since users do not have have to 
+        // press the "+" button for this. It is validated server side (#270)
         if (last_variable.name.includes('__')) {
             $scope.toast('Variable name cannot include __', 'error');
             return;
