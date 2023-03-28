@@ -1062,7 +1062,7 @@ With the `LIMITS` command you can assign certain computatonal limts in a tool ex
 LIMITS " <LIMITS> " ${tool_variable} PAR1 PAR2 ...
 ``` 
 
-For example suppose that `Tool_A` has the variable `Tool_A_executable` and we want to run in under the requirement of 2 CPUs and 3Gi of memory. Then we could write:
+For example suppose that `Tool_A` has the variable `Tool_A_executable` and we want to run it under the requirement of 2 CPUs and 3Gi of memory. Then we could write:
 
 ```bash
 LIMITS " cpu 2  memory 3Gi " ${tool_A_executable} PAR1 PAR2 ...
@@ -1074,6 +1074,74 @@ Some limitations of.. `LIMITS`:
 * `LIMITS` and `PARALLEL` cannot be combined in a single command.
 * `LIMITS` will not work in bash execution. 
 * According to Argo standard, if the `mem` limit has been defined, the `cpu` limit has to be defined as well. 
+
+## The `LIMITS` variable
+If we want to run all commands of a step under some computational limits we can use the `LIMITS` variable. The format isQ
+
+```bash
+LIMITS=" cpu XXX  memory YYY "
+```
+
+The format of the string defined in the `LIMITS` variable is the same as the `LIMITS` command (see above). For example:
+
+```bash
+LIMITS=" cpu 2  memory 10G "
+
+echo "hello"
+echo "world"
+
+```
+
+These commands will run in an instance that has 2 CPUs and 10GB of memory. A `LIMITS` variable defines the computational resources of this step and only this step. It does not define the resources of the steps called from this step. Moreover if the step is decomposed a `LIMITS` variable has to be defined explcitly in every decomposed steps. For example:
+
+```bash
+LIMITS=" cpu 1 memory 10G "
+echo "hello"
+
+${tool_A_executable} PAR1 PAR2
+
+echo "world"
+
+```
+
+Since this step is decomposed and the command calling the tool (`${tool_A_executable} PAR1 PAR2`) belongs to an isolated step, the limits declaration does not affect it. Neither it affects the command below this (`echo "world"`). An other example is:
+
+```bash
+
+LIMITS=" cpu 1 memory 10G "
+
+echo "hello"
+
+LIMITS "cpu 2 memory 20G" ${tool_A_executable} PAR1 PAR2
+
+LIMITS=" cpu 3 memory 30G "
+
+echo "world"
+
+``` 
+
+In this example:
+* The `echo "hello"` will run with in a cpu 1, mem 10G environment
+* The `${tool_A_executable} PAR1 PAR2` will run in a cpu 2, mem 20G envionment
+* The `echo "world"` will run in a cpu 3. mem 30G environment. 
+
+
+**Attention:** Setting multiple times the `LIMITS` variable works only in decomposed steps. If multiple `LIMITS` declarations are set in a non-decomposable step, then only the first will be evaluation. For example:
+
+```bash
+
+LIMITS=" cpu 1 memory 10G "
+
+echo "hello"
+
+LIMITS=" cpu 3 memory 30G "
+
+echo "world"
+
+```
+
+Since this step is not decomposed (does not call any tool or any other step), all commands will run in the same instance. In this instance only the first `LIMITS` declarion will be used (`cpu 1 memory 10G`).
+
 
 # The `REPORT` command
 During the execution of the workflow an html file that contains logs and results is generated. The path of this file is `${OBC_WORK_PATH}/<NICE_ID>.html` and is printed at the end of the execution. The `REPORT` is another reserved word (aside from `PARALLEL`) with which you can add data in this file. You can use this command at any place in your BASH scripts. The syntax of the `REPORT` command is:
@@ -1595,7 +1663,7 @@ The first category "holds the workflow together" as it links workflow nodes with
 As with nodes apart from the `data` field, all edges have the following fields which are cytoscape specific: `position`, `group`, `removed`, `selected`,  `selectable`, `locked`, `grabbable`, `pannable`,  `classes`.
 
 # OpenBio.eu Workflow DAG data model (JSON DAG)
-Besides the graph data model, described before, a workflow can be extracted and downloaded in a JSON format that contains the DAG decomposition of the workflow. But how does this work? As we seen before the complete workflow composing of many steps, tools, tool dependencies and other workflows can be exported in a single Bash script. The OpenBio.eu attempts to convert this script to a DAG. In order to do that it needs to break the script in independent components that will compose the nodes in the DAG. To do that OpenBio.eu parses the Bash script with the [bashlex library](https://github.com/idank/bashlex). Then it identifies all bash commands that are actually function calls to other steps. Every function call generated three independent steps: (i) the step that includes the commands before the function call, (ii) the step that includes the commands in the step that is called and (iii) the steps that are included after the function call. This is performed recursively throughout the complete Bash script of the workflow. Below we show some examples.
+Besides the graph data model, described before, a workflow can be extracted and downloaded in a JSON format that contains the DAG decomposition of the workflow. But how does this work? As we seen before the complete workflow composing of many steps, tools, tool dependencies and other workflows can be exported in a single Bash script. The OpenBio.eu attempts to convert this script to a DAG. In order to do that it needs to break the script in independent components that will compose the nodes in the DAG. To do that OpenBio.eu parses the Bash script with the [bashlex library](https://github.com/idank/bashlex). Then it identifies all bash commands that are actually function calls to other steps. Every function call generates three independent steps: (i) the step that includes the commands before the function call, (ii) the step that includes the commands in the step that is called and (iii) the steps that are included after the function call. This is performed recursively throughout the complete Bash script of the workflow. Below we show some examples.
 
 ## Example 1
 Assume the following workflow:
@@ -1699,7 +1767,7 @@ The JSON representation of the DAG of a workflow has the following fields:
    * `type`: The type of the step. Values can be: `initial`, `tool_installation`, `simple`, `tool_invocation`,  `final` (see below for an explanation of each type).
    * `bash`: The bash commands of this step.
    * `run_after`: A list of IDs of the steps that need to run **before** this step. Or else this step should run **after** these steps. This list is empty for the step that runs first. Basically through the IDs in this field you can easily deduct the [directed acyclic graph](https://en.wikipedia.org/wiki/Directed_acyclic_graph])(DAG) of the workflow. It is important that this is **NOT** the [transitive reduction](https://en.wikipedia.org/wiki/Transitive_reduction) of the DAG. This means that the `run_after` field contains **ALL** the IDs of the steps that have to be run before the step. For example if we have the workflow `A-->B-->C` the `run_after` of `A` is empty, the `run_after` of `B` is `[A]` and the `run_after` of `C` is `[A, B]`. Notice that in the transitive reduction of this DAG the `run_after` of `C` should be `[B]` and not `[A, B]`.
-   * `limits`: Computation limits, if any, that have been declared with the `LIMITS` command.
+   * `limits`: Computation limits, if any, that have been declared with the `LIMITS` command or the `LIMITS` variable.
    * Each step belongs to one of the following types:
       * `initial`: The step with ID `INIT_STEP`: This is the first step that should be run. This step:
          1. Exports the environment variables: `OBC_WORKFLOW_NAME`, `OBC_WORKFLOW_EDIT`, `OBC_NICE_ID`, `OBC_SERVER`.

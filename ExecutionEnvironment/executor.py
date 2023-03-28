@@ -1439,6 +1439,50 @@ class Workflow:
 
         return input_variables_to_final
 
+    @staticmethod
+    def parse_limits(limits):
+        '''
+        CPU: 1
+        Memory: 1Gi
+        Same format as: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/ 
+        '''
+
+        # https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-cpu
+        cpu = None
+        s = re.findall(r'cpu\s([\d\.]+)(m?)', limits, re.I)
+        if s:
+            if len(s) > 1:
+                raise OBC_Executor_Exception(f'More than one CPU limits found in LIMITS')
+
+            try:
+                cpu = float(s[0][0])
+            except ValueError:
+                raise OBC_Executor_Exception(f'Could not extract CPU number from LIMITS')
+            if cpu == int(cpu): 
+                cpu = str(int(cpu))
+            else:
+                cpu = str(cpu)
+            if s[0][1]:
+                cpu += 'm'
+
+        # https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory
+        memory = None
+        s = re.findall(r'mem(ory)?\s(\d+([EPTGMK]i?)?)', limits, re.I)
+        if s:
+            if len(s) > 1:
+                raise OBC_Executor_Exception(f'More than one memory limits found in LIMITS')
+            memory=s[0][1]
+
+        if cpu or memory:
+
+            return {
+                'memory': memory,
+                'cpu': cpu,
+            }
+
+        raise OBC_Executor_Exception('Could not find CPU or memory limits in LIMITS command')
+
+
 
     @staticmethod
     def convert_tool_to_request(tool, added_objects):
@@ -2120,48 +2164,6 @@ class Workflow:
                 return m.group('steps').strip().split()
             return []
 
-        def parse_limits(limits):
-            '''
-            CPU: 1
-            Memory: 1Gi
-            Same format as: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/ 
-            '''
-
-            # https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-cpu
-            cpu = None
-            s = re.findall(r'cpu\s([\d\.]+)(m?)', limits, re.I)
-            if s:
-                if len(s) > 1:
-                    raise OBC_Executor_Exception(f'More than one CPU limits found in LIMITS')
-
-                try:
-                    cpu = float(s[0][0])
-                except ValueError:
-                    raise OBC_Executor_Exception(f'Could not extract CPU number from LIMITS')
-                if cpu == int(cpu): 
-                    cpu = str(int(cpu))
-                else:
-                    cpu = str(cpu)
-                if s[0][1]:
-                    cpu += 'm'
-
-            # https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory
-            memory = None
-            s = re.findall(r'mem(ory)?\s(\d+([EPTGMK]i?)?)', limits, re.I)
-            if s:
-                if len(s) > 1:
-                    raise OBC_Executor_Exception(f'More than one memory limits found in LIMITS')
-                memory=s[0][1]
-
-            if cpu or memory:
-
-                return {
-                    'memory': memory,
-                    'cpu': cpu,
-                }
-
-            raise OBC_Executor_Exception('Could not find CPU or memory limits in LIMITS command')
-
 
         def create_json(*, bash, step, step_breaked_id, is_last, output_variables):
             '''
@@ -2335,6 +2337,7 @@ ENDOFFILE
                     len(main_command.parts) > 0 and
                     (
                         (
+                            # Call directly a tool
                             hasattr(main_command.parts[0], 'parts') and
                             len(main_command.parts[0].parts) > 0 and
                             main_command.parts[0].parts[0].kind == 'parameter' and
@@ -2342,11 +2345,12 @@ ENDOFFILE
                         )
                         or 
                         (
+                            # Call with the LIMITS command
                             len(main_command.parts) > 2 and
                             hasattr(main_command.parts[0], 'word') and
                             main_command.parts[0].word == 'LIMITS' and
                             hasattr(main_command.parts[1], 'word') and
-                            parse_limits(main_command.parts[1].word) and
+                            Workflow.parse_limits(main_command.parts[1].word) and
                             main_command.parts[2].parts[0].kind == 'parameter' and
                             main_command.parts[2].parts[0].value in self.tool_variables_ids
                         )
@@ -2371,7 +2375,7 @@ ENDOFFILE
                                                                         # Will be able to ignore the "LIMITS" part
                         pos = (positions[2][0], positions[-1][1]) # Removing first 2 words
                         #logging.debug (f'   Command: {bash_to_parse[pos[0]:pos[1]]}')
-                        limits = parse_limits(main_command.parts[1].word)
+                        limits = Workflow.parse_limits(main_command.parts[1].word)
                         if not limits:
                             raise OBC_Executor_Exception('Error 9812. Could not parse limits') # This should never happen
 
@@ -3146,6 +3150,14 @@ digraph G {{
             if tool_invocation:
                 self.decomposed['steps'][step_inter_id]['tool_to_call'] = tool_invocation
                 self.decomposed['steps'][step_inter_id]['limits'] = step.get('limits')
+            else:
+                # This step is not a tool invocation. Check if there is a limits declaration. ie
+                # LIMITS_OB="mem 10GB"
+                s1 = re.search(r'\nLIMITS="([\w\s:]+)"', bash)
+                if s1:
+                    self.decomposed['steps'][step_inter_id]['limits'] = Workflow.parse_limits(s1.group(1))
+
+
 
 
         # FINAL STEP
