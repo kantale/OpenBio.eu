@@ -863,7 +863,7 @@ PAR1,PAR2
 <p>With the <code>LIMITS</code> command you can assign certain computatonal limts in a tool execution. The format of the command is:</p>
 <pre><code class="language-bash">LIMITS &quot; &lt;LIMITS&gt; &quot; ${tool_variable} PAR1 PAR2 ...
 </code></pre>
-<p>For example suppose that <code>Tool_A</code> has the variable <code>Tool_A_executable</code> and we want to run in under the requirement of 2 CPUs and 3Gi of memory. Then we could write:</p>
+<p>For example suppose that <code>Tool_A</code> has the variable <code>Tool_A_executable</code> and we want to run it under the requirement of 2 CPUs and 3Gi of memory. Then we could write:</p>
 <pre><code class="language-bash">LIMITS &quot; cpu 2  memory 3Gi &quot; ${tool_A_executable} PAR1 PAR2 ...
 </code></pre>
 <p>This declaration will add the apropriate annotation in the decomposed JSON DAG. The format of the <code>"&lt;LIMITS&gt;"</code> string has been taken from <a href="https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/">kubernetes' relative documentation</a>.</p>
@@ -871,6 +871,55 @@ PAR1,PAR2
 * <code>LIMITS</code> and <code>PARALLEL</code> cannot be combined in a single command.
 * <code>LIMITS</code> will not work in bash execution. 
 * According to Argo standard, if the <code>mem</code> limit has been defined, the <code>cpu</code> limit has to be defined as well. </p>
+<h2 id="the-limits-variable">The <code>LIMITS</code> variable</h2>
+<p>If we want to run all commands of a step under some computational limits we can use the <code>LIMITS</code> variable. The format isQ</p>
+<pre><code class="language-bash">LIMITS=&quot; cpu XXX  memory YYY &quot;
+</code></pre>
+<p>The format of the string defined in the <code>LIMITS</code> variable is the same as the <code>LIMITS</code> command (see above). For example:</p>
+<pre><code class="language-bash">LIMITS=&quot; cpu 2  memory 10G &quot;
+
+echo &quot;hello&quot;
+echo &quot;world&quot;
+
+</code></pre>
+<p>These commands will run in an instance that has 2 CPUs and 10GB of memory. A <code>LIMITS</code> variable defines the computational resources of this step and only this step. It does not define the resources of the steps called from this step. Moreover if the step is decomposed a <code>LIMITS</code> variable has to be defined explcitly in every decomposed steps. For example:</p>
+<pre><code class="language-bash">LIMITS=&quot; cpu 1 memory 10G &quot;
+echo &quot;hello&quot;
+
+${tool_A_executable} PAR1 PAR2
+
+echo &quot;world&quot;
+
+</code></pre>
+<p>Since this step is decomposed and the command calling the tool (<code>${tool_A_executable} PAR1 PAR2</code>) belongs to an isolated step, the limits declaration does not affect it. Neither it affects the command below this (<code>echo "world"</code>). An other example is:</p>
+<pre><code class="language-bash">
+LIMITS=&quot; cpu 1 memory 10G &quot;
+
+echo &quot;hello&quot;
+
+LIMITS &quot;cpu 2 memory 20G&quot; ${tool_A_executable} PAR1 PAR2
+
+LIMITS=&quot; cpu 3 memory 30G &quot;
+
+echo &quot;world&quot;
+
+</code></pre>
+<p>In this example:
+* The <code>echo "hello"</code> will run with in a cpu 1, mem 10G environment
+* The <code>${tool_A_executable} PAR1 PAR2</code> will run in a cpu 2, mem 20G envionment
+* The <code>echo "world"</code> will run in a cpu 3. mem 30G environment. </p>
+<p><strong>Attention:</strong> Setting multiple times the <code>LIMITS</code> variable works only in decomposed steps. If multiple <code>LIMITS</code> declarations are set in a non-decomposable step, then only the first will be evaluation. For example:</p>
+<pre><code class="language-bash">
+LIMITS=&quot; cpu 1 memory 10G &quot;
+
+echo &quot;hello&quot;
+
+LIMITS=&quot; cpu 3 memory 30G &quot;
+
+echo &quot;world&quot;
+
+</code></pre>
+<p>Since this step is not decomposed (does not call any tool or any other step), all commands will run in the same instance. In this instance only the first <code>LIMITS</code> declarion will be used (<code>cpu 1 memory 10G</code>).</p>
 <h1 id="the-report-command">The <code>REPORT</code> command</h1>
 <p>During the execution of the workflow an html file that contains logs and results is generated. The path of this file is <code>${OBC_WORK_PATH}/&lt;NICE_ID&gt;.html</code> and is printed at the end of the execution. The <code>REPORT</code> is another reserved word (aside from <code>PARALLEL</code>) with which you can add data in this file. You can use this command at any place in your BASH scripts. The syntax of the <code>REPORT</code> command is:</p>
 <pre><code>REPORT &lt;LABEL&gt; &lt;TEXT or FILENAME&gt; 
@@ -1253,7 +1302,7 @@ Report: 7Lt2o
 <p>The first category "holds the workflow together" as it links workflow nodes with "inside elements" (i.e. tools, steps). The other types of edges has a special semantic and show some type of function. The value of the <code>edgebelongto</code> is <code>True</code> only if the edge belongs to the first category.</p>
 <p>As with nodes apart from the <code>data</code> field, all edges have the following fields which are cytoscape specific: <code>position</code>, <code>group</code>, <code>removed</code>, <code>selected</code>,  <code>selectable</code>, <code>locked</code>, <code>grabbable</code>, <code>pannable</code>,  <code>classes</code>.</p>
 <h1 id="openbioeu-workflow-dag-data-model-json-dag">OpenBio.eu Workflow DAG data model (JSON DAG)</h1>
-<p>Besides the graph data model, described before, a workflow can be extracted and downloaded in a JSON format that contains the DAG decomposition of the workflow. But how does this work? As we seen before the complete workflow composing of many steps, tools, tool dependencies and other workflows can be exported in a single Bash script. The OpenBio.eu attempts to convert this script to a DAG. In order to do that it needs to break the script in independent components that will compose the nodes in the DAG. To do that OpenBio.eu parses the Bash script with the <a href="https://github.com/idank/bashlex">bashlex library</a>. Then it identifies all bash commands that are actually function calls to other steps. Every function call generated three independent steps: (i) the step that includes the commands before the function call, (ii) the step that includes the commands in the step that is called and (iii) the steps that are included after the function call. This is performed recursively throughout the complete Bash script of the workflow. Below we show some examples.</p>
+<p>Besides the graph data model, described before, a workflow can be extracted and downloaded in a JSON format that contains the DAG decomposition of the workflow. But how does this work? As we seen before the complete workflow composing of many steps, tools, tool dependencies and other workflows can be exported in a single Bash script. The OpenBio.eu attempts to convert this script to a DAG. In order to do that it needs to break the script in independent components that will compose the nodes in the DAG. To do that OpenBio.eu parses the Bash script with the <a href="https://github.com/idank/bashlex">bashlex library</a>. Then it identifies all bash commands that are actually function calls to other steps. Every function call generates three independent steps: (i) the step that includes the commands before the function call, (ii) the step that includes the commands in the step that is called and (iii) the steps that are included after the function call. This is performed recursively throughout the complete Bash script of the workflow. Below we show some examples.</p>
 <h2 id="example-1">Example 1</h2>
 <p>Assume the following workflow:</p>
 <p><strong><code>STEP__1</code></strong>:</p>
@@ -1334,7 +1383,7 @@ echo &quot;after tool execution&quot;
 <li><code>type</code>: The type of the step. Values can be: <code>initial</code>, <code>tool_installation</code>, <code>simple</code>, <code>tool_invocation</code>,  <code>final</code> (see below for an explanation of each type).</li>
 <li><code>bash</code>: The bash commands of this step.</li>
 <li><code>run_after</code>: A list of IDs of the steps that need to run <strong>before</strong> this step. Or else this step should run <strong>after</strong> these steps. This list is empty for the step that runs first. Basically through the IDs in this field you can easily deduct the <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph]">directed acyclic graph</a>(DAG) of the workflow. It is important that this is <strong>NOT</strong> the <a href="https://en.wikipedia.org/wiki/Transitive_reduction">transitive reduction</a> of the DAG. This means that the <code>run_after</code> field contains <strong>ALL</strong> the IDs of the steps that have to be run before the step. For example if we have the workflow <code>A--&gt;B--&gt;C</code> the <code>run_after</code> of <code>A</code> is empty, the <code>run_after</code> of <code>B</code> is <code>[A]</code> and the <code>run_after</code> of <code>C</code> is <code>[A, B]</code>. Notice that in the transitive reduction of this DAG the <code>run_after</code> of <code>C</code> should be <code>[B]</code> and not <code>[A, B]</code>.</li>
-<li><code>limits</code>: Computation limits, if any, that have been declared with the <code>LIMITS</code> command.</li>
+<li><code>limits</code>: Computation limits, if any, that have been declared with the <code>LIMITS</code> command or the <code>LIMITS</code> variable.</li>
 <li>Each step belongs to one of the following types:<ul>
 <li><code>initial</code>: The step with ID <code>INIT_STEP</code>: This is the first step that should be run. This step:<ol>
 <li>Exports the environment variables: <code>OBC_WORKFLOW_NAME</code>, <code>OBC_WORKFLOW_EDIT</code>, <code>OBC_NICE_ID</code>, <code>OBC_SERVER</code>.</li>
@@ -1423,5 +1472,5 @@ echo &quot;after tool execution&quot;
 
 <!--
 MkDocs version : 1.2.3
-Build Date UTC : 2023-03-21 10:34:45.808165+00:00
+Build Date UTC : 2023-03-28 07:59:59.968682+00:00
 -->
