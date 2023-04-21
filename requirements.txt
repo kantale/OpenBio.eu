@@ -26,7 +26,7 @@ six==1.16.0
 social-auth-app-django==5.0.0
 social-auth-core==4.3.0
 python-jose==3.3.0
-sqlparse==0.4.2
+sqlparse==0.4.4
 urllib3==1.26.12
 kubernetes==22.6.0
 boto3==1.24.59
